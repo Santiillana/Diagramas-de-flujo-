@@ -16,6 +16,14 @@ function stop(){
   if(b){b.textContent="▶";b.title="Reproducir";b.setAttribute("aria-label","Reproducir");}
 }
 function method(){return exercise?.methods[methodIndex]??null;}
+function publishTrace(){
+  if(!execution||!timeline)return;
+  document.dispatchEvent(new CustomEvent("traza:execution-updated",{detail:{
+    exercise,exerciseId,methodIndex,method:method(),execution,
+    event:timeline.current,index:timeline.index,length:timeline.length,
+    diagram,source:method()?.pseudocode??""
+  }}));
+}
 function parseInputs(){
   const raw=$("#simulator-inputs").value.trim();
   return raw?raw.split(/[;,]/).map(v=>v.trim()):[];
@@ -112,6 +120,7 @@ function render(){
     $("#simulator-status").textContent="DETENIDO · "+e.message;
     $("#simulator-status").classList.add("simulator-status-error");
   }
+  publishTrace();
 }
 function run(){
   stop();
@@ -188,6 +197,10 @@ function bind(){
     methodIndex=Number(e.detail?.methodIndex)||0;
     prepare();
   });
+  document.addEventListener("traza:jump-to-step",e=>{
+    if(Number.isInteger(e.detail?.index))seek(e.detail.index);
+  });
+  document.addEventListener("traza:lab-sync-request",publishTrace);
 }
 export function initSimulator(){
   if(!$("#simulator-run"))return;

@@ -72,3 +72,23 @@
 @media(max-width:800px){.learn-workspace{grid-template-columns:1fr}.lesson-catalog-panel,.exercise-detail-panel{position:static;max-height:none}.lesson-catalog{grid-template-columns:repeat(2,minmax(0,1fr));max-height:320px}.exercise-workspace{grid-template-columns:1fr}.exercise-detail-scroll{max-height:none}.exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-toolbar{grid-template-columns:1fr 1fr}.catalog-count{grid-column:1/-1;padding:0}}
 @media(max-width:520px){.lesson-catalog{grid-template-columns:1fr}.lesson-detail-heading{display:block}.lesson-completion{display:inline-flex;margin-top:10px}.lesson-explanation-grid{grid-template-columns:1fr}.visual-track{gap:3px}.visual-stage-node{padding:7px 3px;min-height:88px}.visual-stage-node strong{font-size:8px}.visual-stage-node small{font-size:7px}.visual-track-arrow{font-size:14px}.catalog-toolbar{grid-template-columns:1fr}.exercise-grid{grid-template-columns:1fr}.exercise-card{min-height:105px}.exercise-io-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.visual-stage-node,.exercise-card{transition:none}}
+
+.lesson-data-control{display:grid;gap:6px;margin-top:12px;color:var(--muted-strong);font-size:9px;font-weight:750}
+.lesson-data-control input{width:min(100%,360px);min-height:37px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface);font:11px ui-monospace,monospace}
+.lesson-data-result{margin:9px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:9px;color:var(--accent-strong);background:var(--accent-soft);font:650 10px/1.6 ui-monospace,monospace}
+.exercise-gate{margin:13px 0;padding:14px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface-soft)}
+.exercise-gate h4{margin:5px 0;font-size:13px}
+.exercise-gate>p:not(.eyebrow){margin:5px 0 10px;color:var(--muted-strong);font-size:10px;line-height:1.6}
+.exercise-gate-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.exercise-gate-feedback{min-height:16px;margin:8px 0 0;color:var(--muted-strong);font-size:10px;line-height:1.5}
+.exercise-solution-content>[hidden]{display:none!important}
+@media(max-width:760px){
+  .lesson-data-control input{width:100%}
+  .exercise-gate-actions{align-items:stretch;flex-direction:column}
+  .exercise-gate-actions>*{width:100%}
+  .exercise-detail-panel{position:static;max-height:none}
+  .exercise-detail-scroll{max-height:none}
+}
+
+/* Los estados hidden deben prevalecer sobre los display explícitos de los paneles. */
+.exercise-methods[hidden], .exercise-errors[hidden], .exercise-simulate[hidden], .exercise-spec[hidden] { display: none !important; }
