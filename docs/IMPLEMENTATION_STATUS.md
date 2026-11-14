@@ -5,78 +5,77 @@
 ## Repositorio y ramas
 - Repositorio: `Santiillana/Diagramas-de-flujo-`
 - Rama predeterminada: `main`
+- Rama M5: `module-5/final-audit-release`
+- Último commit validado de M5: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
 - M1 integrado: `19c1efb82623a671ecd8d205a5cfe6c6939405fb`
 - M2 inicial integrado: `b15acd5bdd59238f127d6d96972d719b96c2d671`
 - M3 integrado: `fd7d574abdf8b13e151d8cb6038e7d0e4344f363`
-- M4 validado en rama: `d85385b0368ebf3cdc1ba6601f5d4ab5e3466d92`
-- Rama activa: `module-4/lab-and-graph-builder`
-- PR M1 #1, M2 #2 y M3 #4 integrados en main.
-- PR M2 #3 permanece abierto; sus cambios relevantes del modo reto y del oráculo están presentes en la rama M4. Se debe cerrar como integrado/sustituido tras verificar el PR M4 o integrarlo primero en M5.
+- M4 integrado: `fc77b2d68a6454101d6edb915a117fafd3cdea34`
+- PR #1 (M1), #2 (M2), #4 (M3) y #5 (M4) están integrados. El PR #3 se cerró como sustituido por #5; sus correcciones principales están consolidadas.
+- PR M5 aún pendiente de crear e integrar.
 
 ## Estado de los cinco módulos
-| Módulo | Estado | Commit de cierre / base | Pruebas y evidencia | Pendientes |
+
+| Módulo | Estado | Commit integrado / validado | Pruebas | Pendientes |
 |---|---|---|---|---|
-| 1. Auditoría, arquitectura y experiencia visual | **Aceptado e integrado** | `19c1efb82623a671ecd8d205a5cfe6c6939405fb` | 7/7 Node + 7/7 Playwright en su aceptación inicial; regresiones M4 también cubren cinco espacios y responsive | Auditoría visual manual M5 |
-| 2. Aprende y 40 ejercicios | **Contenido integrado; correcciones y modo reto consolidados en rama M4** | `b15acd5bdd59238f127d6d96972d719b96c2d671` + cambios de M2 follow-up transportados | 14 lecciones, 40 ejercicios 20/10/10; oráculo independiente de 170 escenarios añadido | Cierre formal de PR #3 en M5 |
-| 3. Parser, intérprete, diagramas y simulación | **Aceptado e integrado** | `fd7d574abdf8b13e151d8cb6038e7d0e4344f363` | 31/31 Node + 16/16 Chromium en CI de M3; 40 ejercicios/métodos y trazas | Auditoría de funciones originales en M5 |
-| 4. Laboratorio y constructor | **Implementado y validado en rama; integración pendiente** | `d85385b0368ebf3cdc1ba6601f5d4ab5e3466d92` | CI push run 43611043603: 216/216 Node + 28/28 Chromium, success | PR de integración; el editor usa conectores implícitos por orden/anidación, no cableado libre entre puertos |
-| 5. Integración, auditoría, rendimiento y publicación | **En curso** | — | Oráculo independiente integrado en tests | revisión total, interacción original restante, manual visual, consola/performance y GitHub Pages |
+| 1. Arquitectura y experiencia visual | **Aceptado e integrado** | `19c1efb82623a671ecd8d205a5cfe6c6939405fb` | 7/7 Node + 7/7 Chromium iniciales; regresiones posteriores mantienen cinco espacios | Ninguno dentro de alcance; M5 incluye responsive y visual audit |
+| 2. Aprende y 40 ejercicios | **Aceptado e integrado** | `b15acd5bdd59238f127d6d96972d719b96c2d671` + correcciones consolidadas en M4 | 14 lecciones, 40 retos 20/10/10; oráculo matemático independiente de 170 escenarios | Ninguno dentro del alcance; modos de reto y correcciones integrados |
+| 3. Parser, intérprete, diagrama y simulador | **Aceptado e integrado** | `fd7d574abdf8b13e151d8cb6038e7d0e4344f363` | 31/31 Node + 16/16 Chromium en aceptación M3; suites M5 vuelven a cubrir el simulador | Ninguno dentro del alcance |
+| 4. Laboratorio y constructor | **Aceptado e integrado** | `fc77b2d68a6454101d6edb915a117fafd3cdea34` | 216/216 Node + 28/28 Chromium en aceptación M4 | Limitación explícita: el constructor es estructurado, no ofrece conexiones manuales arbitrarias por puerto |
+| 5. Integración, auditoría y publicación | **Implementado y validado en rama; integración pendiente** | `045f5be0b2f5dc7fe39eb34797a69cba26448612` | **222/222 Node + 38/38 Chromium**, CI push #43614738106 — success | Crear PR M5 y fusionarlo; verificar/configurar Pages desde Settings |
 
-## M1 — Evidencia
-- Push: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43573647719 — success.
-- PR: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43573651228 — success.
-- Navegación, layout, dock, responsive, preferencias y referencia original.
+## M1 — Arquitectura y experiencia visual
+- Cinco espacios de navegación, shell visual y responsive.
+- Tokens, tema, motion reducido, navegación por teclado y layout del simulador.
+- README, decisiones, estado y referencia original.
 
-## M2 — Contenido y práctica
-- `src/content/lessons.js`: 14 lecciones con explicación intuitiva/técnica, visual por pasos, ejemplo, manipulación y quiz.
-- `src/content/exercises.js`: exactamente 40 retos oficiales, 20/10/10.
-- `src/ui/content-view.js`: buscador, filtro, ficha y métodos.
-- Modo reto con campos de análisis, guardado local, pistas y solución voluntaria. Los métodos no se revelan antes de la decisión del estudiante.
-- PR #3 incorpora correcciones, restauración de campos y pruebas independientes. Su contenido de ejercicios y UI coincide con la rama M4; queda pendiente cerrar el PR redundante tras integrar M4.
-- `tests/reference-results.test.js`: oráculo matemático por ejercicio, independiente del pseudocódigo.
+## M2 — Aprende y catálogo
+- `src/content/lessons.js`: 14 lecciones con explicación, ejemplo, visualización y quiz.
+- `src/content/exercises.js`: exactamente 40 ejercicios (20/10/10).
+- `src/ui/content-view.js`: buscador, niveles, métodos y ficha detallada.
+- Modo reto: análisis/proceso, persistencia local, pistas y solución voluntaria.
+- `tests/reference-results.test.js`: 170 escenarios calculados con oráculo independiente de las soluciones.
 
-## M3 — Motor único
-- `src/core/expression.js`: tokenizador/parser de expresiones y evaluación aritmética, comparaciones y lógica.
-- `src/core/parser.js`: parser restringido para sintaxis del prototipo.
-- `src/core/interpreter.js`: snapshots/eventos, avance/retroceso, límite de iteraciones y errores didácticos.
-- `src/diagram/layout.js` y `renderer.js`: SVG generado desde AST, rutas y formas.
-- `src/ui/simulator.js`: enunciado, datos, pseudocódigo, escena, variables, salida, historial y dock sincronizados.
-- Sin `eval` ni `new Function`.
+## M3 — Motor y simulador
+- Parser restringido, expresiones, intérprete determinista y límites de seguridad.
+- SVG generado desde AST y resaltado del paso real.
+- Snapshot único para pseudocódigo, escena, variables, historial y salida.
+- Avance/retroceso determinista y mensajes de error pedagógicos.
 
 ## M4 — Laboratorio y constructor
-- `src/ui/lab.js`: seis actividades, consumiendo el evento/diagrama de la traza vigente.
-- Predicción contrasta evento previsto con evento real.
-- Tabla muestra paso, iteración, variables, primera asignación, anterior → actual y salida.
-- Ordena conserva las líneas del método.
-- Identifica símbolo utiliza el nodo vinculado al paso activo.
-- Encuentra el error usa contraejemplos y un algoritmo correcto.
-- ¿Y si…? ejecuta una copia independiente y compara salidas finales, variables y rutas; no cambia la traza original.
-- `src/core/flow-compiler.js`: modelo estructurado, validación, compilación al pseudocódigo de M3.
-- `src/ui/builder.js`: terminales, paleta, propiedades, reordenar/eliminar, ramas V/F, cuerpos de bucles, plantillas y ejecución compartida con M3.
-- Los conectores se infieren del orden secuencial y la anidación estructurada. No es un editor de cableado libre con puertos arbitrarios; los caminos imposibles de representar en el modelo quedan excluidos, mientras que ramas/bucles incompletos se rechazan.
-- CSS M4 responsive: `src/styles/lab-builder.css`.
-- CI run push: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43611043603 — **success**.
-- Node: **216/216**.
-- Playwright/Chromium: **28/28**. Incluye diagnóstico de arranque, cinco espacios, desktop/tablet/móvil, M2 gate, M3 simulator, seis actividades y builder.
-- La misma CI ejecutó `tests/reference-results.test.js`; oráculo independiente del catálogo.
+- Seis actividades conectadas a la traza real.
+- Experimentos aislados para que ¿Y si…? no mutile la ejecución base.
+- Builder con nodos y bloques anidados compilados a pseudocódigo M3; mismo intérprete, sin motor paralelo.
+- Modelo estructurado: secuencia, ramas V/F y cuerpos de ciclos. No se afirma edición libre de puertos arbitrarios.
+
+## M5 — Auditoría final y experiencia de simulación
+- Auto-cámara y pan manual en el mismo desplazamiento del SVG.
+- Token móvil y realce de la rama V/F elegida.
+- Fit por viewBox, zoom, fullscreen y salida de fullscreen dentro del lienzo.
+- Historial de variables con eventos, origen y cambios anteriores/nuevos.
+- Restauración de muestra, tamaño de pseudocódigo persistente, desglose de operaciones.
+- “En escena” minimizable y con estado de vueltas anidadas.
+- Pestañas móviles para Problema, Diagrama, En escena, Variables, Salida e Historial.
+- Capturas CI de simulador, laboratorio y constructor en desktop/tablet/móvil.
+- CI: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106 — **success**.
+- Node: **222/222**; incluye oráculo independiente, parser/interpreter, rendimiento y regresiones.
+- Playwright Chromium: **38/38**; navegación 5 espacios, 40 ejercicios/14 lecciones, simulador, laboratorio, constructor, fullscreen/pan/zoom/mobile tabs, responsive 390/1024/1440px, consola.
+- Artefacto de capturas: `ui-audit-045f5be0b2f5dc7fe39eb34797a69cba26448612` (retención de CI 7 días). El conjunto se revisó visualmente.
 
 ## Arquitectura y comandos
-- HTML/CSS/JavaScript nativo con módulos ES.
-- Sin dependencias de runtime; Playwright solo para test.
+- HTML/CSS/JavaScript ES nativo, sin dependencias de runtime.
 - Desarrollo: `python3 -m http.server 8000`
 - Instalación: `npm install`
 - Node: `npm test`
-- Navegador: `npx playwright install chromium` y `npm run test:browser`
-- Sitio estático, sin paso de bundler.
+- Chromium: `npx playwright install chromium` y `npm run test:browser`
+- Publicación estática, sin build de bundler.
 
 ## Referencias inmutables
 - HTML original Git blob: `9f7f5a3d68d10b004e2ea306df1109906f13bc33`.
 - Master V5 Git blob: `c74422272ba8b89757af1be74bca2722337ec902`.
 
-## M5 — auditoría pendiente
-1. Comparar cada función de la referencia original contra la vista nueva, marcar equivalencia real o brecha.
-2. Correr el oráculo independiente y confirmar todas las salidas/metodos, casos normales/límite/especiales.
-3. Completar/validar zoom, cámara automática, pan, ajuste de texto, fullscreen, historial de variables y restauración de ejemplo.
-4. Visual manual en escritorio, tableta horizontal y móvil; contraste y reducido movimiento.
-5. Rendimiento de ciclos largos/diagramas, consola limpia.
-6. Comprobar despliegue público de GitHub Pages; no afirmar sitio publicado antes de verificar la URL.
+## Pendientes externos / diferencias declaradas
+1. Crear PR del M5, comprobar sus checks y fusionarlo.
+2. GitHub Pages: el repo es estático y compatible, pero no se verificó su configuración ni una URL pública desde esta ejecución; activar Pages desde Settings si no está habilitado.
+3. Constructor: editor estructurado de secuencias y bloques anidados, no libre conexión manual de cualquier puerto.
+4. La cámara y la inspección se prueban mediante Chromium y capturas automatizadas; no se realizó prueba táctil en un dispositivo físico real.
