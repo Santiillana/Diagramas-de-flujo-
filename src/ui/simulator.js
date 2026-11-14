@@ -450,7 +450,19 @@ function bind(){
   $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
   $("#diagram-fit").addEventListener("click",fitDiagram);
   bindDiagramPan();
-  document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{if(!execution)prepare();});
+  document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
+    if(!execution)prepare();
+    requestAnimationFrame(()=>fitDiagram());
+  });
+  const stage=$("#diagram-stage");
+  if(stage&&"ResizeObserver" in window){
+    const observer=new ResizeObserver(entries=>{
+      const box=entries[0]?.contentRect;
+      if(box?.width>0&&box?.height>0)requestAnimationFrame(()=>fitDiagram());
+    });
+    observer.observe(stage);
+  }
+  window.addEventListener("resize",()=>requestAnimationFrame(()=>fitDiagram()));
   document.addEventListener("traza:request-simulation",event=>{
     exerciseId=Number(event.detail?.exerciseId)||1;
     methodIndex=Number(event.detail?.methodIndex)||0;
