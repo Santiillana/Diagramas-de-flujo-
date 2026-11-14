@@ -62,7 +62,7 @@ export function renderDiagram(container,diagram,options={}){
   const svg='<svg class="flow-svg" id="flow-svg" role="img" aria-label="Diagrama de flujo generado desde el pseudocódigo" viewBox="0 0 '+diagram.width+' '+diagram.height+'" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>'+
     '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
-    '<circle id="flow-token" class="flow-token" cx="520" cy="20" r="7" visibility="hidden" aria-hidden="true"/></svg>';
+    '<circle class="flow-token" cx="520" cy="20" r="7" visibility="hidden" aria-hidden="true"/></svg>';
   container.innerHTML=svg;
 }
 export function highlightDiagram(container,diagram,options={}) {
