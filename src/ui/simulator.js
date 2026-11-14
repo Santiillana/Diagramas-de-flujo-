@@ -143,12 +143,12 @@ function renderOperationBreakdown(event){
   let values=event.variables??{};
   if(event.type==="assignment"||event.type==="loop-init"||event.type==="loop-update"){
     const source=event.expression??event.sourceText??"";
-    const updateStep=/^([A-Za-z_][A-Za-z0-9_]*)(\\+\\+|--)$/.exec(source.trim());
+    const updateStep=/^([A-Za-z_][A-Za-z0-9_]*)(\+\+|--)$/.exec(source.trim());
     if(updateStep&&event.change){
       const amount=updateStep[2]==="++"?1:-1;
       return '<div class="scene-operation-breakdown"><span>AVANCE DEL CONTADOR</span><p><code>'+esc(fmt(event.change.previous))+' '+(amount>0?"+":"−")+' 1 = '+esc(fmt(event.change.value))+'</code></p></div>';
     }
-    const assignment=/^[A-Za-z_][A-Za-z0-9_]*\\s*=(?!=)\\s*(.+)$/.exec(source.trim());
+    const assignment=/^[A-Za-z_][A-Za-z0-9_]*\s*=(?!=)\s*(.+)$/.exec(source.trim());
     if(assignment){
       expression=assignment[1];
       const previous=execution.events[timeline.index-1];
