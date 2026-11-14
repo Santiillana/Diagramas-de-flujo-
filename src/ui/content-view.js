@@ -211,7 +211,7 @@ function applyChallengeGate(){
   scroll.prepend(gate);
   let saved={};
   try{saved=JSON.parse(localStorage.getItem("traza-exercise-attempt-"+item.id)||"{}");}catch{}
-  $('[data-attempt-field]',gate).forEach(field=>{field.value=saved[field.dataset.attemptField]||"";});
+  $$('[data-attempt-field]',gate).forEach(field=>{field.value=saved[field.dataset.attemptField]||"";});
   const hiddenSelectors=[".exercise-methods",".exercise-errors",".exercise-simulate",".exercise-detail-scroll > .exercise-spec:nth-of-type(2)"];
   if(!exerciseRevealed)hiddenSelectors.forEach(selector=>{const element=scroll.querySelector(selector);if(element)element.hidden=true;});
   else gate.querySelector('[data-reveal-solution]').textContent="Explicación revelada";
