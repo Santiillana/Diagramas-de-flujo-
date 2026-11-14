@@ -84,7 +84,8 @@ test("el token SVG sigue el paso y destaca la rama V/F realmente seleccionada",a
   await page.locator("#exercise-detail [data-open-simulator]").click();
   const decision=page.locator("#trace-history li").filter({hasText:"DECISIÓN"}).first();
   await decision.click();
-  await expect(page.locator("#flow-diagram-container #flow-token")).toHaveAttribute("visibility","visible");
+  await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
+  await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("data-edge-id",/edge-/);
   await expect(page.locator("#flow-diagram-container .diagram-edge.is-route-active")).toHaveCount(1);
   await expect(page.locator("#flow-diagram-container .diagram-edge.is-route-active .diagram-edge-label")).toContainText("F");
 });
