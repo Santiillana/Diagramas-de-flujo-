@@ -43,7 +43,7 @@ function updateLabContext(){
     const target=$("#lab-diagram-container");
     const sourceSvg=document.querySelector("#flow-svg");
     if(sourceSvg){
-      target.innerHTML=sourceSvg.outerHTML;
+      target.innerHTML=sourceSvg.outerHTML.replaceAll("flow-arrow","lab-flow-arrow");
       const svg=target.querySelector("svg");
       if(svg){svg.removeAttribute("id");svg.style.width="100%";svg.style.minWidth="0";svg.style.maxWidth="none";}
       target.querySelectorAll(".diagram-node").forEach(node=>{
