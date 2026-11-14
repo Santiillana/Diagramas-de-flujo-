@@ -71,3 +71,10 @@ El seguimiento automático interpola el desplazamiento del mismo canvas mediante
 
 ## D-023 · Mini-programas Aprende ejecutados por el intérprete único
 Cada una de las 14 lecciones tiene un pseudocódigo dentro de la gramática aprobada, entradas de ejemplo y salidas esperadas. La interfaz genera una ejecución determinista con el mismo parser, intérprete, línea de tiempo, layout SVG, resaltado y visualizador de eventos del Simulador. No mantiene cálculos didácticos paralelos para los resultados.
+
+
+## D-024 · Guía de símbolos según la convención implementada
+La guía contextual describe las figuras realmente representadas por Traza y separa la explicación intuitiva de la técnica. Advierte que el hexágono compacto de Para es una convención didáctica del proyecto y no certifica equivalencia normativa con ISO 5807. Las diferencias de orden entre Para, Mientras y Hacer–Mientras se explican por separado.
+
+## D-025 · Laboratorio con ejemplo inicial ejecutable
+Las seis actividades pueden iniciarse sin una ejecución manual previa. El estado inicial se genera desde el ejercicio 1 con el parser, intérprete y layout del proyecto, y se reemplaza por la traza propia cuando llega un evento del Simulador. El SVG del Laboratorio se genera desde el mismo modelo de diagrama, no se copia desde la vista principal.

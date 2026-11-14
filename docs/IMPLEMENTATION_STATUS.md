@@ -44,8 +44,8 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 | D · En escena visual | **Aceptado** | Commit `30a67f23f6cfa3f9a6f65c12ac27273a613383d3` + corrección; CI #194: 245/245 Node y 57/57 Chromium, success; capturas guardadas |
 | E · Cámara y fullscreen | **Aceptado** | Commits `c2628180da5166ce12a8cfbb951e59f4f48d0fd5`, `e32051cb7870fc79c726502b8d5b5d5ab4695adc` y correcciones; CI #198: 250/250 Node y 61/61 Chromium, success; capturas guardadas |
 | F · Aprende vivo | **Aceptado** | Commit `280bd48cba4e056cb7282f6d6f9dfb06007948ff`; CI #199: 255/255 Node y 64/64 Chromium, success; capturas guardadas |
-| G · Guía de figuras y ciclos | Pendiente | Catálogo de conceptos y ayuda contextual |
-| H · Laboratorio sin bloqueo | Pendiente | Verificar las seis actividades sin ejecución previa |
+| G · Guía de figuras y ciclos | **Aceptado** | Commits `43cc57c934561de82b63cd28c60cec6c1c97f3a1` + corrección; CI #? (`43643271857`): 260/260 Node y 67/67 Chromium, success; capturas guardadas |
+| H · Laboratorio sin bloqueo | **Aceptado** | Commit `171fd66ff9c1526e16c08223dc6e615e7673a8fa`; CI (`43643879643`): 263/263 Node y 70/70 Chromium, success; capturas guardadas |
 | I · Razonamiento, pistas y métodos | Pendiente | Campo `razonamiento` en 40 fichas y pistas progresivas |
 | J · Aprendizaje activo | Pendiente | Prueba de solución, predicción diagnóstica, progreso, compartir y proyector |
 | K · Pulido visual global | Pendiente | Tipografía mínima y contraste AA en ambos temas |
