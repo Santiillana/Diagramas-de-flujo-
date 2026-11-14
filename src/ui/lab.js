@@ -1,10 +1,14 @@
 import { escapeHTML as esc } from "./escape.js";
 import { flattenPseudocode } from "../core/parser.js";
-import { executePseudocode } from "../core/interpreter.js";
+import { createTimeline, executePseudocode } from "../core/interpreter.js";
+import { exercises } from "../content/exercises.js";
+import { layoutFlow } from "../diagram/layout.js";
+import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 
 const $=selector=>document.querySelector(selector);
 const fmt=value=>typeof value==="number"?String(Number(value.toFixed(6))):String(value);
 let trace=null;
+let labDiagramKey="";
 let activity="predict";
 let orderedLines=[];
 let selectedSymbol=null;
@@ -27,12 +31,37 @@ const errorScenarios=[
   {title:"Centinela contado como dato",statement:"El algoritmo cuenta datos hasta recibir cero. ¿Debe contar también el cero que detiene la lectura?",source:"C=0|hacer|leer n|C=C+1|hm n<>0|imp C",inputs:[4,5,0],expected:2,explanation:"El valor cero es una señal de parada, no un dato de la serie. La actualización del contador debe ejecutarse solo cuando el valor leído sea distinto del centinela."},
   {title:"Promedio correcto con centinela y sin datos",statement:"¿Este algoritmo calcula el promedio de los datos anteriores al cero y evita dividir entre cero cuando no hay entradas?",source:"S=0|C=0|leer n|mientras n<>0|S=S+n|C=C+1|leer n|fin|si C>0|imp S/C|sino|imp 0|fin",inputs:[2,4,0],expected:3,explanation:"El algoritmo excluye el centinela, cuenta los datos procesados y solo divide cuando hay al menos un dato. Por tanto, este caso es correcto."}
 ];
+export function createLabDemoTrace(){
+  const exercise=exercises.find(item=>item.id===1)??exercises[0];
+  const method=exercise?.methods?.[0];
+  if(!exercise||!method)throw new Error("No hay un ejercicio de ejemplo disponible.");
+  const execution=executePseudocode(method.pseudocode,method.sample??[]);
+  if(!execution.ok||!execution.events.length)throw new Error("No se pudo preparar el ejemplo inicial del Laboratorio.");
+  const timeline=createTimeline(execution);
+  return {
+    exercise,exerciseId:exercise.id,methodIndex:0,method,execution,
+    event:timeline.current,index:timeline.index,length:timeline.length,
+    diagram:layoutFlow(execution.program),source:method.pseudocode,isDemo:true
+  };
+}
+function ensureLabTrace(){
+  if(trace)return true;
+  try{
+    trace=createLabDemoTrace();
+    labDiagramKey="";
+    updateLabContext();
+    return true;
+  }catch(error){
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>No se pudo preparar el ejemplo inicial.</strong><p>'+esc(error.message)+'</p><button type="button" class="button button-primary" id="lab-go-simulator">Abrir Simulador</button></div>';
+    $("#lab-go-simulator")?.addEventListener("click",()=>document.querySelector('[data-space="simulator"]')?.click());
+    return false;
+  }
+}
 function publishContext(detail){
   if(!detail?.execution?.events?.length)return;
-  trace=detail;
+  trace={...detail,isDemo:false};
   updateLabContext();
-  if(activity==="predict")renderActivity();
-  if(activity==="table")renderActivity();
+  if(activity==="predict"||activity==="table")renderActivity();
 }
 function updateLabContext(){
   if(!trace)return;
@@ -42,18 +71,20 @@ function updateLabContext(){
   const diagram=trace.diagram;
   if(diagram){
     const target=$("#lab-diagram-container");
-    const sourceSvg=document.querySelector("#flow-svg");
-    if(sourceSvg){
-      target.innerHTML=sourceSvg.outerHTML.replaceAll("flow-arrow","lab-flow-arrow").replaceAll('id="flow-token"','id="lab-flow-token"');
-      const svg=target.querySelector("svg");
-      if(svg){svg.removeAttribute("id");svg.style.width="100%";svg.style.minWidth="0";svg.style.maxWidth="none";}
-      target.querySelectorAll(".diagram-node").forEach(node=>{
-        const sourceId=node.id.replace("flow-node-","");
-        const model=diagram.byId.get(sourceId);
-        node.classList.toggle("is-active",Boolean(model&&event.nodeId!==null&&String(model.sourceId)===String(event.nodeId)));
-        node.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&seen.includes(model.sourceId)));
-      });
+    const key=[exercise?.id??"demo",trace.methodIndex??0,trace.source??""].join("|");
+    if(target&&(labDiagramKey!==key||!target.querySelector(".flow-svg"))){
+      target.innerHTML="";
+      renderDiagram(target,diagram,{idPrefix:"lab-"});
+      labDiagramKey=key;
     }
+    const routeEvent=[...visited].reverse().find(item=>item.route&&
+      (item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
+    if(target)highlightDiagram(target,diagram,{
+      activeNodeId:event.nodeId,
+      visitedNodeIds:seen,
+      route:routeEvent?.route??null,
+      routeNodeId:routeEvent?.nodeId??null
+    });
   }
   const scene=event.scene??{title:"Paso",body:event.message??"",technical:""};
   $("#lab-scene-content").innerHTML="<strong>"+esc(scene.title)+"</strong><p>"+esc(scene.body)+"</p>";
@@ -62,9 +93,9 @@ function updateLabContext(){
   $("#lab-variables-content").innerHTML=keys.length?
     '<table class="variables-table"><tbody>'+keys.map(key=>"<tr><th>"+esc(key)+"</th><td>"+esc(fmt(vars[key]))+"</td></tr>").join("")+"</tbody></table>":
     '<span class="empty-state-copy">Sin variables todavía.</span>';
-  $("#lab-context-title").textContent=(exercise?.title??"Diagrama de flujo")+" · En ejecución";
-  $("#lab-current-step").innerHTML="PASO <b>"+(index+1)+" / "+execution.events.length+"</b>";
-  $("#lab-current-exercise").innerHTML="EJERCICIO <b>"+(exercise?.id??"—")+"</b>";
+  $("#lab-context-title").textContent=(exercise?.title??"Diagrama de flujo")+(trace.isDemo?" · Ejemplo guiado":" · En ejecución");
+  $("#lab-current-step").innerHTML=(trace.isDemo?"EJEMPLO · PASO <b>":"PASO <b>")+(index+1)+" / "+execution.events.length+"</b>";
+  $("#lab-current-exercise").innerHTML=trace.isDemo?"MODO <b>EJEMPLO</b>":"EJERCICIO <b>"+(exercise?.id??"—")+"</b>";
 }
 function setActivity(next){
   activity=next;
@@ -78,10 +109,7 @@ function setActivity(next){
   renderActivity();
 }
 function requireTrace(){
-  if(trace)return true;
-  $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Primero necesitas una ejecución.</strong><p>Abre Ejercicios, elige un reto y pulsa «Preparar este método en el simulador». El laboratorio mantendrá esa traza mientras practicas.</p><button type="button" class="button button-primary" id="lab-go-exercises">Ir a Ejercicios</button></div>';
-  $("#lab-go-exercises")?.addEventListener("click",()=>document.querySelector('[data-space="exercises"]')?.click());
-  return false;
+  return ensureLabTrace();
 }
 function eventOptions(expected){
   const labels={
@@ -306,5 +334,9 @@ export function initLab(){
     publishContext(event.detail);
   });
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
+  if(!trace)ensureLabTrace();
+  $("#lab-demo-reset")?.addEventListener("click",()=>{
+    trace=createLabDemoTrace();labDiagramKey="";updateLabContext();renderActivity();
+  });
   setActivity("predict");
 }

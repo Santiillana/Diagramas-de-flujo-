@@ -173,18 +173,18 @@
       </div>
     </section>
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Pon a prueba tu razonamiento, no tu memoria.</h2><p>Las actividades usan la ejecución real del simulador. Cambiar de reto o actividad no borra el estado del algoritmo.</p></div><span class="phase-chip">6 ACTIVIDADES · TRAZA COMPARTIDA</span></div>
+      <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Pon a prueba tu razonamiento, no tu memoria.</h2><p>Empieza con el ejemplo guiado o trae tu propia ejecución desde el Simulador. Cambiar de actividad no borra la traza.</p></div><span class="phase-chip">6 ACTIVIDADES · TRAZA COMPARTIDA</span></div>
       <div class="lab-layout lab-layout-live">
         <section class="panel lab-context lab-context-live">
           <div class="panel-heading"><div><p class="eyebrow">CONTEXTO PERSISTENTE</p><h3 id="lab-context-title">Diagrama de flujo · Sin ejecución</h3></div><span class="panel-index">A</span></div>
           <div class="lab-live-diagram" id="lab-diagram-container">
-            <div class="lab-diagram-empty"><span class="eyebrow">DIAGRAMA EN VIVO</span><strong>Selecciona un ejercicio y ejecútalo.</strong><p>El diagrama, las variables y el paso actual permanecerán visibles mientras trabajas en las actividades.</p></div>
+            <div class="lab-diagram-empty"><span class="eyebrow">EJEMPLO GUIADO</span><strong>Preparando el ejemplo inicial.</strong><p>El diagrama se genera con el intérprete del proyecto. Puedes sustituirlo al abrir una ejecución propia.</p></div>
           </div>
           <div class="lab-live-inspector">
             <section class="lab-mini-panel"><p class="eyebrow">EN ESCENA</p><div id="lab-scene-content"><strong>Sin evento activo.</strong><p>La explicación del paso seleccionado aparecerá aquí.</p></div></section>
             <section class="lab-mini-panel"><p class="eyebrow">VARIABLES</p><div id="lab-variables-content"><span class="empty-state-copy">Sin variables todavía.</span></div></section>
           </div>
-          <div class="lab-context-footer"><span id="lab-current-step">PASO <b>—</b></span><span id="lab-current-exercise">EJERCICIO <b>—</b></span><button type="button" class="text-link" id="lab-open-simulator">Abrir simulador ↗</button></div>
+          <div class="lab-context-footer"><span id="lab-current-step">PASO <b>—</b></span><span id="lab-current-exercise">EJERCICIO <b>—</b></span><button type="button" class="text-link" id="lab-demo-reset">Volver al ejemplo</button><button type="button" class="text-link" id="lab-open-simulator">Abrir simulador ↗</button></div>
         </section>
         <aside class="panel activity-panel activity-panel-live">
           <div class="panel-heading"><div><p class="eyebrow">ELIGE UNA ACTIVIDAD</p><h3>Seis formas de pensar</h3></div><span class="panel-index">B</span></div>
@@ -200,7 +200,7 @@
       </div>
       <section class="panel lab-task-panel" aria-live="polite">
         <div class="panel-heading"><div><p class="eyebrow">ACTIVIDAD ACTUAL</p><h3 id="lab-task-title">Predice el siguiente paso</h3></div><span class="panel-index">C</span></div>
-        <div id="lab-task-content" class="lab-task-content"><p>Ejecuta un ejercicio en el simulador; el laboratorio tomará la traza real como punto de partida.</p></div>
+        <div id="lab-task-content" class="lab-task-content"><p>El ejemplo guiado está disponible desde el inicio. Cada actividad trabaja sobre una ejecución real del intérprete.</p></div>
       </section>
     </section>
 
