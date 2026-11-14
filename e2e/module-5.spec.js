@@ -56,15 +56,16 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await page.locator("#diagram-zoom-in").click();
   const stage=page.locator("#diagram-stage");
   await expect(stage).toBeVisible();
-  const initial=await stage.evaluate(el=>el.scrollLeft);
+  const initialTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
   const rect=await stage.boundingBox();
   await page.mouse.move(rect.x+Math.min(rect.width-30,280),rect.y+120);
   await page.mouse.down();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
   await page.mouse.move(rect.x+40,rect.y+120,{steps:5});
   await page.mouse.up();
-  const scrolled=await stage.evaluate(el=>el.scrollLeft);
-  expect(scrolled).toBeGreaterThan(initial);
+  const movedTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
+  expect(movedTransform).not.toBe(initialTransform);
+  expect(Number(await stage.getAttribute("data-pan-moved"))).toBeGreaterThan(0);
 });
 
 test("tema y reducción de movimiento no alteran el estado de ejecución",async({page})=>{
@@ -137,7 +138,9 @@ test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persi
   await page.locator("#diagram-zoom-in").click();
   const enlarged=await svg.evaluate(el=>el.getBoundingClientRect().width);
   expect(enlarged).toBeGreaterThan(fitted);
+  const previousFitCount=Number(await page.locator("#diagram-stage").getAttribute("data-fit-count"));
   await page.locator("#diagram-fit").click();
+  await expect.poll(()=>Number(page.locator("#diagram-stage").getAttribute("data-fit-count"))).toBeGreaterThan(previousFitCount);
   await expect.poll(()=>svg.evaluate(el=>el.getBoundingClientRect().width)).toBeLessThan(enlarged);
   await page.locator("#simulator-text-larger").click();
   const stored=await page.evaluate(()=>localStorage.getItem("traza-pseudocode-size"));
