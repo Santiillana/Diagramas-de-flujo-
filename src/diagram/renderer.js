@@ -49,7 +49,7 @@ export function renderDiagram(container,diagram,options={}){
     const activeEdge=active&&(from.sourceId===Number(active)||to.sourceId===Number(active));
     const cls="diagram-edge "+(edge.kind==="back"?"is-back":"")+(activeEdge?" is-near-active":"");
     const label=edge.label?'<text class="diagram-edge-label" x="'+((from.x+to.x)/2)+'" y="'+((from.y+from.height+to.y)/2-8)+'">'+escape(edge.label)+'</text>':"";
-    return '<g class="'+cls+'"><path d="'+d+'" marker-end="url(#flow-arrow)"/>'+label+'</g>';
+    return '<g data-edge-id="'+escape(edge.id)+'" class="'+cls+'"><path d="'+d+'" marker-end="url(#flow-arrow)"/>'+label+'</g>';
   }).join("");
   const nodeMarkup=diagram.nodes.map(node=>{
     const isActive=active===String(node.sourceId);
@@ -78,8 +78,8 @@ export function highlightDiagram(container,diagram,options={}) {
     element.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
     element.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
   });
-  container.querySelectorAll(".diagram-edge").forEach((element,index)=>{
-    const edge=diagram.edges[index];
+  container.querySelectorAll(".diagram-edge").forEach(element=>{
+    const edge=diagram.edges.find(candidate=>candidate.id===element.dataset.edgeId);
     const from=edge?diagram.byId.get(edge.from):null;
     const to=edge?diagram.byId.get(edge.to):null;
     const isChosen=Boolean(edge&&routeNodeId&&route&&from?.sourceId===Number(routeNodeId)&&edge.label===route);
