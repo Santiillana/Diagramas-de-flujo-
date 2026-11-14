@@ -165,3 +165,22 @@
 :root[data-motion="reduced"] .lesson-live-program .flow-token,
 :root[data-motion="off"] .lesson-live-program .flow-token{animation:none!important;transition:none!important}
 @media(prefers-reduced-motion:reduce){.lesson-live-program .flow-token{transition:none!important;animation:none!important}}
+
+/* I · razonamiento visible tras la puerta y pistas progresivas antes de revelar */
+.exercise-reasoning{margin:13px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft)}
+.exercise-reasoning-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.exercise-reasoning-grid article{min-width:0;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.exercise-reasoning-grid span{color:var(--accent);font-size:8px;font-weight:850;letter-spacing:.65px}
+.exercise-reasoning-grid p{margin:5px 0 0;color:var(--ink-soft);font-size:10px;line-height:1.6}
+.method-approach{margin:10px 0;padding:9px 11px;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;color:var(--muted-strong);background:var(--surface-soft);font-size:10px;line-height:1.55}
+.method-comparison{margin:11px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
+.method-comparison>p:not(.eyebrow){margin:5px 0 9px;color:var(--muted-strong);font-size:9px;line-height:1.55}
+.method-comparison-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.method-comparison-list article{min-width:0;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.method-comparison-list b{color:var(--ink);font-size:9px}
+.method-comparison-list p{margin:5px 0 0;color:var(--muted-strong);font-size:9px;line-height:1.5}
+.exercise-gate-feedback{padding-top:2px;line-height:1.55}
+.exercise-gate-actions [data-exercise-hint]:disabled{opacity:.45;cursor:default}
+@media(max-width:650px){
+ .exercise-reasoning-grid,.method-comparison-list{grid-template-columns:1fr}
+}

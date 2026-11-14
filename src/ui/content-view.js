@@ -139,6 +139,24 @@ function renderExerciseDetail(){
         ${method.note?`<p class="method-note">${escapeHTML(method.note)}</p>`:""}
         <pre class="exercise-pseudocode"><code>${escapeHTML(method.pseudocode.split("|").join("\n"))}</code></pre>
         <p class="exercise-analysis"><b>Cómo funciona:</b> ${escapeHTML(item.analysis)}</p>
+        <p class="method-approach"><b>Enfoque de este método:</b> ${escapeHTML(method.approach??method.note??item.analysis)}</p>
+        ${item.comparacionMetodos?.length>1?`
+          <section class="method-comparison" aria-label="Comparación de métodos">
+            <p class="eyebrow">COMPARA LAS ALTERNATIVAS</p>
+            <p>Ambos métodos deben respetar el mismo enunciado, entradas, restricciones y resultados. La diferencia está en cómo organizan el proceso.</p>
+            <div class="method-comparison-list">
+              ${item.comparacionMetodos.map((alternative,index)=>`<article><b>${index+1}. ${escapeHTML(alternative.nombre)}</b><p>${escapeHTML(alternative.enfoque)}</p></article>`).join("")}
+            </div>
+          </section>`: ""}
+        <section class="exercise-reasoning" aria-label="Razonamiento del problema">
+          <div class="exercise-section-heading"><div><p class="eyebrow">RAZONAMIENTO · ANTES Y DESPUÉS DE PROGRAMAR</p><h4>Cómo pensar la solución</h4></div></div>
+          <div class="exercise-reasoning-grid">
+            <article><span>01 · COMPRENDER</span><p>${escapeHTML(item.razonamiento.comprender)}</p></article>
+            <article><span>02 · IDENTIFICAR DATOS</span><p>${escapeHTML(item.razonamiento.datos)}</p></article>
+            <article><span>03 · PLANIFICAR</span><p>${escapeHTML(item.razonamiento.estrategia)}</p></article>
+            <article><span>04 · COMPROBAR</span><p>${escapeHTML(item.razonamiento.comprobar)}</p></article>
+          </div>
+        </section>
         <div class="exercise-example-case"><span class="eyebrow">DATOS DE EJEMPLO</span><code>${escapeHTML(method.sample.join(", ")||"Sin datos de entrada")}</code>
           <span class="eyebrow">PRIMER RESULTADO ESPERADO</span><code>${escapeHTML(JSON.stringify(method.tests[0].expected))}</code></div>
         <details class="exercise-test-cases"><summary>Ver casos de prueba (${method.tests.length})</summary><ul>${method.tests.map(t=>`<li><b>${escapeHTML(t.name)}</b><span>Entrada: ${escapeHTML(JSON.stringify(t.input))}</span><span>Salida: ${escapeHTML(JSON.stringify(t.expected))}</span></li>`).join("")}</ul></details>
@@ -156,12 +174,12 @@ function applyChallengeGate(){
   if(!host||!item||!scroll)return;
   const gate=document.createElement("section");
   gate.className="exercise-gate";
-  gate.innerHTML='<p class="eyebrow">MODO RETO · ANTES DE VER LA SOLUCIÓN</p><h4>Piensa entradas, proceso y salidas</h4><p>Registra tu análisis. Puedes pedir una pista o revelar la explicación cuando estés preparado.</p><div class="exercise-attempt-fields"><label>Entradas<textarea data-attempt-field="inputs" rows="2" placeholder="¿Qué datos se necesitan?"></textarea></label><label>Proceso<textarea data-attempt-field="process" rows="2" placeholder="¿Cómo se transforman los datos?"></textarea></label><label>Salidas<textarea data-attempt-field="outputs" rows="2" placeholder="¿Qué debe mostrarse?"></textarea></label></div><div class="exercise-gate-actions"><button type="button" class="button button-secondary" data-save-attempt>Guardar análisis</button><button type="button" class="text-button" data-exercise-hint>Ver una pista</button><button type="button" class="button button-primary" data-reveal-solution>Revelar explicación</button></div><p class="exercise-gate-feedback" data-gate-feedback role="status"></p>';
+  gate.innerHTML='<p class="eyebrow">MODO RETO · ANTES DE VER LA SOLUCIÓN</p><h4>Piensa entradas, proceso y salidas</h4><p>Registra tu análisis. Puedes pedir una pista o revelar la explicación cuando estés preparado.</p><div class="exercise-attempt-fields"><label>Entradas<textarea data-attempt-field="inputs" rows="2" placeholder="¿Qué datos se necesitan?"></textarea></label><label>Proceso<textarea data-attempt-field="process" rows="2" placeholder="¿Cómo se transforman los datos?"></textarea></label><label>Salidas<textarea data-attempt-field="outputs" rows="2" placeholder="¿Qué debe mostrarse?"></textarea></label></div><div class="exercise-gate-actions"><button type="button" class="button button-secondary" data-save-attempt>Guardar análisis</button><button type="button" class="text-button" data-exercise-hint>Ver pista 1 de 3</button><button type="button" class="button button-primary" data-reveal-solution>Revelar explicación</button></div><p class="exercise-gate-feedback" data-gate-feedback role="status"></p>';
   scroll.prepend(gate);
   let saved={};
   try{saved=JSON.parse(localStorage.getItem("traza-exercise-attempt-"+item.id)||"{}");}catch{}
   $$('[data-attempt-field]',gate).forEach(field=>{field.value=saved[field.dataset.attemptField]||"";});
-  const hiddenSelectors=[".exercise-methods",".exercise-errors",".exercise-simulate",".exercise-detail-scroll > .exercise-spec:nth-of-type(2)"];
+  const hiddenSelectors=[".exercise-methods",".exercise-errors",".exercise-simulate",".exercise-reasoning",".exercise-detail-scroll > .exercise-spec:nth-of-type(2)"];
   if(!exerciseRevealed)hiddenSelectors.forEach(selector=>{const element=scroll.querySelector(selector);if(element)element.hidden=true;});
   else gate.querySelector('[data-reveal-solution]').textContent="Explicación revelada";
 }
@@ -225,11 +243,18 @@ function bindContentEvents(){
       return;
     }
     if(event.target.closest("[data-exercise-hint]")){
-      const hint=exerciseHintStep===0
-        ?"Conceptos que se ponen en práctica: "+selectedExercise.concepts.slice(0,3).join(", ")+".":"Restricción que debes respetar: "+selectedExercise.constraints[0];
+      const hints=selectedExercise.pistas??[];
+      const button=event.target.closest("[data-exercise-hint]");
       const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
-      if(feedback)feedback.textContent=hint;
-      exerciseHintStep=Math.min(exerciseHintStep+1,1);
+      if(exerciseHintStep<hints.length){
+        const current=exerciseHintStep;
+        if(feedback)feedback.textContent="Pista "+(current+1)+" de "+hints.length+" · "+hints[current];
+        exerciseHintStep++;
+        if(button){
+          button.textContent=exerciseHintStep<hints.length?"Ver pista "+(exerciseHintStep+1)+" de "+hints.length:"Pistas utilizadas";
+          button.disabled=exerciseHintStep>=hints.length;
+        }
+      }else if(feedback)feedback.textContent="Ya has utilizado las tres pistas. La explicación sigue disponible cuando decidas revelarla.";
       return;
     }
     if(event.target.closest("[data-reveal-solution]")){

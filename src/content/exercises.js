@@ -1,7 +1,39 @@
 
-const method = (name, pseudocode, sample, tests, note="") => ({name,pseudocode,sample,tests,note});
+function describeMethodApproach(pseudocode){
+  const code=String(pseudocode??"").toLowerCase();
+  if(code.includes("hacer")&&/\bhm\s/.test(code))
+    return "Ejecuta primero el cuerpo y después evalúa si debe repetirse; garantiza al menos una vuelta.";
+  if(/\bpara\s/.test(code))
+    return "Usa un contador con preparación, condición y avance definidos; el cuerpo se repite mientras se cumpla el límite.";
+  if(/\bmientras\s/.test(code))
+    return "Comprueba la condición antes de entrar al cuerpo y vuelve a evaluarla después de actualizar el estado.";
+  if(/\bsi\s/.test(code))
+    return "Evalúa una o varias condiciones y selecciona la ruta que corresponde a cada resultado.";
+  if(code.includes("leer")&&code.includes("imp"))
+    return "Recibe los datos, calcula la expresión y comunica el resultado en una secuencia directa.";
+  return "Organiza las instrucciones para transformar los datos de entrada en las salidas solicitadas.";
+}
+const method = (name, pseudocode, sample, tests, note="") => ({
+  name,pseudocode,sample,tests,note,approach:note||describeMethodApproach(pseudocode)
+});
+const buildReasoning = (title,concepts,inputs,outputs,constraints,analysis,errors) => ({
+  comprender:"Identifica qué solicita "+title+" y separa los datos de entrada del resultado esperado.",
+  datos:inputs.length?"Datos que deben estar disponibles: "+inputs.join("; "):"No se requieren datos externos; revisa los valores iniciales definidos en el algoritmo.",
+  estrategia:analysis,
+  comprobar:"Comprueba que el resultado respeta estas condiciones: "+constraints.join("; ")+". Salidas esperadas: "+outputs.join("; ")+"."
+});
+const buildHints = (concepts,inputs,outputs,constraints,analysis,errors) => [
+  "Orientación: empieza identificando "+(inputs.length?inputs.slice(0,2).join(" y "):"los valores iniciales")+
+    ". Los conceptos que intervienen son "+concepts.slice(0,3).join(", ")+".",
+  "Estrategia: "+analysis,
+  "Verificación: contrasta la salida ("+outputs.slice(0,2).join("; ")+") con la restricción principal: "+constraints[0]+
+    ". Evita este error frecuente: "+(errors[0]??"no comprobar los casos límite") 
+];
 const exercise = (id,level,title,statement,purpose,concepts,inputs,outputs,constraints,analysis,methods,errors=[]) => ({
-  id,number:id,level,title,statement,purpose,objective:purpose,concepts,inputs,outputs,constraints,analysis,methods,errors
+  id,number:id,level,title,statement,purpose,objective:purpose,concepts,inputs,outputs,constraints,analysis,methods,errors,
+  razonamiento:buildReasoning(title,concepts,inputs,outputs,constraints,analysis,errors),
+  pistas:buildHints(concepts,inputs,outputs,constraints,analysis,errors),
+  comparacionMetodos:methods.length>1?methods.map(item=>({nombre:item.name,enfoque:item.approach})): []
 });
 const tests = (...items) => items.map(([name,input,expected])=>({name,input,expected}));
 

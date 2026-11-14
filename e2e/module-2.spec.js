@@ -37,7 +37,7 @@ test("la ficha del ejercicio explica las entradas, métodos y pruebas", async ({
   await expect(page.locator(".exercise-gate")).toBeVisible();
   await expect(page.locator("#exercise-detail .exercise-methods")).toBeHidden();
   await page.locator("[data-exercise-hint]").click();
-  await expect(page.locator("[data-gate-feedback]")).toContainText("Conceptos");
+  await expect(page.locator("[data-gate-feedback]")).toContainText("Pista 1 de 3");
   await page.locator("[data-reveal-solution]").click();
   await expect(page.locator("#exercise-detail .method-tab")).toHaveCount(1);
   await expect(page.locator("#exercise-detail .exercise-test-cases")).toContainText("secuencia completa");
