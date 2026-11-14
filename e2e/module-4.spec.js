@@ -58,14 +58,17 @@ test("Constructor ejecuta los presets de secuencia y decisión en el motor comú
   await page.locator('[data-builder-preset="sequence"]').click();
   await page.locator("#builder-inputs").fill("8");
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-runtime-message")).toContainText("se ejecutó");
   await expect(page.locator("#builder-output")).toContainText("16");
   await page.locator('[data-builder-preset="decision"]').click();
   await page.locator("#builder-inputs").fill("5");
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-output")).toContainText("1");
   await page.locator("#builder-inputs").fill("-2");
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-output")).toContainText("0");
 });
 
@@ -74,13 +77,16 @@ test("Constructor ejecuta Para, Mientras y Hacer–Mientras", async ({ page }) =
   await page.locator('[data-space="builder"]').click();
   await page.locator('[data-builder-preset="for"]').click();
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-output")).toContainText("10");
   await page.locator('[data-builder-preset="while"]').click();
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-output")).toContainText("1");
   await expect(page.locator("#builder-output")).toContainText("3");
   await page.locator('[data-builder-preset="doWhile"]').click();
   await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
   await expect(page.locator("#builder-output")).toContainText("3");
 });
 
