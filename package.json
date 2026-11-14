@@ -4,5 +4,11 @@
   "private": true,
   "description": "Rediseño modular del laboratorio visual de diagramas de flujo.",
   "type": "module",
-  "scripts": { "test": "node --test" }
+  "scripts": {
+    "test": "node --test",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
 }

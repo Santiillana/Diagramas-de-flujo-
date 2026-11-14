@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "module-1/**"
+      - "module-2/**"
   pull_request:
     branches:
       - main
@@ -14,7 +15,7 @@ permissions:
 
 jobs:
   architecture-tests:
-    name: Architecture checks
+    name: Architecture and browser checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,5 +24,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install project dependencies
+        run: npm install
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
       - name: Run architecture tests
         run: npm test
+      - name: Run browser acceptance tests
+        run: npm run test:browser
