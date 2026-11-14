@@ -38,7 +38,7 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 |---|---|---|
 | T0 · Higiene previa | **Aceptado** | Commit `8ae08c1d55466cedd6af671a49c93089856b0bff`; CI #173: 224/224 Node y 38/38 Chromium, success |
 | T1 · Bugs conocidos | **Aceptado** | Commits `ab141be8ea425f8dc2f16139e929da6405d3402f` + correcciones; CI #174: 228/228 Node y 41/41 Chromium, success |
-| A · Escenario | Pendiente | Paneles flotantes, dock y ocupación del lienzo |
+| A · Escenario | **Aceptado** | Commit `01bd31191199abbaddbe4936f32cb9829484967a` + correcciones; CI #177: 232/232 Node y 46/46 Chromium, success; capturas desktop/tablet/mobile |
 | B · Selector, teclado y velocidad | Pendiente | Arranque directo y accesos por teclado |
 | C · Animación por eventos | Pendiente | Movimiento escalado y tres niveles de movimiento |
 | D · En escena visual | Pendiente | Visualizaciones por tipo de evento |
