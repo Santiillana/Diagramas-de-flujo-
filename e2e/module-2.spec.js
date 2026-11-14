@@ -6,8 +6,10 @@ test("Aprende presenta las catorce lecciones con explicación y comprobación", 
   await expect(page.locator('[data-lesson-id]')).toHaveCount(14);
   await page.locator('[data-lesson-id="variables"]').click();
   await expect(page.locator("#lesson-detail h3")).toHaveText("Variables y asignación");
-  await page.locator("#lesson-data-input").fill("15");
-  await expect(page.locator("#lesson-data-result")).toContainText("15 → 20");
+  await page.locator("[data-lesson-live-input]").fill("15");
+  await page.locator('[data-lesson-live-action="run"]').click();
+  await page.locator('[data-lesson-live-action="last"]').click();
+  await expect(page.locator("[data-lesson-live-output]")).toContainText("20");
   await page.locator("[data-visual-next]").click();
   await expect(page.locator(".visual-step-count")).toHaveText("2 / 3");
   await page.locator('[data-check-option="1"]').click();
