@@ -148,7 +148,7 @@ function getAvailableDiagramRect(stage){
   let left=bounds.left+18,right=bounds.right-18,top=bounds.top+58,bottom=bounds.bottom-150;
   if(mobile){
     const tabs=$("#simulator-mobile-tabs");
-    if(tabs)top=Math.max(top,tabs.getBoundingClientRect().bottom+10);
+    if(tabs)bottom=Math.min(bottom,tabs.getBoundingClientRect().top-10);
   }else{
     const problem=grid?.querySelector('[data-floating-panel="problem"]');
     const inspector=grid?.querySelector(".simulator-inspector");

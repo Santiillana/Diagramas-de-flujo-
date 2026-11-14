@@ -44,8 +44,8 @@ export function initSimulatorPanels(){
     toggle.title=visible?"Ocultar todos los paneles (H)":"Mostrar todos los paneles (H)";
   }
   function toggleAllPanels(){
-    const anyVisible=!grid.classList.contains("panels-hidden")&&panels.some(panel=>!panel.hidden);
-    if(anyVisible)grid.classList.add("panels-hidden");
+    const allVisible=!grid.classList.contains("panels-hidden")&&panels.every(panel=>!panel.hidden);
+    if(allVisible)grid.classList.add("panels-hidden");
     else{grid.classList.remove("panels-hidden");panels.forEach(panel=>{panel.hidden=false;});}
     updateToggle();saveState();dispatchPanelChange(grid);
   }

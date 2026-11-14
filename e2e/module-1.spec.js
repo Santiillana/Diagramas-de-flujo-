@@ -40,15 +40,17 @@ for (const viewport of [
   });
 }
 
-test("el dock ocupa su propia fila y no cubre el diagrama", async ({ page }) => {
+test("el dock flota sobre el escenario y conserva margen inferior para el control", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const diagram = await page.locator(".diagram-panel").boundingBox();
+  const stage = await page.locator("#diagram-stage").boundingBox();
   const dock = await page.locator(".execution-dock").boundingBox();
-  expect(diagram).not.toBeNull();
+  expect(stage).not.toBeNull();
   expect(dock).not.toBeNull();
-  expect(dock.y).toBeGreaterThanOrEqual(diagram.y + diagram.height);
+  expect(dock.y).toBeGreaterThan(stage.y);
+  expect(dock.y + dock.height).toBeLessThan(stage.y + stage.height);
+  expect(dock.y + dock.height).toBeGreaterThanOrEqual(970);
 });
 
 test("tema y movimiento reducido responden a controles y preferencia del sistema", async ({ page }) => {
