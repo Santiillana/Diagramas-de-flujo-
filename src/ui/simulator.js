@@ -337,9 +337,11 @@ function updateFullscreenButton(){
   const button=$("#diagram-fullscreen");
   button?.setAttribute("aria-pressed",String(active));
   if(button){
-    button.setAttribute("aria-label",active?"Salir de pantalla completa":"Ver diagrama a pantalla completa");
-    button.title=active?"Salir de pantalla completa":"Pantalla completa";
+    button.setAttribute("aria-label",active?"Pantalla completa activa":"Ver diagrama a pantalla completa");
+    button.title=active?"Pantalla completa activa":"Pantalla completa";
   }
+  const exitButton=$("#diagram-fullscreen-exit");
+  if(exitButton)exitButton.hidden=!active;
   if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
@@ -392,6 +394,7 @@ function bind(){
     if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
   });
   $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
+  $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
   document.addEventListener("fullscreenchange",updateFullscreenButton);
   $("#variables-content").addEventListener("click",event=>{
     const button=event.target.closest("[data-variable-history]");
