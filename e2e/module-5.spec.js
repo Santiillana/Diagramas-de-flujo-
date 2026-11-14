@@ -50,6 +50,9 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
+  await page.locator("#diagram-camera-toggle").click();
+  await page.locator("#diagram-zoom-in").click();
+  await page.locator("#diagram-zoom-in").click();
   const stage=page.locator("#diagram-stage");
   await expect(stage).toBeVisible();
   const initial=await stage.evaluate(el=>el.scrollLeft);
