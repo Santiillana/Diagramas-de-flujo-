@@ -11,8 +11,10 @@ const $ = s => document.querySelector(s);
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
-let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
+let cameraAuto=true, panState=null, pinchState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
+let cameraFrame=null, cameraTarget=null, cameraLastFrame=0;
+const activePointers=new Map();
 let lastRenderedStep=null;
 let exerciseSearch="",predictionMode=false;
 const SPEEDS=[0.25,0.5,1,2,4,8];
@@ -165,6 +167,14 @@ function updateCameraButton(){
 }
 function getAvailableDiagramRect(stage){
   const bounds=stage.getBoundingClientRect();
+  if(document.fullscreenElement===stage){
+    const result={left:bounds.left+24,top:bounds.top+24,right:bounds.right-24,bottom:bounds.bottom-24,
+      width:Math.max(160,bounds.width-48),height:Math.max(140,bounds.height-48)};
+    stage.dataset.availableWidth=String(Math.round(result.width));
+    stage.dataset.availableHeight=String(Math.round(result.height));
+    stage.dataset.availableRatio=String(Math.round(result.width/window.innerWidth*100));
+    return result;
+  }
   const grid=$("#simulator-grid");
   const mobile=window.matchMedia("(max-width:760px)").matches;
   const gridHidden=grid?.classList.contains("panels-hidden");
@@ -193,6 +203,49 @@ function getAvailableDiagramRect(stage){
   stage.dataset.availableRatio=String(Math.round(result.width/window.innerWidth*100));
   return result;
 }
+function stopCameraAnimation(){
+  if(cameraFrame!==null)cancelAnimationFrame(cameraFrame);
+  cameraFrame=null;cameraLastFrame=0;cameraTarget=null;
+  const stage=$("#diagram-stage");if(stage)stage.dataset.cameraAnimating="false";
+}
+function applyCanvasOffset(){
+  const canvas=$("#flow-diagram-container");
+  if(!canvas)return;
+  canvas.style.transition="none";
+  canvas.style.transform="translate3d("+panOffset.x+"px,"+panOffset.y+"px,0)";
+  const stage=$("#diagram-stage");
+  if(stage)stage.dataset.panOffset=panOffset.x+","+panOffset.y;
+}
+function cameraAnimationTick(now){
+  if(!cameraTarget){stopCameraAnimation();return;}
+  const elapsed=cameraLastFrame?Math.min(64,now-cameraLastFrame):16;
+  cameraLastFrame=now;
+  const factor=1-Math.exp(-elapsed/105);
+  panOffset.x+=(cameraTarget.x-panOffset.x)*factor;
+  panOffset.y+=(cameraTarget.y-panOffset.y)*factor;
+  if(Math.abs(cameraTarget.x-panOffset.x)<.45&&Math.abs(cameraTarget.y-panOffset.y)<.45){
+    panOffset={x:cameraTarget.x,y:cameraTarget.y};
+    applyCanvasOffset();
+    cameraFrame=null;cameraLastFrame=0;cameraTarget=null;
+    const stage=$("#diagram-stage");if(stage)stage.dataset.cameraAnimating="false";
+    return;
+  }
+  applyCanvasOffset();
+  cameraFrame=requestAnimationFrame(cameraAnimationTick);
+}
+function moveCameraTo(next,instant=false){
+  const reduced=document.documentElement.dataset.motion!=="full"||
+    (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches??false);
+  if(instant||reduced){
+    stopCameraAnimation();
+    panOffset={x:next.x,y:next.y};
+    applyCanvasOffset();
+    return;
+  }
+  cameraTarget={x:next.x,y:next.y};
+  const stage=$("#diagram-stage");if(stage)stage.dataset.cameraAnimating="true";
+  if(cameraFrame===null)cameraFrame=requestAnimationFrame(cameraAnimationTick);
+}
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
   const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
@@ -201,9 +254,7 @@ function centerActiveNode(event,behavior){
   const available=getAvailableDiagramRect(stage),target=node.getBoundingClientRect();
   const dx=available.left+available.width/2-(target.left+target.width/2);
   const dy=available.top+available.height/2-(target.top+target.height/2);
-  panOffset={x:panOffset.x+dx,y:panOffset.y+dy};
-  canvas.style.transition=behavior==="auto"||document.documentElement.dataset.motion==="reduced"?"none":"transform 320ms cubic-bezier(.2,.8,.2,1)";
-  canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
+  moveCameraTo({x:panOffset.x+dx,y:panOffset.y+dy},behavior==="auto");
   stage.dataset.cameraTarget=String(event.nodeId);
 }
 function renderOperationBreakdown(event){
@@ -419,15 +470,28 @@ function applyDiagramZoom(){
   const stage=$("#diagram-stage");
   if(stage){stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));stage.dataset.zoom=zoom.toFixed(3);}
 }
-function zoomDiagram(change){
-  const svg=$("#flow-svg");
-  if(!svg)return;
+function setDiagramZoomAt(nextZoom,anchor,manual=false){
+  const svg=$("#flow-svg"),stage=$("#diagram-stage");
+  if(!svg||!stage)return;
   if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
-  zoom=Math.max(.65,Math.min(3,zoom+change*.15));
-  const stage=$("#diagram-stage");
-  if(stage)stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
-  applyDiagramZoom();
-  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+  const next=Math.max(.45,Math.min(3.5,nextZoom));
+  if(Math.abs(next-zoom)<.0005)return;
+  const rectBefore=svg.getBoundingClientRect();
+  const focus=anchor??{x:rectBefore.left+rectBefore.width/2,y:rectBefore.top+rectBefore.height/2};
+  const previousZoom=zoom;
+  if(manual){cameraAuto=false;updateCameraButton();stopCameraAnimation();}
+  zoom=next;applyDiagramZoom();
+  const rectAfter=svg.getBoundingClientRect(),ratio=zoom/previousZoom;
+  const projectedX=rectAfter.left+(focus.x-rectBefore.left)*ratio;
+  const projectedY=rectAfter.top+(focus.y-rectBefore.top)*ratio;
+  panOffset={x:panOffset.x+focus.x-projectedX,y:panOffset.y+focus.y-projectedY};
+  applyCanvasOffset();
+  stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
+  stage.dataset.zoom=zoom.toFixed(3);
+  if(!manual&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+}
+function zoomDiagram(change,anchor){
+  setDiagramZoomAt(zoom+change*.15,anchor,Boolean(anchor));
 }
 function setPseudocodeSize(size){
   pseudocodeSize=Math.max(8,Math.min(18,size));
@@ -447,10 +511,12 @@ function fitDiagram(){
   const scale=Math.max(.45,Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height));
   diagramFitWidth=viewBox.width*scale;
   diagramFitHeight=viewBox.height*scale;
+  stopCameraAnimation();
   zoom=1;
   panOffset={x:0,y:0};
   const canvas=$("#flow-diagram-container");
-  if(canvas)canvas.style.transform="translate(0,0)";
+  if(canvas)canvas.style.transform="translate3d(0,0,0)";
+  stage.dataset.zoom="1.000";
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   applyDiagramZoom();
   stage.scrollTo({left:0,top:0,behavior:"auto"});
@@ -460,69 +526,81 @@ async function toggleDiagramFullscreen(){
   const stage=$("#diagram-stage");
   if(!stage)return;
   try{
-    if(document.fullscreenElement)await document.exitFullscreen();
-    else if(stage.requestFullscreen)await stage.requestFullscreen();
+    if(document.fullscreenElement===stage)await document.exitFullscreen();
+    else if(document.fullscreenElement)await document.exitFullscreen();
+    else if(stage.requestFullscreen)await stage.requestFullscreen({navigationUI:"hide"});
+    else throw new Error("Este navegador no ofrece la API de pantalla completa.");
   }catch(error){
     $("#simulator-status").textContent="No se pudo activar pantalla completa: "+error.message;
   }
 }
 function updateFullscreenButton(){
-  const active=document.fullscreenElement===$("#diagram-stage");
+  const stage=$("#diagram-stage"),active=document.fullscreenElement===stage;
   const button=$("#diagram-fullscreen");
   button?.setAttribute("aria-pressed",String(active));
   if(button){
-    button.setAttribute("aria-label",active?"Pantalla completa activa":"Ver diagrama a pantalla completa");
-    button.title=active?"Pantalla completa activa":"Pantalla completa";
+    button.setAttribute("aria-label",active?"Salir de pantalla completa":"Ver diagrama a pantalla completa");
+    button.title=active?"Salir de pantalla completa":"Pantalla completa";
   }
   const exitButton=$("#diagram-fullscreen-exit");
   if(exitButton)exitButton.hidden=!active;
-  if(active)requestAnimationFrame(()=>fitDiagram());
+  stage?.classList.toggle("is-fullscreen",active);
+  document.body.classList.toggle("diagram-fullscreen-active",active);
+  if(stage){stage.dataset.fullscreen=String(active);requestAnimationFrame(()=>fitDiagram());}
 }
 function bindDiagramPan(){
-  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
-  if(!stage||!canvas)return;
+  const stage=$("#diagram-stage");
+  if(!stage)return;
   const insideStage=event=>{
     const box=stage.getBoundingClientRect();
-    return event.clientX>=box.left&&event.clientX<=box.right&&
-      event.clientY>=box.top&&event.clientY<=box.bottom;
+    return event.clientX>=box.left&&event.clientX<=box.right&&event.clientY>=box.top&&event.clientY<=box.bottom;
   };
+  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const midpoint=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
   document.addEventListener("pointerdown",event=>{
     if(!insideStage(event))return;
     const target=event.target instanceof Element?event.target:null;
     if(target?.closest("button,.diagram-header-tools"))return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
-    panState={
-      pointerId:event.pointerId,
-      x:event.clientX,y:event.clientY,
-      originX:panOffset.x,originY:panOffset.y
-    };
+    activePointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(activePointers.size>=2){
+      const points=[...activePointers.entries()].slice(-2),a=points[0][1],b=points[1][1];
+      stopCameraAnimation();cameraAuto=false;updateCameraButton();panState=null;
+      pinchState={ids:[points[0][0],points[1][0]],startDistance:Math.max(1,distance(a,b)),startZoom:zoom};
+      stage.classList.add("is-pinching");stage.classList.remove("is-panning");
+      stage.dataset.pinchStart=String((Number(stage.dataset.pinchStart)||0)+1);
+      event.preventDefault();return;
+    }
+    stopCameraAnimation();
+    panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,originX:panOffset.x,originY:panOffset.y};
     stage.classList.add("is-panning");
     stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
-    cameraAuto=false;updateCameraButton();
-    event.preventDefault();
+    cameraAuto=false;updateCameraButton();event.preventDefault();
   },true);
   document.addEventListener("pointermove",event=>{
+    if(activePointers.has(event.pointerId))activePointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pinchState&&pinchState.ids.every(id=>activePointers.has(id))){
+      const a=activePointers.get(pinchState.ids[0]),b=activePointers.get(pinchState.ids[1]);
+      setDiagramZoomAt(pinchState.startZoom*distance(a,b)/pinchState.startDistance,midpoint(a,b),true);
+      stage.dataset.pinchZoom=zoom.toFixed(3);event.preventDefault();return;
+    }
     if(!panState||event.pointerId!==panState.pointerId)return;
-    panOffset={
-      x:panState.originX+(event.clientX-panState.x),
-      y:panState.originY+(event.clientY-panState.y)
-    };
-    canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
-    stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
-    stage.dataset.panOffset=panOffset.x+","+panOffset.y;
-    event.preventDefault();
+    panOffset={x:panState.originX+(event.clientX-panState.x),y:panState.originY+(event.clientY-panState.y)};
+    applyCanvasOffset();stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);event.preventDefault();
   },true);
   const end=event=>{
-    if(!panState||event.pointerId!==panState.pointerId)return;
-    panState=null;stage.classList.remove("is-panning");
+    activePointers.delete(event.pointerId);
+    if(pinchState){pinchState=null;stage.classList.remove("is-pinching");panState=null;}
+    else if(panState&&event.pointerId===panState.pointerId){panState=null;stage.classList.remove("is-panning");}
   };
   document.addEventListener("pointerup",end,true);
   document.addEventListener("pointercancel",end,true);
   document.addEventListener("wheel",event=>{
-    if(insideStage(event)&&cameraAuto){cameraAuto=false;updateCameraButton();}
-  },{capture:true,passive:true});
+    if(!insideStage(event)||Math.abs(event.deltaY)<.01)return;
+    setDiagramZoomAt(zoom*Math.exp(-event.deltaY*.0012),{x:event.clientX,y:event.clientY},true);
+    stage.dataset.wheelZoom=String((Number(stage.dataset.wheelZoom)||0)+1);event.preventDefault();
+  },{capture:true,passive:false});
 }
-
 function setMobilePanel(name){
   const valid=["problem","diagram","scene","variables","output","history"];
   if(!valid.includes(name))return;
