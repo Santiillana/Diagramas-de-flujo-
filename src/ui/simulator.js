@@ -179,3 +179,176 @@ function render(){
   publishTrace();
 }
 
+
+function run(){
+  stop();
+  try{
+    execution=executePseudocode(method().pseudocode,parseInputs());
+    timeline=createTimeline(execution);
+    selectedVariable=null;
+    history();render();
+    $("#simulator-status").textContent=execution.ok?"TRAZA GENERADA · "+execution.events.length+" PASOS":"EJECUCIÓN DETENIDA";
+    $("#simulator-status").classList.toggle("simulator-status-error",!execution.ok);
+  }catch(error){
+    execution=null;timeline=null;
+    $("#simulator-status").textContent="ERROR DE ANÁLISIS";
+    $("#simulator-status").classList.add("simulator-status-error");
+    $("#scene-content").innerHTML='<div class="simulator-error">'+esc(error.message)+'</div>';
+    $("#trace-history").innerHTML="<li>Error de análisis</li>";
+    $("#simulator-output").innerHTML="<li>Sin salida.</li>";
+    $("#variables-content").innerHTML='<p class="empty-state-copy">No hay un estado de ejecución.</p>';
+    $("#variable-history").innerHTML='<span class="empty-state-copy">No hay historial disponible.</span>';
+    $("#timeline-count").textContent="— / —";
+    $("#simulator-timeline").max="0";$("#simulator-timeline").value="0";
+  }
+}
+function seek(index){
+  if(!timeline)return;
+  stop();timeline.seek(index);render();
+}
+function move(delta){
+  if(!timeline)return;
+  timeline.seek(timeline.index+delta);render();
+  if(timeline.index===timeline.length-1)stop();
+}
+function play(){
+  if(!timeline)return;
+  if(timer!==null){stop();return;}
+  if(timeline.index>=timeline.length-1)timeline.first();
+  const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
+  timer=window.setInterval(()=>{
+    timeline.next();render();
+    if(timeline.index>=timeline.length-1)stop();
+  },Number($("#simulator-speed").value)||650);
+}
+function zoomDiagram(change){
+  const svg=$("#flow-svg");if(!svg)return;
+  const width=parseFloat(svg.style.width)||100;
+  const next=Math.max(55,Math.min(180,width+change*10));
+  svg.style.width=next+"%";svg.style.maxWidth="none";
+}
+function setPseudocodeSize(size){
+  pseudocodeSize=Math.max(8,Math.min(18,size));
+  document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
+  $("#simulator-text-smaller").disabled=pseudocodeSize<=8;
+  $("#simulator-text-larger").disabled=pseudocodeSize>=18;
+}
+function fitDiagram(){
+  const stage=$("#diagram-stage"),svg=$("#flow-svg");
+  if(!stage||!svg)return;
+  svg.style.width="100%";svg.style.maxWidth="none";
+  stage.scrollTo({left:0,top:0,behavior:"auto"});
+  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+}
+async function toggleDiagramFullscreen(){
+  const stage=$("#diagram-stage");
+  if(!stage)return;
+  try{
+    if(document.fullscreenElement)await document.exitFullscreen();
+    else if(stage.requestFullscreen)await stage.requestFullscreen();
+  }catch(error){
+    $("#simulator-status").textContent="No se pudo activar pantalla completa: "+error.message;
+  }
+}
+function updateFullscreenButton(){
+  const active=document.fullscreenElement===$("#diagram-stage");
+  const button=$("#diagram-fullscreen");
+  button?.setAttribute("aria-pressed",String(active));
+  if(button){
+    button.setAttribute("aria-label",active?"Salir de pantalla completa":"Ver diagrama a pantalla completa");
+    button.title=active?"Salir de pantalla completa":"Pantalla completa";
+  }
+}
+function bindDiagramPan(){
+  const stage=$("#diagram-stage");
+  if(!stage)return;
+  stage.addEventListener("pointerdown",event=>{
+    if(event.button!==0||event.target.closest("button"))return;
+    panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,left:stage.scrollLeft,top:stage.scrollTop};
+    try{stage.setPointerCapture(event.pointerId);}catch{}
+    stage.classList.add("is-panning");
+    cameraAuto=false;updateCameraButton();
+  });
+  stage.addEventListener("pointermove",event=>{
+    if(!panState||event.pointerId!==panState.pointerId)return;
+    stage.scrollLeft=panState.left-(event.clientX-panState.x);
+    stage.scrollTop=panState.top-(event.clientY-panState.y);
+  });
+  const end=event=>{
+    if(!panState||event.pointerId!==panState.pointerId)return;
+    panState=null;stage.classList.remove("is-panning");
+  };
+  stage.addEventListener("pointerup",end);
+  stage.addEventListener("pointercancel",end);
+  stage.addEventListener("wheel",()=>{if(cameraAuto){cameraAuto=false;updateCameraButton();}},{passive:true});
+}
+function bind(){
+  $("#simulator-run").addEventListener("click",run);
+  $("#simulator-restore-inputs").addEventListener("click",()=>{
+    $("#simulator-inputs").value=defaultInputSample.join(", ");
+    run();
+  });
+  $("#simulator-text-smaller").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize-1));
+  $("#simulator-text-larger").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize+1));
+  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(10));
+  $("#diagram-camera-toggle").addEventListener("click",()=>{
+    cameraAuto=!cameraAuto;updateCameraButton();
+    if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+  });
+  $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
+  document.addEventListener("fullscreenchange",updateFullscreenButton);
+  $("#variables-content").addEventListener("click",event=>{
+    const button=event.target.closest("[data-variable-history]");
+    if(button){selectedVariable=button.dataset.variableHistory;render();}
+  });
+  $("#variable-history").addEventListener("click",event=>{
+    if(event.target.closest("#variable-history-clear")){selectedVariable=null;render();return;}
+    const row=event.target.closest("[data-variable-step]");
+    if(row)seek(Number(row.dataset.variableStep));
+  });
+  $("#simulator-method").addEventListener("change",event=>{
+    methodIndex=Number(event.target.value)||0;
+    prepare();
+  });
+  $("#simulator-inputs").addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();run();}
+  });
+  $("#simulator-first").addEventListener("click",()=>seek(0));
+  $("#simulator-previous").addEventListener("click",()=>move(-1));
+  $("#simulator-next").addEventListener("click",()=>move(1));
+  $("#simulator-last").addEventListener("click",()=>seek((timeline?.length??1)-1));
+  $("#simulator-play").addEventListener("click",play);
+  $("#simulator-timeline").addEventListener("input",event=>seek(Number(event.target.value)));
+  $("#simulator-speed").addEventListener("change",()=>{
+    if(timer!==null){stop();play();}
+  });
+  $("#trace-history").addEventListener("click",event=>{
+    const row=event.target.closest("[data-history-step]");if(row)seek(Number(row.dataset.historyStep));
+  });
+  $("#trace-history").addEventListener("keydown",event=>{
+    if((event.key==="Enter"||event.key===" ")&&event.target.matches("[data-history-step]")){
+      event.preventDefault();seek(Number(event.target.dataset.historyStep));
+    }
+  });
+  $("#diagram-zoom-in").addEventListener("click",()=>zoomDiagram(1));
+  $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
+  $("#diagram-fit").addEventListener("click",fitDiagram);
+  bindDiagramPan();
+  document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{if(!execution)prepare();});
+  document.addEventListener("traza:request-simulation",event=>{
+    exerciseId=Number(event.detail?.exerciseId)||1;
+    methodIndex=Number(event.detail?.methodIndex)||0;
+    selectedVariable=null;
+    prepare();
+  });
+  document.addEventListener("traza:jump-to-step",event=>{
+    if(Number.isInteger(event.detail?.index))seek(event.detail.index);
+  });
+  document.addEventListener("traza:lab-sync-request",publishTrace);
+}
+export function initSimulator(){
+  if(!$("#simulator-run"))return;
+  setPseudocodeSize(10);
+  updateCameraButton();
+  bind();prepare();
+}
