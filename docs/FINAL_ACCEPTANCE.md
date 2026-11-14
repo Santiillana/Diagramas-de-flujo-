@@ -53,12 +53,12 @@ La comprobación de interacción móvil se ejecutó con Chromium emulado; no equ
 
 ## Publicación
 
-El repositorio incluye `.github/workflows/pages.yml`, que usa GitHub Actions para publicar el contenido estático cuando hay un push a `main`. La automatización está en el PR M5; falta comprobar su ejecución real después de la fusión, la URL publicada y que responda correctamente.
+El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido estático en cada push a `main`. El primer intento posterior a la fusión terminó con HTTP 404 en “Configure GitHub Pages”: el sitio aún no está habilitado. El propietario debe ir a Settings → Pages → Build and deployment → Source y seleccionar GitHub Actions. Después, re-ejecutar Deploy GitHub Pages y comprobar la URL del entorno.
 
 ## Integración final pendiente
 
-1. Esperar los checks del PR #6 y fusionarlo si todos terminan en verde.
-2. Comprobar el workflow **Deploy GitHub Pages** disparado por el push a `main`.
-3. Abrir la URL de Pages publicada y verificar que cargan los cinco espacios y los módulos JS.
+1. Los checks del PR #6 pasaron y el PR fue fusionado en main.
+2. El primer intento de Deploy GitHub Pages falló porque la opción de Pages no estaba habilitada.
+3. El propietario debe seleccionar GitHub Actions como Source en Settings → Pages, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
 
 No debe declararse M5 integrado ni Pages publicado antes de completar esas acciones.
