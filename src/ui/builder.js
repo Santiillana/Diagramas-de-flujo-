@@ -82,7 +82,7 @@ function renderBreadcrumb(){
   ).join('<span aria-hidden="true">/</span>');
 }
 function cardMarkup(node,index,nodes){
-  const selected=node.id===selectedId;
+  const isSelected=node.id===selectedId;
   const meta=typeLabel[node.type]??node.type;
   const detail=node.type==="input"?node.variables:
     node.type==="process"?node.variable+" = "+node.expression:
@@ -90,18 +90,33 @@ function cardMarkup(node,index,nodes){
     node.type==="decision"?"¿"+node.condition+"?":
     node.type==="for"?node.initial+" · "+node.condition+" · "+node.update:
     node.condition;
-  const nested=node.type==="decision"?
-    '<div class="builder-node-nested"><button type="button" data-enter-scope="'+node.id+'" data-scope-slot="trueBranch">Editar rama V · '+(node.trueBranch.length)+" instrucciones</button><button type="button" data-enter-scope='"+node.id+"' data-scope-slot='falseBranch'>Editar rama F · "+node.falseBranch.length+" instrucciones</button></div>":
-    ["for","while","doWhile"].includes(node.type)?
-    '<div class="builder-node-nested"><button type="button" data-enter-scope="'+node.id+'" data-scope-slot="body">Editar cuerpo · '+node.body.length+" instrucciones</button></div>":"";
-  return '<article class="builder-node-card '+(selected?"is-selected":"")+'" data-node-card="'+node.id+'">'+
-    '<button type="button" class="builder-node-select" data-select-node="'+node.id+'">'+
-    '<span class="builder-node-type">'+esc(meta)+'</span><strong>'+esc(detail)+'</strong><small>Elemento '+(index+1)+'</small></button>'+
-    '<div class="builder-node-actions"><button type="button" data-move-node="'+node.id+'" data-direction="up" '+(index===0?"disabled":"")+" aria-label='Mover arriba'>↑</button>"+
-    '<button type="button" data-move-node="'+node.id+'" data-direction="down" '+(index===nodes.length-1?"disabled":"")+" aria-label='Mover abajo'>↓</button>"+
-    '<button type="button" data-delete-node="'+node.id+'" aria-label='Eliminar elemento'>×</button></div>'+
-    nested+"</article>";
+  let nested="";
+  if(node.type==="decision"){
+    nested=`<div class="builder-node-nested">
+      <button type="button" data-enter-scope="${esc(node.id)}" data-scope-slot="trueBranch">Editar rama V · ${node.trueBranch.length} instrucciones</button>
+      <button type="button" data-enter-scope="${esc(node.id)}" data-scope-slot="falseBranch">Editar rama F · ${node.falseBranch.length} instrucciones</button>
+    </div>`;
+  }else if(["for","while","doWhile"].includes(node.type)){
+    nested=`<div class="builder-node-nested">
+      <button type="button" data-enter-scope="${esc(node.id)}" data-scope-slot="body">Editar cuerpo · ${node.body.length} instrucciones</button>
+    </div>`;
+  }
+  return `
+    <article class="builder-node-card ${isSelected?"is-selected":""}" data-node-card="${esc(node.id)}">
+      <button type="button" class="builder-node-select" data-select-node="${esc(node.id)}">
+        <span class="builder-node-type">${esc(meta)}</span>
+        <strong>${esc(detail)}</strong>
+        <small>Elemento ${index+1}</small>
+      </button>
+      <div class="builder-node-actions">
+        <button type="button" data-move-node="${esc(node.id)}" data-direction="up" ${index===0?"disabled":""} aria-label="Mover arriba">↑</button>
+        <button type="button" data-move-node="${esc(node.id)}" data-direction="down" ${index===nodes.length-1?"disabled":""} aria-label="Mover abajo">↓</button>
+        <button type="button" data-delete-node="${esc(node.id)}" aria-label="Eliminar elemento">×</button>
+      </div>
+      ${nested}
+    </article>`;
 }
+
 function renderCanvas(){
   const host=$("#builder-canvas-list");
   const nodes=scope();
