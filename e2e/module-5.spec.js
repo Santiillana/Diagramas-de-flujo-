@@ -99,3 +99,25 @@ test("la escena desglosa los operandos y el resultado del cálculo activo",async
   await expect(page.locator("#scene-content .scene-operation-breakdown")).toContainText("8 + 5 = 13");
   expect(errors).toEqual([]);
 });
+
+
+test("captura vistas del simulador, laboratorio y constructor en tres tamaños",async({page},testInfo)=>{
+  const viewports=[
+    ["desktop",1440,1000],
+    ["tablet",1024,768],
+    ["mobile",390,844]
+  ];
+  for(const [name,width,height] of viewports){
+    await page.setViewportSize({width,height});
+    await page.goto("/");
+    await page.locator('[data-space="simulator"]').click();
+    await expect(page.locator("#flow-svg")).toBeVisible();
+    await page.screenshot({path:testInfo.outputPath(name+"-simulator.png"),fullPage:true,animations:"disabled"});
+    await page.locator('[data-space="lab"]').click();
+    await expect(page.locator('[data-view="lab"]')).toBeVisible();
+    await page.screenshot({path:testInfo.outputPath(name+"-lab.png"),fullPage:true,animations:"disabled"});
+    await page.locator('[data-space="builder"]').click();
+    await expect(page.locator('[data-view="builder"]')).toBeVisible();
+    await page.screenshot({path:testInfo.outputPath(name+"-builder.png"),fullPage:true,animations:"disabled"});
+  }
+});
