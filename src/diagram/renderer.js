@@ -1,7 +1,7 @@
 const escape = value => String(value??"").replace(/[&<>"']/g,ch=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[ch]));
-const wrapped = (text,max=25) => {
+const wrapped = (text,max=16) => {
   const words=String(text??"").split(/\s+/);
   const lines=[];
   let line="";
@@ -54,8 +54,8 @@ export function renderDiagram(container,diagram,options={}){
   const nodeMarkup=diagram.nodes.map(node=>{
     const isActive=active===String(node.sourceId);
     const isVisited=node.sourceId!==null&&visited.has(String(node.sourceId));
-    const lines=wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?22:25);
-    const y=node.y+node.height/2-(lines.length-1)*7;
+    const lines=wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?14:16);
+    const y=node.y+node.height/2-(lines.length-1)*10;
     const text= node.type==="merge" ? "" : lines.map((line,i)=>'<text x="'+node.x+'" y="'+(y+i*14+4)+'">'+escape(line)+'</text>').join("");
     return '<g id="flow-node-'+escape(node.id)+'" class="diagram-node node-'+escape(node.type)+(isActive?" is-active":"")+(isVisited?" is-visited":"")+'">'+shape(node)+text+'</g>';
   }).join("");
