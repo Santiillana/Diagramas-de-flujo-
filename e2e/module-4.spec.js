@@ -19,7 +19,8 @@ test("Tabla de seguimiento refleja los snapshots y la fila activa", async ({ pag
   await page.locator('[data-space="lab"]').click();
   await page.locator('[data-lab-activity="table"]').click();
   await expect(page.locator(".lab-trace-table tbody tr").first()).toBeVisible();
-  await expect(page.locator(".lab-trace-table tbody tr")).toHaveCountGreaterThan(3);
+  const rows=await page.locator(".lab-trace-table tbody tr").count();
+  expect(rows).toBeGreaterThan(3);
   await expect(page.locator(".lab-trace-table tbody tr.is-current")).toHaveCount(1);
 });
 
@@ -95,7 +96,7 @@ test("Valida bloques faltantes y permite anidar instrucciones dentro de una rama
   await page.locator('[data-add-node="process"]').click();
   await expect(page.locator("#builder-canvas-list")).toContainText("Proceso");
   await page.locator("#builder-validate").click();
-  await expect(page.locator("#builder-errors")).toContainText("Estructura válida");
+  await expect(page.locator("#builder-status")).toHaveText("ESTRUCTURA VÁLIDA");
 });
 
 test("Laboratorio y constructor se adaptan a escritorio, tableta y móvil", async ({ page }) => {
