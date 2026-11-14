@@ -13,6 +13,7 @@ let selectedId=null;
 let runtime=null;
 let runtimeTimeline=null;
 let runtimeDiagram=null;
+let validationErrors=[];
 
 function findNode(id,nodes=model.nodes){
   for(const node of nodes){
@@ -58,14 +59,30 @@ function updateTimelineControls(){
   }
 }
 function markDirty(message="Cambios sin validar"){
-  runtime=null;runtimeTimeline=null;runtimeDiagram=null;
+  runtime=null;
+  runtimeTimeline=null;
+  validationErrors=[];
   $("#builder-status").textContent=message.toUpperCase();
-  $("#builder-runtime-message").textContent="El flujo cambió. Vuelve a validar y ejecutar para generar una nueva traza.";
-  $("#builder-errors").innerHTML="";
-  $("#builder-diagram").innerHTML='<p class="empty-state-copy">Vuelve a validar el modelo para generar el SVG.</p>';
-  $("#builder-scene").innerHTML="<p>Esperando una ejecución.</p>";
-  $("#builder-variables").innerHTML="<p>Sin variables.</p>";
-  $("#builder-output").innerHTML="<li>Sin salida.</li>";
+  $("#builder-runtime-message").textContent="El diagrama se está actualizando.";
+  $("#builder-scene").innerHTML="<p>El contenido cambió. Valida y ejecuta para generar una nueva traza.</p>";
+  $("#builder-variables").innerHTML="<p>La ejecución se actualizará al volver a ejecutar el diagrama.</p>";
+  $("#builder-output").innerHTML="<li>Sin salida nueva.</li>";
+  try{
+    const compiled=compileFlow(model);
+    const diagramModel=layoutFlow(compiled.program);
+    runtimeDiagram=diagramModel;
+    renderDiagram($("#builder-diagram"),diagramModel);
+    $("#builder-code").textContent=compiled.source.split("|").join("\n");
+    $("#builder-errors").innerHTML='<p class="builder-success">Vista previa actualizada. El SVG representa la estructura válida que acabas de editar.</p>';
+    $("#builder-runtime-message").textContent="Vista previa actualizada. Ejecuta el diagrama para recorrer sus pasos.";
+  }catch(error){
+    validationErrors=error.errors??[];
+    const errors=validationErrors;
+    $("#builder-code").textContent="Corrige los errores antes de compilar.";
+    $("#builder-errors").innerHTML='<ul class="builder-error-list">'+(errors.length?errors.map(item=>'<li data-error-node="'+esc(item.nodeId)+'"><strong>'+esc(item.field)+'</strong> · '+esc(item.message)+'</li>').join(""):'<li>'+esc(error.message)+'</li>')+'</ul>';
+    $("#builder-runtime-message").textContent="Hay errores en el flujo. Se conserva el último diagrama válido mientras corriges los símbolos señalados.";
+  }
+  renderCanvas();
   updateTimelineControls();
 }
 function scopeTitle(){
@@ -84,6 +101,7 @@ function renderBreadcrumb(){
 }
 function cardMarkup(node,index,nodes){
   const isSelected=node.id===selectedId;
+  const nodeErrors=validationErrors.filter(error=>error.nodeId===node.id);
   const meta=typeLabel[node.type]??node.type;
   const detail=node.type==="input"?node.variables:
     node.type==="process"?node.variable+" = "+node.expression:
@@ -103,12 +121,13 @@ function cardMarkup(node,index,nodes){
     </div>`;
   }
   return `
-    <article class="builder-node-card ${isSelected?"is-selected":""}" data-node-card="${esc(node.id)}">
+    <article class="builder-node-card ${isSelected?"is-selected":""} ${nodeErrors.length?"has-errors":""}" data-node-card="${esc(node.id)}">
       <button type="button" class="builder-node-select" data-select-node="${esc(node.id)}">
         <span class="builder-node-type">${esc(meta)}</span>
         <strong>${esc(detail)}</strong>
         <small>Elemento ${index+1}</small>
       </button>
+      ${nodeErrors.map(error=>`<small class="builder-node-error" role="alert">${esc(error.field)} · ${esc(error.message)}</small>`).join("")}
       <div class="builder-node-actions">
         <button type="button" data-move-node="${esc(node.id)}" data-direction="up" ${index===0?"disabled":""} aria-label="Mover arriba">↑</button>
         <button type="button" data-move-node="${esc(node.id)}" data-direction="down" ${index===nodes.length-1?"disabled":""} aria-label="Mover abajo">↓</button>
@@ -221,15 +240,19 @@ function goBreadcrumb(index){
 function validate(){
   try{
     const compiled=compileFlow(model);
+    validationErrors=[];
     $("#builder-status").textContent="ESTRUCTURA VÁLIDA";
     $("#builder-errors").innerHTML='<p class="builder-success">El diagrama tiene Inicio, Fin, bloques completos y sintaxis compatible con el motor M3.</p>';
     $("#builder-code").textContent=compiled.source.split("|").join("\n");
+    renderCanvas();
     return compiled;
   }catch(error){
-    const errors=error.errors??[];
+    validationErrors=error.errors??[];
+    const errors=validationErrors;
     $("#builder-status").textContent="HAY ERRORES";
     $("#builder-errors").innerHTML='<ul class="builder-error-list">'+(errors.length?errors.map(item=>'<li data-error-node="'+esc(item.nodeId)+'"><strong>'+esc(item.field)+'</strong> · '+esc(item.message)+'</li>').join(""):'<li>'+esc(error.message)+'</li>')+'</ul>';
     $("#builder-code").textContent="Corrige los errores antes de compilar.";
+    renderCanvas();
     return null;
   }
 }
@@ -303,9 +326,9 @@ function runBuilder(){
     $("#builder-runtime-message").textContent=runtime.ok?"El flujo se ejecutó. Recorre sus pasos.":"Ejecución detenida: "+runtime.error?.message;
     renderBuilderTimeline();
   }catch(error){
-    runtime=null;runtimeTimeline=null;runtimeDiagram=null;
-    $("#builder-runtime-message").textContent=error.message;
-    $("#builder-diagram").innerHTML='<p class="builder-error-message">'+esc(error.message)+'</p>';
+    runtime=null;runtimeTimeline=null;
+    $("#builder-runtime-message").textContent=error.message+" Se conserva la última vista previa válida.";
+    $("#builder-errors").innerHTML='<p class="builder-error-message">'+esc(error.message)+'</p>';
   }
 }
 function bindBuilder(){
