@@ -44,6 +44,18 @@ function pathLabel(){
 function selected(){
   return selectedId?findNode(selectedId):null;
 }
+function updateTimelineControls(){
+  const enabled=Boolean(runtimeTimeline);
+  ["#builder-first","#builder-previous","#builder-next","#builder-last","#builder-timeline"].forEach(selector=>{
+    const control=$(selector);
+    if(control)control.disabled=!enabled;
+  });
+  if(!enabled){
+    $("#builder-timeline").max="0";
+    $("#builder-timeline").value="0";
+    $("#builder-timeline-label").textContent="Paso — / —";
+  }
+}
 function markDirty(message="Cambios sin validar"){
   runtime=null;runtimeTimeline=null;runtimeDiagram=null;
   $("#builder-status").textContent=message.toUpperCase();
@@ -227,6 +239,7 @@ function renderBuilderTimeline(){
   $("#builder-timeline-label").textContent="Paso "+(runtimeTimeline.index+1)+" / "+runtimeTimeline.length;
   $("#builder-timeline").max=String(runtimeTimeline.length-1);
   $("#builder-timeline").value=String(runtimeTimeline.index);
+  $("#builder-timeline").disabled=false;
   $("#builder-first").disabled=runtimeTimeline.index===0;
   $("#builder-previous").disabled=runtimeTimeline.index===0;
   $("#builder-next").disabled=runtimeTimeline.index===runtimeTimeline.length-1;
