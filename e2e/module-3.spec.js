@@ -5,6 +5,7 @@ test("el simulador ejecuta la suma y sincroniza salida, variables y SVG", async 
   await page.locator('[data-space="simulator"]').click();
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Suma de dos números");
   await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
+  await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output")).toContainText("13");
   await expect(page.locator("#variables-content")).toContainText("a");
   await expect(page.locator("#variables-content")).toContainText("13");
@@ -15,7 +16,6 @@ test("el simulador ejecuta la suma y sincroniza salida, variables y SVG", async 
 test("avanzar y retroceder reconstruye exactamente el estado del paso", async ({ page }) => {
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await page.locator("#simulator-first").click();
   const firstLabel = await page.locator("#dock-step-title").textContent();
   await page.locator("#simulator-next").click();
   const nextLabel = await page.locator("#dock-step-title").textContent();
@@ -29,9 +29,11 @@ test("se puede seleccionar un ejercicio desde el catálogo y cambiar sus datos",
   await page.locator('[data-select-exercise="14"]').click();
   await page.locator("#exercise-detail [data-open-simulator]").click();
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Sumar los números de 1 hasta N");
+  await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output")).toContainText("10");
   await page.locator("#simulator-inputs").fill("6");
   await page.locator("#simulator-run").click();
+  await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output")).toContainText("21");
   await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
 });
@@ -42,6 +44,7 @@ test("el motor detiene entradas incompletas sin inventar valores", async ({ page
   await page.locator("#simulator-inputs").fill("8");
   await page.locator("#simulator-run").click();
   await expect(page.locator("#simulator-status")).toContainText("EJECUCIÓN DETENIDA");
+  await page.locator("#simulator-last").click();
   await expect(page.locator("#scene-content")).toContainText("Falta un dato");
 });
 
