@@ -53,6 +53,8 @@ test("¿Y si…? compara el resultado original con un pseudocódigo modificado s
 });
 
 test("Constructor ejecuta los presets de secuencia y decisión en el motor común", async ({ page }) => {
+  const pageErrors=[];
+  page.on("pageerror",error=>pageErrors.push(error.stack??error.message));
   await page.goto("/");
   await page.locator('[data-space="builder"]').click();
   await page.locator('[data-builder-preset="sequence"]').click();
@@ -67,6 +69,7 @@ test("Constructor ejecuta los presets de secuencia y decisión en el motor comú
   expect(await page.locator("#builder-timeline-label").getAttribute("data-current-step")).not.toBe(initialTimeline);
   await expect(page.locator("#builder-runtime-message")).toContainText("Ejecución de");
   await expect(page.locator("#builder-output")).toContainText("16");
+  expect(pageErrors).toEqual([]);
   await page.locator('[data-builder-preset="decision"]').click();
   await page.locator("#builder-inputs").fill("5");
   await page.locator("#builder-run").click();
