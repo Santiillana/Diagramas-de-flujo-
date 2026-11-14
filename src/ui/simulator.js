@@ -9,6 +9,7 @@ const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
+let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
 
 function stop(){
   if(timer!==null){clearInterval(timer);timer=null;}
@@ -50,7 +51,8 @@ function prepare(){
   ].map(([name,items])=>'<p class="eyebrow">'+name.toUpperCase()+'</p><ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>').join("");
   $("#simulator-method").innerHTML=exercise.methods.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join("");
   $("#simulator-method").value=String(methodIndex);
-  $("#simulator-inputs").value=(method().sample??[]).join(", ");
+  defaultInputSample=[...(method().sample??[])];
+  $("#simulator-inputs").value=defaultInputSample.join(", ");
   pseudocode(method().pseudocode);
   try{
     const ast=parsePseudocode(method().pseudocode);
@@ -87,6 +89,54 @@ function history(){
   $("#trace-history").innerHTML=execution.events.map(e=>'<li data-history-step="'+e.step+'" role="button" tabindex="0" class="'+(e.step===timeline.index?"is-active":"")+'"><span>PASO '+String(e.step+1).padStart(2,"0")+' · '+typeName(e.type)+'</span><strong>'+esc(brief(e))+'</strong></li>').join("");
   $("#trace-count").textContent=String(execution.events.length);
 }
+function sceneSymbol(type){
+  return ({
+    input:"↓",assignment:"↦",output:"▣",decision:"◇",branch:"↗",
+    "loop-init":"◉","loop-condition":"◇","loop-enter":"↻",
+    "loop-update":"↑","loop-exit":"↘","program-start":"▶",
+    "program-end":"■",error:"!"
+  })[type]??"·";
+}
+function renderVariableHistory(){
+  const host=$("#variable-history");
+  if(!host)return;
+  if(!selectedVariable){
+    host.innerHTML='<span class="empty-state-copy">Selecciona una variable para inspeccionar su historial.</span>';
+    return;
+  }
+  if(!execution||!timeline){
+    host.textContent="Ejecuta un algoritmo para consultar el historial.";
+    return;
+  }
+  const changes=execution.events.filter(event=>
+    event.step<=timeline.index&&event.change?.name===selectedVariable
+  );
+  host.innerHTML='<div class="variable-history-heading"><strong>Historial · '+esc(selectedVariable)+'</strong><button type="button" class="text-link" id="variable-history-clear">Cerrar</button></div>'+
+    (changes.length?'<ol class="variable-history-list">'+changes.map(event=>{
+      const before=event.change.previous===undefined?"(primera asignación)":fmt(event.change.previous);
+      const after=fmt(event.change.value);
+      const loop=(event.loopStack??[]).map(item=>"vuelta "+item.iteration).join(" · ");
+      return '<li><button type="button" data-variable-step="'+event.step+'"><span>Paso '+(event.step+1)+(loop?" · "+esc(loop):"")+'</span><strong>'+esc(before)+" → "+esc(after)+'</strong><small>'+esc(event.sourceText||event.scene?.title||"")+'</small></button></li>';
+    }).join("")+'</ol>':'<span class="empty-state-copy">Esta variable todavía no cambia en los pasos recorridos.</span>');
+}
+function updateCameraButton(){
+  const button=$("#diagram-camera-toggle");
+  if(!button)return;
+  button.setAttribute("aria-pressed",String(cameraAuto));
+  button.setAttribute("aria-label",cameraAuto?"Desactivar cámara automática":"Activar cámara automática");
+  button.title=cameraAuto?"Cámara automática activa":"Cámara automática desactivada";
+  button.classList.toggle("is-active",cameraAuto);
+}
+function centerActiveNode(event,behavior){
+  if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
+  const stage=$("#diagram-stage"),node=document.getElementById("flow-node-"+event.nodeId);
+  if(!stage||!node)return;
+  const bounds=stage.getBoundingClientRect(),target=node.getBoundingClientRect();
+  const left=stage.scrollLeft+target.left+target.width/2-(bounds.left+stage.clientWidth/2);
+  const top=stage.scrollTop+target.top+target.height/2-(bounds.top+stage.clientHeight/2);
+  stage.scrollTo({left:Math.max(0,left),top:Math.max(0,top),
+    behavior:behavior??(document.documentElement.dataset.motion==="reduced"?"auto":"smooth")});
+}
 function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
@@ -95,12 +145,18 @@ function render(){
   if(diagram)highlightDiagram($("#flow-diagram-container"),diagram,{
     activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined)
   });
+  centerActiveNode(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
-  $("#scene-content").innerHTML='<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4><p class="scene-event-body">'+esc(scene.body)+'</p><div class="scene-event-technical">'+esc(scene.technical)+'</div>';
+  $("#scene-content").dataset.eventType=e.type;
+  $("#scene-content").innerHTML='<div class="scene-event-visual" aria-hidden="true">'+sceneSymbol(e.type)+'</div>'+
+    '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
+    '<p class="scene-event-body">'+esc(scene.body)+'</p><div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
+    (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
   const vars=e.variables??{}, names=Object.keys(vars), change=e.change;
   $("#variables-content").innerHTML=names.length?'<table class="variables-table"><thead><tr><th>VARIABLE</th><th>VALOR ACTUAL</th></tr></thead><tbody>'+
-    names.map(name=>'<tr class="'+(change?.name===name?"is-changed":"")+'"><td>'+esc(name)+'</td><td>'+esc(fmt(vars[name]))+'</td></tr>').join("")+'</tbody></table>':'<p class="empty-state-copy">Todavía no hay variables asignadas.</p>';
+    names.map(name=>'<tr class="'+(change?.name===name?"is-changed":"")+'"><td><button type="button" class="variable-history-trigger" data-variable-history="'+esc(name)+'" aria-pressed="'+String(selectedVariable===name)+'">'+esc(name)+'</button></td><td>'+esc(fmt(vars[name]))+'</td></tr>').join("")+'</tbody></table>':'<p class="empty-state-copy">Todavía no hay variables asignadas.</p>';
   $("#variable-change").textContent=change?change.name+": "+(change.previous===undefined?"(sin valor)":fmt(change.previous))+" → "+fmt(change.value):"Sin cambios en este paso.";
+  renderVariableHistory();
   const out=e.outputs??[];
   $("#output-count").textContent=String(out.length);
   $("#simulator-output").innerHTML=out.length?out.map((v,i)=>'<li><span class="output-index">'+(i+1)+'.</span> '+esc(fmt(v))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
@@ -122,87 +178,4 @@ function render(){
   }
   publishTrace();
 }
-function run(){
-  stop();
-  try{
-    execution=executePseudocode(method().pseudocode,parseInputs());
-    timeline=createTimeline(execution);
-    history();render();
-    $("#simulator-status").textContent=execution.ok?"TRAZA GENERADA · "+execution.events.length+" PASOS":"EJECUCIÓN DETENIDA";
-    $("#simulator-status").classList.toggle("simulator-status-error",!execution.ok);
-  }catch(error){
-    execution=null;timeline=null;
-    $("#simulator-status").textContent="ERROR DE ANÁLISIS";
-    $("#simulator-status").classList.add("simulator-status-error");
-    $("#scene-content").innerHTML='<div class="simulator-error">'+esc(error.message)+'</div>';
-    $("#trace-history").innerHTML="<li>Error de análisis</li>";
-    $("#simulator-output").innerHTML="<li>Sin salida.</li>";
-    $("#variables-content").innerHTML='<p class="empty-state-copy">No hay un estado de ejecución.</p>';
-    $("#timeline-count").textContent="— / —";
-    $("#simulator-timeline").max="0";$("#simulator-timeline").value="0";
-  }
-}
-function seek(index){
-  if(!timeline)return;
-  stop();timeline.seek(index);render();
-}
-function move(delta){
-  if(!timeline)return;
-  timeline.seek(timeline.index+delta);render();
-  if(timeline.index===timeline.length-1)stop();
-}
-function play(){
-  if(!timeline)return;
-  if(timer!==null){stop();return;}
-  if(timeline.index>=timeline.length-1)timeline.first();
-  const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
-  timer=window.setInterval(()=>{
-    timeline.next();render();
-    if(timeline.index>=timeline.length-1)stop();
-  },Number($("#simulator-speed").value)||650);
-}
-function zoomDiagram(change){
-  const svg=$("#flow-svg");if(!svg)return;
-  const width=parseFloat(svg.style.width)||100;
-  const next=Math.max(55,Math.min(180,width+change*10));
-  svg.style.width=next+"%";svg.style.maxWidth="none";
-}
-function bind(){
-  $("#simulator-run").addEventListener("click",run);
-  $("#simulator-method").addEventListener("change",e=>{
-    methodIndex=Number(e.target.value)||0;
-    $("#simulator-inputs").value=(method().sample??[]).join(", ");
-    prepare();
-  });
-  $("#simulator-inputs").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run();}});
-  $("#simulator-first").addEventListener("click",()=>seek(0));
-  $("#simulator-previous").addEventListener("click",()=>move(-1));
-  $("#simulator-next").addEventListener("click",()=>move(1));
-  $("#simulator-last").addEventListener("click",()=>seek((timeline?.length??1)-1));
-  $("#simulator-play").addEventListener("click",play);
-  $("#simulator-timeline").addEventListener("input",e=>seek(Number(e.target.value)));
-  $("#simulator-speed").addEventListener("change",()=>{if(timer!==null){stop();play();}});
-  $("#trace-history").addEventListener("click",e=>{
-    const row=e.target.closest("[data-history-step]");if(row)seek(Number(row.dataset.historyStep));
-  });
-  $("#trace-history").addEventListener("keydown",e=>{
-    if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-history-step]")){e.preventDefault();seek(Number(e.target.dataset.historyStep));}
-  });
-  $("#diagram-zoom-in").addEventListener("click",()=>zoomDiagram(1));
-  $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
-  $("#diagram-fit").addEventListener("click",()=>{const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}});
-  document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{if(!execution)prepare();});
-  document.addEventListener("traza:request-simulation",e=>{
-    exerciseId=Number(e.detail?.exerciseId)||1;
-    methodIndex=Number(e.detail?.methodIndex)||0;
-    prepare();
-  });
-  document.addEventListener("traza:jump-to-step",e=>{
-    if(Number.isInteger(e.detail?.index))seek(e.detail.index);
-  });
-  document.addEventListener("traza:lab-sync-request",publishTrace);
-}
-export function initSimulator(){
-  if(!$("#simulator-run"))return;
-  bind();prepare();
-}
+
