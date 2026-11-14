@@ -40,7 +40,7 @@ test("las fichas de los ejercicios separan entradas, salidas, restricciones y pr
 test("cada método incluye pseudocódigo y casos normales o límite",()=>{
   for(const item of exercises){
     for(const method of item.methods){
-      assert.ok(method.pseudocode.includes("|") || method.pseudocode==="");
+      assert.ok(typeof method.pseudocode==="string" && (method.pseudocode.includes("|") || method.pseudocode===""));
       assert.ok(method.tests.length>=1);
       for(const scenario of method.tests){
         assert.ok(Array.isArray(scenario.input));

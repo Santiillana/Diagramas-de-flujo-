@@ -37,7 +37,7 @@ export const exercises = [
   method("Campeón provisional","leer a,b,c|M=a|si b>M|M=b|fin|si c>M|M=c|fin|imp M",[4,9,6],tests(["máximo central",[4,9,6],[9]],["todos negativos",[-8,-2,-5],[-2]],["empate máximo",[7,7,3],[7]])),
   method("Decisiones anidadas","leer a,b,c|si a>=b Y a>=c|imp a|sino|si b>=c|imp b|sino|imp c|fin|fin",[4,9,6],tests(["máximo central",[4,9,6],[9]],["todos negativos",[-8,-2,-5],[-2]],["empate máximo",[7,7,3],[7]]))
  ],["Inicializar M en cero.","No decidir qué hacer con los empates."]),
- exercise(9,"basic","Aplicar descuento según importe de compra","Lee el importe. Aplica 10 % de descuento si es de 100 o más; 5 % si es de 50 a menos de 100; de lo contrario no aplica descuento. Muestra el total a pagar.","Practicar rangos y decisiones ordenadas por umbrales.","Comparación","Si/Sino anidado","porcentajes","operaciones aritméticas".split(","),["importe: número real no negativo"],["total = importe × (1 − porcentaje)"],["Importe ≥ 100: 10 %; 50 ≤ importe < 100: 5 %; importe < 50: 0 %."],"Comprobar primero el umbral mayor y después el menor para que cada importe pertenezca a una única categoría.",[
+ exercise(9,"basic","Aplicar descuento según importe de compra","Lee el importe. Aplica 10 % de descuento si es de 100 o más; 5 % si es de 50 a menos de 100; de lo contrario no aplica descuento. Muestra el total a pagar.","Practicar rangos y decisiones ordenadas por umbrales.",["Comparación","Si/Sino anidado","porcentajes","operaciones aritméticas"],["importe: número real no negativo"],["total = importe × (1 − porcentaje)"],["Importe ≥ 100: 10 %; 50 ≤ importe < 100: 5 %; importe < 50: 0 %."],"Comprobar primero el umbral mayor y después el menor para que cada importe pertenezca a una única categoría.",[
   method("Rangos anidados","leer importe|si importe>=100|total=importe*0.90|imp total|sino|si importe>=50|total=importe*0.95|imp total|sino|imp importe|fin|fin",[80],tests(["sin descuento",[40],[40]],["umbral 50",[50],[47.5]],["umbral 100",[100],[90]],["por encima",[120],[108]]))
  ],["Comprobar primero ≥50 y dar por terminado el caso, omitiendo el 10 %.","Aplicar 10 en lugar de 0.10 al multiplicar."]),
  exercise(10,"basic","Contar de 1 hasta N","Lee un entero N e imprime los números desde 1 hasta N, en orden ascendente.","Controlar un recorrido definido con un contador.",["Para","contador","condición","avance"],["N: entero"],["Secuencia 1,2,…,N; vacía si N < 1."],["N debe ser un entero; si N es menor que 1 no hay valores que mostrar."],"Inicializar i en 1, evaluar i ≤ N, imprimir i y aumentar i en uno.",[
@@ -160,12 +160,28 @@ export function validateCatalog(){
   }
   const ids=new Set();
   for(const item of exercises){
-    if(ids.has(item.id)) errors.push("ID duplicado: "+item.id); ids.add(item.id);
-    if(!item.statement||!item.objective||!item.concepts.length||!item.inputs||!item.outputs||!item.constraints||!item.analysis) errors.push("Ficha incompleta: "+item.id);
-    if(!item.methods.length) errors.push("Sin método: "+item.id);
+    if(ids.has(item.id)) errors.push("ID duplicado: "+item.id);
+    ids.add(item.id);
+    if(!item.statement||!item.objective||!Array.isArray(item.concepts)||!item.concepts.length||
+       !Array.isArray(item.inputs)||!Array.isArray(item.outputs)||!item.outputs.length||
+       !Array.isArray(item.constraints)||!item.constraints.length||!item.analysis){
+      errors.push("Ficha incompleta: "+item.id);
+    }
+    if(!Array.isArray(item.methods)||!item.methods.length){
+      errors.push("Sin métodos válidos: "+item.id);
+      continue;
+    }
     for(const m of item.methods){
-      if(!m.name||!m.pseudocode||!m.tests.length) errors.push("Método incompleto: "+item.id+" / "+m.name);
-      for(const t of m.tests) if(!t.name||!Array.isArray(t.input)||!Array.isArray(t.expected)) errors.push("Prueba incompleta: "+item.id+" / "+m.name);
+      if(!m||typeof m.name!=="string"||typeof m.pseudocode!=="string"||
+         !Array.isArray(m.sample)||!Array.isArray(m.tests)||!m.tests.length){
+        errors.push("Método incompleto: "+item.id+" / "+(m?.name??"sin nombre"));
+        continue;
+      }
+      for(const scenario of m.tests){
+        if(!scenario.name||!Array.isArray(scenario.input)||!Array.isArray(scenario.expected)){
+          errors.push("Prueba incompleta: "+item.id+" / "+m.name);
+        }
+      }
     }
   }
   return errors;
