@@ -142,9 +142,14 @@ function render(){
   const e=timeline.current;
   const seen=execution.events.slice(0,timeline.index+1);
   pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean));
-  if(diagram)highlightDiagram($("#flow-diagram-container"),diagram,{
-    activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined)
-  });
+  if(diagram){
+    const routeEvent=[...seen].reverse().find(item=>item.route&&(item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
+    const previousSource=[...seen.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
+    highlightDiagram($("#flow-diagram-container"),diagram,{
+      activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
+      route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null
+    });
+  }
   centerActiveNode(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   $("#scene-content").dataset.eventType=e.type;
