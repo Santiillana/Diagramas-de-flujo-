@@ -190,3 +190,13 @@
 .diagram-panel .flow-svg{pointer-events:none}
 .diagram-panel .simulator-diagram-stage.is-panning{cursor:grabbing}
 .diagram-stage-tools{display:none!important}
+
+/* Mantener desbordamiento real para pan en el viewport, sin escalar el texto SVG */
+.diagram-panel>.simulator-diagram-stage{overflow:auto;overscroll-behavior:contain;touch-action:none;cursor:grab}
+.diagram-panel #flow-diagram-container{width:max-content;min-width:100%;min-height:max-content;place-items:start}
+.diagram-panel #flow-diagram-container .flow-svg{width:100%;min-width:620px;max-width:none}
+.diagram-panel>.simulator-diagram-stage.is-panning{cursor:grabbing}
+.diagram-header-tools{flex-shrink:0}
+@media(max-width:760px){
+  .diagram-panel #flow-diagram-container .flow-svg{min-width:560px}
+}
