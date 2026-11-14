@@ -216,3 +216,32 @@
 
 /* Hidden state must win over the authored placeholder display layout */
 .diagram-empty[hidden]{display:none!important}
+
+/* M5: minimizable scene and touch-first mobile panel views */
+.scene-heading-actions{display:flex;align-items:center;gap:7px}
+.scene-panel.is-collapsed #scene-content{display:none!important}
+.scene-panel.is-collapsed{min-height:0}
+.simulator-mobile-tabs{display:none}
+@media(max-width:760px){
+  .simulator-mobile-tabs{display:flex;gap:6px;margin:0 0 10px;padding:3px;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);border-radius:11px;background:var(--surface-soft)}
+  .simulator-mobile-tabs button{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid transparent;border-radius:8px;color:var(--muted-strong);background:transparent;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
+  .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+  .simulator-grid{display:flex;flex-direction:column;gap:10px}
+  .simulator-grid>.problem-panel,.simulator-grid>.diagram-panel,
+  .simulator-grid>.simulator-inspector>.scene-panel,
+  .simulator-grid>.simulator-inspector>.variables-panel,
+  .simulator-grid>.simulator-inspector>.output-panel,
+  .simulator-grid>.trace-panel{display:none!important}
+  body[data-simulator-mobile-panel="problem"] .simulator-grid>.problem-panel{display:flex!important}
+  body[data-simulator-mobile-panel="diagram"] .simulator-grid>.diagram-panel{display:block!important}
+  body[data-simulator-mobile-panel="scene"] .simulator-grid>.simulator-inspector>.scene-panel{display:block!important}
+  body[data-simulator-mobile-panel="variables"] .simulator-grid>.simulator-inspector>.variables-panel{display:block!important}
+  body[data-simulator-mobile-panel="output"] .simulator-grid>.simulator-inspector>.output-panel{display:block!important}
+  body[data-simulator-mobile-panel="history"] .simulator-grid>.trace-panel{display:block!important}
+  .simulator-grid>.simulator-inspector{display:contents}
+  .simulator-grid>.simulator-dock{display:grid!important;grid-area:auto}
+  .simulator-grid>.trace-panel{grid-area:auto}
+  .simulator-grid>.diagram-panel{min-height:410px}
+  .simulator-grid>.problem-panel{max-height:none;overflow:visible}
+  .simulator-grid>.problem-panel .simulator-problem-body{overflow:visible}
+}
