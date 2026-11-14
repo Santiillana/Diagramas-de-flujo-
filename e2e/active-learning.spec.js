@@ -1,0 +1,64 @@
+import { test, expect } from "@playwright/test";
+
+test("la prueba completa verifica todos los métodos y conserva el progreso por nivel",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="1"]').click();
+ await page.locator("[data-reveal-solution]").click();
+ await page.locator("[data-run-suite]").click();
+ await expect(page.locator("[data-suite-feedback]")).toContainText("6 de 6 pruebas superadas");
+ await expect(page.locator('[data-select-exercise="1"] .exercise-progress-status')).toContainText("Verificado");
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1 de 40 retos verificados");
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1/20 verificados");
+ await page.reload();
+ await page.locator('[data-space="exercises"]').click();
+ await expect(page.locator('[data-select-exercise="1"] .exercise-progress-status')).toContainText("Verificado");
+});
+
+test("la predicción del estudiante se compara con la salida ejecutada y la referencia",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="1"]').click();
+ await page.locator("[data-reveal-solution]").click();
+ await page.locator("[data-solution-input]").fill("2,3");
+ await page.locator("[data-solution-prediction]").fill("[6]");
+ await page.locator("[data-run-solution]").click();
+ await expect(page.locator("[data-solution-feedback]")).toContainText("Tu predicción no coincide");
+ await expect(page.locator("[data-solution-feedback]")).toContainText("[5]");
+ await page.locator("[data-solution-prediction]").fill("[5]");
+ await page.locator("[data-run-solution]").click();
+ await expect(page.locator("[data-solution-feedback]")).toContainText("Tu predicción coincide con la ejecución real");
+});
+
+test("el enlace directo restaura ejercicio y método sin revelar la solución",async({page})=>{
+ await page.goto("/?reto=4&metodo=1");
+ await expect(page.locator("#exercise-detail h3")).toHaveText("Promedio de tres notas");
+ await expect(page.locator("#exercise-detail [data-method-index='1']")).toHaveAttribute("aria-selected","true");
+ await expect(page.locator(".exercise-gate")).toBeVisible();
+ await expect(page.locator("#exercise-detail .exercise-methods")).toBeHidden();
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/reto=4/);
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/metodo=1/);
+});
+
+test("modo proyector amplía el reto y permite regresar a la navegación normal",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="1"]').click();
+ await page.locator("[data-projector-toggle]").click();
+ await expect(page.locator("body")).toHaveClass(/exercise-projector-mode/);
+ await expect(page.locator("[data-projector-exit]")).toBeVisible();
+ await page.locator("[data-projector-exit]").click();
+ await expect(page.locator("body")).not.toHaveClass(/exercise-projector-mode/);
+ await expect(page.locator("[data-projector-toggle]")).toHaveAttribute("aria-pressed","false");
+});
+
+test("el enlace de compartir identifica el método seleccionado",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="4"]').click();
+ await page.locator("[data-method-index='1']").click();
+ await page.locator('[data-share-action="copy"]').click();
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/reto=4/);
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/metodo=1/);
+ await expect(page.locator("[data-share-feedback]")).not.toBeEmpty();
+});
