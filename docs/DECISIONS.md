@@ -78,3 +78,7 @@ La guía contextual describe las figuras realmente representadas por Traza y sep
 
 ## D-025 · Laboratorio con ejemplo inicial ejecutable
 Las seis actividades pueden iniciarse sin una ejecución manual previa. El estado inicial se genera desde el ejercicio 1 con el parser, intérprete y layout del proyecto, y se reemplaza por la traza propia cuando llega un evento del Simulador. El SVG del Laboratorio se genera desde el mismo modelo de diagrama, no se copia desde la vista principal.
+
+
+## D-026 · Razonamiento por capas y pistas progresivas
+Cada ficha de ejercicio expone un campo `razonamiento` con comprensión, datos, estrategia y comprobación. También ofrece tres pistas escalonadas: orientación, estrategia y verificación. La puerta de reto conserva las respuestas de entradas/proceso/salidas y no muestra métodos ni razonamiento completo antes de revelar. Cuando hay métodos alternativos, cada uno describe su enfoque y la ficha compara las alternativas sin inventar segundos métodos.

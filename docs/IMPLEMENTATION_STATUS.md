@@ -46,7 +46,7 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 | F · Aprende vivo | **Aceptado** | Commit `280bd48cba4e056cb7282f6d6f9dfb06007948ff`; CI #199: 255/255 Node y 64/64 Chromium, success; capturas guardadas |
 | G · Guía de figuras y ciclos | **Aceptado** | Commits `43cc57c934561de82b63cd28c60cec6c1c97f3a1` + corrección; CI #? (`43643271857`): 260/260 Node y 67/67 Chromium, success; capturas guardadas |
 | H · Laboratorio sin bloqueo | **Aceptado** | Commit `171fd66ff9c1526e16c08223dc6e615e7673a8fa`; CI (`43643879643`): 263/263 Node y 70/70 Chromium, success; capturas guardadas |
-| I · Razonamiento, pistas y métodos | Pendiente | Campo `razonamiento` en 40 fichas y pistas progresivas |
+| I · Razonamiento, pistas y métodos | **Aceptado** | Commit `6f40140e6ee1a6e79ea7bbd11d02cd59848000c7`; CI (`43644547610`): 267/267 Node y 73/73 Chromium, success; capturas guardadas |
 | J · Aprendizaje activo | Pendiente | Prueba de solución, predicción diagnóstica, progreso, compartir y proyector |
 | K · Pulido visual global | Pendiente | Tipografía mínima y contraste AA en ambos temas |
 | L · Auditoría y piloto | Pendiente | Paridad, capturas de cinco espacios y prueba con estudiantes |
