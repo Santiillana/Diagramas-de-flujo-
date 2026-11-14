@@ -60,6 +60,7 @@ function markDirty(message="Cambios sin validar"){
   runtime=null;runtimeTimeline=null;runtimeDiagram=null;
   $("#builder-status").textContent=message.toUpperCase();
   $("#builder-runtime-message").textContent="El flujo cambió. Vuelve a validar y ejecutar para generar una nueva traza.";
+  $("#builder-errors").innerHTML="";
   $("#builder-diagram").innerHTML='<p class="empty-state-copy">Vuelve a validar el modelo para generar el SVG.</p>';
   $("#builder-scene").innerHTML="<p>Esperando una ejecución.</p>";
   $("#builder-variables").innerHTML="<p>Sin variables.</p>";
