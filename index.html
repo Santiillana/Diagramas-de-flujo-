@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/simulator-stage.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -73,6 +73,7 @@
           <p>Una ejecución determinista mantiene sincronizados el pseudocódigo, el diagrama, las variables y la explicación.</p></div>
         <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
       </div>
+      <button class="simulator-panels-toggle" id="simulator-panels-toggle" type="button" aria-controls="simulator-grid" aria-expanded="true" title="Ocultar todos los paneles (H)">☰ <span>Paneles</span></button>
       <div class="simulator-mobile-tabs" id="simulator-mobile-tabs" role="tablist" aria-label="Vistas del simulador">
         <button type="button" role="tab" data-mobile-panel="problem" aria-selected="false">Problema</button>
         <button type="button" role="tab" data-mobile-panel="diagram" aria-selected="true">Diagrama</button>
@@ -81,9 +82,9 @@
         <button type="button" role="tab" data-mobile-panel="output" aria-selected="false">Salida</button>
         <button type="button" role="tab" data-mobile-panel="history" aria-selected="false">Historial</button>
       </div>
-      <div class="simulator-grid">
-        <aside class="panel problem-panel" aria-labelledby="problem-title">
-          <div class="panel-heading"><div><p class="eyebrow">CONTEXTO DEL RETO</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><span class="panel-index">A</span></div>
+      <div class="simulator-grid" id="simulator-grid">
+        <aside class="panel problem-panel" data-floating-panel="problem" aria-labelledby="problem-title">
+          <div class="panel-heading" data-panel-drag-handle><div><p class="eyebrow">CONTEXTO DEL RETO</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><div class="panel-actions"><button class="panel-tool" type="button" data-panel-collapse="problem" aria-expanded="true" aria-label="Contraer problema" title="Contraer panel">−</button><button class="panel-tool" type="button" data-panel-hide="problem" aria-label="Ocultar problema" title="Ocultar panel">×</button><span class="panel-index">A</span></div></div>
           <div class="simulator-problem-body">
             <div class="simulator-exercise-kicker"><span class="exercise-number" id="simulator-exercise-number">01</span><span class="exercise-level level-basic" id="simulator-exercise-level">Básico</span></div>
             <h4 id="simulator-exercise-title">Suma de dos números</h4>
@@ -125,23 +126,23 @@
           <div class="diagram-legend"><span><i class="legend-dot legend-current"></i>Paso activo</span><span><i class="legend-dot legend-route"></i>Ruta recorrida</span><span><i class="legend-dot legend-neutral"></i>Resto del flujo</span></div>
         </section>
         <aside class="inspector-stack simulator-inspector" aria-label="Estado de ejecución">
-          <section class="panel scene-panel" aria-labelledby="scene-title">
-            <div class="panel-heading"><div><p class="eyebrow">EXPLICACIÓN DEL PASO</p><h3 id="scene-title">En escena</h3></div><div class="scene-heading-actions"><button type="button" id="scene-minimize" class="small-icon-button" aria-controls="scene-content" aria-expanded="true" aria-label="Minimizar explicación" title="Minimizar explicación">−</button><span class="panel-index">B</span></div></div>
+          <section class="panel scene-panel" data-floating-panel="scene" aria-labelledby="scene-title">
+            <div class="panel-heading" data-panel-drag-handle><div><p class="eyebrow">EXPLICACIÓN DEL PASO</p><h3 id="scene-title">En escena</h3></div><div class="panel-actions"><button type="button" id="scene-minimize" class="panel-tool" data-panel-collapse="scene" aria-expanded="true" aria-label="Contraer explicación" title="Contraer panel">−</button><button class="panel-tool" type="button" data-panel-hide="scene" aria-label="Ocultar explicación" title="Ocultar panel">×</button><span class="panel-index">B</span></div></div>
             <div class="scene-placeholder" id="scene-content"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual aparecerá aquí.</strong><p>La escena explica la acción que realiza el algoritmo.</p></div>
           </section>
-          <section class="panel variables-panel" aria-labelledby="variables-title">
-            <div class="panel-heading"><div><p class="eyebrow">ESTADO ACTUAL</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
+          <section class="panel variables-panel" data-floating-panel="variables" aria-labelledby="variables-title">
+            <div class="panel-heading" data-panel-drag-handle><div><p class="eyebrow">ESTADO ACTUAL</p><h3 id="variables-title">Variables</h3></div><div class="panel-actions"><button class="panel-tool" type="button" data-panel-collapse="variables" aria-expanded="true" aria-label="Contraer variables" title="Contraer panel">−</button><button class="panel-tool" type="button" data-panel-hide="variables" aria-label="Ocultar variables" title="Ocultar panel">×</button><span class="panel-index">C</span></div></div>
             <div id="variables-content" class="variables-content"><p class="empty-state-copy">Las variables aparecerán al iniciar la ejecución.</p></div>
             <div id="variable-change" class="variable-change">Sin cambios todavía.</div>
             <div id="variable-history" class="variable-history" aria-live="polite"><span class="empty-state-copy">Selecciona una variable para inspeccionar su historial.</span></div>
           </section>
-          <section class="panel output-panel" aria-labelledby="output-title">
-            <div class="panel-heading"><div><p class="eyebrow">RESULTADOS</p><h3 id="output-title">Salida del algoritmo</h3></div><span id="output-count" class="panel-index">0</span></div>
+          <section class="panel output-panel" data-floating-panel="output" aria-labelledby="output-title">
+            <div class="panel-heading" data-panel-drag-handle><div><p class="eyebrow">RESULTADOS</p><h3 id="output-title">Salida del algoritmo</h3></div><div class="panel-actions"><button class="panel-tool" type="button" data-panel-collapse="output" aria-expanded="true" aria-label="Contraer salida" title="Contraer panel">−</button><button class="panel-tool" type="button" data-panel-hide="output" aria-label="Ocultar salida" title="Ocultar panel">×</button><span id="output-count" class="panel-index">0</span></div></div>
             <ol id="simulator-output" class="simulator-output"><li>La salida se mostrará a medida que se ejecute.</li></ol>
           </section>
         </aside>
-        <section class="panel trace-panel" aria-label="Historial de ejecución">
-          <div class="panel-heading"><div><p class="eyebrow">RECORRIDO DEL ALGORITMO</p><h3>Historial de pasos</h3></div><span id="trace-count" class="panel-index">0</span></div>
+        <section class="panel trace-panel is-panel-collapsed" data-floating-panel="history" aria-label="Historial de ejecución">
+          <div class="panel-heading" data-panel-drag-handle><div><p class="eyebrow">RECORRIDO DEL ALGORITMO</p><h3>Historial de pasos</h3></div><div class="panel-actions"><button class="panel-tool" type="button" data-panel-collapse="history" aria-expanded="false" aria-label="Expandir historial" title="Expandir panel">+</button><button class="panel-tool" type="button" data-panel-hide="history" aria-label="Ocultar historial" title="Ocultar panel">×</button><span id="trace-count" class="panel-index">0</span></div></div>
           <ol id="trace-history" class="trace-history"><li>Ejecuta el algoritmo para generar la traza.</li></ol>
         </section>
         <section class="execution-dock simulator-dock" aria-label="Controles de ejecución">

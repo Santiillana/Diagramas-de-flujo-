@@ -138,14 +138,44 @@ function updateCameraButton(){
   button.title=cameraAuto?"Cámara automática activa":"Cámara automática desactivada";
   button.classList.toggle("is-active",cameraAuto);
 }
+function getAvailableDiagramRect(stage){
+  const bounds=stage.getBoundingClientRect();
+  const grid=$("#simulator-grid");
+  const mobile=window.matchMedia("(max-width:760px)").matches;
+  const gridHidden=grid?.classList.contains("panels-hidden");
+  const visible=panel=>panel&&!panel.hidden&&!gridHidden&&
+    !panel.classList.contains("is-panel-collapsed")&&!panel.classList.contains("is-auto-collapsed");
+  let left=bounds.left+18,right=bounds.right-18,top=bounds.top+58,bottom=bounds.bottom-150;
+  if(mobile){
+    const tabs=$("#simulator-mobile-tabs");
+    if(tabs)top=Math.max(top,tabs.getBoundingClientRect().bottom+10);
+  }else{
+    const problem=grid?.querySelector('[data-floating-panel="problem"]');
+    const inspector=grid?.querySelector(".simulator-inspector");
+    const history=grid?.querySelector('[data-floating-panel="history"]');
+    if(visible(problem))left=Math.max(left,problem.getBoundingClientRect().right+14);
+    const inspectorVisible=inspector&&[...inspector.querySelectorAll("[data-floating-panel]")].some(visible);
+    if(inspectorVisible)right=Math.min(right,inspector.getBoundingClientRect().left-14);
+    if(visible(history))bottom=Math.min(bottom,history.getBoundingClientRect().top-10);
+  }
+  const dock=grid?.querySelector(".simulator-dock");
+  if(dock&&getComputedStyle(dock).display!=="none")bottom=Math.min(bottom,dock.getBoundingClientRect().top-12);
+  if(right-left<160){left=bounds.left+18;right=bounds.right-18;}
+  if(bottom-top<140){top=bounds.top+50;bottom=bounds.bottom-100;}
+  const result={left,top,right,bottom,width:Math.max(160,right-left),height:Math.max(140,bottom-top)};
+  stage.dataset.availableWidth=String(Math.round(result.width));
+  stage.dataset.availableHeight=String(Math.round(result.height));
+  stage.dataset.availableRatio=String(Math.round(result.width/window.innerWidth*100));
+  return result;
+}
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
   const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
   const node=document.getElementById("flow-node-"+event.nodeId);
   if(!stage||!canvas||!node)return;
-  const bounds=stage.getBoundingClientRect(),target=node.getBoundingClientRect();
-  const dx=bounds.left+stage.clientWidth/2-(target.left+target.width/2);
-  const dy=bounds.top+stage.clientHeight/2-(target.top+target.height/2);
+  const available=getAvailableDiagramRect(stage),target=node.getBoundingClientRect();
+  const dx=available.left+available.width/2-(target.left+target.width/2);
+  const dy=available.top+available.height/2-(target.top+target.height/2);
   panOffset={x:panOffset.x+dx,y:panOffset.y+dy};
   canvas.style.transition=behavior==="auto"||document.documentElement.dataset.motion==="reduced"?"none":"transform 320ms cubic-bezier(.2,.8,.2,1)";
   canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
@@ -319,8 +349,9 @@ function fitDiagram(){
   if(!stage||!svg)return;
   const viewBox=svg.viewBox?.baseVal;
   if(!viewBox?.width||!viewBox?.height)return;
-  const availableWidth=Math.max(180,stage.clientWidth-48);
-  const availableHeight=Math.max(180,stage.clientHeight-48);
+  const available=getAvailableDiagramRect(stage);
+  const availableWidth=Math.max(180,available.width-30);
+  const availableHeight=Math.max(180,available.height-30);
   const scale=Math.max(.45,Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height));
   diagramFitWidth=viewBox.width*scale;
   diagramFitHeight=viewBox.height*scale;
@@ -415,15 +446,6 @@ function bind(){
     const tab=event.target.closest("[data-mobile-panel]");
     if(tab)setMobilePanel(tab.dataset.mobilePanel);
   });
-  $("#scene-minimize").addEventListener("click",()=>{
-    const panel=document.querySelector(".scene-panel");
-    const button=$("#scene-minimize");
-    const collapsed=panel.classList.toggle("is-collapsed");
-    button.setAttribute("aria-expanded",String(!collapsed));
-    button.setAttribute("aria-label",collapsed?"Expandir explicación":"Minimizar explicación");
-    button.title=collapsed?"Expandir explicación":"Minimizar explicación";
-    button.textContent=collapsed?"+":"−";
-  });
   $("#simulator-run").addEventListener("click",run);
   $("#simulator-restore-inputs").addEventListener("click",()=>{
     $("#simulator-inputs").value=defaultInputSample.join(", ");
@@ -476,6 +498,7 @@ function bind(){
   $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
   $("#diagram-fit").addEventListener("click",fitDiagram);
   bindDiagramPan();
+  $("#simulator-grid")?.addEventListener("traza:panels-changed",()=>requestAnimationFrame(()=>fitDiagram()));
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
