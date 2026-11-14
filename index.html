@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/simulator-stage.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/simulator-stage.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/symbol-guide.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -55,7 +55,7 @@
     </section>
 
     <section class="space-view learn-view" id="view-learn" data-view="learn" aria-labelledby="learn-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">01 / APRENDE</p><h2 id="learn-title">Una idea a la vez. Una explicación que puedes seguir.</h2></div><span class="phase-chip">CONTENIDO · MÓDULO 2</span></div>
+      <div class="section-intro"><div><p class="eyebrow">01 / APRENDE</p><h2 id="learn-title">Una idea a la vez. Una explicación que puedes seguir.</h2></div><div class="section-intro-actions"><span class="phase-chip">CONTENIDO · MÓDULO 2</span><button class="symbol-guide-open" type="button" data-open-symbol-guide data-guide-topic="terminal"><span aria-hidden="true">?</span>Guía de figuras</button></div></div>
       <div class="learn-workspace">
         <aside class="panel lesson-catalog-panel">
           <div class="panel-heading"><div><p class="eyebrow">RUTA DE APRENDIZAJE</p><h3>14 lecciones</h3></div><span class="panel-index">01</span></div>
@@ -161,7 +161,7 @@
       <div class="diagram-heading simulator-floating-toolbar">
         <div><p class="eyebrow">EL DIAGRAMA</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
         <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
-          <span class="canvas-status"><i></i> DIAGRAMA ACTUAL</span>
+          <span class="canvas-status"><i></i> DIAGRAMA ACTUAL</span><button class="symbol-guide-open" type="button" data-open-symbol-guide data-guide-topic="figures"><span aria-hidden="true">?</span>Guía</button>
           <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática (C)" aria-pressed="true" title="Cámara automática (C)">◎</button>
           <button class="small-icon-button" type="button" id="simulator-predict-toggle" aria-label="Activar modo predicción (P)" aria-pressed="false" title="Modo predicción (P)">🎯</button>
           <button class="small-icon-button" type="button" id="simulator-shortcuts-toggle" aria-label="Mostrar atajos de teclado (?)" title="Atajos de teclado (?)">?</button>

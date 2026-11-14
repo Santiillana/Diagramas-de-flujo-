@@ -2,6 +2,7 @@ import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
 import { escapeHTML } from "./escape.js";
 import { renderLessonLiveMarkup, renderLessonLiveState, handleLessonLiveClick, resetLessonLiveSession } from "./lesson-live.js";
+import { lessonGuideTopics } from "../content/symbol-guide.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -68,7 +69,7 @@ function renderLesson(){
   if(!host)return;
   host.innerHTML=`
     <header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN ${String(lesson.order).padStart(2,"0")} / 14 · ${escapeHTML(lesson.duration.toUpperCase())}</p>
-      <h3>${escapeHTML(lesson.title)}</h3><p>${escapeHTML(lesson.objective)}</p></div><span class="lesson-completion" aria-label="Lección de la ruta">TRAZA · APRENDE</span></header>
+      <h3>${escapeHTML(lesson.title)}</h3><p>${escapeHTML(lesson.objective)}</p></div><div class="lesson-detail-actions"><span class="lesson-completion" aria-label="Lección de la ruta">TRAZA · APRENDE</span><button class="symbol-guide-open" type="button" data-open-symbol-guide data-guide-topic="${escapeHTML(lessonGuideTopics[lesson.id]??"terminal")}"><span aria-hidden="true">?</span>Ayuda de esta lección</button></div></header>
     <div class="lesson-explanation-grid">
       <section class="lesson-explanation"><span class="explanation-label">01 · INTUITIVA</span><p>${escapeHTML(lesson.intuitive)}</p></section>
       <section class="lesson-explanation lesson-technical"><span class="explanation-label">02 · TÉCNICA</span><p>${escapeHTML(lesson.technical)}</p></section>

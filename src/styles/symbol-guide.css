@@ -1,0 +1,58 @@
+
+/* G · guía contextual de símbolos y ciclos */
+.section-intro-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}\n.lesson-detail-actions{display:grid;justify-items:end;gap:8px;flex:0 0 auto}\n.symbol-guide-open{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 11px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink-soft);background:var(--surface);font-size:10px;font-weight:800;cursor:pointer}
+.symbol-guide-open:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.symbol-guide-open>span:first-child{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;color:var(--accent);background:var(--accent-soft);font-weight:900}
+.symbol-guide-dialog{width:min(1080px,calc(100vw - 28px));max-width:none;max-height:min(88vh,920px);padding:0;overflow:hidden;border:1px solid var(--line-strong);border-radius:18px;color:var(--ink);background:var(--surface);box-shadow:var(--shadow-lg)}
+.symbol-guide-dialog::backdrop{background:rgba(10,17,30,.62);backdrop-filter:blur(5px)}
+.symbol-guide-shell{display:grid;grid-template-rows:auto auto auto minmax(180px,1fr) auto;max-height:min(88vh,920px);min-height:0}
+.symbol-guide-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:clamp(16px,2.5vw,25px);border-bottom:1px solid var(--line)}
+.symbol-guide-header h2{margin:5px 0;font-size:clamp(20px,2.6vw,28px);letter-spacing:-.6px}
+.symbol-guide-header>div>p:last-child{margin:0;color:var(--muted-strong);font-size:11px;line-height:1.55}
+.symbol-guide-close{display:grid;place-items:center;width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:var(--surface-soft);font-size:24px;cursor:pointer}
+.symbol-guide-toolbar{display:flex;align-items:end;justify-content:space-between;gap:14px;padding:12px clamp(16px,2.5vw,25px) 9px}
+.symbol-guide-search{display:grid;gap:5px;width:min(100%,390px);color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.7px}
+.symbol-guide-search input{width:100%;min-height:37px;padding:8px 11px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface-soft);font-size:11px}
+.symbol-guide-count{padding-bottom:9px;color:var(--muted);font-size:9px;white-space:nowrap}
+.symbol-guide-tabs{display:flex;gap:6px;padding:0 clamp(16px,2.5vw,25px) 10px;border-bottom:1px solid var(--line)}
+.symbol-guide-tabs button{min-height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;color:var(--muted-strong);background:var(--surface-soft);font-size:10px;font-weight:800;cursor:pointer}
+.symbol-guide-tabs button.is-active{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.symbol-guide-list{display:grid;align-content:start;gap:10px;min-height:0;padding:14px clamp(16px,2.5vw,25px);overflow:auto;overscroll-behavior:contain}
+.symbol-guide-card{display:grid;grid-template-columns:minmax(150px,.32fr) minmax(0,1fr);gap:15px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.symbol-guide-card.is-contextual{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.symbol-guide-card-visual{display:grid;align-content:center;justify-items:center;gap:8px;min-height:124px;border:1px solid var(--line);border-radius:9px;color:var(--accent-strong);background:var(--surface-soft)}
+.symbol-guide-card-visual>span{color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.7px;text-transform:uppercase}
+.guide-symbol-svg{width:min(100%,190px);height:88px;color:var(--accent-strong)}
+.symbol-guide-card-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.symbol-guide-card-title h3{margin:0;color:var(--ink);font-size:14px}
+.symbol-guide-context{padding:4px 7px;border-radius:6px;color:var(--accent-strong);background:var(--accent-soft);font-size:8px;font-weight:850}
+.symbol-guide-explanations{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.symbol-guide-explanations section,.symbol-guide-use{min-width:0;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.symbol-guide-explanations span,.symbol-guide-use>span{color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.6px}
+.symbol-guide-explanations p,.symbol-guide-use p{margin:5px 0 0;color:var(--ink-soft);font-size:10px;line-height:1.55}
+.symbol-guide-use{margin-top:8px}
+.symbol-guide-example{display:block;margin-top:8px;padding:8px;border-radius:7px;color:var(--accent-strong);background:var(--accent-soft);font:10px/1.5 ui-monospace,monospace;white-space:normal;overflow-wrap:anywhere}
+.symbol-guide-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0 0;padding:0;list-style:none}
+.symbol-guide-steps li{display:flex;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px}
+.symbol-guide-steps li>span{display:grid;place-items:center;width:20px;height:20px;flex:0 0 auto;border-radius:6px;color:var(--accent-strong);background:var(--accent-soft);font:850 9px ui-monospace,monospace}
+.symbol-guide-steps b{color:var(--ink);font-size:9px}
+.symbol-guide-steps p{margin:3px 0 0;color:var(--muted-strong);font-size:9px;line-height:1.4}
+.symbol-guide-empty{padding:20px;color:var(--muted);font-size:11px;text-align:center}
+.symbol-guide-footnote{padding:11px clamp(16px,2.5vw,25px);border-top:1px solid var(--line);color:var(--muted-strong);background:var(--surface-soft);font-size:9px;line-height:1.5}
+.symbol-guide-footnote strong{color:var(--ink)}
+@media(max-width:720px){\n .section-intro-actions{align-items:flex-start;flex-direction:column}\n .lesson-detail-actions{justify-items:start}
+ .symbol-guide-dialog{width:calc(100vw - 14px);max-height:94vh;border-radius:13px}
+ .symbol-guide-shell{max-height:94vh}
+ .symbol-guide-toolbar{align-items:stretch;flex-direction:column;gap:5px}
+ .symbol-guide-count{padding:0}
+ .symbol-guide-card{grid-template-columns:1fr}
+ .symbol-guide-card-visual{min-height:94px}
+ .guide-symbol-svg{height:70px}
+ .symbol-guide-explanations{grid-template-columns:1fr}
+ .symbol-guide-steps{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+ .symbol-guide-tabs{overflow-x:auto}
+ .symbol-guide-tabs button{white-space:nowrap}
+}
+\n@media(max-width:560px){.lesson-detail-actions{margin-top:10px}.lesson-detail-heading{align-items:flex-start}}\n@media(prefers-reduced-motion:reduce){.symbol-guide-open,.symbol-guide-dialog{scroll-behavior:auto;transition:none}}\n
