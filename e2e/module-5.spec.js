@@ -75,3 +75,16 @@ test("tema y reducción de movimiento no alteran el estado de ejecución",async(
   await expect(page.locator("#timeline-count")).toHaveText(before);
   expect(errors).toEqual([]);
 });
+
+
+test("el token SVG sigue el paso y destaca la rama V/F realmente seleccionada",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-select-exercise="7"]').click();
+  await page.locator("#exercise-detail [data-reveal-solution]").click();
+  await page.locator("#exercise-detail [data-open-simulator]").click();
+  const decision=page.locator("#trace-history li").filter({hasText:"DECISIÓN"}).first();
+  await decision.click();
+  await expect(page.locator("#flow-token")).toHaveAttribute("visibility","visible");
+  await expect(page.locator(".diagram-edge.is-route-active")).toHaveCount(1);
+  await expect(page.locator(".diagram-edge.is-route-active .diagram-edge-label")).toContainText("F");
+});
