@@ -5,6 +5,7 @@ import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=value=>typeof value==="number"?String(Number(value.toFixed(6))):String(value);
 const typeLabel={input:"Entrada",process:"Proceso",output:"Salida",decision:"Decisión",for:"Ciclo Para",while:"Ciclo Mientras",doWhile:"Hacer–Mientras",start:"Inicio",end:"Fin"};
 let model=createFlowPreset("sequence");
 let scopeStack=[];
