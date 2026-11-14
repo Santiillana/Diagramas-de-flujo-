@@ -59,7 +59,7 @@ test("Constructor ejecuta los presets de secuencia y decisión en el motor comú
   await page.locator("#builder-inputs").fill("8");
   await page.locator("#builder-run").click();
   await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-runtime-message")).toContainText("se ejecutó");
+  await expect(page.locator("#builder-runtime-message")).toContainText("Ejecución de");
   await expect(page.locator("#builder-output")).toContainText("16");
   await page.locator('[data-builder-preset="decision"]').click();
   await page.locator("#builder-inputs").fill("5");
