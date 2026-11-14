@@ -237,3 +237,8 @@
 :root[data-motion="reduced"] .scene-value-new,
 :root[data-motion="reduced"] .scene-event-visual{animation:none}
 :root[data-motion="reduced"] .diagram-edge.is-route-active path{animation:none}
+
+.diagram-fullscreen-exit{position:absolute;top:12px;right:14px;z-index:100;display:flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink);background:var(--surface);box-shadow:var(--shadow-md);font-size:10px;font-weight:800;cursor:pointer}
+.diagram-fullscreen-exit:hover{border-color:var(--accent);color:var(--accent-strong)}
+.diagram-fullscreen-exit[hidden]{display:none!important}
+.simulator-diagram-stage:fullscreen .diagram-fullscreen-exit{display:flex}
