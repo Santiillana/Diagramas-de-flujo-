@@ -200,3 +200,14 @@
 @media(max-width:760px){
   .diagram-panel #flow-diagram-container .flow-svg{min-width:560px}
 }
+
+.flow-token{transition:cx 320ms cubic-bezier(.2,.8,.2,1),cy 320ms cubic-bezier(.2,.8,.2,1)}
+.scene-loop-stack{display:grid;gap:5px;margin-top:9px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.scene-loop-stack>span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
+.scene-loop-stack>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px}
+.scene-loop-stack>div b{color:var(--muted-strong);font-weight:700}
+.scene-loop-stack>div strong{color:var(--accent-strong);font:800 9px ui-monospace,monospace}
+@media(prefers-reduced-motion:reduce){
+  .flow-token{transition:none}
+}
+:root[data-motion="reduced"] .flow-token{transition:none}
