@@ -304,26 +304,37 @@ function updateFullscreenButton(){
 function bindDiagramPan(){
   const stage=$("#diagram-stage");
   if(!stage)return;
-  stage.addEventListener("pointerdown",event=>{
-    if(event.button!==0||event.target.closest("button"))return;
+  const insideStage=event=>{
+    const box=stage.getBoundingClientRect();
+    return event.clientX>=box.left&&event.clientX<=box.right&&
+      event.clientY>=box.top&&event.clientY<=box.bottom;
+  };
+  document.addEventListener("pointerdown",event=>{
+    const target=event.target instanceof Element?event.target:null;
+    if(!insideStage(event)||target?.closest("#diagram-stage-tools"))return;
+    if(event.pointerType==="mouse"&&event.button!==0)return;
     panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,left:stage.scrollLeft,top:stage.scrollTop};
-    try{stage.setPointerCapture(event.pointerId);}catch{}
     stage.classList.add("is-panning");
     cameraAuto=false;updateCameraButton();
-  });
-  stage.addEventListener("pointermove",event=>{
+    event.preventDefault();
+  },true);
+  document.addEventListener("pointermove",event=>{
     if(!panState||event.pointerId!==panState.pointerId)return;
     stage.scrollLeft=panState.left-(event.clientX-panState.x);
     stage.scrollTop=panState.top-(event.clientY-panState.y);
-  });
+    event.preventDefault();
+  },true);
   const end=event=>{
     if(!panState||event.pointerId!==panState.pointerId)return;
     panState=null;stage.classList.remove("is-panning");
   };
-  stage.addEventListener("pointerup",end);
-  stage.addEventListener("pointercancel",end);
-  stage.addEventListener("wheel",()=>{if(cameraAuto){cameraAuto=false;updateCameraButton();}},{passive:true});
+  document.addEventListener("pointerup",end,true);
+  document.addEventListener("pointercancel",end,true);
+  document.addEventListener("wheel",event=>{
+    if(insideStage(event)&&cameraAuto){cameraAuto=false;updateCameraButton();}
+  },{capture:true,passive:true});
 }
+
 function bind(){
   $("#simulator-run").addEventListener("click",run);
   $("#simulator-restore-inputs").addEventListener("click",()=>{
