@@ -255,9 +255,14 @@ function renderBuilderTimeline(requestedIndex=runtimeTimeline?.index??0){
   const event=runtime.events[index];
   const history=runtime.events.slice(0,index+1);
   try{
-    if(runtimeDiagram)highlightDiagram($("#builder-diagram"),runtimeDiagram,{
-      activeNodeId:event.nodeId,visitedNodeIds:history.map(e=>e.nodeId).filter(id=>id!==null&&id!==undefined)
-    });
+    if(runtimeDiagram){
+      const routeEvent=[...history].reverse().find(item=>item.route&&(item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
+      const previousSource=[...history.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
+      highlightDiagram($("#builder-diagram"),runtimeDiagram,{
+        activeNodeId:event.nodeId,visitedNodeIds:history.map(e=>e.nodeId).filter(id=>id!==null&&id!==undefined),
+        route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null
+      });
+    }
   }catch(error){
     $("#builder-runtime-message").textContent="El estado se calculó, pero no se pudo resaltar el SVG: "+error.message;
   }

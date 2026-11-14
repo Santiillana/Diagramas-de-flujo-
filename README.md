@@ -1,16 +1,18 @@
 # Traza — laboratorio visual de diagramas de flujo
 
-Plataforma educativa estática, modular y compatible con GitHub Pages, construida sobre el documento maestro V5 y preservando el prototipo original.
+Plataforma educativa modular basada en la especificación maestra V5 y en el prototipo original preservado en `reference/`.
 
 ## Estado de los cinco módulos
 
-| Módulo | Estado |
-|---|---|
-| 1. Auditoría, arquitectura y experiencia visual | Aceptado e integrado en `main` |
-| 2. Aprende y catálogo de 40 ejercicios | Contenido integrado; el modo reto y el oráculo independiente quedan incluidos en esta línea de trabajo |
-| 3. Parser, intérprete, diagramas y simulador | Aceptado e integrado en `main` |
-| 4. Laboratorio y constructor gráfico | Implementado y validado en rama; PR de integración pendiente |
-| 5. Integración, auditoría y publicación | En curso |
+| Módulo | Estado | Evidencia |
+|---|---|---|
+| 1. Arquitectura y experiencia visual | Aceptado e integrado en `main` | 7/7 Node + 7/7 Chromium en aceptación inicial |
+| 2. Aprende y 40 ejercicios | Aceptado e integrado; correcciones del contenido consolidadas | 14 lecciones, 40 ejercicios (20/10/10), oráculo de 170 escenarios |
+| 3. Parser, intérprete, diagramas y simulador | Aceptado e integrado en `main` | 31/31 Node + 16/16 Chromium |
+| 4. Laboratorio y constructor | Aceptado e integrado en `main` | 216/216 Node + 28/28 Chromium |
+| 5. Integración y auditoría final | Implementado y validado; PR #6 abierto y en validación | 222/222 Node + 38/38 Chromium en push; checks PR en ejecución |
+
+La rama actual es `module-5/final-audit-release`. No se debe afirmar que M5 está integrado en `main` hasta que se fusione su PR.
 
 ## Ejecutar en local
 
@@ -18,7 +20,7 @@ Requiere Python 3:
 ```bash
 python3 -m http.server 8000
 ```
-Abre http://localhost:8000. El proyecto utiliza módulos ES y debe ejecutarse desde un servidor HTTP.
+Abre http://localhost:8000. Los módulos ES se sirven por HTTP.
 
 ## Pruebas
 
@@ -29,44 +31,33 @@ npm test
 npx playwright install chromium
 npm run test:browser
 ```
-La CI utiliza Ubuntu 24.04, Node 22 y Chromium. El workflow ejecuta pruebas estructurales, de contenido, motor, oráculo matemático independiente y aceptación de navegador.
 
-## Espacios
+La CI utiliza Ubuntu 24.04, Node 22 y Chromium. El pipeline ejecuta pruebas de arquitectura, contenido, parser/intérprete, constructor, oráculo independiente y aceptación real de navegador.
 
-### Aprende
-14 lecciones cortas y progresivas. Cada una incluye objetivo, explicación intuitiva, definición técnica, visualización controlada por pasos, ejemplo, manipulación de datos y comprobación.
+## Los cinco espacios
 
-### Ejercicios
-40 ejercicios oficiales, distribuidos exactamente en 20 básicos, 10 intermedios y 10 avanzados. Las fichas incluyen enunciado, objetivo, conceptos, entradas, salidas, restricciones, análisis, método(s), pseudocódigo, ejemplos, casos de prueba y errores frecuentes. El modo reto permite escribir el análisis, pedir pistas y revelar voluntariamente la solución.
+### 1. Aprende
+14 lecciones progresivas. Cada lección incluye objetivo, explicación intuitiva y técnica, ejemplo visual por pasos, manipulación de datos y comprobación de comprensión.
 
-### Simulador
-Parser restringido e intérprete seguro para la gramática del prototipo: `leer`, `imp`, asignación, `si/sino/fin`, `para`, `mientras` y `hacer/hm`. No usa `eval` ni `new Function`.
+### 2. Ejercicios
+40 ejercicios: 20 básicos, 10 intermedios y 10 avanzados. Las fichas incluyen enunciado, objetivos, conceptos, entradas, salidas, restricciones, análisis, métodos, pseudocódigo, casos de prueba y errores frecuentes. El modo reto permite registrar análisis y proceso, pedir pistas y revelar voluntariamente la solución.
 
-Cada evento conserva una instantánea del estado. El pseudocódigo, SVG, ruta V/F, escena, variables, salida e historial se actualizan desde el mismo evento. El dock permite avanzar, retroceder, buscar un paso, reproducir y cambiar velocidad. Los datos inválidos, faltantes o los ciclos sin terminar generan errores didácticos.
+### 3. Simulador
+Parser e intérprete seguros para la gramática del prototipo: `leer`, `imp`, asignación, `si/sino/fin`, `para`, `mientras` y `hacer/hm`. No ejecuta texto como JavaScript: no usa `eval` ni `new Function`.
 
-### Laboratorio
-Seis actividades utilizan los eventos reales del simulador:
-- Predice el siguiente paso y contrasta la respuesta con el evento verdadero.
-- Tabla de seguimiento con iteración, primera asignación y valor anterior → actual.
-- Ordena instrucciones.
-- Identifica el símbolo de la instrucción activa.
-- Encuentra el error mediante contraejemplos; el conjunto también incluye un algoritmo correcto.
-- ¿Y si…? ejecuta una copia independiente y compara salida, variables y rutas sin alterar la ejecución original.
+Una única traza determinista alimenta pseudocódigo resaltado, SVG, ruta V/F, token, escena, desglose de operaciones, variables, historial, salida y timeline. El simulador incluye avance, retroceso, reproducción, velocidad, cámara automática/manual, pan, zoom, ajustar, fullscreen, restauración de datos de ejemplo, tamaño de pseudocódigo persistente e historial por variable. En móvil dispone de pestañas para Problema, Diagrama, En escena, Variables, Salida e Historial; la traza no se reinicia al cambiar de vista.
 
-El diagrama, escena y variables permanecen visibles junto a la actividad.
+### 4. Laboratorio
+Seis actividades conectadas a la ejecución real: Predice, Tabla, Ordena, Identifica símbolo, Encuentra el error y ¿Y si…?. Las actividades usan la traza compartida, mantienen visible el contexto y ejecutan los experimentos en una copia independiente para no alterar la ejecución base.
 
-### Constructor
-Editor de flujo estructurado con terminales fijos y paleta de entrada, proceso, salida, decisión y tres ciclos. Permite insertar, editar, mover y eliminar nodos; entrar a bloques anidados V/F y cuerpos de ciclos; validar estructura; compilar a la gramática de M3; generar SVG y ejecutar con el mismo intérprete. Las conexiones secuenciales y los retornos se derivan del orden y anidación del modelo; no existe un segundo motor de ejecución.
+### 5. Constructor
+Constructor de diagramas estructurado con Inicio/Fin, Entrada, Proceso, Salida, Decisión V/F y ciclos Para, Mientras y Hacer–Mientras. Permite insertar, editar, mover, eliminar y anidar instrucciones; validar; compilar a la gramática M3; generar SVG y ejecutar en el mismo intérprete.
 
-## Publicación con GitHub Pages
+**Límite conocido del constructor:** es un editor estructurado por secuencia y bloques anidados. Las flechas secuenciales, ramas y retornos se derivan de la estructura. No es todavía un editor libre en el que el alumno arrastre cualquier puerto y conecte manualmente cualquier nodo. Esa diferencia está documentada; no se presenta como una capacidad terminada.
 
-Después de integrar el trabajo final en `main`:
-1. Abre **Settings → Pages**.
-2. Selecciona **Deploy from a branch**.
-3. Selecciona `main` y `/(root)`.
-4. Guarda. La entrada del sitio es `index.html`.
+## Publicación en GitHub Pages
 
-La disponibilidad pública de Pages debe comprobarse en el último módulo; no se afirma un despliegue en producción hasta verificar la URL resultante.
+El proyecto es estático y compatible con Pages, sin proceso de build. Para publicar: **Settings → Pages → Deploy from a branch → main → /(root)**. El endpoint público no pudo verificarse desde esta ejecución; por eso no se afirma que Pages esté activo ni se inventa una URL publicada.
 
 ## Arquitectura
 
@@ -74,20 +65,21 @@ La disponibilidad pública de Pages debe comprobarse en el último módulo; no s
 .
 ├── index.html
 ├── src/
-│   ├── content/      # 14 lecciones y 40 ejercicios
-│   ├── core/         # parser, intérprete, traza y compilador del constructor
+│   ├── content/      # lecciones y catálogo de ejercicios
+│   ├── core/         # expresiones, parser, intérprete y compilador
 │   ├── diagram/      # layout y render SVG
-│   ├── ui/            # navegación, contenidos, simulador, laboratorio y builder
-│   └── styles/        # tokens, componentes y vistas responsivas
-├── tests/             # unitarias, de regresión y oráculo independiente
+│   ├── ui/            # navegación, contenido, simulador, laboratorio y builder
+│   └── styles/        # tokens, componentes y vistas responsive
+├── tests/             # unitarias, regresiones y oráculo independiente
 ├── e2e/               # aceptación Chromium por módulo
 ├── docs/
 └── reference/         # especificación y HTML original inmutable
 ```
 
-## Continuidad
+## Documentación del proyecto
 - Especificación: `docs/MASTER_SPEC.md`
 - Estado y evidencia: `docs/IMPLEMENTATION_STATUS.md`
 - Decisiones: `docs/DECISIONS.md`
-- Auditoría del prototipo: `docs/ORIGINAL_FEATURE_AUDIT.md`
-- Prototipo original inmutable: `reference/diagramas_de_flujo_original.html`
+- Equivalencia funcional: `docs/ORIGINAL_FEATURE_AUDIT.md`
+- Aceptación final: `docs/FINAL_ACCEPTANCE.md`
+- HTML original inmutable: `reference/diagramas_de_flujo_original.html`

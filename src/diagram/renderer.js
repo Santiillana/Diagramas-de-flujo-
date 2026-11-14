@@ -1,7 +1,7 @@
 const escape = value => String(value??"").replace(/[&<>"']/g,ch=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[ch]));
-const wrapped = (text,max=25) => {
+const wrapped = (text,max=16) => {
   const words=String(text??"").split(/\s+/);
   const lines=[];
   let line="";
@@ -49,29 +49,73 @@ export function renderDiagram(container,diagram,options={}){
     const activeEdge=active&&(from.sourceId===Number(active)||to.sourceId===Number(active));
     const cls="diagram-edge "+(edge.kind==="back"?"is-back":"")+(activeEdge?" is-near-active":"");
     const label=edge.label?'<text class="diagram-edge-label" x="'+((from.x+to.x)/2)+'" y="'+((from.y+from.height+to.y)/2-8)+'">'+escape(edge.label)+'</text>':"";
-    return '<g class="'+cls+'"><path d="'+d+'" marker-end="url(#flow-arrow)"/>'+label+'</g>';
+    return '<g data-edge-id="'+escape(edge.id)+'" class="'+cls+'"><path d="'+d+'" marker-end="url(#flow-arrow)"/>'+label+'</g>';
   }).join("");
   const nodeMarkup=diagram.nodes.map(node=>{
     const isActive=active===String(node.sourceId);
     const isVisited=node.sourceId!==null&&visited.has(String(node.sourceId));
-    const lines=wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?22:25);
-    const y=node.y+node.height/2-(lines.length-1)*7;
-    const text= node.type==="merge" ? "" : lines.map((line,i)=>'<text x="'+node.x+'" y="'+(y+i*14+4)+'">'+escape(line)+'</text>').join("");
+    const lines=wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?14:16);
+    const y=node.y+node.height/2-(lines.length-1)*10;
+    const text= node.type==="merge" ? "" : lines.map((line,i)=>'<text x="'+node.x+'" y="'+(y+i*20+5)+'">'+escape(line)+'</text>').join("");
     return '<g id="flow-node-'+escape(node.id)+'" class="diagram-node node-'+escape(node.type)+(isActive?" is-active":"")+(isVisited?" is-visited":"")+'">'+shape(node)+text+'</g>';
   }).join("");
   const svg='<svg class="flow-svg" id="flow-svg" role="img" aria-label="Diagrama de flujo generado desde el pseudocódigo" viewBox="0 0 '+diagram.width+' '+diagram.height+'" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>'+
-    '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g></svg>';
+    '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
+    '<circle class="flow-token" cx="520" cy="20" r="7" visibility="hidden" aria-hidden="true"/></svg>';
   container.innerHTML=svg;
 }
 export function highlightDiagram(container,diagram,options={}) {
-  if (!container) return;
+  if (!container||!diagram) return;
   const active=options.activeNodeId==null?null:String(options.activeNodeId);
   const visited=new Set((options.visitedNodeIds??[]).map(String));
-  container.querySelectorAll(".diagram-node").forEach(node=>{
-    const id=node.id.replace("flow-node-","");
+  const routeNodeId=options.routeNodeId==null?null:String(options.routeNodeId);
+  const route=options.route??null;
+  const previous=options.previousNodeId==null?null:String(options.previousNodeId);
+  const edgeElements=[...container.querySelectorAll(".diagram-edge")];
+  container.querySelectorAll(".diagram-node").forEach(element=>{
+    const id=element.id.replace("flow-node-","");
     const model=diagram.byId.get(id);
-    node.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
-    node.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
+    element.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
+    element.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
   });
+  edgeElements.forEach(element=>{
+    const edge=diagram.edges.find(candidate=>candidate.id===element.dataset.edgeId);
+    const from=edge?diagram.byId.get(edge.from):null;
+    const to=edge?diagram.byId.get(edge.to):null;
+    const isChosen=Boolean(edge&&routeNodeId&&route&&from?.sourceId===Number(routeNodeId)&&edge.label===route);
+    const isSequential=Boolean(edge&&previous&&active&&from?.sourceId===Number(previous)&&to?.sourceId===Number(active));
+    element.classList.toggle("is-route-active",isChosen);
+    element.classList.toggle("is-active-path",!isChosen&&isSequential);
+  });
+  const token=container.querySelector(".flow-token");
+  if(token){
+    let point=null;
+    if(previous&&active){
+      const travelled=diagram.edges.find(edge=>{
+        const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
+        return String(from?.sourceId)===previous&&String(to?.sourceId)===active;
+      });
+      if(travelled){
+        const edgeElement=edgeElements.find(element=>element.dataset.edgeId===travelled.id);
+        const path=edgeElement?.querySelector("path");
+        try{
+          const length=path?.getTotalLength?.();
+          if(path&&length>0)point=path.getPointAtLength(length*.58);
+        }catch{/* El navegador puede no exponer la métrica SVG en algunos contextos. */}
+        if(point)token.dataset.edgeId=travelled.id;
+      }
+    }
+    const activeNode=diagram.nodes.find(node=>String(node.sourceId)===active);
+    if(!point&&activeNode){
+      point={x:activeNode.x,y:Math.max(10,activeNode.y-12)};
+      delete token.dataset.edgeId;
+    }
+    if(point){
+      token.setAttribute("cx",String(point.x));
+      token.setAttribute("cy",String(point.y));
+      token.setAttribute("visibility","visible");
+      token.dataset.nodeId=active;
+    }
+  }
 }

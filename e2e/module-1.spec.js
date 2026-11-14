@@ -25,10 +25,17 @@ for (const viewport of [
     for (const space of ["exercises", "learn", "simulator", "lab", "builder"]) {
       await page.locator(`[data-space="${space}"]`).click();
       await expect(page.locator(`[data-view="${space}"]`)).toBeVisible();
-      const overflow = await page.evaluate(() =>
-        document.documentElement.scrollWidth - document.documentElement.clientWidth
-      );
-      expect(overflow, `overflow horizontal en ${space} a ${viewport.width}px`).toBeLessThanOrEqual(1);
+      const report = await page.evaluate(() => ({
+        width: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        offenders: [...document.querySelectorAll("body *")].map(element => {
+          const rect = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {tag:element.tagName,id:element.id,className:typeof element.className==="string"?element.className:"",left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),overflow:style.overflow,position:style.position};
+        }).filter(item => item.width>0 && item.right>innerWidth+1 && item.overflow!=="hidden").sort((a,b)=>b.right-a.right).slice(0,12)
+      }));
+      const overflow = report.scrollWidth-report.width;
+      expect(overflow, `overflow horizontal en ${space} a ${viewport.width}px: ${JSON.stringify(report.offenders)}`).toBeLessThanOrEqual(1);
     }
   });
 }

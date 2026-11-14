@@ -44,3 +44,18 @@ La predicción, tabla, reconocimiento de símbolo y contexto visual leen la traz
 
 ## D-015 · Oráculo independiente para validar el catálogo
 Los resultados esperados se contrastan con cálculos de referencia por ejercicio, independientes del pseudocódigo y del intérprete. La batería se ejecuta dentro de CI junto con las pruebas de parser, UI y constructor.
+
+## D-016 · Pan y cámara comparten un único desplazamiento
+El auto-seguimiento centra el nodo activo y el gesto manual desplaza el lienzo mediante una transformación del mismo contenedor. Al tocar/arrastrar o hacer zoom manual se desactiva el seguimiento automático; la vista fit restablece el desplazamiento.
+
+## D-017 · Vistas de simulador móviles
+En pantallas pequeñas se navega con pestañas Problema, Diagrama, En escena, Variables, Salida e Historial. La pestaña cambia solo la superficie visible; no vuelve a ejecutar ni reinicia la traza.
+
+## D-018 · Estado de escena colapsable
+La explicación “En escena” puede minimizarse y expandirse sin afectar el estado del simulador. El estado de loop muestra el nivel exterior y el interno, cuando corresponda.
+
+## D-019 · Desglose de expresiones desde AST
+El desglose de cada operación utiliza el mismo evaluador de expresiones y el snapshot anterior/actual del intérprete. No se mantiene un cálculo visual independiente.
+
+## D-020 · El límite de Pages se declara, no se presume
+El proyecto estático es compatible con GitHub Pages, pero un merge no demuestra por sí mismo que Pages esté activado. La URL pública y la configuración de despliegue deben comprobarse tras configurar Settings → Pages.

@@ -172,8 +172,14 @@ function requireBoolean(value, operator) {
   return value;
 }
 
-export function evaluateExpression(astOrSource, variables = {}) {
+export function evaluateExpression(astOrSource, variables = {}, onStep = null) {
   const ast = typeof astOrSource === "string" ? parseExpression(astOrSource) : astOrSource;
+  const report=(node,left,right,result,extra={})=>{
+    if(typeof onStep==="function")onStep({
+      operator:node.operator,left,right,result,
+      position:node.position,shortCircuited:false,...extra
+    });
+  };
   const visit = node => {
     if (node.type === "literal") return node.value;
     if (node.type === "identifier") {
@@ -184,43 +190,72 @@ export function evaluateExpression(astOrSource, variables = {}) {
     }
     if (node.type === "unary") {
       const value = visit(node.argument);
-      if (node.operator === "+") return requireNumber(value,"+");
-      if (node.operator === "-") return -requireNumber(value,"-");
-      if (node.operator === "NO") return !requireBoolean(value,"NO");
-      throw new TypeError("Operador unario desconocido: "+node.operator);
+      let result;
+      if (node.operator === "+") result=requireNumber(value,"+");
+      else if (node.operator === "-") result=-requireNumber(value,"-");
+      else if (node.operator === "NO") result=!requireBoolean(value,"NO");
+      else throw new TypeError("Operador unario desconocido: "+node.operator);
+      report(node,value,null,result);
+      return result;
     }
     if (node.type !== "binary") throw new TypeError("Nodo de expresión inválido.");
     const left = visit(node.left);
     if (node.operator === "Y") {
-      return requireBoolean(left,"Y") && requireBoolean(visit(node.right),"Y");
+      const validLeft=requireBoolean(left,"Y");
+      if(!validLeft){
+        report(node,left,"(no evaluado)",false,{shortCircuited:true});
+        return false;
+      }
+      const right=requireBoolean(visit(node.right),"Y");
+      const result=validLeft&&right;
+      report(node,left,right,result);
+      return result;
     }
     if (node.operator === "O") {
-      return requireBoolean(left,"O") || requireBoolean(visit(node.right),"O");
+      const validLeft=requireBoolean(left,"O");
+      if(validLeft){
+        report(node,left,"(no evaluado)",true,{shortCircuited:true});
+        return true;
+      }
+      const right=requireBoolean(visit(node.right),"O");
+      const result=validLeft||right;
+      report(node,left,right,result);
+      return result;
     }
     const right = visit(node.right);
+    let result;
     switch (node.operator) {
-      case "+": return requireNumber(left,"+") + requireNumber(right,"+");
-      case "-": return requireNumber(left,"-") - requireNumber(right,"-");
-      case "*": return requireNumber(left,"*") * requireNumber(right,"*");
+      case "+": result=requireNumber(left,"+")+requireNumber(right,"+"); break;
+      case "-": result=requireNumber(left,"-")-requireNumber(right,"-"); break;
+      case "*": result=requireNumber(left,"*")*requireNumber(right,"*"); break;
       case "/":
         requireNumber(left,"/");
         requireNumber(right,"/");
         if (right === 0) throw new RangeError("No se puede dividir entre cero.");
-        return left / right;
-      case "<": return requireNumber(left,"<") < requireNumber(right,"<");
-      case "<=": return requireNumber(left,"<=") <= requireNumber(right,"<=");
-      case ">": return requireNumber(left,">") > requireNumber(right,">");
-      case ">=": return requireNumber(left,">=") >= requireNumber(right,">=");
+        result=left/right;
+        break;
+      case "<": result=requireNumber(left,"<")<requireNumber(right,"<"); break;
+      case "<=": result=requireNumber(left,"<=")<=requireNumber(right,"<="); break;
+      case ">": result=requireNumber(left,">")>requireNumber(right,">"); break;
+      case ">=": result=requireNumber(left,">=")>=requireNumber(right,">="); break;
       case "=":
-      case "==": return left === right;
+      case "==": result=left===right; break;
       case "<>":
-      case "!=": return left !== right;
+      case "!=": result=left!==right; break;
       default: throw new TypeError("Operador desconocido: "+node.operator);
     }
+    report(node,left,right,result);
+    return result;
   };
   const result = visit(ast);
   if (typeof result === "number" && !Number.isFinite(result)) {
     throw new RangeError("La operación produjo un valor numérico no finito.");
   }
   return result;
+}
+
+export function traceExpression(source,variables={}) {
+  const steps=[];
+  const value=evaluateExpression(source,variables,step=>steps.push(step));
+  return {value,steps};
 }

@@ -107,3 +107,163 @@
 @media(prefers-reduced-motion:reduce){
   .diagram-node rect,.diagram-node polygon,.diagram-node path,.diagram-node circle{filter:none}
 }
+
+/* Módulo 5: inspección ampliada y accesibilidad del simulador */
+.diagram-tools .small-icon-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.diagram-tools .small-icon-button[aria-pressed="false"]{color:var(--muted)}
+.simulator-restore{display:inline-flex;align-self:flex-start;margin:-5px 0 4px;padding:3px 0;border:0;color:var(--accent);background:none;font-size:9px;font-weight:750;cursor:pointer}
+.simulator-restore:hover{text-decoration:underline}
+.pseudocode-heading{flex-wrap:wrap}
+.pseudocode-size-controls{display:inline-flex;align-items:center;gap:3px}
+.pseudocode-size-controls button{min-width:25px;height:25px;border:1px solid var(--line);border-radius:6px;color:var(--muted-strong);background:var(--surface);font-size:9px;font-weight:800;cursor:pointer}
+.pseudocode-size-controls button:hover{border-color:var(--accent);color:var(--accent)}
+.pseudocode-size-controls button:disabled{opacity:.35;cursor:default}
+.pseudocode-lines li{font-size:var(--pseudocode-font-size,10px)}
+.simulator-diagram-stage{cursor:grab;touch-action:pan-x pan-y}
+.simulator-diagram-stage.is-panning{cursor:grabbing;user-select:none}
+.simulator-diagram-stage:fullscreen{width:100vw;height:100vh;max-height:none;padding:clamp(16px,4vw,56px);background:var(--canvas);border:0;border-radius:0}
+.simulator-diagram-stage:fullscreen .flow-svg{width:auto!important;height:auto;max-width:100%!important;max-height:100%;min-width:0}
+.scene-event-visual{display:grid;place-items:center;width:42px;height:42px;margin:0 0 7px;border:1px solid var(--accent);border-radius:12px;color:var(--accent-strong);background:var(--accent-soft);font:800 21px/1 ui-monospace,monospace;box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent)}
+#scene-content[data-event-type="input"] .scene-event-visual{border-color:var(--teal);color:var(--teal);background:var(--teal-soft)}
+#scene-content[data-event-type="decision"] .scene-event-visual,#scene-content[data-event-type="loop-condition"] .scene-event-visual{border-color:var(--warning);color:var(--warning);background:var(--warning-soft)}
+#scene-content[data-event-type="error"] .scene-event-visual{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.scene-condition-result{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.scene-condition-result span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
+.scene-condition-result code{font:9px ui-monospace,monospace;color:var(--ink-soft)}
+.scene-condition-result strong{margin-left:auto;font-size:8px}
+.scene-condition-result strong.is-true{color:var(--positive)}
+.scene-condition-result strong.is-false{color:var(--danger)}
+.variable-history{padding:7px 12px 12px;border-top:1px solid var(--line)}
+.variable-history-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.variable-history-heading strong{font-size:9px}
+.variable-history-heading .text-link{border:0;background:none;color:var(--accent);font-size:8px;cursor:pointer}
+.variable-history-trigger{padding:0;border:0;color:var(--accent-strong);background:none;font:inherit;font-weight:800;cursor:pointer}
+.variable-history-trigger[aria-pressed="true"]{text-decoration:underline;text-underline-offset:3px}
+.variable-history-list{display:grid;gap:4px;margin:0;padding:0;list-style:none;max-height:180px;overflow:auto}
+.variable-history-list button{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;padding:6px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);text-align:left;cursor:pointer}
+.variable-history-list button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.variable-history-list span{grid-column:1;color:var(--muted);font-size:7px;font-weight:800}
+.variable-history-list strong{grid-column:2;grid-row:1/3;align-self:center;color:var(--ink-soft);font:9px ui-monospace,monospace}
+.variable-history-list small{grid-column:1;overflow:hidden;color:var(--muted-strong);font-size:7px;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){
+  .diagram-tools .canvas-status{display:none}
+  .simulator-diagram-stage.is-panning{touch-action:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .simulator-diagram-stage{scroll-behavior:auto}
+}
+
+/* El lienzo recibe los gestos; los controles del encabezado quedan por encima */
+}
+
+.flow-token{transition:cx 320ms cubic-bezier(.2,.8,.2,1),cy 320ms cubic-bezier(.2,.8,.2,1)}
+.scene-loop-stack{display:grid;gap:5px;margin-top:9px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.scene-loop-stack>span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
+.scene-loop-stack>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px}
+.scene-loop-stack>div b{color:var(--muted-strong);font-weight:700}
+.scene-loop-stack>div strong{color:var(--accent-strong);font:800 9px ui-monospace,monospace}
+@media(prefers-reduced-motion:reduce){
+  .flow-token{transition:none}
+}
+:root[data-motion="reduced"] .flow-token{transition:none}
+
+/* Movimiento didáctico: valor que entra, cambia o sale en la escena */
+.scene-value-transfer{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:9px 0;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);animation:scene-transfer-in 260ms cubic-bezier(.2,.8,.2,1) both}
+.scene-transfer-name{margin-right:auto;color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.8px}
+.scene-value-old{padding:4px 8px;border:1px solid var(--line-strong);border-radius:7px;color:var(--muted-strong);background:var(--surface);font:10px ui-monospace,monospace;text-decoration:line-through;animation:scene-value-away 360ms ease both}
+.scene-transfer-arrow{color:var(--muted);font-size:14px}
+.scene-value-new{padding:5px 10px;border:1px solid var(--positive);border-radius:8px;color:var(--positive);background:var(--positive-soft);font:800 13px ui-monospace,monospace;animation:scene-value-land 440ms cubic-bezier(.2,.8,.2,1) both}
+.scene-route-chip{padding:5px 10px;border-radius:8px;color:var(--positive);background:var(--positive-soft);font-size:10px}
+.scene-value-transfer.is-false .scene-route-chip{color:var(--danger);background:var(--danger-soft)}
+.scene-event-visual{animation:scene-symbol-in 250ms cubic-bezier(.2,.8,.2,1) both}
+.diagram-edge.is-route-active path{stroke:var(--positive);stroke-width:3.2;stroke-dasharray:7 4;animation:route-dash 650ms linear infinite}
+.diagram-edge.is-active-path path{stroke:var(--accent);stroke-width:2.5}
+@keyframes scene-transfer-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scene-value-away{from{opacity:1;transform:translateY(0)}to{opacity:.42;transform:translateY(-3px)}}
+@keyframes scene-value-land{from{opacity:0;transform:translateY(8px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes scene-symbol-in{from{opacity:.4;transform:scale(.82) rotate(-4deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes route-dash{to{stroke-dashoffset:-22}}
+@media(prefers-reduced-motion:reduce){
+  .scene-value-transfer,.scene-value-old,.scene-value-new,.scene-event-visual{animation:none}
+  .diagram-edge.is-route-active path{animation:none}
+}
+:root[data-motion="reduced"] .scene-value-transfer,
+:root[data-motion="reduced"] .scene-value-old,
+:root[data-motion="reduced"] .scene-value-new,
+:root[data-motion="reduced"] .scene-event-visual{animation:none}
+:root[data-motion="reduced"] .diagram-edge.is-route-active path{animation:none}
+
+.diagram-fullscreen-exit{position:absolute;top:12px;right:14px;z-index:100;display:flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink);background:var(--surface);box-shadow:var(--shadow-md);font-size:10px;font-weight:800;cursor:pointer}
+.diagram-fullscreen-exit:hover{border-color:var(--accent);color:var(--accent-strong)}
+.diagram-fullscreen-exit[hidden]{display:none!important}
+.simulator-diagram-stage:fullscreen .diagram-fullscreen-exit{display:flex}
+
+/* M5: single positioning model for toolbar and pan-able SVG viewport */
+.diagram-panel{position:relative;isolation:isolate;min-width:0}
+.diagram-panel>.diagram-heading{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.diagram-panel>.diagram-heading .diagram-header-tools{position:relative;z-index:6;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:auto;flex-shrink:0}
+.diagram-panel>.diagram-heading .diagram-header-tools button{position:relative;z-index:7;pointer-events:auto}
+.diagram-panel>.simulator-diagram-stage{position:relative;z-index:1;display:block;overflow:hidden;overscroll-behavior:contain;touch-action:none;cursor:grab;min-width:0}
+.diagram-panel>.simulator-diagram-stage.is-panning{cursor:grabbing;user-select:none}
+.diagram-panel #flow-diagram-container{position:relative;display:block;width:100%;min-width:0;min-height:100%;pointer-events:none;transform:translate(0,0)}
+.diagram-panel #flow-diagram-container .flow-svg{display:block;width:auto;height:auto;min-width:0;max-width:none;pointer-events:none}
+.diagram-panel .diagram-fullscreen-exit{pointer-events:auto}
+.diagram-stage-tools{display:none!important}
+@media(max-width:760px){
+  .diagram-panel>.diagram-heading{align-items:flex-start;flex-wrap:wrap}
+  .diagram-panel>.diagram-heading .diagram-header-tools{width:100%;justify-content:flex-end}
+}
+
+/* Hidden state must win over the authored placeholder display layout */
+.diagram-empty[hidden]{display:none!important}
+
+/* M5: minimizable scene and touch-first mobile panel views */
+.scene-heading-actions{display:flex;align-items:center;gap:7px}
+.scene-panel.is-collapsed #scene-content{display:none!important}
+.scene-panel.is-collapsed{min-height:0}
+.simulator-mobile-tabs{display:none}
+@media(max-width:760px){
+  .simulator-mobile-tabs{display:flex;gap:6px;margin:0 0 10px;padding:3px;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);border-radius:11px;background:var(--surface-soft)}
+  .simulator-mobile-tabs button{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid transparent;border-radius:8px;color:var(--muted-strong);background:transparent;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
+  .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+  .simulator-grid{display:flex;flex-direction:column;gap:10px}
+  .simulator-grid>.problem-panel,.simulator-grid>.diagram-panel,
+  .simulator-grid>.simulator-inspector>.scene-panel,
+  .simulator-grid>.simulator-inspector>.variables-panel,
+  .simulator-grid>.simulator-inspector>.output-panel,
+  .simulator-grid>.trace-panel{display:none!important}
+  body[data-simulator-mobile-panel="problem"] .simulator-grid>.problem-panel{display:flex!important}
+  body[data-simulator-mobile-panel="diagram"] .simulator-grid>.diagram-panel{display:block!important}
+  body[data-simulator-mobile-panel="scene"] .simulator-grid>.simulator-inspector>.scene-panel{display:block!important}
+  body[data-simulator-mobile-panel="variables"] .simulator-grid>.simulator-inspector>.variables-panel{display:block!important}
+  body[data-simulator-mobile-panel="output"] .simulator-grid>.simulator-inspector>.output-panel{display:block!important}
+  body[data-simulator-mobile-panel="history"] .simulator-grid>.trace-panel{display:block!important}
+  .simulator-grid>.simulator-inspector{display:contents}
+  .simulator-grid>.simulator-dock{display:grid!important;grid-area:auto}
+  .simulator-grid>.trace-panel{grid-area:auto}
+  .simulator-grid>.diagram-panel{min-height:410px}
+  .simulator-grid>.problem-panel{max-height:none;overflow:visible}
+  .simulator-grid>.problem-panel .simulator-problem-body{overflow:visible}
+}
+
+/* Diagram scale: readable symbols and labels at fit scale */
+.diagram-node text{font:18px ui-sans-serif,system-ui,sans-serif}
+.diagram-edge-label{font:15px ui-monospace,monospace}
+.diagram-panel>.simulator-diagram-stage{overflow:hidden}
+.diagram-panel #flow-diagram-container{display:block;width:100%;height:100%;transform-origin:0 0;will-change:transform;transition:transform 320ms cubic-bezier(.2,.8,.2,1)}
+.diagram-panel #flow-diagram-container .flow-svg{max-width:none;min-width:0}
+:root[data-motion="reduced"] .diagram-panel #flow-diagram-container{transition:none}
+@media(prefers-reduced-motion:reduce){
+  .diagram-panel #flow-diagram-container{transition:none}
+}
+
+/* M5 responsive hard boundary: SVG and toolbar cannot widen the page */
+.diagram-panel{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel>.diagram-heading{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel>.diagram-heading>div:first-child{min-width:0;max-width:100%}
+.diagram-panel>.diagram-heading .diagram-header-tools{width:100%;max-width:100%;min-width:0;flex:1 1 auto;flex-shrink:1;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;justify-content:flex-end}
+.diagram-panel>.diagram-heading .diagram-header-tools .canvas-status,
+.diagram-panel>.diagram-heading .diagram-header-tools button{flex:0 0 auto}
+.diagram-panel>.simulator-diagram-stage{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel #flow-diagram-container{width:100%;max-width:100%;min-width:0}
+.diagram-panel .diagram-legend{width:100%;max-width:100%;min-width:0;flex-wrap:wrap}

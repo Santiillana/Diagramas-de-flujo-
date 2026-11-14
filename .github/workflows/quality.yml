@@ -8,6 +8,7 @@ on:
       - "module-2/**"
       - "module-3/**"
       - "module-4/**"
+      - "module-5/**"
   pull_request:
     branches:
       - main
@@ -21,9 +22,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Install project dependencies
@@ -34,3 +35,11 @@ jobs:
         run: npm test
       - name: Run browser acceptance tests
         run: npm run test:browser
+      - name: Upload visual audit captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit-${{ github.sha }}
+          path: test-results/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
