@@ -9,7 +9,7 @@ test("En escena muestra una ficha de entrada, operación y salida según el even
  await page.locator("#simulator-next").click();
  await page.locator("#simulator-next").click();
  await expect(page.locator("#scene-content .scene-visual-assignment")).toBeVisible();
- await expect(page.locator("#scene-content .scene-event-technical")).toContainText("a + b");
+ await expect(page.locator("#scene-content .scene-event-technical")).toContainText("s=a+b");
  await page.locator("#simulator-next").click();
  await expect(page.locator("#scene-content .scene-visual-output")).toContainText("13");
 });
