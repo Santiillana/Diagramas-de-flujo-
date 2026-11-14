@@ -8,6 +8,7 @@ on:
       - "module-2/**"
       - "module-3/**"
       - "module-4/**"
+      - "module-5/**"
   pull_request:
     branches:
       - main
