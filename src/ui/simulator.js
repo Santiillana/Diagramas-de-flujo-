@@ -11,6 +11,15 @@ const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) 
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
+let diagramFitWidth=0, diagramFitHeight=0, zoom=1;
+
+function readPseudocodeSize(){
+  try{
+    const value=Number(window.localStorage.getItem("traza-pseudocode-size"));
+    return Number.isFinite(value)&&value>=8&&value<=18?value:10;
+  }catch{return 10;}
+}
+
 
 function stop(){
   if(timer!==null){clearInterval(timer);timer=null;}
@@ -60,6 +69,7 @@ function prepare(){
     diagram=layoutFlow(ast);
     renderDiagram($("#flow-diagram-container"),diagram);
     $("#diagram-empty").hidden=true;
+    requestAnimationFrame(()=>fitDiagram());
     $("#diagram-dimensions").textContent=diagram.width+" × "+diagram.height;
     const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}
   }catch(error){
@@ -189,9 +199,13 @@ function render(){
   centerActiveNode(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   $("#scene-content").dataset.eventType=e.type;
+  const loopStack=e.loopStack??[];
+  const loopExplanation=loopStack.length?'<div class="scene-loop-stack"><span>CONTEXTO DE REPETICIÓN</span>'+
+    loopStack.map((loop,index)=>'<div><b>'+(index===0?"Ciclo exterior":index===loopStack.length-1?"Ciclo actual":"Ciclo anidado")+'</b><strong>Vuelta '+loop.iteration+'</strong></div>').join("")+'</div>':"";
   $("#scene-content").innerHTML='<div class="scene-event-visual" aria-hidden="true">'+sceneSymbol(e.type)+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
     '<p class="scene-event-body">'+esc(scene.body)+'</p><div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
+    loopExplanation+
     renderOperationBreakdown(e)+
     (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
   const vars=e.variables??{}, names=Object.keys(vars), change=e.change;
@@ -263,22 +277,41 @@ function play(){
     if(timeline.index>=timeline.length-1)stop();
   },Number($("#simulator-speed").value)||650);
 }
+function applyDiagramZoom(){
+  const svg=$("#flow-svg");
+  if(!svg||!diagramFitWidth||!diagramFitHeight)return;
+  svg.style.minWidth="0";
+  svg.style.maxWidth="none";
+  svg.style.width=(diagramFitWidth*zoom)+"px";
+  svg.style.height=(diagramFitHeight*zoom)+"px";
+}
 function zoomDiagram(change){
-  const svg=$("#flow-svg");if(!svg)return;
-  const width=parseFloat(svg.style.width)||100;
-  const next=Math.max(55,Math.min(180,width+change*10));
-  svg.style.width=next+"%";svg.style.maxWidth="none";
+  const svg=$("#flow-svg");
+  if(!svg)return;
+  if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
+  zoom=Math.max(.65,Math.min(3,zoom+change*.15));
+  applyDiagramZoom();
+  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
 function setPseudocodeSize(size){
   pseudocodeSize=Math.max(8,Math.min(18,size));
   document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
   $("#simulator-text-smaller").disabled=pseudocodeSize<=8;
   $("#simulator-text-larger").disabled=pseudocodeSize>=18;
+  try{window.localStorage.setItem("traza-pseudocode-size",String(pseudocodeSize));}catch{}
 }
 function fitDiagram(){
   const stage=$("#diagram-stage"),svg=$("#flow-svg");
   if(!stage||!svg)return;
-  svg.style.width="100%";svg.style.maxWidth="none";
+  const viewBox=svg.viewBox?.baseVal;
+  if(!viewBox?.width||!viewBox?.height)return;
+  const availableWidth=Math.max(180,stage.clientWidth-48);
+  const availableHeight=Math.max(180,stage.clientHeight-48);
+  const scale=Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height);
+  diagramFitWidth=viewBox.width*scale;
+  diagramFitHeight=viewBox.height*scale;
+  zoom=1;
+  applyDiagramZoom();
   stage.scrollTo({left:0,top:0,behavior:"auto"});
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
@@ -300,6 +333,7 @@ function updateFullscreenButton(){
     button.setAttribute("aria-label",active?"Salir de pantalla completa":"Ver diagrama a pantalla completa");
     button.title=active?"Salir de pantalla completa":"Pantalla completa";
   }
+  if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
   const stage=$("#diagram-stage");
@@ -403,7 +437,7 @@ function bind(){
 }
 export function initSimulator(){
   if(!$("#simulator-run"))return;
-  setPseudocodeSize(10);
+  setPseudocodeSize(readPseudocodeSize());
   updateCameraButton();
   bind();prepare();
 }
