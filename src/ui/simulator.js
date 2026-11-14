@@ -417,7 +417,7 @@ function applyDiagramZoom(){
   svg.style.width=(diagramFitWidth*zoom)+"px";
   svg.style.height=(diagramFitHeight*zoom)+"px";
   const stage=$("#diagram-stage");
-  if(stage)stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));
+  if(stage){stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));stage.dataset.zoom=zoom.toFixed(3);}
 }
 function zoomDiagram(change){
   const svg=$("#flow-svg");
