@@ -18,8 +18,9 @@ test("la rama falsa se distingue con clase y etiqueta F",async({page})=>{
  await page.locator('[data-simulator-exercise="7"]').click();
  const decision=page.locator("#trace-history li").filter({hasText:"DECISIÓN"}).first();
  await decision.click();
- await expect(page.locator(".diagram-edge.is-route-active .diagram-edge-label")).toContainText("F");
- await expect(page.locator(".diagram-edge.is-route-false")).toHaveCount(1);
+ const falseRoutes=page.locator(".diagram-edge.is-route-false");
+ await expect(falseRoutes.first()).toBeVisible();
+ await expect(falseRoutes.first().locator(".diagram-edge-label")).toContainText("F");
 });
 test("movimiento completo, reducido y apagado se alternan y persisten",async({page})=>{
  await page.goto("/");

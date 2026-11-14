@@ -60,6 +60,8 @@ test("tema y movimiento reducido responden a controles y preferencia del sistema
   await page.locator('[data-action="toggle-theme"]').click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.locator('[data-action="toggle-motion"]').click();
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
+  await page.locator('[data-action="toggle-motion"]').click();
   await expect(page.locator("html")).toHaveAttribute("data-motion", "full");
 });
 
