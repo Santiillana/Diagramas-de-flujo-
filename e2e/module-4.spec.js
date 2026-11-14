@@ -60,8 +60,10 @@ test("Constructor ejecuta los presets de secuencia y decisión en el motor comú
   await page.locator("#builder-run").click();
   await expect(page.locator("#builder-last")).toBeEnabled();
   const initialTimeline = await page.locator("#builder-timeline-label").getAttribute("data-current-step");
+  const totalSteps=Number(await page.locator("#builder-timeline-label").getAttribute("data-total-steps"));
   await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-timeline-label")).toHaveAttribute("data-current-step",/^[2-9]\d*$/);
+  await expect(page.locator("#builder-last")).toHaveAttribute("data-last-seek-after",String(totalSteps-1));
+  await expect(page.locator("#builder-timeline-label")).toHaveAttribute("data-current-step",String(totalSteps));
   expect(await page.locator("#builder-timeline-label").getAttribute("data-current-step")).not.toBe(initialTimeline);
   await expect(page.locator("#builder-runtime-message")).toContainText("Ejecución de");
   await expect(page.locator("#builder-output")).toContainText("16");
