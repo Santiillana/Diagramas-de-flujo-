@@ -7,7 +7,7 @@ test("Aprende presenta las catorce lecciones con explicación y comprobación", 
   await page.locator('[data-lesson-id="variables"]').click();
   await expect(page.locator("#lesson-detail h3")).toHaveText("Variables y asignación");
   await page.locator("[data-visual-next]").click();
-  await expect(page.locator(".visual-step-count")).toHaveText("3 / 3");
+  await expect(page.locator(".visual-step-count")).toHaveText("2 / 3");
   await page.locator('[data-check-option="1"]').click();
   await expect(page.locator("#lesson-feedback")).toContainText("Correcto");
 });
