@@ -1,4 +1,5 @@
 import { escapeHTML as esc } from "./escape.js";
+import { renderSceneVisual } from "./scene-visuals.js";
 import { exercises, getExercise } from "../content/exercises.js";
 import { traceExpression } from "../core/expression.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
@@ -275,7 +276,7 @@ function render(){
     '<strong class="scene-value-new">'+esc(fmt(e.change.value))+'</strong></div>':
     e.type==="output"?'<div class="scene-value-transfer"><span class="scene-transfer-name">SALIDA</span><strong class="scene-value-new">'+esc(fmt(e.value))+'</strong></div>':
     e.condition?'<div class="scene-value-transfer '+(e.result?"is-true":"is-false")+'"><span class="scene-transfer-name">RUTA ELEGIDA</span><strong class="scene-route-chip">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"";
-  $("#scene-content").innerHTML='<div class="scene-event-visual" aria-hidden="true">'+sceneSymbol(e.type)+'</div>'+
+  $("#scene-content").innerHTML=renderSceneVisual(e)+
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
     '<p class="scene-event-body">'+esc(scene.body)+'</p>'+transfer+
     '<div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
