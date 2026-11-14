@@ -213,3 +213,6 @@
   .diagram-panel>.diagram-heading{align-items:flex-start;flex-wrap:wrap}
   .diagram-panel>.diagram-heading .diagram-header-tools{width:100%;justify-content:flex-end}
 }
+
+/* Hidden state must win over the authored placeholder display layout */
+.diagram-empty[hidden]{display:none!important}
