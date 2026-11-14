@@ -16,6 +16,8 @@ let lessonVisualStep = 0;
 let lessonPracticeStep = 0;
 let selectedExercise = null;
 let selectedMethod = 0;
+let exerciseRevealed = false;
+let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
 
@@ -195,11 +197,30 @@ function renderExerciseDetail(){
       <section class="exercise-errors"><p class="eyebrow">ERRORES FRECUENTES</p><ul>${item.errors.map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul></section>
       <button type="button" class="button button-primary exercise-simulate" data-open-simulator>Preparar este método en el simulador <span aria-hidden="true">→</span></button>
     </div>`;
+  applyChallengeGate();
 }
 
+function applyChallengeGate(){
+  const host=$("#exercise-detail");
+  const item=selectedExercise;
+  const scroll=host?.querySelector(".exercise-detail-scroll");
+  if(!host||!item||!scroll)return;
+  const gate=document.createElement("section");
+  gate.className="exercise-gate";
+  gate.innerHTML='<p class="eyebrow">MODO RETO · ANTES DE VER LA SOLUCIÓN</p><h4>Piensa entradas, proceso y salidas</h4><p>Registra tu análisis. Puedes pedir una pista o revelar la explicación cuando estés preparado.</p><div class="exercise-attempt-fields"><label>Entradas<textarea data-attempt-field="inputs" rows="2" placeholder="¿Qué datos se necesitan?"></textarea></label><label>Proceso<textarea data-attempt-field="process" rows="2" placeholder="¿Cómo se transforman los datos?"></textarea></label><label>Salidas<textarea data-attempt-field="outputs" rows="2" placeholder="¿Qué debe mostrarse?"></textarea></label></div><div class="exercise-gate-actions"><button type="button" class="button button-secondary" data-save-attempt>Guardar análisis</button><button type="button" class="text-button" data-exercise-hint>Ver una pista</button><button type="button" class="button button-primary" data-reveal-solution>Revelar explicación</button></div><p class="exercise-gate-feedback" data-gate-feedback role="status"></p>';
+  scroll.prepend(gate);
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem("traza-exercise-attempt-"+item.id)||"{}");}catch{}
+  $('[data-attempt-field]',gate).forEach(field=>{field.value=saved[field.dataset.attemptField]||"";});
+  const hiddenSelectors=[".exercise-methods",".exercise-errors",".exercise-simulate",".exercise-detail-scroll > .exercise-spec:nth-of-type(2)"];
+  if(!exerciseRevealed)hiddenSelectors.forEach(selector=>{const element=scroll.querySelector(selector);if(element)element.hidden=true;});
+  else gate.querySelector('[data-reveal-solution]').textContent="Explicación revelada";
+}
 function selectExercise(id){
   selectedExercise=exercises.find(item=>item.id===Number(id))??null;
   selectedMethod=0;
+  exerciseRevealed=false;
+  exerciseHintStep=0;
   renderExerciseCards();
   renderExerciseDetail();
   if(selectedExercise){
@@ -247,6 +268,27 @@ function bindContentEvents(){
     if(card)selectExercise(card.dataset.selectExercise);
   });
   $("#exercise-detail")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-save-attempt]")){
+      const answer={};
+      $("[data-attempt-field]",$("#exercise-detail")).forEach(field=>answer[field.dataset.attemptField]=field.value);
+      try{localStorage.setItem("traza-exercise-attempt-"+selectedExercise.id,JSON.stringify(answer));}catch{}
+      const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
+      if(feedback)feedback.textContent="Tu análisis quedó guardado en este navegador.";
+      return;
+    }
+    if(event.target.closest("[data-exercise-hint]")){
+      const hint=exerciseHintStep===0
+        ?"Conceptos que se ponen en práctica: "+selectedExercise.concepts.slice(0,3).join(", ")+".":"Restricción que debes respetar: "+selectedExercise.constraints[0];
+      const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
+      if(feedback)feedback.textContent=hint;
+      exerciseHintStep=Math.min(exerciseHintStep+1,1);
+      return;
+    }
+    if(event.target.closest("[data-reveal-solution]")){
+      exerciseRevealed=true;
+      renderExerciseDetail();
+      return;
+    }
     const tab=event.target.closest("[data-method-index]");
     if(tab){selectedMethod=Number(tab.dataset.methodIndex);renderExerciseDetail();return;}
     if(event.target.closest("[data-open-simulator]")&&selectedExercise){
@@ -258,6 +300,6 @@ function bindContentEvents(){
 
 export function initContentViews(){
   lessonList();renderLesson();
-  renderExerciseCards();selectExercise(1);
+  renderExerciseCards();renderExerciseDetail();
   bindContentEvents();
 }
