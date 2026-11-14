@@ -153,3 +153,13 @@ body[data-active-space="simulator"] .simulator-view>.simulator-panels-toggle,
 body[data-active-space="simulator"] .simulator-view>.simulator-mobile-tabs,
 body[data-active-space="simulator"] .simulator-view>.simulator-grid,
 body[data-active-space="simulator"] .simulator-view>.simulator-shortcuts{pointer-events:auto!important}
+
+/* The stage grid itself has no hit area; only the diagram, windows and dock do. */
+body[data-active-space="simulator"] .simulator-grid{pointer-events:none!important}
+body[data-active-space="simulator"] .simulator-grid>[data-floating-panel],
+body[data-active-space="simulator"] .simulator-grid>.simulator-dock,
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading .diagram-header-tools,
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading button,
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.simulator-diagram-stage{pointer-events:auto!important}
+body[data-active-space="simulator"] .simulator-grid>.simulator-inspector{pointer-events:none!important}
+body[data-active-space="simulator"] .simulator-grid>.simulator-inspector>[data-floating-panel]{pointer-events:auto!important}
