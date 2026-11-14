@@ -4,8 +4,8 @@ const valueText = value => value === undefined || value === null
   ? "—"
   : typeof value === "number" ? String(Number(value.toFixed(6))) : String(value);
 
-function frame(kind, label, body) {
-  return '<div class="scene-visual scene-visual-'+kind+'" data-scene-visual="'+kind+'" role="group" aria-label="'+esc(label)+'">'+body+'</div>';
+function frame(kind, label, body, eventType=kind) {
+  return '<div class="scene-visual scene-visual-'+kind+'" data-scene-visual="'+esc(eventType)+'" role="group" aria-label="'+esc(label)+'">'+body+'</div>';
 }
 
 function variableBox(name, value, caption="VARIABLE") {
@@ -37,7 +37,7 @@ export function renderSceneVisual(event) {
     case "program-start":
       return frame("start","Inicio del algoritmo",
         '<div class="scene-visual-terminal scene-visual-terminal-start">INICIO</div>'+
-        '<div class="scene-visual-caption">La ejecución comienza</div>'
+        '<div class="scene-visual-caption">La ejecución comienza</div>', "program-start"
       );
     case "input":
       return frame("input","Entrada de datos",
@@ -91,7 +91,7 @@ export function renderSceneVisual(event) {
     case "program-end":
       return frame("end","Fin del algoritmo",
         '<div class="scene-visual-terminal scene-visual-terminal-end">FIN</div>'+
-        '<div class="scene-visual-caption">Se alcanzó el final del recorrido</div>'
+        '<div class="scene-visual-caption">Se alcanzó el final del recorrido</div>', "program-end"
       );
     case "error":
       return frame("error","Error de ejecución",
