@@ -73,6 +73,10 @@
           <p>Una ejecución determinista mantiene sincronizados el pseudocódigo, el diagrama, las variables y la explicación.</p></div>
         <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
       </div>
+      <div class="simulator-exercise-strip" id="simulator-exercise-strip" aria-label="Selector de ejercicios del simulador">
+        <label class="simulator-exercise-search"><span>Ejercicio</span><input id="simulator-exercise-search" type="search" placeholder="Número o título…" autocomplete="off" aria-label="Buscar ejercicio"></label>
+        <div class="simulator-exercise-picker" id="simulator-exercise-picker" role="group" aria-label="Seleccionar ejercicio"></div>
+      </div>
       <button class="simulator-panels-toggle" id="simulator-panels-toggle" type="button" aria-controls="simulator-grid" aria-expanded="true" title="Ocultar todos los paneles (H)">☰ <span>Paneles</span></button>
       <div class="simulator-mobile-tabs" id="simulator-mobile-tabs" role="tablist" aria-label="Vistas del simulador">
         <button type="button" role="tab" data-mobile-panel="problem" aria-selected="false">Problema</button>
@@ -94,7 +98,7 @@
             <label class="simulator-field"><span>DATOS DE ENTRADA</span><input id="simulator-inputs" type="text" inputmode="decimal" placeholder="Ejemplo: 8, 5" autocomplete="off"></label>
             <button type="button" class="text-link simulator-restore" id="simulator-restore-inputs">↺ Restaurar datos de ejemplo</button>
             <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas.</p>
-            <button type="button" class="button button-primary simulator-run" id="simulator-run">Ejecutar algoritmo <span aria-hidden="true">▶</span></button>
+            <button type="button" class="button button-primary simulator-run" id="simulator-run">Reiniciar con estos datos <span aria-hidden="true">↻</span></button>
             <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span>
               <div class="pseudocode-size-controls" aria-label="Tamaño del pseudocódigo">
                 <button type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto">A−</button>
@@ -110,7 +114,9 @@
             <div><p class="eyebrow">EL DIAGRAMA</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
             <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
               <span class="canvas-status"><i></i> DIAGRAMA ACTUAL</span>
-              <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática activa">◎</button>
+              <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática (C)" aria-pressed="true" title="Cámara automática (C)">◎</button>
+              <button class="small-icon-button" type="button" id="simulator-predict-toggle" aria-label="Activar modo predicción (P)" aria-pressed="false" title="Modo predicción (P)">🎯</button>
+              <button class="small-icon-button" type="button" id="simulator-shortcuts-toggle" aria-label="Mostrar atajos de teclado (?)" title="Atajos de teclado (?)">?</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama">−</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama">+</button>
               <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama">⌗</button>
@@ -155,8 +161,15 @@
             <button class="transport-button" type="button" id="simulator-last" aria-label="Ir al final" title="Ir al final">▶|</button>
           </div>
           <div class="timeline-block"><div class="timeline-label"><span>PASO</span><b id="timeline-count">— / —</b></div><input id="simulator-timeline" class="timeline-range" type="range" min="0" max="0" value="0" step="1" aria-label="Buscar un paso de la ejecución"></div>
-          <label class="dock-speed"><span>VELOCIDAD</span><select id="simulator-speed"><option value="1200">0.5×</option><option value="650" selected>1×</option><option value="300">2×</option><option value="140">4×</option></select></label>
+          <label class="dock-speed"><span>VELOCIDAD</span><select id="simulator-speed" aria-label="Velocidad de reproducción"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+          <label class="dock-fine-speed"><span>AJUSTE FINO</span><input id="simulator-speed-fine" type="range" min="0.25" max="8" value="1" step="0.25" aria-label="Ajuste fino de velocidad"><b id="simulator-speed-label">1×</b></label>
         </section>
+        <aside class="simulator-shortcuts" id="simulator-shortcuts" hidden aria-label="Atajos de teclado">
+          <div class="simulator-shortcuts-heading"><strong>Atajos del simulador</strong><button type="button" id="simulator-shortcuts-close" aria-label="Cerrar ayuda">×</button></div>
+          <dl>
+            <div><dt>← / →</dt><dd>Retroceder / avanzar</dd></div><div><dt>Espacio</dt><dd>Reproducir / pausar</dd></div><div><dt>Inicio / Fin</dt><dd>Primer / último paso</dd></div><div><dt>↑ / ↓</dt><dd>Más rápido / más lento</dd></div><div><dt>[ / ]</dt><dd>Ejercicio anterior / siguiente</dd></div><div><dt>+ / − / 0</dt><dd>Acercar / alejar / ajustar</dd></div><div><dt>C / P</dt><dd>Cámara / predicción</dd></div><div><dt>H / F / L / ?</dt><dd>Paneles / pantalla completa / laboratorio / ayuda</dd></div>
+          </dl>
+        </aside>
       </div>
     </section>
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
