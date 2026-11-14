@@ -370,7 +370,7 @@ function bindKeyboard(){
     switch(event.key){
       case "ArrowRight":event.preventDefault();move(1);break;
       case "ArrowLeft":event.preventDefault();move(-1);break;
-      case " ":event.preventDefault();play();break;
+      case " ":case "Space":event.preventDefault();play();break;
       case "Home":event.preventDefault();seek(0);break;
       case "End":event.preventDefault();seek((timeline?.length??1)-1);break;
       case "ArrowUp":event.preventDefault();setSpeedFactor(Math.min(8,speedFactor()*2));break;

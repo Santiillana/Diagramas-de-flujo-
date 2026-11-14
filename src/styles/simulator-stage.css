@@ -10,7 +10,8 @@ body[data-active-space="simulator"] .simulator-intro{display:none}
 .simulator-grid>.diagram-panel>.diagram-heading{position:absolute;z-index:40;top:104px;left:50%;display:flex;width:auto;max-width:min(720px,48vw);padding:6px;transform:translateX(-50%);border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:var(--shadow-md);backdrop-filter:blur(16px)}
 .diagram-panel>.diagram-heading>div:first-child{display:none}
 .diagram-panel>.diagram-heading .diagram-header-tools{width:auto;max-width:100%;justify-content:center;overflow:visible}
-.simulator-grid>.diagram-panel>.simulator-diagram-stage{position:absolute;z-index:1;inset:0;display:grid;min-height:0;width:100%;max-width:none;margin:0;overflow:hidden;border:0;border-radius:0;background-color:transparent;background-image:none}
+.simulator-grid>.diagram-panel>.simulator-diagram-stage{position:absolute;z-index:1;inset:0;display:grid;min-height:0;width:100%;max-width:none;margin:0;overflow:hidden;border:0;border-radius:0;background-color:transparent;background-image:none;pointer-events:none}
+.diagram-panel .diagram-fullscreen-exit{pointer-events:auto}
 .diagram-panel .diagram-legend{position:absolute;z-index:3;bottom:12px;left:14px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);box-shadow:var(--shadow-sm)}
 .diagram-panel .canvas-coordinate{display:none}
 .simulator-grid [data-floating-panel]{z-index:6;min-width:0;border:1px solid color-mix(in srgb,var(--line-strong) 72%,transparent);border-radius:15px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:0 12px 34px rgba(15,25,45,.16);backdrop-filter:blur(16px) saturate(1.15);-webkit-backdrop-filter:blur(16px) saturate(1.15)}
