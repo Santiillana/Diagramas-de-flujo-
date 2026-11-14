@@ -12,6 +12,8 @@ const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
+let exerciseSearch="",predictionMode=false;
+const SPEEDS=[0.25,0.5,1,2,4,8];
 
 function readPseudocodeSize(){
   try{
@@ -39,6 +41,26 @@ function parseInputs(){
   const raw=$("#simulator-inputs").value.trim();
   return raw?raw.split(/[;,]/).map(v=>v.trim()):[];
 }
+function renderExercisePicker(){
+  const host=$("#simulator-exercise-picker");
+  if(!host)return;
+  const query=exerciseSearch.trim().toLocaleLowerCase("es");
+  const visible=exercises.filter(item=>!query||String(item.id).includes(query)||item.title.toLocaleLowerCase("es").includes(query)||item.concepts.join(" ").toLocaleLowerCase("es").includes(query));
+  host.innerHTML=visible.map(item=>{
+    const level=item.level==="basic"?"level-basic":item.level==="intermediate"?"level-intermediate":"level-advanced";
+    const active=item.id===exerciseId?" is-active":"";
+    return '<button type="button" class="simulator-exercise-dot '+level+active+'" data-simulator-exercise="'+item.id+'" aria-pressed="'+String(item.id===exerciseId)+'" title="Ejercicio '+item.id+' · '+esc(item.title)+'">'+String(item.id).padStart(2,"0")+'</button>';
+  }).join("");
+  host.dataset.visibleCount=String(visible.length);
+  host.setAttribute("aria-label",visible.length+" ejercicios disponibles");
+}
+function chooseExercise(id){
+  const next=exercises.find(item=>item.id===Number(id));
+  if(!next)return;
+  exerciseId=next.id;methodIndex=0;selectedVariable=null;
+  prepare();renderExercisePicker();
+  $("#simulator-status").textContent="EJERCICIO "+String(exerciseId).padStart(2,"0")+" · LISTO PARA RECORRER";
+}
 function pseudocode(source,active=null,visited=[]){
   const host=$("#pseudocode-lines");
   const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
@@ -51,6 +73,7 @@ function prepare(){
   exercise=getExercise(exerciseId)??exercises[0];
   exerciseId=exercise.id;
   methodIndex=Math.max(0,Math.min(methodIndex,exercise.methods.length-1));
+  renderExercisePicker();
   $("#simulator-exercise-number").textContent=String(exercise.id).padStart(2,"0");
   $("#simulator-exercise-level").textContent=labels[exercise.level]??exercise.level;
   $("#simulator-exercise-level").className="exercise-level "+(exercise.level==="basic"?"level-basic":exercise.level==="intermediate"?"level-intermediate":"level-advanced");
@@ -307,6 +330,62 @@ function move(delta){
   timeline.seek(timeline.index+delta);render();
   if(timeline.index===timeline.length-1)stop();
 }
+function speedFactor(){return Number($("#simulator-speed")?.value)||1;}
+function setSpeedFactor(value){
+  const selected=SPEEDS.reduce((best,item)=>Math.abs(item-value)<Math.abs(best-value)?item:best,SPEEDS[0]);
+  $("#simulator-speed").value=String(selected);
+  $("#simulator-speed-fine").value=String(selected);
+  $("#simulator-speed-label").textContent=String(selected).replace(".",",")+"×";
+  if(timer!==null){stop();play();}
+}
+function cycleExercise(delta){
+  const current=exercises.findIndex(item=>item.id===exerciseId);
+  const next=(current+delta+exercises.length)%exercises.length;
+  chooseExercise(exercises[next].id);
+}
+function togglePredictionMode(){
+  predictionMode=!predictionMode;
+  const button=$("#simulator-predict-toggle");
+  button?.setAttribute("aria-pressed",String(predictionMode));
+  button?.setAttribute("aria-label",predictionMode?"Desactivar modo predicción (P)":"Activar modo predicción (P)");
+  button?.classList.toggle("is-active",predictionMode);
+  document.body.dataset.predictionMode=String(predictionMode);
+  document.dispatchEvent(new CustomEvent("traza:prediction-mode",{detail:{enabled:predictionMode}}));
+}
+function toggleShortcuts(){const panel=$("#simulator-shortcuts");if(panel)panel.hidden=!panel.hidden;}
+function bindKeyboard(){
+  document.addEventListener("keydown",event=>{
+    const space=document.body.dataset.activeSpace;
+    if(!["simulator","lab"].includes(space)||event.altKey||event.ctrlKey||event.metaKey)return;
+    const target=event.target;
+    if(target instanceof HTMLElement&&(target.isContentEditable||/^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName)))return;
+    if(event.key==="Escape"){$("#simulator-shortcuts").hidden=true;return;}
+    if(event.key==="?"||event.key==="/"){event.preventDefault();toggleShortcuts();return;}
+    if(event.key.toLowerCase()==="l"){
+      event.preventDefault();
+      document.querySelector(space==="simulator"?'[data-space="lab"]':'[data-space="simulator"]')?.click();
+      return;
+    }
+    if(space!=="simulator")return;
+    switch(event.key){
+      case "ArrowRight":event.preventDefault();move(1);break;
+      case "ArrowLeft":event.preventDefault();move(-1);break;
+      case " ":event.preventDefault();play();break;
+      case "Home":event.preventDefault();seek(0);break;
+      case "End":event.preventDefault();seek((timeline?.length??1)-1);break;
+      case "ArrowUp":event.preventDefault();setSpeedFactor(Math.min(8,speedFactor()*2));break;
+      case "ArrowDown":event.preventDefault();setSpeedFactor(Math.max(.25,speedFactor()/2));break;
+      case "[":event.preventDefault();cycleExercise(-1);break;
+      case "]":event.preventDefault();cycleExercise(1);break;
+      case "+":case "=":event.preventDefault();zoomDiagram(1);break;
+      case "-":event.preventDefault();zoomDiagram(-1);break;
+      case "0":event.preventDefault();fitDiagram();break;
+      case "c":case "C":event.preventDefault();$("#diagram-camera-toggle").click();break;
+      case "p":case "P":event.preventDefault();togglePredictionMode();break;
+      case "f":case "F":event.preventDefault();toggleDiagramFullscreen();break;
+    }
+  });
+}
 function play(){
   if(!timeline)return;
   if(timer!==null){stop();return;}
@@ -315,7 +394,7 @@ function play(){
   timer=window.setInterval(()=>{
     timeline.next();render();
     if(timeline.index>=timeline.length-1)stop();
-  },Number($("#simulator-speed").value)||650);
+  },Math.max(60,Math.round(650/speedFactor())));
 }
 function applyDiagramZoom(){
   const svg=$("#flow-svg");
@@ -442,6 +521,16 @@ function setMobilePanel(name){
   });
 }
 function bind(){
+  $("#simulator-exercise-picker").addEventListener("click",event=>{
+    const button=event.target.closest("[data-simulator-exercise]");
+    if(button)chooseExercise(button.dataset.simulatorExercise);
+  });
+  $("#simulator-exercise-search").addEventListener("input",event=>{
+    exerciseSearch=event.target.value;renderExercisePicker();
+  });
+  $("#simulator-shortcuts-toggle").addEventListener("click",toggleShortcuts);
+  $("#simulator-shortcuts-close").addEventListener("click",()=>{$("#simulator-shortcuts").hidden=true;});
+  $("#simulator-predict-toggle").addEventListener("click",togglePredictionMode);
   $("#simulator-mobile-tabs")?.addEventListener("click",event=>{
     const tab=event.target.closest("[data-mobile-panel]");
     if(tab)setMobilePanel(tab.dataset.mobilePanel);
@@ -483,9 +572,9 @@ function bind(){
   $("#simulator-last").addEventListener("click",()=>seek((timeline?.length??1)-1));
   $("#simulator-play").addEventListener("click",play);
   $("#simulator-timeline").addEventListener("input",event=>seek(Number(event.target.value)));
-  $("#simulator-speed").addEventListener("change",()=>{
-    if(timer!==null){stop();play();}
-  });
+  $("#simulator-speed").addEventListener("change",event=>setSpeedFactor(Number(event.target.value)||1));
+  $("#simulator-speed-fine").addEventListener("input",event=>setSpeedFactor(Number(event.target.value)||1));
+  bindKeyboard();
   $("#trace-history").addEventListener("click",event=>{
     const row=event.target.closest("[data-history-step]");if(row)seek(Number(row.dataset.historyStep));
   });
@@ -530,4 +619,6 @@ export function initSimulator(){
   setMobilePanel("diagram");
   updateCameraButton();
   bind();prepare();
+  renderExercisePicker();
+  setSpeedFactor(1);
 }
