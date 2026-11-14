@@ -10,7 +10,7 @@ Plataforma educativa modular basada en la especificación maestra V5 y en el pro
 | 2. Aprende y 40 ejercicios | Aceptado e integrado; correcciones del contenido consolidadas | 14 lecciones, 40 ejercicios (20/10/10), oráculo de 170 escenarios |
 | 3. Parser, intérprete, diagramas y simulador | Aceptado e integrado en `main` | 31/31 Node + 16/16 Chromium |
 | 4. Laboratorio y constructor | Aceptado e integrado en `main` | 216/216 Node + 28/28 Chromium |
-| 5. Integración y auditoría final | Implementado y validado en rama; PR de integración pendiente | 222/222 Node + 38/38 Chromium |
+| 5. Integración y auditoría final | Implementado y validado; PR #6 abierto y en validación | 222/222 Node + 38/38 Chromium en push; checks PR en ejecución |
 
 La rama actual es `module-5/final-audit-release`. No se debe afirmar que M5 está integrado en `main` hasta que se fusione su PR.
 

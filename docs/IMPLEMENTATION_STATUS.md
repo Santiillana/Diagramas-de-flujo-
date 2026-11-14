@@ -12,7 +12,7 @@
 - M3 integrado: `fd7d574abdf8b13e151d8cb6038e7d0e4344f363`
 - M4 integrado: `fc77b2d68a6454101d6edb915a117fafd3cdea34`
 - PR #1 (M1), #2 (M2), #4 (M3) y #5 (M4) están integrados. El PR #3 se cerró como sustituido por #5; sus correcciones principales están consolidadas.
-- PR M5 aún pendiente de crear e integrar.
+- PR M5 #6 abierto desde `module-5/final-audit-release`; el push de su SHA final está validado y sus checks de PR están en ejecución.
 
 ## Estado de los cinco módulos
 
@@ -22,7 +22,7 @@
 | 2. Aprende y 40 ejercicios | **Aceptado e integrado** | `b15acd5bdd59238f127d6d96972d719b96c2d671` + correcciones consolidadas en M4 | 14 lecciones, 40 retos 20/10/10; oráculo matemático independiente de 170 escenarios | Ninguno dentro del alcance; modos de reto y correcciones integrados |
 | 3. Parser, intérprete, diagrama y simulador | **Aceptado e integrado** | `fd7d574abdf8b13e151d8cb6038e7d0e4344f363` | 31/31 Node + 16/16 Chromium en aceptación M3; suites M5 vuelven a cubrir el simulador | Ninguno dentro del alcance |
 | 4. Laboratorio y constructor | **Aceptado e integrado** | `fc77b2d68a6454101d6edb915a117fafd3cdea34` | 216/216 Node + 28/28 Chromium en aceptación M4 | Limitación explícita: el constructor es estructurado, no ofrece conexiones manuales arbitrarias por puerto |
-| 5. Integración, auditoría y publicación | **Implementado y validado en rama; integración pendiente** | `045f5be0b2f5dc7fe39eb34797a69cba26448612` | **222/222 Node + 38/38 Chromium**, CI push #43614738106 — success | Crear PR M5 y fusionarlo; verificar/configurar Pages desde Settings |
+| 5. Integración, auditoría y publicación | **Implementado y validado; PR #6 abierto** | `8c79f7eaa70411925c27a64f644019a9bc186929` | **222/222 Node + 38/38 Chromium**, CI push #43615094361 — success; PR CI #43615148983 en curso | Checks PR, fusión y comprobación del deploy Pages |
 
 ## M1 — Arquitectura y experiencia visual
 - Cinco espacios de navegación, shell visual y responsive.

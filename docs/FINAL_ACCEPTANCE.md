@@ -7,7 +7,7 @@ Commit validado: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
 
 ## Resultado ejecutivo
 
-Los cinco módulos se han implementado. M1–M4 están integrados en `main`. M5 está implementado y su CI está verde en la rama de trabajo, pero su PR de integración aún debe crearse y fusionarse; por tanto no se afirma que la versión final ya esté en `main`.
+Los cinco módulos se han implementado. M1–M4 están integrados en `main`. M5 está implementado y su CI push está verde. El PR #6 está abierto y su CI de PR está en ejecución; por tanto no se afirma que la versión final ya esté en `main`.
 
 ### Estado por módulo
 
@@ -51,10 +51,14 @@ La comprobación de interacción móvil se ejecutó con Chromium emulado; no equ
 - Ejercicio 36: corregir el promedio y los aprobados para el caso declarado.
 - Se mantienen verificaciones de Fibonacci hasta 34 (sin imprimir 55), máximos con valores negativos, factorial 0! = 1, centinela no contado y promedio sin división entre cero.
 
+## Publicación
+
+El repositorio incluye `.github/workflows/pages.yml`, que usa GitHub Actions para publicar el contenido estático cuando hay un push a `main`. La automatización está en el PR M5; falta comprobar su ejecución real después de la fusión, la URL publicada y que responda correctamente.
+
 ## Integración final pendiente
 
-1. Crear el PR M5 desde `module-5/final-audit-release` hacia `main`.
-2. Comprobar checks del PR y fusionarlo.
-3. Habilitar/verificar GitHub Pages en Settings si el usuario quiere una URL pública activa.
+1. Esperar los checks del PR #6 y fusionarlo si todos terminan en verde.
+2. Comprobar el workflow **Deploy GitHub Pages** disparado por el push a `main`.
+3. Abrir la URL de Pages publicada y verificar que cargan los cinco espacios y los módulos JS.
 
 No debe declararse M5 integrado ni Pages publicado antes de completar esas acciones.
