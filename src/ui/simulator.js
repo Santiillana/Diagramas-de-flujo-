@@ -1,4 +1,5 @@
 import { exercises, getExercise } from "../content/exercises.js";
+import { traceExpression } from "../core/expression.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
 import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
@@ -137,6 +138,41 @@ function centerActiveNode(event,behavior){
   stage.scrollTo({left:Math.max(0,left),top:Math.max(0,top),
     behavior:behavior??(document.documentElement.dataset.motion==="reduced"?"auto":"smooth")});
 }
+function renderOperationBreakdown(event){
+  let expression=null;
+  let values=event.variables??{};
+  if(event.type==="assignment"||event.type==="loop-init"||event.type==="loop-update"){
+    const source=event.expression??event.sourceText??"";
+    const updateStep=/^([A-Za-z_][A-Za-z0-9_]*)(\\+\\+|--)$/.exec(source.trim());
+    if(updateStep&&event.change){
+      const amount=updateStep[2]==="++"?1:-1;
+      return '<div class="scene-operation-breakdown"><span>AVANCE DEL CONTADOR</span><p><code>'+esc(fmt(event.change.previous))+' '+(amount>0?"+":"−")+' 1 = '+esc(fmt(event.change.value))+'</code></p></div>';
+    }
+    const assignment=/^[A-Za-z_][A-Za-z0-9_]*\\s*=(?!=)\\s*(.+)$/.exec(source.trim());
+    if(assignment){
+      expression=assignment[1];
+      const previous=execution.events[timeline.index-1];
+      values=previous?.variables??{};
+    }
+  }else if(event.type==="output"){
+    expression=event.expression;
+  }else if(event.type==="decision"||event.type==="loop-condition"){
+    expression=event.condition;
+  }
+  if(!expression)return "";
+  try{
+    const trace=traceExpression(expression,values);
+    if(!trace.steps.length)return "";
+    return '<div class="scene-operation-breakdown"><span>DESGLOSE DE OPERACIÓN</span><ol>'+
+      trace.steps.map(step=>{
+        const right=step.right===null?"":' '+(step.shortCircuited?"":esc(fmt(step.right)));
+        return '<li><code>'+esc(fmt(step.left))+' '+esc(step.operator)+(right?' '+right:'')+' = <b>'+esc(fmt(step.result))+'</b></code></li>';
+      }).join("")+
+      '</ol><small>Los valores se sustituyen desde el estado del mismo paso de ejecución.</small></div>';
+  }catch(error){
+    return '<div class="scene-operation-breakdown"><span>DETALLE TÉCNICO</span><p>'+esc(error.message)+'</p></div>';
+  }
+}
 function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
@@ -156,6 +192,7 @@ function render(){
   $("#scene-content").innerHTML='<div class="scene-event-visual" aria-hidden="true">'+sceneSymbol(e.type)+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
     '<p class="scene-event-body">'+esc(scene.body)+'</p><div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
+    renderOperationBreakdown(e)+
     (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
   const vars=e.variables??{}, names=Object.keys(vars), change=e.change;
   $("#variables-content").innerHTML=names.length?'<table class="variables-table"><thead><tr><th>VARIABLE</th><th>VALOR ACTUAL</th></tr></thead><tbody>'+
