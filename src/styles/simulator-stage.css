@@ -145,3 +145,11 @@ body[data-active-space="simulator"] .simulator-grid>.diagram-panel .diagram-lege
 .simulator-grid>.simulator-inspector,
 .simulator-grid>.trace-panel,
 .simulator-grid>.simulator-dock{pointer-events:auto}
+
+/* The fixed simulator section is a stage, not a hit target. */
+body[data-active-space="simulator"] .simulator-view{pointer-events:none!important}
+body[data-active-space="simulator"] .simulator-view>.simulator-exercise-strip,
+body[data-active-space="simulator"] .simulator-view>.simulator-panels-toggle,
+body[data-active-space="simulator"] .simulator-view>.simulator-mobile-tabs,
+body[data-active-space="simulator"] .simulator-view>.simulator-grid,
+body[data-active-space="simulator"] .simulator-view>.simulator-shortcuts{pointer-events:auto!important}
