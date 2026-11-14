@@ -88,3 +88,14 @@ test("el token SVG sigue el paso y destaca la rama V/F realmente seleccionada",a
   await expect(page.locator("#flow-diagram-container .diagram-edge.is-route-active")).toHaveCount(1);
   await expect(page.locator("#flow-diagram-container .diagram-edge.is-route-active .diagram-edge-label")).toContainText("F");
 });
+
+
+test("la escena desglosa los operandos y el resultado del cálculo activo",async({page})=>{
+  const errors=[];
+  page.on("pageerror",error=>errors.push(error.message));
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#trace-history li").filter({hasText:"ASIGNACIÓN"}).first().click();
+  await expect(page.locator("#scene-content .scene-operation-breakdown")).toContainText("8 + 5 = 13");
+  expect(errors).toEqual([]);
+});
