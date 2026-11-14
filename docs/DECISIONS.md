@@ -35,3 +35,12 @@ Cada evento guarda variables, salida, nodo y línea, ruta lógica, cambios y con
 
 ## D-012 · Constructor compila al motor común
 El M4 debe traducir los diagramas creados al pseudocódigo restringido de M3 y usar `executePseudocode`. No implementar un intérprete paralelo.
+
+## D-013 · Constructor mediante flujo estructurado
+El constructor utiliza una secuencia ordenada con ramas V/F y cuerpos de ciclo anidados. Las conexiones secuenciales se derivan del orden y la anidación; el compilador genera una sola gramática que consume el parser/intérprete de M3. No se crea un segundo motor. Este modelo impide aristas huérfanas por diseño, aunque no ofrece aún cableado libre entre puertos.
+
+## D-014 · Laboratorio consume snapshots del simulador
+La predicción, tabla, reconocimiento de símbolo y contexto visual leen la traza compartida. La actividad ¿Y si...? ejecuta una copia independiente y compara los resultados finales, sin mutar el recorrido base.
+
+## D-015 · Oráculo independiente para validar el catálogo
+Los resultados esperados se contrastan con cálculos de referencia por ejercicio, independientes del pseudocódigo y del intérprete. La batería se ejecuta dentro de CI junto con las pruebas de parser, UI y constructor.
