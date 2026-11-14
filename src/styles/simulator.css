@@ -172,3 +172,10 @@
 .diagram-panel #flow-diagram-container{pointer-events:auto;cursor:grab}
 .diagram-panel .flow-svg{pointer-events:none}
 .diagram-panel .simulator-diagram-stage.is-panning #flow-diagram-container{cursor:grabbing}
+
+/* Barra de acciones anclada al propio lienzo para evitar que el scroll la tape. */
+.diagram-stage-tools{position:sticky;top:8px;z-index:30;display:flex;justify-content:flex-end;gap:7px;width:fit-content;margin:0 8px -34px auto;padding:0 4px;pointer-events:auto}
+.diagram-panel>.diagram-heading{position:relative;z-index:auto}
+.diagram-panel>.simulator-diagram-stage{position:relative;z-index:auto;pointer-events:auto}
+.diagram-panel #flow-diagram-container{pointer-events:none}
+.diagram-panel .flow-svg{pointer-events:none}
