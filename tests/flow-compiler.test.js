@@ -11,6 +11,14 @@ test("compila y ejecuta una secuencia creada por el constructor",()=>{
   assert.deepEqual(result.outputs,[16]);
 });
 
+test("la línea de tiempo del constructor conserva la salida final en el último snapshot",()=>{
+  const flow=createFlowPreset("sequence");
+  const compiled=compileFlow(flow);
+  const result=executePseudocode(compiled.source,[8]);
+  assert.deepEqual(result.events.at(-1).outputs,[16]);
+  assert.equal(result.events.at(-1).type,"program-end");
+});
+
 test("compila una decisión con rutas V/F explícitas",()=>{
   const flow=createFlowPreset("decision");
   const compiled=compileFlow(flow);
