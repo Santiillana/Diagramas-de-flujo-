@@ -12,7 +12,7 @@ Plataforma educativa modular basada en la especificación maestra V5 y en el pro
 | 4. Laboratorio y constructor | Aceptado e integrado en `main` | 216/216 Node + 28/28 Chromium |
 | 5. Integración y auditoría final | Aceptado e integrado en `main` (PR #6) | 222/222 Node + 38/38 Chromium en CI de `main` |
 
-La rama actual es `module-5/final-audit-release`. Los cinco módulos están integrados en `main`. GitHub Pages requiere activar su Source en Settings antes de publicar.
+La rama predeterminada es `main`; los cinco módulos V5 están integrados y aceptados allí. La fase de mejoras de la Instrucción maestra 2 se desarrolla en `instruction-2/live-lab-phase`, sin modificar `main` hasta completar su validación.
 
 ## Ejecutar en local
 
@@ -26,7 +26,7 @@ Abre http://localhost:8000. Los módulos ES se sirven por HTTP.
 
 Requiere Node.js 22 o superior:
 ```bash
-npm install
+npm ci
 npm test
 npx playwright install chromium
 npm run test:browser

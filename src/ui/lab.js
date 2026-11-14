@@ -1,8 +1,8 @@
+import { escapeHTML as esc } from "./escape.js";
 import { flattenPseudocode } from "../core/parser.js";
 import { executePseudocode } from "../core/interpreter.js";
 
 const $=selector=>document.querySelector(selector);
-const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=value=>typeof value==="number"?String(Number(value.toFixed(6))):String(value);
 let trace=null;
 let activity="predict";

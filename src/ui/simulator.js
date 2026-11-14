@@ -1,3 +1,4 @@
+import { escapeHTML as esc } from "./escape.js";
 import { exercises, getExercise } from "../content/exercises.js";
 import { traceExpression } from "../core/expression.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
@@ -6,7 +7,6 @@ import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 
 const $ = s => document.querySelector(s);
-const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;

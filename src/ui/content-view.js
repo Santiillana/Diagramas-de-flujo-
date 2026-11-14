@@ -1,11 +1,9 @@
 import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
+import { escapeHTML } from "./escape.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
-const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[ch]));
 const LEVELS = {
   basic:{label:"Básico",className:"level-basic"},
   intermediate:{label:"Intermedio",className:"level-intermediate"},

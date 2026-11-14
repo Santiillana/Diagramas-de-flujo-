@@ -1,6 +1,4 @@
-const escape = value => String(value??"").replace(/[&<>"']/g,ch=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[ch]));
+import { escapeHTML as escape } from "../ui/escape.js";
 const wrapped = (text,max=16) => {
   const words=String(text??"").split(/\s+/);
   const lines=[];
