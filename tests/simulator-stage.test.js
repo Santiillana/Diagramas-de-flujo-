@@ -14,7 +14,7 @@ test("el escenario declara paneles flotantes y acciones accesibles",async()=>{
 });
 test("el gestor persiste paneles, responde a H y permite arrastre con puntero",async()=>{
  const manager=await read("../src/ui/simulator-panels.js");
- for(const pattern of [/localStorage\.setItem/,/catch\s*\{\s*\}/,/event\.key\.toLowerCase\(\)==="h"/,/setPointerCapture/,/data-userExpanded/])assert.match(manager,pattern);
+ for(const pattern of [/localStorage\.setItem/,/catch\s*\{\s*\}/,/event\.key\.toLowerCase\(\)==="h"/,/setPointerCapture/,/dataset\.userExpanded/])assert.match(manager,pattern);
 });
 test("la cámara calcula área libre entre paneles y dock",async()=>{
  const simulator=await read("../src/ui/simulator.js");
