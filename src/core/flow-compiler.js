@@ -126,6 +126,9 @@ export function validateFlow(model) {
     return {valid:false,errors:[{nodeId:null,field:"nodes",message:"El diagrama no contiene una secuencia de nodos.",path:[]}]};
   }
   const nodes=model.nodes;
+  if(nodes.length===2){
+    errors.push({nodeId:null,field:"nodes",message:"Añade al menos una instrucción entre Inicio y Fin.",path:[]});
+  }
   if(nodes.length<2){
     errors.push({nodeId:null,field:"terminals",message:"El diagrama necesita un Inicio y un Fin.",path:[]});
     return {valid:false,errors};
