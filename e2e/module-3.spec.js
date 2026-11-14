@@ -57,6 +57,10 @@ test("el diagrama y los paneles siguen contenidos en pantallas pequeñas", async
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
   await expect(page.locator("#flow-diagram-container")).toBeVisible();
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="scene"]').click();
   await expect(page.locator("#scene-content")).toBeVisible();
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="variables"]').click();
   await expect(page.locator("#variables-content")).toBeVisible();
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="diagram"]').click();
+  await expect(page.locator("#flow-diagram-container")).toBeVisible();
 });
