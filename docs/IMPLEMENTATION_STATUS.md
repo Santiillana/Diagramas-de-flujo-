@@ -5,52 +5,63 @@
 ## Repositorio y ramas
 - Repositorio: `Santiillana/Diagramas-de-flujo-`
 - Rama predeterminada: `main`
-- Rama de trabajo de M1: `module-1/architecture-visual-system`
+- Rama de trabajo M1: `module-1/architecture-visual-system`
 - Estado inicial auditado: repositorio vacío, sin ramas ni commits.
 - Commit semilla de `main`: `c6b931c98aa27627adf10fe80ec8457ea7826ef4`
-- Entrega inicial de M1: `623f654d4daa4f324a87b690d217edb383623df1`
-- M1 se cierra con pruebas automatizadas de navegador además de la suite de arquitectura.
+- Commit de cierre técnico de M1: `3d0f117f6ba95efb7c133a25d95e0f4d0f5e68da`
+- PR M1: https://github.com/Santiillana/Diagramas-de-flujo-/pull/1
 
 ## Estado de los cinco módulos
 | Módulo | Estado | Commit de cierre | Pruebas | Bloqueos / pendientes |
 |---|---|---|---|---|
-| 1. Auditoría, arquitectura y experiencia visual | En validación final | Pendiente del workflow Playwright | 7 pruebas Node + aceptación real en Chromium para navegación, tres tamaños, dock, tema, movimiento y referencia | Aceptar solo cuando CI esté verde |
-| 2. Aprende y 40 ejercicios | Pendiente | — | No ejecutadas | Depende del cierre de M1 |
+| 1. Auditoría, arquitectura y experiencia visual | **Aceptado** | `3d0f117f6ba95efb7c133a25d95e0f4d0f5e68da` | 7 pruebas Node + 7 pruebas Playwright Chromium; push y PR CI verdes | Ninguno dentro del alcance M1 |
+| 2. Aprende y catálogo validado de 40 ejercicios | En curso | — | Se ejecutan al cerrar el módulo | Ninguno; depende de M1 aceptado |
 | 3. Parser, intérprete y simulación sincronizada | Pendiente | — | No ejecutadas | Depende de M1 y M2 |
 | 4. Laboratorio y constructor | Pendiente | — | No ejecutadas | Depende de M1, M2 y M3 |
 | 5. Integración, auditoría y publicación | Pendiente | — | No ejecutadas | Depende de M1 a M4 |
 
 ## Arquitectura actual
-- Aplicación estática con HTML semántico, CSS separado por responsabilidad y módulos ES nativos.
-- Sin dependencias de ejecución; Playwright es dependencia solo de desarrollo/validación.
+- Aplicación estática con HTML semántico, CSS por responsabilidad y JavaScript nativo con módulos ES.
+- Sin dependencias de ejecución; Playwright se usa exclusivamente para desarrollo y validación.
 - Entrada: `index.html`.
 - Navegación: `src/ui/navigation.js`.
 - Preferencias de tema y movimiento: `src/ui/preferences.js`.
 - Sistema visual: `src/styles/`.
-- Pruebas unitarias/estructurales: `tests/architecture.test.js`.
-- Pruebas de navegador: `e2e/module-1.spec.js`.
+- Suite estructural: `tests/architecture.test.js`.
+- Pruebas reales de navegador: `e2e/module-1.spec.js`.
+- Configuración Playwright: `playwright.config.js`.
 - Workflow de calidad: `.github/workflows/quality.yml`.
 - Referencia funcional inmutable: `reference/diagramas_de_flujo_original.html`.
 
 ## Comandos
 - Desarrollo: `python3 -m http.server 8000`
-- Pruebas estructurales: `npm test`
-- Pruebas de navegador: `npm run test:browser` (requiere Chromium de Playwright)
-- Build: no aplica; los archivos se sirven directamente.
+- Instalar dependencias de desarrollo: `npm install`
+- Suite estructural: `npm test`
+- Instalar Chromium: `npx playwright install chromium`
+- Suite de navegador: `npm run test:browser`
+- Build: no aplica; los archivos estáticos se sirven directamente.
 
 ## Funciones originales preservadas
-El HTML adjunto se conserva byte por byte como referencia inmutable y se enlaza desde la nueva interfaz. La auditoría de funciones está en `docs/ORIGINAL_FEATURE_AUDIT.md`; un panel visual no equivale a una migración funcional.
+El HTML adjunto se conserva byte por byte como referencia inmutable. La interfaz nueva enlaza a esa referencia durante la transición. La auditoría función por función está en `docs/ORIGINAL_FEATURE_AUDIT.md`; una zona visual vacía no se cuenta como función migrada.
 
-Integridad verificada anteriormente:
-- HTML original: blob `9f7f5a3d68d10b004e2ea306df1109906f13bc33`.
-- Documento V5: blob `c74422272ba8b89757af1be74bca2722337ec902`.
-Ambos blobs coinciden con los adjuntos originales.
+Integridad verificada:
+- HTML original: Git blob `9f7f5a3d68d10b004e2ea306df1109906f13bc33`.
+- Documento V5: Git blob `c74422272ba8b89757af1be74bca2722337ec902`.
+Ambos blobs coinciden con los archivos adjuntos originales.
 
-## Pruebas y resultados
-- Suite Node: 7 pruebas estructurales aprobadas en GitHub Actions en la entrega anterior.
-- Añadida suite Playwright Chromium: navegación de cinco espacios, ausencia de overflow horizontal en escritorio (1440 px), tableta horizontal (1024 px) y móvil (390 px), dock separado del área de diagrama, preferencia de tema, movimiento reducido y acceso HTTP al prototipo original.
-- El resultado del workflow de cierre se registrará tras ejecutarse en el commit de esta actualización.
-- No se marca M1 como aceptado hasta que el job de navegador termine correctamente.
+## Pruebas y resultados M1
+Evidencia GitHub Actions en el commit `3d0f117f6ba95efb7c133a25d95e0f4d0f5e68da`:
+- Push: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43573647719 — **success**.
+- Pull request: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43573651228 — **success**.
+- Node: **7/7** pruebas estructurales aprobadas.
+- Playwright/Chromium: **7/7** pruebas de navegador aprobadas.
+- Navegación probada en los cinco espacios.
+- Desbordamiento horizontal comprobado en escritorio (1440 px), tableta horizontal (1024 px) y móvil (390 px), para las cinco vistas.
+- Dock comprobado debajo del diagrama, sin solapamiento.
+- Tema claro/oscuro, movimiento reducido y enlace HTTP al HTML original comprobados.
+- No se detectaron errores de JavaScript en navegación.
 
-## Problemas conocidos
-- Simulador, motor, lecciones, ejercicios interactivos, actividades y constructor todavía no se consideran migrados. El Módulo 2 incorpora contenido; el motor y la ejecución pertenecen al Módulo 3; el laboratorio y constructor funcional al Módulo 4.
+## Problemas conocidos y siguiente acción
+- M1 completa la arquitectura y estructura visual, no la migración funcional del motor, contenido ni constructor.
+- No se crea un intérprete ficticio en M1 o M2.
+- **Siguiente acción:** completar las 14 lecciones y el catálogo de exactamente 40 ejercicios (20 básicos, 10 intermedios y 10 avanzados) en M2. No iniciar M3 hasta aceptar M2.
