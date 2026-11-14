@@ -55,7 +55,7 @@ test("admite bloques anidados y compila su retorno",()=>{
     makeNode("output",{expression:"n"})
   ]})];
   const compiled=compileFlow(flow);
-  assert.match(compiled.source,/mientras x<2/);
+  assert.match(compiled.source,/mientras n<2/);
   assert.deepEqual(executePseudocode(compiled.source,[1]).outputs,[2]);
 });
 
