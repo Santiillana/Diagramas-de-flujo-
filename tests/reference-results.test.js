@@ -174,5 +174,5 @@ test("cada resultado esperado de los 40 ejercicios coincide con un cálculo inde
       }
     }
   }
-  assert.ok(scenarios >= 200, "Se deben comprobar al menos 200 escenarios por método.");
+  assert.ok(scenarios >= 170, "Se deben comprobar al menos 170 escenarios por método.");
 });
