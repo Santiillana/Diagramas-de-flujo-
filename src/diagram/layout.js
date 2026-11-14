@@ -1,7 +1,7 @@
-const WIDTH = 190;
-const HEIGHT = 52;
-const VERTICAL_GAP = 88;
-const BRANCH_GAP = 230;
+const WIDTH = 230;
+const HEIGHT = 66;
+const VERTICAL_GAP = 102;
+const BRANCH_GAP = 270;
 
 const labelFor = node => {
   if (node.type === "input") return "Leer "+node.variables.join(", ");
@@ -23,7 +23,7 @@ export function layoutFlow(program) {
     const isDecision = ["if","while","doWhile"].includes(type);
     const node = {
       id:String(id),sourceId:typeof id==="number"?id:null,type,label,
-      x,y,width:type==="merge"?28:WIDTH,height:type==="merge"?28:(isDecision?82:(type==="for"?64:HEIGHT)),
+      x,y,width:type==="merge"?28:WIDTH,height:type==="merge"?28:(isDecision?102:(type==="for"?78:HEIGHT)),
       line,source
     };
     nodes.push(node);
