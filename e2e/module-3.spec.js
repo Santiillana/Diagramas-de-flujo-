@@ -54,8 +54,17 @@ test("el diagrama y los paneles siguen contenidos en pantallas pequeñas", async
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  expect(overflow).toBeLessThanOrEqual(1);
+  const report = await page.evaluate(() => ({
+        width: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        offenders: [...document.querySelectorAll("body *")].map(element => {
+          const rect = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {tag:element.tagName,id:element.id,className:typeof element.className==="string"?element.className:"",left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),overflow:style.overflow,position:style.position};
+        }).filter(item => item.width>0 && item.right>innerWidth+1 && item.overflow!=="hidden").sort((a,b)=>b.right-a.right).slice(0,12)
+      }));
+      const overflow=report.scrollWidth-report.width;
+  expect(overflow,`overflow horizontal del simulador: ${JSON.stringify(report.offenders)}`).toBeLessThanOrEqual(1);
   await expect(page.locator("#flow-diagram-container")).toBeVisible();
   await page.locator('#simulator-mobile-tabs [data-mobile-panel="scene"]').click();
   await expect(page.locator("#scene-content")).toBeVisible();
