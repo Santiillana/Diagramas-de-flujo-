@@ -140,13 +140,16 @@ function updateCameraButton(){
 }
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
-  const stage=$("#diagram-stage"),node=document.getElementById("flow-node-"+event.nodeId);
-  if(!stage||!node)return;
+  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
+  const node=document.getElementById("flow-node-"+event.nodeId);
+  if(!stage||!canvas||!node)return;
   const bounds=stage.getBoundingClientRect(),target=node.getBoundingClientRect();
-  const left=stage.scrollLeft+target.left+target.width/2-(bounds.left+stage.clientWidth/2);
-  const top=stage.scrollTop+target.top+target.height/2-(bounds.top+stage.clientHeight/2);
-  stage.scrollTo({left:Math.max(0,left),top:Math.max(0,top),
-    behavior:behavior??(document.documentElement.dataset.motion==="reduced"?"auto":"smooth")});
+  const dx=bounds.left+stage.clientWidth/2-(target.left+target.width/2);
+  const dy=bounds.top+stage.clientHeight/2-(target.top+target.height/2);
+  panOffset={x:panOffset.x+dx,y:panOffset.y+dy};
+  canvas.style.transition=behavior==="auto"||document.documentElement.dataset.motion==="reduced"?"none":"transform 320ms cubic-bezier(.2,.8,.2,1)";
+  canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
+  stage.dataset.cameraTarget=String(event.nodeId);
 }
 function renderOperationBreakdown(event){
   let expression=null;
