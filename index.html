@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -139,40 +139,95 @@
       </div>
     </section>
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Experimenta sin perder de vista el flujo.</h2><p>El panel de actividad se organiza junto al diagrama: el contexto principal permanece visible durante el trabajo.</p></div><span class="phase-chip">ACTIVIDADES · MÓDULO 4</span></div>
-      <div class="lab-layout">
-        <section class="panel lab-context"><div class="panel-heading"><div><p class="eyebrow">CONTEXTO PERSISTENTE</p><h3>Diagrama y estado</h3></div><span class="panel-index">A</span></div>
-          <div class="lab-diagram-placeholder"><span class="eyebrow">EL DIAGRAMA NO SE OCULTA</span><div class="lab-flow-mark" aria-hidden="true"><i></i><b></b><i></i><b></b><i></i></div><p>Ejercicio, paso y variables seguirán disponibles al cambiar de actividad.</p></div>
-          <div class="lab-context-footer"><span>EN ESCENA <b>—</b></span><span>VARIABLES <b>—</b></span><span>FILA ACTUAL <b>—</b></span></div>
+      <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Pon a prueba tu razonamiento, no tu memoria.</h2><p>Las actividades usan la ejecución real del simulador. Cambiar de reto o actividad no borra el estado del algoritmo.</p></div><span class="phase-chip">6 ACTIVIDADES · TRAZA COMPARTIDA</span></div>
+      <div class="lab-layout lab-layout-live">
+        <section class="panel lab-context lab-context-live">
+          <div class="panel-heading"><div><p class="eyebrow">CONTEXTO PERSISTENTE</p><h3 id="lab-context-title">Diagrama de flujo · Sin ejecución</h3></div><span class="panel-index">A</span></div>
+          <div class="lab-live-diagram" id="lab-diagram-container">
+            <div class="lab-diagram-empty"><span class="eyebrow">DIAGRAMA EN VIVO</span><strong>Selecciona un ejercicio y ejecútalo.</strong><p>El diagrama, las variables y el paso actual permanecerán visibles mientras trabajas en las actividades.</p></div>
+          </div>
+          <div class="lab-live-inspector">
+            <section class="lab-mini-panel"><p class="eyebrow">EN ESCENA</p><div id="lab-scene-content"><strong>Sin evento activo.</strong><p>La explicación del paso seleccionado aparecerá aquí.</p></div></section>
+            <section class="lab-mini-panel"><p class="eyebrow">VARIABLES</p><div id="lab-variables-content"><span class="empty-state-copy">Sin variables todavía.</span></div></section>
+          </div>
+          <div class="lab-context-footer"><span id="lab-current-step">PASO <b>—</b></span><span id="lab-current-exercise">EJERCICIO <b>—</b></span><button type="button" class="text-link" id="lab-open-simulator">Abrir simulador ↗</button></div>
         </section>
-        <aside class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">ELIGE UNA ACTIVIDAD</p><h3>Herramientas del laboratorio</h3></div><span class="panel-index">B</span></div>
-          <div class="activity-list">
-            <article class="activity-card"><span class="activity-icon">?</span><div><strong>Predice</strong><p>Anticipa el siguiente paso antes de revelarlo.</p></div><span class="activity-lock">M4</span></article>
-            <article class="activity-card"><span class="activity-icon">▦</span><div><strong>Tabla de seguimiento</strong><p>Inspecciona valores, cambios y vueltas.</p></div><span class="activity-lock">M4</span></article>
-            <article class="activity-card"><span class="activity-icon">↕</span><div><strong>Ordena instrucciones</strong><p>Reconstruye la secuencia correcta.</p></div><span class="activity-lock">M4</span></article>
-            <article class="activity-card"><span class="activity-icon">◇</span><div><strong>Identifica símbolo</strong><p>Relaciona la instrucción con su figura.</p></div><span class="activity-lock">M4</span></article>
-            <article class="activity-card"><span class="activity-icon">!</span><div><strong>Encuentra el error</strong><p>Detecta fallos con casos de prueba.</p></div><span class="activity-lock">M4</span></article>
-            <article class="activity-card"><span class="activity-icon">↗</span><div><strong>¿Y si…?</strong><p>Cambia un dato o condición y analiza el efecto.</p></div><span class="activity-lock">M4</span></article>
+        <aside class="panel activity-panel activity-panel-live">
+          <div class="panel-heading"><div><p class="eyebrow">ELIGE UNA ACTIVIDAD</p><h3>Seis formas de pensar</h3></div><span class="panel-index">B</span></div>
+          <div class="activity-list" id="lab-activity-list">
+            <button type="button" class="activity-card is-active" data-lab-activity="predict"><span class="activity-icon">?</span><span><strong>Predice el paso</strong><small>Anticipa antes de revelar el evento real.</small></span><span class="activity-arrow">›</span></button>
+            <button type="button" class="activity-card" data-lab-activity="table"><span class="activity-icon">▦</span><span><strong>Tabla de seguimiento</strong><small>Inspecciona valores, cambios y vueltas.</small></span><span class="activity-arrow">›</span></button>
+            <button type="button" class="activity-card" data-lab-activity="order"><span class="activity-icon">↕</span><span><strong>Ordena instrucciones</strong><small>Reconstruye el orden de ejecución.</small></span><span class="activity-arrow">›</span></button>
+            <button type="button" class="activity-card" data-lab-activity="symbol"><span class="activity-icon">◇</span><span><strong>Identifica símbolo</strong><small>Relaciona cada instrucción con su figura.</small></span><span class="activity-arrow">›</span></button>
+            <button type="button" class="activity-card" data-lab-activity="error"><span class="activity-icon">!</span><span><strong>Encuentra el error</strong><small>Contrasta algoritmos con contraejemplos.</small></span><span class="activity-arrow">›</span></button>
+            <button type="button" class="activity-card" data-lab-activity="whatif"><span class="activity-icon">↗</span><span><strong>¿Y si…?</strong><small>Modifica una condición o dato y analiza el efecto.</small></span><span class="activity-arrow">›</span></button>
           </div>
         </aside>
       </div>
+      <section class="panel lab-task-panel" aria-live="polite">
+        <div class="panel-heading"><div><p class="eyebrow">ACTIVIDAD ACTUAL</p><h3 id="lab-task-title">Predice el siguiente paso</h3></div><span class="panel-index">C</span></div>
+        <div id="lab-task-content" class="lab-task-content"><p>Ejecuta un ejercicio en el simulador; el laboratorio tomará la traza real como punto de partida.</p></div>
+      </section>
     </section>
 
     <section class="space-view builder-view" id="view-builder" data-view="builder" aria-labelledby="builder-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">05 / CONSTRUCTOR</p><h2 id="builder-title">Construye el flujo. Comprueba que tenga sentido.</h2><p>El lienzo y la paleta usarán los mismos símbolos y reglas que entenderá el simulador.</p></div><span class="phase-chip">EDITOR COMPLETO · MÓDULO 4</span></div>
-      <div class="builder-grid">
-        <aside class="panel builder-palette"><div class="panel-heading"><div><p class="eyebrow">ELEMENTOS DISPONIBLES</p><h3>Símbolos</h3></div></div>
-          <div class="palette-item"><i class="palette-shape terminal-shape"></i><span><b>Inicio / Fin</b><small>Terminal</small></span><em>01</em></div>
-          <div class="palette-item"><i class="palette-shape io-shape"></i><span><b>Entrada / Salida</b><small>Datos</small></span><em>02</em></div>
-          <div class="palette-item"><i class="palette-shape process-shape"></i><span><b>Proceso</b><small>Instrucción</small></span><em>03</em></div>
-          <div class="palette-item"><i class="palette-shape decision-shape"></i><span><b>Decisión</b><small>Condición · V/F</small></span><em>04</em></div>
-          <div class="palette-item"><i class="palette-shape connector-shape"></i><span><b>Conector</b><small>Enlace</small></span><em>05</em></div><p class="helper-copy">Colocar, editar y conectar elementos se implementará en el Módulo 4.</p>
-        </aside>
-        <section class="panel builder-canvas"><div class="panel-heading"><div><p class="eyebrow">ÁREA DE TRABAJO</p><h3>Lienzo del constructor</h3></div><span class="canvas-status"><i></i> LIENZO VACÍO</span></div>
-          <div class="builder-empty"><span class="builder-crosshair">＋</span><strong>Tu diagrama empieza aquí.</strong><p>Agrega símbolos, crea conexiones y valida el recorrido antes de ejecutarlo.</p></div>
-        </section>
-        <aside class="panel builder-inspector"><div class="panel-heading"><div><p class="eyebrow">PROPIEDADES</p><h3>Inspector</h3></div></div><div class="inspector-empty"><span>⌘</span><strong>Ningún elemento seleccionado</strong><p>Las propiedades y los errores de conexión aparecerán aquí.</p></div></aside>
+      <div class="section-intro"><div><p class="eyebrow">05 / CONSTRUCTOR</p><h2 id="builder-title">Construye el flujo. Valida su lógica. Ejecútalo.</h2><p>Conecta símbolos y estructuras. El diagrama se compila al pseudocódigo del mismo motor que utiliza el simulador.</p></div><span class="phase-chip">UN SOLO MODELO · UN SOLO MOTOR</span></div>
+      <div class="builder-toolbar panel">
+        <div><p class="eyebrow">PLANTILLAS DE INICIO</p><strong>Prueba con un flujo base o empieza desde cero.</strong></div>
+        <div class="builder-presets">
+          <button type="button" class="button button-secondary" data-builder-preset="sequence">Secuencia</button>
+          <button type="button" class="button button-secondary" data-builder-preset="decision">Decisión</button>
+          <button type="button" class="button button-secondary" data-builder-preset="for">Para</button>
+          <button type="button" class="button button-secondary" data-builder-preset="while">Mientras</button>
+          <button type="button" class="button button-secondary" data-builder-preset="doWhile">Hacer–Mientras</button>
+          <button type="button" class="button button-secondary" data-builder-preset="empty">Vacío</button>
+        </div>
       </div>
+      <div class="builder-grid builder-grid-live">
+        <aside class="panel builder-palette">
+          <div class="panel-heading"><div><p class="eyebrow">PALETA DE ELEMENTOS</p><h3>Añadir símbolo</h3></div><span class="panel-index">A</span></div>
+          <div class="builder-palette-list">
+            <button type="button" class="palette-action" data-add-node="input"><i class="palette-shape io-shape"></i><span><b>Entrada</b><small>Leer datos</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="process"><i class="palette-shape process-shape"></i><span><b>Proceso</b><small>Asignar / calcular</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="output"><i class="palette-shape output-shape"></i><span><b>Salida</b><small>Imprimir resultado</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="decision"><i class="palette-shape decision-shape"></i><span><b>Decisión</b><small>Rutas Verdadera / Falsa</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="for"><i class="palette-shape loop-shape"></i><span><b>Ciclo Para</b><small>Preparar · evaluar · avanzar</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="while"><i class="palette-shape decision-shape"></i><span><b>Ciclo Mientras</b><small>Evaluar antes de entrar</small></span><em>+</em></button>
+            <button type="button" class="palette-action" data-add-node="doWhile"><i class="palette-shape terminal-shape"></i><span><b>Hacer–Mientras</b><small>Ejecutar y evaluar al final</small></span><em>+</em></button>
+          </div>
+          <p class="helper-copy">Inicio y Fin son terminales fijos. Los conectores se recalculan al reordenar, agregar o eliminar elementos.</p>
+        </aside>
+        <section class="panel builder-editor">
+          <div class="panel-heading"><div><p class="eyebrow">LIENZO ESTRUCTURADO</p><h3>Secuencia y conexiones</h3></div><span class="canvas-status"><i></i><span id="builder-status">SIN VALIDAR</span></span></div>
+          <nav id="builder-breadcrumb" class="builder-breadcrumb" aria-label="Ubicación del bloque"></nav>
+          <div id="builder-canvas-list" class="builder-canvas-list"></div>
+          <div class="builder-canvas-actions"><button type="button" class="button button-secondary" id="builder-validate">Validar estructura</button><button type="button" class="button button-primary" id="builder-run">Ejecutar diagrama <span aria-hidden="true">▶</span></button></div>
+          <div id="builder-errors" class="builder-errors" role="status"></div>
+        </section>
+        <aside class="panel builder-inspector builder-inspector-live">
+          <div class="panel-heading"><div><p class="eyebrow">PROPIEDADES</p><h3>Inspector del símbolo</h3></div><span class="panel-index">C</span></div>
+          <div id="builder-inspector-content" class="builder-inspector-content"><p class="empty-state-copy">Selecciona un símbolo para editar sus propiedades.</p></div>
+        </aside>
+      </div>
+      <section class="panel builder-preview-panel">
+        <div class="panel-heading"><div><p class="eyebrow">VALIDACIÓN Y EJECUCIÓN</p><h3>El mismo diagrama, la misma traza</h3></div><span class="panel-index">D</span></div>
+        <div class="builder-preview-grid">
+          <section class="builder-preview-column"><p class="eyebrow">PSEUDOCÓDIGO COMPILADO</p><pre id="builder-code" class="builder-code">Añade instrucciones y valida el flujo.</pre>
+            <label class="builder-field"><span>DATOS DE ENTRADA</span><input id="builder-inputs" type="text" placeholder="Ejemplo: 8" autocomplete="off"></label>
+            <div id="builder-runtime-message" class="builder-runtime-message" role="status">El constructor aún no ha generado una ejecución.</div>
+          </section>
+          <section class="builder-preview-column"><p class="eyebrow">DIAGRAMA SVG</p><div id="builder-diagram" class="builder-diagram"><p class="empty-state-copy">El SVG aparecerá cuando el diagrama sea válido.</p></div></section>
+          <section class="builder-preview-column"><p class="eyebrow">EN ESCENA</p><div id="builder-scene" class="builder-live-panel"><p>Esperando una ejecución.</p></div><p class="eyebrow">VARIABLES</p><div id="builder-variables" class="builder-live-panel"><p>Sin variables.</p></div><p class="eyebrow">SALIDA</p><ol id="builder-output" class="builder-output"><li>Sin salida.</li></ol></section>
+        </div>
+        <div class="builder-execution-dock">
+          <button type="button" class="transport-button" id="builder-first" disabled aria-label="Inicio">|◀</button>
+          <button type="button" class="transport-button" id="builder-previous" disabled aria-label="Anterior">◀</button>
+          <button type="button" class="transport-button" id="builder-next" disabled aria-label="Siguiente">▶</button>
+          <button type="button" class="transport-button" id="builder-last" disabled aria-label="Final">▶|</button>
+          <span id="builder-timeline-label">Paso — / —</span>
+          <input id="builder-timeline" type="range" min="0" max="0" value="0" disabled aria-label="Paso de ejecución del diagrama">
+        </div>
+      </section>
     </section>
 
     <footer class="page-footer"><span>TRAZA <i>·</i> REDISEÑO V5</span><span>La referencia original permanece intacta durante la transición.</span><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Abrir prototipo original ↗</a></footer>
