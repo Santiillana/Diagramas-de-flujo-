@@ -163,3 +163,20 @@ body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-head
 body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.simulator-diagram-stage{pointer-events:auto!important}
 body[data-active-space="simulator"] .simulator-grid>.simulator-inspector{pointer-events:none!important}
 body[data-active-space="simulator"] .simulator-grid>.simulator-inspector>[data-floating-panel]{pointer-events:auto!important}
+
+/* Toolbar is a direct child of simulator-view, outside the hit-test grid. */
+body[data-active-space="simulator"] .simulator-view>.simulator-floating-toolbar{
+ position:fixed!important;z-index:120!important;
+ top:calc(var(--simulator-topbar-height,82px) + 7px)!important;
+ left:50%;display:flex;width:auto;max-width:min(720px,calc(100vw - 160px));
+ padding:6px;transform:translateX(-50%);
+ border:1px solid var(--line);border-radius:13px;
+ background:color-mix(in srgb,var(--surface) 90%,transparent);
+ box-shadow:var(--shadow-md);backdrop-filter:blur(16px);
+ pointer-events:auto!important
+}
+body[data-active-space="simulator"] .simulator-view>.simulator-floating-toolbar .diagram-header-tools,
+body[data-active-space="simulator"] .simulator-view>.simulator-floating-toolbar button{
+ position:relative;z-index:121;pointer-events:auto!important
+}
+body[data-active-space="simulator"] .simulator-view>.simulator-floating-toolbar>div:first-child{display:none}

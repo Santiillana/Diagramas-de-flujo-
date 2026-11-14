@@ -110,19 +110,6 @@
           </div>
         </aside>
         <section class="panel diagram-panel" aria-labelledby="diagram-title">
-          <div class="panel-heading diagram-heading">
-            <div><p class="eyebrow">EL DIAGRAMA</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
-            <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
-              <span class="canvas-status"><i></i> DIAGRAMA ACTUAL</span>
-              <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática (C)" aria-pressed="true" title="Cámara automática (C)">◎</button>
-              <button class="small-icon-button" type="button" id="simulator-predict-toggle" aria-label="Activar modo predicción (P)" aria-pressed="false" title="Modo predicción (P)">🎯</button>
-              <button class="small-icon-button" type="button" id="simulator-shortcuts-toggle" aria-label="Mostrar atajos de teclado (?)" title="Atajos de teclado (?)">?</button>
-              <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Alejar diagrama (-)">−</button>
-              <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Acercar diagrama (+)">+</button>
-              <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Ajustar diagrama (0)">⌗</button>
-              <button class="small-icon-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa (F)" title="Pantalla completa (F)">⛶</button>
-            </div>
-          </div>
           <div class="diagram-stage simulator-diagram-stage" id="diagram-stage" tabindex="0" aria-label="Lienzo del diagrama. Usa las flechas para recorrer los pasos.">
             <div class="diagram-empty" id="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true">↘</div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>Selecciona un ejercicio</h4><p>El diagrama se genera desde las instrucciones analizadas, no desde una ilustración independiente.</p></div>
             <div id="flow-diagram-container" class="flow-diagram-container"></div>
@@ -170,6 +157,19 @@
             <div><dt>← / →</dt><dd>Retroceder / avanzar</dd></div><div><dt>Espacio</dt><dd>Reproducir / pausar</dd></div><div><dt>Inicio / Fin</dt><dd>Primer / último paso</dd></div><div><dt>↑ / ↓</dt><dd>Más rápido / más lento</dd></div><div><dt>[ / ]</dt><dd>Ejercicio anterior / siguiente</dd></div><div><dt>+ / − / 0</dt><dd>Acercar / alejar / ajustar</dd></div><div><dt>C / P</dt><dd>Cámara / predicción</dd></div><div><dt>H / F / L / ?</dt><dd>Paneles / pantalla completa / laboratorio / ayuda</dd></div>
           </dl>
         </aside>
+      </div>
+      <div class="diagram-heading simulator-floating-toolbar">
+        <div><p class="eyebrow">EL DIAGRAMA</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
+        <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
+          <span class="canvas-status"><i></i> DIAGRAMA ACTUAL</span>
+          <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática (C)" aria-pressed="true" title="Cámara automática (C)">◎</button>
+          <button class="small-icon-button" type="button" id="simulator-predict-toggle" aria-label="Activar modo predicción (P)" aria-pressed="false" title="Modo predicción (P)">🎯</button>
+          <button class="small-icon-button" type="button" id="simulator-shortcuts-toggle" aria-label="Mostrar atajos de teclado (?)" title="Atajos de teclado (?)">?</button>
+          <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Alejar diagrama (-)">−</button>
+          <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Acercar diagrama (+)">+</button>
+          <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Ajustar diagrama (0)">⌗</button>
+          <button class="small-icon-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa (F)" title="Pantalla completa (F)">⛶</button>
+        </div>
       </div>
     </section>
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
