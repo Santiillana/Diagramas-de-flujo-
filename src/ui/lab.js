@@ -111,8 +111,27 @@ function renderPredict(){
     '<button type="button" id="lab-reveal-prediction" class="button button-primary" disabled>Revelar el paso real</button></div>';
   $("#lab-reveal-prediction").addEventListener("click",()=>{
     const feedback=$("#lab-predict-feedback");
-    const actual=next.scene?.title??next.type;
-    feedback.innerHTML="<strong>El paso real es: "+esc(actual)+".</strong><p>"+esc(next.scene?.body??next.message??"")+"</p><button type='button' class='text-link' id='lab-go-predicted'>Ir al paso "+(targetIndex+1)+" ↗</button>";
+    const labels={
+      input:"Entrada de dato",assignment:"Asignación / cálculo",output:"Salida",
+      decision:"Decisión",branch:"Selección de ruta","loop-init":"Preparación del ciclo",
+      "loop-condition":"Comprobación del ciclo","loop-enter":"Iteración",
+      "loop-update":"Avance del contador","loop-exit":"Fin del ciclo",
+      "program-end":"Fin del algoritmo"
+    };
+    const expected=labels[next.type]??next.type;
+    const correct=predictionAnswer===expected;
+    const symbol=next.type==="input"?"Paralelogramo":
+      ["assignment","loop-init","loop-update"].includes(next.type)?"Rectángulo de proceso":
+      next.type==="output"?"Documento / salida":
+      ["decision","loop-condition"].includes(next.type)?"Rombo de decisión":
+      "Conector / terminal";
+    feedback.innerHTML=
+      "<strong>"+(correct?"Predicción correcta.":"La predicción no coincide.")+"</strong>"+
+      "<p>El evento real es <b>"+esc(expected)+"</b>: "+esc(next.scene?.body??next.message??"")+"</p>"+
+      "<p>Símbolo relacionado: "+esc(symbol)+". "+esc(next.scene?.technical??"")+"</p>"+
+      "<button type='button' class='text-link' id='lab-go-predicted'>Inspeccionar el paso "+(targetIndex+1)+" ↗</button>";
+    feedback.classList.toggle("is-correct",correct);
+    feedback.classList.toggle("is-wrong",!correct);
     $("#lab-go-predicted")?.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("traza:jump-to-step",{detail:{index:targetIndex}})));
   });
   $("#lab-task-content").querySelectorAll("[data-predict]").forEach(button=>{
@@ -120,25 +139,40 @@ function renderPredict(){
       predictionAnswer=button.dataset.predict;
       $("#lab-task-content").querySelectorAll("[data-predict]").forEach(item=>item.classList.toggle("is-selected",item===button));
       $("#lab-reveal-prediction").disabled=false;
-      $("#lab-predict-feedback").textContent="Predicción registrada. Revela el paso para compararla con la ejecución.";
+      $("#lab-predict-feedback").textContent="Predicción registrada. Revela el paso para compararla con el evento real.";
     });
   });
 }
+
 function renderTable(){
   if(!requireTrace())return;
   const events=trace.execution.events;
   const keys=[...new Set(events.flatMap(e=>Object.keys(e.variables??{})))];
-  const headings=["Paso","Evento",...keys,"Salida"];
+  const headings=["Paso","Iteración","Evento",...keys.map(key=>key+" · anterior → actual"),"Salida"];
   $("#lab-task-content").innerHTML=
-    '<p class="lab-muted">Cada fila representa el estado capturado por el motor. La fila resaltada coincide con el paso actual del simulador.</p>'+
+    '<p class="lab-muted">Cada fila conserva el snapshot del motor. Las celdas muestran la primera asignación, el cambio anterior → actual o un valor sin cambio; la fila activa sigue al simulador.</p>'+
     '<div class="lab-table-wrap"><table class="lab-trace-table"><thead><tr>'+headings.map(x=>"<th>"+esc(x)+"</th>").join("")+'</tr></thead><tbody>'+
     events.map((event,index)=>{
-      const cells=[index+1,event.scene?.title??event.type,...keys.map(key=>Object.hasOwn(event.variables??{},key)?fmt(event.variables[key]):"—"),(event.outputs??[]).map(fmt).join(", ")||"—"];
+      const previous=events[index-1]?.variables??{};
+      const current=event.variables??{};
+      const iteration=(event.loopStack??[]).map(loop=>loop.iteration).join(" / ")||"—";
+      const variableCells=keys.map(key=>{
+        const hasCurrent=Object.hasOwn(current,key);
+        const hasPrevious=Object.hasOwn(previous,key);
+        if(!hasCurrent)return "—";
+        const value=fmt(current[key]);
+        if(!hasPrevious)return "(nace) → "+value;
+        const before=fmt(previous[key]);
+        return before===value?value+" (sin cambio)":before+" → "+value;
+      });
+      const cells=[index+1,iteration,event.scene?.title??event.type,...variableCells,(event.outputs??[]).map(fmt).join(", ")||"—"];
       return '<tr class="'+(index===trace.index?"is-current":"")+'" data-lab-row="'+index+'">'+cells.map(cell=>"<td>"+esc(cell)+"</td>").join("")+"</tr>";
     }).join("")+
     '</tbody></table></div><button type="button" class="button button-secondary" id="lab-table-follow">Ir a la fila actual</button>';
   $("#lab-table-follow").addEventListener("click",()=>$("#lab-task-content").querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"center"}));
+  $("#lab-task-content").querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
 }
+
 function renderOrder(){
   if(!requireTrace())return;
   const lines=trace.method.pseudocode.split("|").map(x=>x.trim()).filter(Boolean);
@@ -173,10 +207,14 @@ function renderSymbol(){
   const ast=flattenPseudocode(trace.execution.program);
   const candidates=ast.filter(row=>symbolMap[row.type]);
   if(!candidates.length){$("#lab-task-content").innerHTML="<p>El método no contiene un elemento para clasificar.</p>";return;}
-  const row=candidates[trace.index%candidates.length];
+  const event=trace.event;
+  const row=candidates.find(item=>item.id===event?.nodeId)||
+    candidates.find(item=>item.line===event?.sourceLine)||
+    candidates[0];
   const model=symbolMap[row.type];
   $("#lab-task-content").innerHTML=
-    '<div class="lab-question"><p class="eyebrow">INSTRUCCIÓN · LÍNEA '+row.line+'</p><pre class="lab-snippet"><code>'+esc(row.source)+'</code></pre>'+
+    '<div class="lab-question"><p class="eyebrow">INSTRUCCIÓN ACTIVA · LÍNEA '+row.line+'</p><pre class="lab-snippet"><code>'+esc(row.source)+'</code></pre>'+
+    '<p class="lab-muted">El ejercicio utiliza el nodo que corresponde al paso '+(trace.index+1)+' de la ejecución.</p>'+
     '<h4>¿Qué símbolo representa esta instrucción?</h4><div class="lab-choice-list">'+model.options.map(option=>'<button type="button" class="lab-choice" data-symbol-choice="'+esc(option)+'">'+esc(option)+'</button>').join("")+'</div>'+
     '<div id="lab-symbol-feedback" class="lab-feedback" role="status"></div></div>';
   $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(button=>button.addEventListener("click",()=>{
@@ -187,6 +225,7 @@ function renderSymbol(){
     $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(item=>item.disabled=true);
   }));
 }
+
 function renderError(){
   const scenario=errorScenarios[errorScenario%errorScenarios.length];
   $("#lab-task-content").innerHTML=
@@ -199,7 +238,7 @@ function renderError(){
   $("#lab-task-content").querySelectorAll("[data-error-choice]").forEach(button=>button.addEventListener("click",()=>{
     const tested=executePseudocode(scenario.source,scenario.inputs);
     const actual=tested.outputs[0];
-    const correct=tested.ok&&actual===scenario.expected;
+    const correct=tested.ok&&JSON.stringify(tested.outputs)===JSON.stringify([scenario.expected]);
     const chosen=button.dataset.errorChoice==="correct";
     const feedback=$("#lab-error-feedback");
     feedback.innerHTML=(chosen===correct?"<strong>Buena detección.</strong> ":"<strong>Revisa el contraejemplo.</strong> ")+
@@ -214,7 +253,7 @@ function renderError(){
 function renderWhatIf(){
   if(!requireTrace())return;
   $("#lab-task-content").innerHTML=
-    '<div class="lab-question"><p class="eyebrow">EXPERIMENTO CONTROLADO</p><h4>Cambia el algoritmo o los datos y observa el resultado.</h4>'+
+    '<div class="lab-question"><p class="eyebrow">EXPERIMENTO CONTROLADO · COPIA INDEPENDIENTE</p><h4>Cambia una condición, una instrucción o los datos y observa qué consecuencia produce.</h4>'+
     '<label class="lab-editor-field"><span>PSEUDOCÓDIGO MODIFICABLE</span><textarea id="lab-whatif-code" rows="6">'+esc(trace.source.split("|").join("\n"))+'</textarea></label>'+
     '<label class="lab-editor-field"><span>DATOS DE ENTRADA (SEPARADOS POR COMAS)</span><input id="lab-whatif-inputs" value="'+esc((trace.method.sample??[]).join(", "))+'"></label>'+
     '<div class="lab-task-actions"><button type="button" class="button button-primary" id="lab-whatif-run">Ejecutar cambio</button></div>'+
@@ -224,17 +263,30 @@ function renderWhatIf(){
     const inputs=$("#lab-whatif-inputs").value.trim()?$("#lab-whatif-inputs").value.split(/[;,]/).map(x=>x.trim()):[];
     let changed;
     try{changed=executePseudocode(source,inputs);}
-    catch(error){changed={ok:false,error:{message:error.message},outputs:[]};}
+    catch(error){changed={ok:false,error:{message:error.message},outputs:[],variables:{},events:[]};}
     const before=trace.execution;
     const beforeValue=JSON.stringify(before.outputs);
     const afterValue=JSON.stringify(changed.outputs);
+    const names=[...new Set([...Object.keys(before.variables??{}),...Object.keys(changed.variables??{})])];
+    const differences=names.filter(name=>JSON.stringify(before.variables?.[name])!==JSON.stringify(changed.variables?.[name]));
+    const variableExplanation=differences.length?
+      differences.map(name=>name+": "+(Object.hasOwn(before.variables??{},name)?fmt(before.variables[name]):"(sin valor)")+" → "+(Object.hasOwn(changed.variables??{},name)?fmt(changed.variables[name]):"(sin valor)")).join("; "):
+      "Las variables finales no cambiaron.";
+    const originalBranches=before.events.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
+    const changedBranches=changed.events.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
     const status=changed.ok?"Ejecución terminada":"Ejecución detenida por error";
+    const explanation=beforeValue===afterValue&&changed.ok?
+      "Con estas entradas, el cambio mantiene la misma salida; revisa también el recorrido y los valores intermedios.":
+      "La modificación alteró el resultado o la terminación. La causa se observa en los valores y decisiones que cambiaron.";
     $("#lab-whatif-result").innerHTML=
-      '<div><span class="eyebrow">RESULTADO ORIGINAL</span><code>'+esc(beforeValue)+'</code></div>'+
-      '<div><span class="eyebrow">RESULTADO MODIFICADO</span><code>'+esc(afterValue)+'</code><small>'+esc(status+(changed.error?": "+changed.error.message:""))+'</small></div>'+
-      '<p>'+(beforeValue===afterValue&&changed.ok?"El cambio mantuvo la misma salida para estos datos.":"El cambio altera el resultado o la ejecución. Compara la condición, el orden y los valores.")+'</p>';
+      '<div><span class="eyebrow">RESULTADO ORIGINAL · FINAL</span><code>'+esc(beforeValue)+'</code><small>Variables: '+esc(JSON.stringify(before.variables??{}))+'</small></div>'+
+      '<div><span class="eyebrow">RESULTADO MODIFICADO · FINAL</span><code>'+esc(afterValue)+'</code><small>'+esc(status+(changed.error?": "+changed.error.message:""))+'</small></div>'+
+      '<div><span class="eyebrow">CAMBIOS EN VARIABLES</span><code>'+esc(variableExplanation)+'</code><small>Pasos: '+before.events.length+" → "+changed.events.length+'</small></div>'+
+      '<div><span class="eyebrow">RUTAS EVALUADAS</span><code>'+esc(originalBranches.join(" · ")||"Sin decisiones")+' → '+esc(changedBranches.join(" · ")||"Sin decisiones")+'</code></div>'+
+      '<p>'+esc(explanation)+'</p>';
   });
 }
+
 function renderActivity(){
   if(activity==="predict")renderPredict();
   else if(activity==="table")renderTable();
