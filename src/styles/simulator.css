@@ -179,3 +179,14 @@
 .diagram-panel>.simulator-diagram-stage{position:relative;z-index:auto;pointer-events:auto}
 .diagram-panel #flow-diagram-container{pointer-events:none}
 .diagram-panel .flow-svg{pointer-events:none}
+
+/* M5 final: toolbar in its own header layer; the stage never paints over controls */
+.diagram-panel{isolation:isolate}
+.diagram-panel>.diagram-heading.diagram-heading{position:relative!important;z-index:50!important;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.diagram-header-tools{position:relative;z-index:60;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:auto}
+.diagram-header-tools button{position:relative;z-index:61;pointer-events:auto}
+.diagram-panel>.simulator-diagram-stage{position:relative;z-index:0;pointer-events:auto;overflow:auto}
+.diagram-panel #flow-diagram-container{pointer-events:none}
+.diagram-panel .flow-svg{pointer-events:none}
+.diagram-panel .simulator-diagram-stage.is-panning{cursor:grabbing}
+.diagram-stage-tools{display:none!important}
