@@ -89,6 +89,52 @@ function renderLesson(){
       <div class="lesson-options">${lesson.check.options.map((option,i)=>`<button type="button" class="lesson-option" data-check-option="${i}"><span>${String.fromCharCode(65+i)}</span>${escapeHTML(option)}</button>`).join("")}</div>
       <p class="lesson-feedback" id="lesson-feedback" role="status"></p>
     </section>`;
+  const practice=host.querySelector(".lesson-practice");
+  if(practice){
+    const label=document.createElement("label");
+    label.className="lesson-data-control";
+    label.textContent="Modifica el dato de prueba";
+    const input=document.createElement("input");
+    input.id="lesson-data-input";
+    input.type="text";
+    input.value=lesson.manipulation.input;
+    input.setAttribute("aria-label","Dato o datos de prueba");
+    label.append(input);
+    const output=document.createElement("p");
+    output.className="lesson-data-result";
+    output.id="lesson-data-result";
+    output.setAttribute("role","status");
+    practice.prepend(output);
+    practice.prepend(label);
+    updateLessonData();
+  }
+}
+
+function updateLessonData(){
+  const lesson=lessons.find(x=>x.id===selectedLesson)??lessons[0];
+  const input=$("#lesson-data-input");
+  const output=$("#lesson-data-result");
+  if(!input||!output)return;
+  const values=input.value.split(",").map(value=>value.trim()).map(Number);
+  const n=values[0];
+  const fmt=value=>Number.isFinite(value)?String(Number(value.toFixed(4))):"—";
+  let result="Modifica los datos para observar el efecto.";
+  switch(lesson.id){
+    case "algorithm": result=Number.isFinite(n)?"doble = "+fmt(n)+" × 2 = "+fmt(n*2):"Introduce un número real."; break;
+    case "reading": result="Ruta: A → B → C → Fin. La flecha determina el siguiente paso."; break;
+    case "terminals": result="Recorrido: Inicio → instrucciones → Fin."; break;
+    case "io-process": result=values.length>=2&&values.slice(0,2).every(Number.isFinite)?"Área = "+fmt(values[0])+" × "+fmt(values[1])+" = "+fmt(values[0]*values[1]):"Introduce base y altura separadas por coma."; break;
+    case "variables": result=Number.isFinite(n)?"x: "+fmt(n)+" → "+fmt(n+5)+" después de x = x + 5.":"Introduce el valor inicial de x."; break;
+    case "arithmetic": result=values.length>=4&&values.slice(0,4).every(Number.isFinite)?"("+fmt(values[0])+" + "+fmt(values[1])+") × "+fmt(values[2])+" − "+fmt(values[3])+" = "+fmt((values[0]+values[1])*values[2]-values[3]):"Introduce cuatro números separados por coma."; break;
+    case "decisions": result=Number.isFinite(n)?"nota "+fmt(n)+" ≥ 3: "+(n>=3?"V · aprueba":"F · reprueba")+".":"Introduce una nota."; break;
+    case "nested-decisions": result=Number.isFinite(n)?"Clasificación: "+(n>0?"positivo":n<0?"negativo":"cero")+".":"Introduce un número."; break;
+    case "counters-accumulators": { const nums=values.filter(Number.isFinite); result=nums.length?"Contador = "+nums.length+"; acumulador = "+fmt(nums.reduce((sum,value)=>sum+value,0))+".":"Introduce números separados por coma."; break; }
+    case "for": case "while": { if(!Number.isInteger(n)){result="Introduce un límite entero.";} else {const count=Math.max(0,Math.min(50,n));result=count?"Valores visitados: "+Array.from({length:count},(_,i)=>i+1).join(", ")+".":"La condición inicial es falsa: cero iteraciones.";} break; }
+    case "do-while": { const valid=values.find(value=>Number.isFinite(value)&&value>=0&&value<=5); result=valid===undefined?"El cuerpo se ejecuta una vez; introduce una nota válida entre 0 y 5 para salir.":"Primera nota válida: "+fmt(valid)+". El cuerpo se ejecuta al menos una vez."; break; }
+    case "nested-loops": { if(values.length<2||!values.slice(0,2).every(Number.isInteger)){result="Introduce filas y columnas como dos enteros.";} else {const rows=Math.max(0,Math.min(20,values[0])),cols=Math.max(0,Math.min(20,values[1]));result=rows+" filas × "+cols+" columnas = "+(rows*cols)+" combinaciones.";} break; }
+    case "validation-sentinel": {const end=values.indexOf(0),used=(end<0?values:values.slice(0,end)).filter(Number.isFinite);result="Datos procesados: "+used.length+"; suma: "+fmt(used.reduce((sum,value)=>sum+value,0))+". "+(end<0?"Aún no aparece el centinela 0.":"El cero detiene la lectura y no se suma.");break;}
+  }
+  output.textContent=result;
 }
 
 function renderExerciseCards(){
@@ -169,6 +215,9 @@ function bindContentEvents(){
     selectedLesson=button.dataset.lessonId;
     lessonVisualStep=0;lessonPracticeStep=0;
     lessonList();renderLesson();
+  });
+  $("#lesson-detail")?.addEventListener("input",event=>{
+    if(event.target.id==="lesson-data-input")updateLessonData();
   });
   $("#lesson-detail")?.addEventListener("click",event=>{
     if(event.target.closest("[data-visual-next]")&&lessonVisualStep<lessons.find(x=>x.id===selectedLesson).visual.steps.length-1){lessonVisualStep++;renderLesson();}
