@@ -267,3 +267,41 @@
 .diagram-panel>.simulator-diagram-stage{width:100%;max-width:100%;min-width:0;overflow:hidden}
 .diagram-panel #flow-diagram-container{width:100%;max-width:100%;min-width:0}
 .diagram-panel .diagram-legend{width:100%;max-width:100%;min-width:0;flex-wrap:wrap}
+
+/* C · movimiento guiado por eventos del intérprete */
+.diagram-node.is-active rect,.diagram-node.is-active polygon,.diagram-node.is-active path,.diagram-node.is-active circle{
+  animation:flow-node-arrive calc(240ms / var(--simulator-speed-factor,1)) cubic-bezier(.2,.8,.2,1) both;
+}
+.diagram-edge.is-route-true path{stroke:var(--positive);stroke-width:3.2}
+.diagram-edge.is-route-false path{stroke:var(--danger);stroke-width:3.2}
+.diagram-edge.is-token-path path{
+  stroke:var(--accent-strong);
+  stroke-width:3.1;
+  stroke-dasharray:8 5;
+  animation:flow-path-travel var(--token-duration,850ms) linear 1;
+}
+.diagram-edge.is-back.is-token-path path{stroke:var(--teal);stroke-dasharray:6 5}
+.diagram-edge.is-route-active path{animation:none}
+.flow-token{fill:var(--accent-strong);stroke:var(--surface);stroke-width:2;filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent) 60%,transparent))}
+.flow-token[data-travelling="true"]{filter:drop-shadow(0 0 9px var(--accent))}
+.scene-value-transfer{animation-duration:calc(260ms / var(--simulator-speed-factor,1))}
+.scene-value-old{animation-duration:calc(360ms / var(--simulator-speed-factor,1))}
+.scene-value-new{animation-duration:calc(440ms / var(--simulator-speed-factor,1))}
+.scene-event-visual{animation-duration:calc(250ms / var(--simulator-speed-factor,1))}
+@keyframes flow-node-arrive{0%{filter:drop-shadow(0 0 0 transparent)}45%{filter:drop-shadow(0 0 8px color-mix(in srgb,var(--accent) 55%,transparent))}100%{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 36%,transparent))}}
+@keyframes flow-path-travel{from{stroke-dashoffset:28}to{stroke-dashoffset:0}}
+:root[data-motion="reduced"] .diagram-node.is-active rect,
+:root[data-motion="reduced"] .diagram-node.is-active polygon,
+:root[data-motion="reduced"] .diagram-node.is-active path,
+:root[data-motion="reduced"] .diagram-node.is-active circle{animation:none}
+:root[data-motion="reduced"] .diagram-edge.is-token-path path{animation:none}
+:root[data-motion="off"] .diagram-node.is-active rect,
+:root[data-motion="off"] .diagram-node.is-active polygon,
+:root[data-motion="off"] .diagram-node.is-active path,
+:root[data-motion="off"] .diagram-node.is-active circle{animation:none}
+:root[data-motion="off"] .diagram-edge.is-token-path path{animation:none}
+@media(prefers-reduced-motion:reduce){
+ .diagram-node.is-active rect,.diagram-node.is-active polygon,.diagram-node.is-active path,.diagram-node.is-active circle,
+ .diagram-edge.is-token-path path{animation:none!important}
+ .flow-token{transition:none!important}
+}

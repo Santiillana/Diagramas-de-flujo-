@@ -7,6 +7,9 @@ function savePreference(key, value) {
   try { window.localStorage.setItem(key, value); } catch { /* Storage puede estar bloqueado. */ }
 }
 
+const MOTION_MODES = ["full", "reduced", "off"];
+const MOTION_LABELS = { full: "Completo", reduced: "Reducido", off: "Apagado" };
+
 export function initPreferences() {
   const root = document.documentElement;
   const themeButton = document.querySelector('[data-action="toggle-theme"]');
@@ -24,17 +27,23 @@ export function initPreferences() {
     savePreference(STORAGE_KEYS.theme, theme);
   }
   function applyMotion(motion) {
-    root.dataset.motion = motion;
+    const mode = MOTION_MODES.includes(motion) ? motion : "full";
+    root.dataset.motion = mode;
     if (motionButton) {
-      const reduced = motion === "reduced";
-      motionButton.setAttribute("aria-pressed", String(reduced));
-      motionButton.setAttribute("aria-label", reduced ? "Activar movimiento" : "Reducir movimiento");
-      motionButton.title = reduced ? "Activar movimiento" : "Reducir movimiento";
+      const next = MOTION_MODES[(MOTION_MODES.indexOf(mode) + 1) % MOTION_MODES.length];
+      motionButton.setAttribute("aria-pressed", String(mode !== "full"));
+      motionButton.setAttribute("aria-label", "Movimiento " + MOTION_LABELS[mode] + ". Siguiente: " + MOTION_LABELS[next]);
+      motionButton.title = "Movimiento: " + MOTION_LABELS[mode] + " · Cambiar a " + MOTION_LABELS[next];
+      motionButton.dataset.motionMode = mode;
     }
-    savePreference(STORAGE_KEYS.motion, motion);
+    savePreference(STORAGE_KEYS.motion, mode);
   }
   themeButton?.addEventListener("click", () => applyTheme(root.dataset.theme === "dark" ? "light" : "dark"));
-  motionButton?.addEventListener("click", () => applyMotion(root.dataset.motion === "reduced" ? "full" : "reduced"));
+  motionButton?.addEventListener("click", () => {
+    const current = MOTION_MODES.includes(root.dataset.motion) ? root.dataset.motion : "full";
+    applyMotion(MOTION_MODES[(MOTION_MODES.indexOf(current) + 1) % MOTION_MODES.length]);
+  });
   applyTheme(readPreference(STORAGE_KEYS.theme, "light") === "dark" ? "dark" : "light");
-  applyMotion(readPreference(STORAGE_KEYS.motion, prefersReduced ? "reduced" : "full") === "reduced" ? "reduced" : "full");
+  const storedMotion = readPreference(STORAGE_KEYS.motion, prefersReduced ? "reduced" : "full");
+  applyMotion(MOTION_MODES.includes(storedMotion) ? storedMotion : (prefersReduced ? "reduced" : "full"));
 }

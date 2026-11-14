@@ -4,7 +4,7 @@ import { traceExpression } from "../core/expression.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
 import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
-import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
+import { renderDiagram, highlightDiagram, animateDiagramTransition } from "../diagram/renderer.js";
 
 const $ = s => document.querySelector(s);
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
@@ -12,6 +12,7 @@ const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
+let lastRenderedStep=null;
 let exerciseSearch="",predictionMode=false;
 const SPEEDS=[0.25,0.5,1,2,4,8];
 
@@ -242,6 +243,8 @@ function renderOperationBreakdown(event){
 function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
+  const priorIndex=lastRenderedStep;
+  const priorEvent=priorIndex!==null&&Math.abs(timeline.index-priorIndex)===1?execution.events[priorIndex]:null;
   const seen=execution.events.slice(0,timeline.index+1);
   pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean));
   if(diagram){
@@ -251,7 +254,15 @@ function render(){
       activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
       route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null
     });
+    animateDiagramTransition($("#flow-diagram-container"),diagram,{
+      previousNodeId:priorEvent?.nodeId??null,
+      activeNodeId:e.nodeId,
+      durationMs:Math.max(90,Math.min(4000,Math.round(850/speedFactor()))),
+      motionMode:document.documentElement.dataset.motion??"full"
+    });
   }
+  lastRenderedStep=timeline.index;
+  document.documentElement.style.setProperty("--simulator-speed-factor",String(speedFactor()));
   centerActiveNode(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   $("#scene-content").dataset.eventType=e.type;
@@ -304,6 +315,7 @@ function run(){
   try{
     execution=executePseudocode(method().pseudocode,parseInputs());
     timeline=createTimeline(execution);
+    lastRenderedStep=null;
     selectedVariable=null;
     history();render();
     $("#simulator-status").textContent=execution.ok?"TRAZA GENERADA · "+execution.events.length+" PASOS":"EJECUCIÓN DETENIDA";

@@ -84,6 +84,8 @@ export function highlightDiagram(container,diagram,options={}) {
     const isChosen=Boolean(edge&&routeNodeId&&route&&from?.sourceId===Number(routeNodeId)&&edge.label===route);
     const isSequential=Boolean(edge&&previous&&active&&from?.sourceId===Number(previous)&&to?.sourceId===Number(active));
     element.classList.toggle("is-route-active",isChosen);
+    element.classList.toggle("is-route-true",isChosen&&edge.label==="V");
+    element.classList.toggle("is-route-false",isChosen&&edge.label==="F");
     element.classList.toggle("is-active-path",!isChosen&&isSequential);
   });
   const token=container.querySelector(".flow-token");
@@ -116,4 +118,102 @@ export function highlightDiagram(container,diagram,options={}) {
       token.dataset.nodeId=active;
     }
   }
+}
+
+let activeTokenFrame = null;
+let activeTokenGroup = null;
+
+function pointOnPath(path, distance) {
+  try {
+    const length = path.getTotalLength();
+    if (!Number.isFinite(length) || length <= 0) return null;
+    const point = path.getPointAtLength(Math.max(0, Math.min(length, distance)));
+    return { x: point.x, y: point.y, length };
+  } catch {
+    return null;
+  }
+}
+
+/** Move the marker between the two events emitted by the interpreter. */
+export function animateDiagramTransition(container, diagram, options = {}) {
+  if (!container || !diagram) return;
+  if (activeTokenFrame !== null) cancelAnimationFrame(activeTokenFrame);
+  if (activeTokenGroup) {
+    activeTokenGroup.classList.remove("is-token-path");
+    activeTokenGroup.style.removeProperty("--token-duration");
+  }
+  activeTokenFrame = null;
+  activeTokenGroup = null;
+
+  const token = container.querySelector(".flow-token");
+  if (!token) return;
+  const activeId = options.activeNodeId == null ? null : String(options.activeNodeId);
+  const previousId = options.previousNodeId == null ? null : String(options.previousNodeId);
+  const activeNode = diagram.nodes.find(node => String(node.sourceId) === activeId);
+  const setStaticPosition = () => {
+    if (activeNode) {
+      token.setAttribute("cx", String(activeNode.x));
+      token.setAttribute("cy", String(Math.max(10, activeNode.y - 12)));
+    }
+    token.setAttribute("visibility", activeNode ? "visible" : "hidden");
+    token.removeAttribute("data-travelling");
+    token.removeAttribute("data-edge-id");
+  };
+
+  const mode = options.motionMode ?? document.documentElement.dataset.motion ?? "full";
+  const systemReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  if (mode === "off" || mode === "reduced" || systemReduced || !previousId || !activeId || previousId === activeId) {
+    setStaticPosition();
+    return;
+  }
+
+  const direct = diagram.edges.find(edge => {
+    const from = diagram.byId.get(edge.from), to = diagram.byId.get(edge.to);
+    return String(from?.sourceId) === previousId && String(to?.sourceId) === activeId;
+  });
+  const reverse = direct ? null : diagram.edges.find(edge => {
+    const from = diagram.byId.get(edge.from), to = diagram.byId.get(edge.to);
+    return String(from?.sourceId) === activeId && String(to?.sourceId) === previousId;
+  });
+  const travelled = direct ?? reverse;
+  const group = travelled && container.querySelector('[data-edge-id="' + travelled.id + '"]');
+  const path = group?.querySelector("path");
+  let total = 0;
+  try { total = path?.getTotalLength?.() ?? 0; } catch { total = 0; }
+  if (!path || !Number.isFinite(total) || total <= 0) {
+    setStaticPosition();
+    return;
+  }
+
+  const backwards = Boolean(reverse);
+  const duration = Math.max(90, Math.min(4000, Number(options.durationMs) || 850));
+  const start = performance.now();
+  token.setAttribute("visibility", "visible");
+  token.setAttribute("r", "7");
+  token.dataset.edgeId = travelled.id;
+  token.dataset.nodeId = activeId;
+  token.dataset.travelling = "true";
+  group.classList.add("is-token-path");
+  group.style.setProperty("--token-duration", duration + "ms");
+  activeTokenGroup = group;
+
+  const frame = now => {
+    const progress = Math.max(0, Math.min(1, (now - start) / duration));
+    const eased = progress < .5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    const point = pointOnPath(path, backwards ? total * (1 - eased) : total * eased);
+    if (point) {
+      token.setAttribute("cx", String(point.x));
+      token.setAttribute("cy", String(point.y));
+    }
+    if (progress < 1) {
+      activeTokenFrame = requestAnimationFrame(frame);
+    } else {
+      activeTokenFrame = null;
+      token.removeAttribute("data-travelling");
+      group.classList.remove("is-token-path");
+      group.style.removeProperty("--token-duration");
+      activeTokenGroup = null;
+    }
+  };
+  activeTokenFrame = requestAnimationFrame(frame);
 }

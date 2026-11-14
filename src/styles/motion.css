@@ -1,5 +1,26 @@
 button,a,.panel,.learning-card,.activity-card,.palette-item,.diagram-empty-icon { transition:color 160ms ease,background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease,transform 160ms ease; }
-.learning-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); } .activity-card:hover { border-color:var(--line-strong); }
+.learning-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.activity-card:hover { border-color:var(--line-strong); }
 button:focus-visible,a:focus-visible,summary:focus-visible { outline:none; box-shadow:var(--focus-ring); }
-:root[data-motion="reduced"] *,:root[data-motion="reduced"] *::before,:root[data-motion="reduced"] *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
-@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+
+:root[data-motion="reduced"] .flow-token,
+:root[data-motion="reduced"] .diagram-edge.is-token-path path { transition:none!important; animation:none!important; }
+:root[data-motion="reduced"] .scene-value-transfer,
+:root[data-motion="reduced"] .scene-value-old,
+:root[data-motion="reduced"] .scene-value-new,
+:root[data-motion="reduced"] .scene-event-visual { animation:none!important; }
+:root[data-motion="reduced"] .diagram-node.is-active rect,
+:root[data-motion="reduced"] .diagram-node.is-active polygon,
+:root[data-motion="reduced"] .diagram-node.is-active path,
+:root[data-motion="reduced"] .diagram-node.is-active circle { animation:none!important; }
+
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+
+@media (prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto; }
+  *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+  .flow-token,.diagram-edge.is-token-path path,
+  .scene-value-transfer,.scene-value-old,.scene-value-new,.scene-event-visual { animation:none!important; transition:none!important; }
+}
