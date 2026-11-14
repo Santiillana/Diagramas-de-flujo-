@@ -163,3 +163,12 @@
 .diagram-panel>.diagram-heading{position:relative;z-index:20}
 .diagram-panel>.simulator-diagram-stage{position:relative;z-index:1}
 #flow-diagram-container{pointer-events:none}
+
+/* El escenario no bloquea la barra; el lienzo recibe los gestos y los propaga al escenario. */
+.diagram-panel{position:relative;isolation:isolate}
+.diagram-panel>.diagram-heading{position:relative;z-index:100}
+.diagram-panel>.diagram-heading .diagram-tools{position:relative;z-index:101;pointer-events:auto}
+.diagram-panel>.simulator-diagram-stage{position:relative;z-index:1;pointer-events:none}
+.diagram-panel #flow-diagram-container{pointer-events:auto;cursor:grab}
+.diagram-panel .flow-svg{pointer-events:none}
+.diagram-panel .simulator-diagram-stage.is-panning #flow-diagram-container{cursor:grabbing}
