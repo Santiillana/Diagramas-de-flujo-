@@ -1,48 +1,70 @@
-# Auditoría funcional del prototipo original
+# Auditoría de equivalencia funcional del prototipo original
 
-Fuente: archivo adjunto \`diagramas_de_flujo.html\`, conservado sin edición en \`reference/diagramas_de_flujo_original.html\`.
+**Fuente:** `diagramas_de_flujo.html`, conservado byte por byte en `reference/diagramas_de_flujo_original.html`.
 
-## Evidencia estructural observada
+Esta tabla diferencia una función migrada y probada, una sustitución intencional de interfaz y una limitación que sigue pendiente. El hecho de conservar el archivo original no se cuenta como migración.
 
-El prototipo es una aplicación autocontenida HTML/CSS/JavaScript. Su interfaz incluye selector de ejercicios, contexto y pseudocódigo, lienzo SVG, panel de escena, variables e historial, salida, barra de ejecución, pantalla inicial y laboratorio. El script contiene funciones de parsing/ejecución, construcción del diagrama, seguimiento de pasos, cámara, animación y actividades.
+## Matriz de equivalencia
 
-IDs relevantes: \`#ch\`, \`#gt\`, \`#info\`, \`#tabs\`, \`#code\`, \`#tx\`, \`#rs\`, \`#sv\`, \`#sc\`, \`#vars\`, \`#hist\`, \`#out\`, \`#dock\`, \`#ctl\`, \`#sl\`, \`#vf\`, \`#qz\` y \`#lab\`.
+| Capacidad original | Evidencia de prototipo | Equivalencia en Traza | Estado |
+|---|---|---|---|
+| Selector numerado de 40 ejercicios | `#ch` | Catálogo filtrable de 40 fichas 20/10/10 | Migrada |
+| Puerta de reto antes de revelar | `#gt`, `#rv` | Modo reto en ficha: análisis, proceso, pistas y revelado voluntario | Migrada |
+| Enunciado/contexto | `#info` | Panel Problema; entradas, salidas, restricciones y método | Migrada |
+| Métodos alternativos | `#tabs`, `load` | Selector de método en ficha y simulador | Migrada |
+| Diagrama SVG | `#sv`, `draw`, `buildG` | SVG generado desde AST del parser | Migrada |
+| Símbolos terminal/entrada/proceso/salida/decisión | SVG original | Símbolos SVG con estilos semánticos | Migrada |
+| Flechas, rutas y etiquetas V/F | `route`, conectores y rótulos | Rutas derivadas del AST; ruta elegida resaltada desde el evento real | Migrada |
+| Token animado | `#tk`, `setTk` | Token SVG ligado al nodo activo; transición desactivable por reduced motion | Migrada |
+| Cámara automática | `camT`, `camKick` | Seguimiento del nodo activo mediante transformación de canvas | Migrada |
+| Cámara manual / pan | control en canvas | Arrastre desplaza el mismo canvas y desactiva auto-cámara | Migrada |
+| Zoom y ajuste | `fit`, controles | Zoom por escala SVG y fit calculado desde viewBox | Migrada |
+| Avance/retroceso/inicio/final | `#ctl` | Dock del simulador y navegación determinista por snapshots | Migrada |
+| Play/pause y velocidad | `#pl`, `#sp` | Reproducción, pausa y cuatro velocidades | Migrada |
+| Timeline y salto de paso | `#sl`, `#vu` | Range y tarjetas de historial navegables | Migrada |
+| Pseudocódigo resaltado | `#code` | Línea activa/recorrida ligada al sourceLine del evento | Migrada |
+| Datos editables y restauración | `#tx`, `#rs` | Input editable y botón de restauración del sample del método | Migrada |
+| Escena gráfica/explicativa | `#sc`, `scene` | Panel En escena con símbolo, texto, condición, operación y contexto de ciclos | Migrada con nueva composición |
+| Ventana flotante de escena | `#vf`, `showVF`, `hideVF` | Panel persistente junto al diagrama; puede minimizarse, no flota sobre el lienzo | Sustitución intencional de UI |
+| Variables actuales | `#vars` | Tabla de variables desde el evento actual | Migrada |
+| Valor anterior/nuevo y causa | estado original / `#hist` | Transición, instrucción fuente e historial por variable | Migrada |
+| Historial variable por iteración | `#hist` | Eventos filtrados por variable con número de paso y vuelta | Migrada |
+| Salida | `#out` | Salida acumulada del snapshot | Migrada |
+| Explicaciones y desglose de operaciones | `#ex`, `show` | traceExpression con operandos y resultados desde el evaluador común | Migrada |
+| Vueltas de ciclos anidados | estado de escena | Stack de loops con nivel externo/interno y vuelta | Migrada |
+| Predice | `ask`, `#qz` | Actividad compara predicción con el próximo evento verdadero | Migrada |
+| Tabla de seguimiento | `tTab` | Tabla de snapshots, cambios, salida y contexto de iteración | Migrada |
+| Ordena instrucciones | `oTab` | Reordena las líneas del método y comprueba el orden | Migrada |
+| Identifica símbolo | `cTab` | Reconoce el símbolo asociado al nodo de ejecución actual | Migrada |
+| Encuentra el error | `eTab` | Contraejemplos ejecutados por el motor; incluye un algoritmo correcto | Migrada |
+| ¿Y si…? | `mTab` | Ejecuta código/datos cambiados en una copia aislada y compara estado final | Migrada |
+| Revelar solución | `#rv` | Revelado voluntario en la puerta de reto | Migrada |
+| Tamaño del pseudocódigo | `#fm`, `#fp` | A− / A / A+ persistente entre recargas | Migrada |
+| Pantalla completa | `#fs` | Fullscreen del lienzo y botón de salida dentro del fullscreen | Migrada |
+| Tema claro/oscuro | variables CSS / preferencia | Tema explícito persistente | Migrada y ampliada |
+| Diseño responsive | media queries | Layout adaptativo; tabs móviles para seis paneles del simulador | Migrada y ampliada |
+| Movimiento reducido | `prefers-reduced-motion` | Respeta media query y control de motion; anima token/rutas solo cuando corresponde | Migrada y ampliada |
+| Laboratorio visible junto al diagrama | `#lab` | Contexto persistente con SVG, escena y variables; la actividad queda al costado/abajo | Migrada |
+| Constructor completo con conectar flechas arbitrariamente | No está en el prototipo original; requisito nuevo V5 | Constructor estructurado: secuencia, ramas V/F y cuerpos de ciclos; flechas inferidas por orden/anidación | **Parcial / limitación declarada** |
 
-Funciones relevantes detectadas: \`parse\`, \`exec\`, \`run\`, \`draw\`, \`load\`, \`buildG\`, \`route\`, \`setTk\`, \`camT\`, \`fit\`, \`scene\`, \`showVF\`, \`ask\`, \`tTab\`, \`oTab\`, \`cTab\`, \`eTab\`, \`mTab\` y \`lab\`.
+## Limitación explícita del constructor
 
-## Correspondencia con el inventario
+El constructor permite colocar tipos de nodo, editar sus propiedades, mover/eliminar instrucciones, entrar a ramas V/F y a cuerpos de ciclos, validar bloques y ejecutar la solución en el mismo intérprete M3. Sus conexiones son implícitas a partir del orden y la estructura anidada.
 
-| Capacidad | Evidencia HTML | Estado durante Módulo 1 |
-|---|---|---|
-| Selector numerado de ejercicios | \`#ch\` | Preservado en el prototipo original; migración pendiente |
-| Reto antes de revelar | \`#gt\`, \`#rv\` | Preservado en el prototipo original; migración pendiente |
-| Enunciado y contexto | \`#info\` | Preservado en el prototipo original; migración pendiente |
-| Métodos alternativos | \`#tabs\`, \`load\` | Preservado en el prototipo original; migración pendiente |
-| Diagrama SVG dinámico | \`#sv\`, \`draw\`, \`buildG\` | Preservado en el prototipo original; migración pendiente |
-| Flechas, rutas y recorrido | \`route\`, \`setTk\`, \`#tk\` | Preservado en el prototipo original; migración pendiente |
-| Cámara y ajuste de lienzo | \`camT\`, \`fit\` | Preservado en el prototipo original; migración pendiente |
-| Ejecución, pausa y pasos | \`#ctl\`, \`#b0\`, \`#bp\`, \`#pl\`, \`#bn\`, \`#b9\` | Preservado en el prototipo original; migración pendiente |
-| Velocidad y línea de tiempo | \`#sp\`, \`#sl\`, \`#vu\` | Preservado en el prototipo original; migración pendiente |
-| Pseudocódigo resaltado | \`#code\` | Preservado en el prototipo original; migración pendiente |
-| Datos editables y restauración | \`#tx\`, \`#rs\` | Preservado en el prototipo original; migración pendiente |
-| Escena explicativa | \`#sc\`, \`scene\` | Preservado en el prototipo original; migración pendiente |
-| Variables e historial | \`#vars\`, \`#hist\` | Preservado en el prototipo original; migración pendiente |
-| Resultados de salida | \`#out\` | Preservado en el prototipo original; migración pendiente |
-| Explicaciones y operaciones | \`#ex\`, \`show\` | Preservado en el prototipo original; migración pendiente |
-| Predicción de pasos | \`#qz\`, \`ask\` | Preservado en el prototipo original; migración pendiente |
-| Tabla de seguimiento y actividades | \`#lab\`, \`tTab\`, \`oTab\`, \`cTab\`, \`eTab\`, \`mTab\`, \`lab\` | Preservado en el prototipo original; migración pendiente |
-| Ordenar, identificar, detectar error y “¿Y si…?” | paneles del laboratorio | Preservado en el prototipo original; migración pendiente |
-| Revelar solución | \`#rv\` | Preservado en el prototipo original; migración pendiente |
-| Tamaño de texto | \`#fm\`, \`#fp\` | Preservado en el prototipo original; migración pendiente |
-| Pantalla completa | \`#fs\` | Preservado en el prototipo original; migración pendiente |
-| Tema claro/oscuro | variables CSS y \`prefers-color-scheme\` | El original permanece accesible; la nueva shell añade control explícito |
-| Diseño adaptable | media queries | El original permanece accesible; responsive nuevo diseñado |
-| Movimiento reducido | \`prefers-reduced-motion\` | Preservado en el original; la nueva shell añade control explícito |
+No ofrece todavía un editor libre de puertos/aristas en el que el alumno pueda arrastrar cualquier conector hacia cualquier nodo, ni un validador de aristas huérfanas arbitrarias porque ese tipo de arista no forma parte de su modelo. Esto significa que el criterio V5 de conexiones manuales arbitrarias no está cubierto íntegramente. No debe declararse como completado en futuros informes sin implementar ese alcance adicional.
 
-## Criterio de continuidad
+## Controles del laboratorio
 
-- El HTML original se conserva íntegro y separado del nuevo punto de entrada.
-- La nueva aplicación enlaza el prototipo original para no dejar inaccesible su experiencia mientras se construyen equivalentes.
-- La nueva interfaz no afirma que los controles preparados ya ejecuten algoritmos.
-- Una capacidad solo pasará a “migrada” cuando exista una implementación nueva y una prueba de equivalencia documentada.
-- El número, contenido y validez de los ejercicios se auditarán en el Módulo 2; esta tabla no certifica el catálogo.
+El original tenía paneles/actividades que se podían alternar. En móvil el nuevo simulador usa tabs para Problema, Diagrama, En escena, Variables, Salida e Historial; cada cambio conserva el índice actual de la traza. En escritorio los paneles se presentan en paralelo.
+
+## Evidencia automatizada final M5
+
+- CI push: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106 — success.
+- Node: 222/222; suite incluye 170 escenarios de resultados independientes del catálogo.
+- Playwright Chromium: 38/38; cinco espacios, responsive 1440/1024/390 px, motor, laboratorio, constructor, controles del simulador, pan, fullscreen, zoom, vista móvil, reduced motion y capturas.
+- Capturas finales subidas como artefacto de CI: `ui-audit-045f5be0b2f5dc7fe39eb34797a69cba26448612`.
+- HTML original Git blob: `9f7f5a3d68d10b004e2ea306df1109906f13bc33`.
+
+## Regla de cierre
+
+Solo una prueba funcional puede convertir una fila de “parcial” a “migrada”. Una equivalencia de interfaz puede ser intencionalmente distinta, pero debe conservar la acción educativa, declarar su cambio visual y mantener los datos del mismo motor.
