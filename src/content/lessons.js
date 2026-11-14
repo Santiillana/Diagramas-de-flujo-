@@ -1,0 +1,142 @@
+export const lessons = [
+  {
+    id:"algorithm", order:1, title:"Algoritmos y diagramas de flujo", duration:"6 min",
+    objective:"Explicar qué es un algoritmo y cómo un diagrama representa sus pasos.",
+    intuitive:"Un algoritmo es una receta precisa: indica qué hacer, en qué orden y cuándo terminar. El diagrama convierte esa secuencia en un mapa que puede seguir otra persona.",
+    technical:"Un algoritmo es un conjunto finito y ordenado de instrucciones no ambiguas que transforma entradas en salidas para resolver un problema. Un diagrama de flujo representa gráficamente ese control mediante símbolos y conexiones dirigidas.",
+    visual:{kind:"sequence",caption:"Una solución elemental se puede leer de arriba hacia abajo.",steps:[["Inicio","El proceso comienza."],["Proceso","Se realiza una instrucción."],["Fin","El algoritmo termina."]]},
+    example:{title:"Calcular el doble de un valor",code:"Inicio → leer n → doble = n × 2 → mostrar doble → Fin",explanation:"Hay una entrada, una transformación y una salida. El orden importa: no se puede mostrar el doble antes de calcularlo."},
+    manipulation:{prompt:"Cambia el valor de entrada y predice qué se mostrará.",input:"4",steps:["Se recibe n = 4.","Se calcula doble = 4 × 2.","La salida muestra 8."]},
+    check:{question:"¿Cuál es una condición esencial de un algoritmo?",options:["Puede continuar indefinidamente","Tiene instrucciones claras y termina","Solo puede usar números"],answer:1,why:"Debe ser finito y sus instrucciones deben poder interpretarse sin ambigüedad."}
+  },
+  {
+    id:"reading",order:2,title:"Leer flechas y seguir el flujo",duration:"5 min",
+    objective:"Seguir la dirección de las conexiones y distinguir una ruta de otra.",
+    intuitive:"Las flechas son el camino. No se elige el siguiente paso por cercanía visual, sino por la dirección de la conexión.",
+    technical:"Un conector dirigido establece una relación de precedencia entre nodos. La ejecución recorre el grafo según las conexiones y las condiciones evaluadas.",
+    visual:{kind:"sequence",caption:"Cada flecha lleva a la siguiente instrucción.",steps:[["A → B","La salida de A conduce a B."],["B → C","Después de B se continúa a C."],["C → Fin","La ruta alcanza el terminal."]]},
+    example:{title:"Tres instrucciones seguidas",code:"Leer edad → edad = edad + 1 → Imprimir edad",explanation:"Cada instrucción se visita una sola vez en esa secuencia. La flecha indica qué sigue."},
+    manipulation:{prompt:"Sigue la ruta empezando en A.",input:"A",steps:["A conduce a B.","B conduce a C.","C conduce al fin."]},
+    check:{question:"¿Qué determina el siguiente nodo de una secuencia?",options:["La flecha de salida","El color del símbolo","El tamaño del texto"],answer:0,why:"La dirección del conector representa la continuidad del flujo."}
+  },
+  {
+    id:"terminals",order:3,title:"Inicio y fin",duration:"5 min",
+    objective:"Reconocer el terminal y explicar por qué delimitan un proceso.",
+    intuitive:"El inicio abre el recorrido y el fin lo cierra. Funcionan como los límites de una actividad.",
+    technical:"El símbolo terminal representa el punto de entrada o salida del proceso. En los ejercicios de esta plataforma se identifica con una forma ovalada o redondeada.",
+    visual:{kind:"terminals",caption:"Un flujo completo tiene un punto inicial y un cierre alcanzable.",steps:[["Inicio","Entrada al algoritmo."],["Recorrido","Se ejecutan las instrucciones."],["Fin","Salida del algoritmo."]]},
+    example:{title:"Programa sin cálculos",code:"Inicio → Imprimir «Hola» → Fin",explanation:"Aunque no haya variables ni operaciones, el algoritmo sigue teniendo un inicio, una acción y un fin."},
+    manipulation:{prompt:"Activa los tres hitos del recorrido.",input:"—",steps:["El terminal Inicio habilita el recorrido.","La instrucción central se ejecuta.","El terminal Fin cierra la ruta."]},
+    check:{question:"¿Qué representa el óvalo terminal?",options:["Una comparación","El comienzo o final del flujo","Una operación aritmética"],answer:1,why:"El terminal marca el inicio o la terminación del proceso."}
+  },
+  {
+    id:"io-process",order:4,title:"Entrada, salida y proceso",duration:"7 min",
+    objective:"Diferenciar recibir datos, transformarlos y comunicar resultados.",
+    intuitive:"Entrada es preguntar y recibir; proceso es trabajar con los datos; salida es mostrar lo obtenido.",
+    technical:"El paralelogramo representa operaciones de entrada/salida de datos. El rectángulo representa una operación de proceso. El símbolo de documento representa una salida presentada al usuario en esta convención didáctica.",
+    visual:{kind:"sequence",caption:"Las tres funciones tienen símbolos y responsabilidades distintas.",steps:[["Entrada","Leer base y altura."],["Proceso","Calcular el área."],["Salida","Mostrar el resultado."]]},
+    example:{title:"Área de un rectángulo",code:"leer base,altura | area = base × altura | imp area",explanation:"Leer no calcula; asignar no muestra; imprimir no cambia la fórmula. Cada instrucción tiene un propósito distinto."},
+    manipulation:{prompt:"Sustituye base = 4 y altura = 3.",input:"4,3",steps:["Entran 4 y 3.","El proceso calcula 4 × 3 = 12.","La salida muestra 12."]},
+    check:{question:"¿Qué símbolo se usa para una operación de cálculo?",options:["Rectángulo de proceso","Rombo de decisión","Óvalo terminal"],answer:0,why:"El rectángulo representa una instrucción de procesamiento o asignación."}
+  },
+  {
+    id:"variables",order:5,title:"Variables y asignación",duration:"8 min",
+    objective:"Comprender nombre, valor, primera asignación y actualización de una variable.",
+    intuitive:"Imagina una etiqueta con un valor que puede cambiar. Cuando se asigna un valor nuevo, la variable conserva el nombre, pero su contenido actual se actualiza.",
+    technical:"Una variable es un identificador asociado a un valor durante la ejecución. La asignación evalúa el lado derecho y almacena el resultado en la variable del lado izquierdo. El signo = de asignación no significa comparación.",
+    visual:{kind:"variable",caption:"La animación debe conservar el valor previo y hacer visible el nuevo.",steps:[["x aún no existe","No hay valor asignado."],["x = 10","Primera asignación: nace con 10."],["x = x + 5","Se lee 10, se suma 5 y x pasa a 15."]]},
+    example:{title:"Acumulación de cinco unidades",code:"x = 10 | x = x + 5 | imp x",explanation:"Primero se consulta el valor actual de x (10), se calcula 15 y después se guarda 15 en x."},
+    manipulation:{prompt:"Cambia el valor inicial y observa la actualización.",input:"10",steps:["x comienza con el valor escrito.","La expresión suma cinco al valor anterior.","La variable conserva el nuevo valor."]},
+    check:{question:"En x = x + 5, ¿qué ocurre?",options:["Se compara x con x + 5","Se calcula el valor anterior más cinco y se guarda en x","Se crea una variable distinta llamada x + 5"],answer:1,why:"La expresión de la derecha se evalúa usando el valor actual; su resultado reemplaza el valor de x."}
+  },
+  {
+    id:"arithmetic",order:6,title:"Operaciones y paréntesis",duration:"8 min",
+    objective:"Resolver expresiones aritméticas y reconocer el efecto de la prioridad de operadores.",
+    intuitive:"Los paréntesis agrupan lo que debe resolverse primero. Multiplicación y división se resuelven antes que suma y resta, salvo que los paréntesis indiquen otro orden.",
+    technical:"La evaluación respeta precedencia: agrupación, signo unario, multiplicación/división y suma/resta. Las expresiones deben producir un valor definido y no dividir entre cero.",
+    visual:{kind:"calculation",caption:"Descomponer el cálculo hace visible el orden.",steps:[["(3 + 4)","Se resuelve primero el paréntesis: 7."],["7 × 2","Se multiplica: 14."],["14 − 5","Resultado final: 9."]]},
+    example:{title:"Promedio de tres notas",code:"p = (a + b + c) / 3",explanation:"Los tres valores se suman antes de dividir el total entre la cantidad de notas."},
+    manipulation:{prompt:"Evalúa (3 + 4) × 2 − 5.",input:"3,4,2,5",steps:["3 + 4 = 7.","7 × 2 = 14.","14 − 5 = 9."]},
+    check:{question:"¿Qué resultado produce (2 + 3) × 4?",options:["14","20","24"],answer:1,why:"Primero se calcula el paréntesis (5) y después se multiplica por 4."}
+  },
+  {
+    id:"decisions",order:7,title:"Decisiones Si y Si/Sino",duration:"8 min",
+    objective:"Evaluar una condición y seguir la ruta verdadera o falsa.",
+    intuitive:"El rombo hace una pregunta. Si la respuesta es verdadera, sigue una ruta; si es falsa, sigue la otra o continúa sin ejecutar un bloque alternativo.",
+    technical:"Una estructura condicional evalúa una expresión lógica y selecciona un bloque de instrucciones. Si/Sino define dos alternativas mutuamente excluyentes.",
+    visual:{kind:"decision",caption:"El resultado de la condición dirige el recorrido.",steps:[["Evaluar","¿nota ≥ 3?"],["V · Verdadero","Se ejecuta «aprueba»."],["F · Falso","Se ejecuta «reprueba»."]]},
+    example:{title:"Clasificar una nota",code:"si nota >= 3 | imp «aprueba» | sino | imp «reprueba» | fin",explanation:"Solo se ejecuta uno de los dos bloques. El flujo vuelve a unirse al terminar la decisión."},
+    manipulation:{prompt:"Cambia la nota entre 2 y 4.",input:"2",steps:["Se sustituye el valor en la condición.","Se obtiene F porque 2 no es mayor o igual que 3.","Se ejecuta la ruta falsa."]},
+    check:{question:"Si nota = 3 y la condición es nota >= 3, ¿qué camino se elige?",options:["V","F","Ambos"],answer:0,why:"La igualdad está incluida en ≥, por lo que la condición es verdadera."}
+  },
+  {
+    id:"nested-decisions",order:8,title:"Condiciones anidadas y compuestas",duration:"9 min",
+    objective:"Resolver clasificaciones de varias categorías con decisiones internas y operadores lógicos.",
+    intuitive:"Una decisión anidada es una segunda pregunta dentro de una ruta. Una condición compuesta reúne varias preguntas en una sola expresión.",
+    technical:"La anidación organiza bloques condicionales dentro de otros. Los operadores Y, O y NO combinan valores lógicos; Y exige que ambos sean verdaderos, O requiere al menos uno y NO invierte el valor lógico.",
+    visual:{kind:"decision-nested",caption:"La segunda pregunta solo se ejecuta si el recorrido entra en ese bloque.",steps:[["¿n > 0?","Si V, clasificar positivo."],["Si F: ¿n < 0?","Si V, negativo; si F, cero."],["Unir rutas","Cada caso llega a su salida correspondiente."]]},
+    example:{title:"Clasificación de número",code:"si n > 0 → positivo; sino si n < 0 → negativo; sino → cero",explanation:"La segunda pregunta no se evalúa para valores positivos. O permite expresar rangos excluidos: n < 0 O n > 5."},
+    manipulation:{prompt:"Prueba n = 4, n = −2 y n = 0.",input:"4",steps:["Para 4, la primera condición es verdadera.","Para −2, la primera es falsa y la segunda verdadera.","Para 0, ambas son falsas y se elige la salida cero."]},
+    check:{question:"¿Qué significa n < 0 O n > 5?",options:["n está entre 0 y 5","n está fuera del intervalo de 0 a 5","n debe ser exactamente 0 y 5"],answer:1,why:"O es verdadero cuando al menos una de las dos condiciones se cumple."}
+  },
+  {
+    id:"counters-accumulators",order:9,title:"Contadores y acumuladores",duration:"8 min",
+    objective:"Distinguir una variable que cuenta eventos de otra que suma magnitudes.",
+    intuitive:"Un contador pregunta «¿cuántas veces?». Un acumulador pregunta «¿cuánto llevamos sumado?». No se inicializan necesariamente con el mismo valor.",
+    technical:"Un contador incrementa o decrementa una cantidad discreta, normalmente en una unidad por evento. Un acumulador combina repetidamente valores mediante una operación; para sumar comienza en 0 y para multiplicar comienza en 1.",
+    visual:{kind:"counter",caption:"La misma iteración puede actualizar un contador y un acumulador.",steps:[["Inicio","contador = 0; suma = 0."],["Dato = 4","contador = 1; suma = 4."],["Dato = 6","contador = 2; suma = 10."]]},
+    example:{title:"Sumar cuatro números",code:"S = 0 | para i = 1; i <= 4; i++ | leer n | S = S + n | fin",explanation:"i mide cuántas iteraciones se realizan; S conserva el total de los valores recibidos."},
+    manipulation:{prompt:"Simula la entrada 4 y luego 6.",input:"4,6",steps:["Después del primer dato: contador 1 y suma 4.","Después del segundo: contador 2 y suma 10.","El contador no guarda la suma; cada variable tiene una función distinta."]},
+    check:{question:"¿Con qué valor se inicia un acumulador de suma?",options:["0","1","Con el primer resultado final"],answer:0,why:"Cero es el elemento neutro de la suma: no altera el primer valor acumulado."}
+  },
+  {
+    id:"for",order:10,title:"Ciclo Para",duration:"9 min",
+    objective:"Preparar, evaluar y avanzar un contador cuando el recorrido está definido.",
+    intuitive:"Para se usa cuando el recorrido tiene un punto de inicio, una condición y un avance que se pueden expresar antes de repetir.",
+    technical:"El ciclo Para ejecuta una preparación una vez, evalúa la condición antes de cada iteración, ejecuta el cuerpo si es verdadera y aplica el avance antes de volver a evaluar.",
+    visual:{kind:"for",caption:"Preparación → condición → cuerpo → avance → condición.",steps:[["Preparación: i = 1","El contador recibe su valor inicial."],["Condición: i <= 3","Si es V, entra al cuerpo; si F, sale."],["Avance: i = i + 1","Se actualiza y vuelve a la condición."]]},
+    example:{title:"Imprimir 1, 2 y 3",code:"para i = 1; i <= 3; i++ | imp i | fin",explanation:"El cuerpo se ejecuta tres veces. Después de imprimir 3, i avanza a 4 y la condición resulta falsa."},
+    manipulation:{prompt:"Cambia el límite de 3 a 5.",input:"5",steps:["i comienza en 1.","Cada iteración imprime i y después suma 1.","El ciclo termina cuando i vale 6 y la condición es falsa."]},
+    check:{question:"¿Cuándo se ejecuta la preparación del Para?",options:["En cada vuelta","Una sola vez, antes de evaluar la condición","Después de salir del ciclo"],answer:1,why:"La inicialización se realiza una vez al entrar al ciclo."}
+  },
+  {
+    id:"while",order:11,title:"Ciclo Mientras",duration:"9 min",
+    objective:"Comprender la evaluación previa y la posibilidad de cero iteraciones.",
+    intuitive:"Mientras pregunta antes de entrar. Si la condición ya es falsa desde el comienzo, no tiene por qué realizar una sola vuelta.",
+    technical:"Mientras es una estructura de repetición con condición de continuación previa. Evalúa la expresión al inicio de cada ciclo y ejecuta el cuerpo solo si resulta verdadera.",
+    visual:{kind:"while",caption:"La condición se revisa antes de cada entrada al cuerpo.",steps:[["Evaluar condición","Si es F desde el inicio, sale."],["V · Cuerpo","Ejecuta las instrucciones."],["Retorno","Vuelve al rombo y evalúa de nuevo."]]},
+    example:{title:"Contar hasta N",code:"i = 1 | mientras i <= N | imp i | i = i + 1 | fin",explanation:"Con N = 3 imprime 1, 2 y 3. Con N = 0 no entra al cuerpo."},
+    manipulation:{prompt:"Compara N = 3 con N = 0.",input:"3",steps:["Con N = 3, 1 <= 3 es verdadera y entra.","Con N = 0, 1 <= 0 es falsa desde el inicio.","La segunda ejecución realiza cero iteraciones."]},
+    check:{question:"¿Puede Mientras ejecutar cero veces?",options:["No, siempre entra una vez","Sí, si la condición inicial es falsa","Solo si usa un acumulador"],answer:1,why:"La condición se evalúa antes de ejecutar el cuerpo."}
+  },
+  {
+    id:"do-while",order:12,title:"Ciclo Hacer–Mientras",duration:"9 min",
+    objective:"Mostrar que el cuerpo se ejecuta una vez antes de evaluar la repetición.",
+    intuitive:"Hacer–Mientras hace primero y pregunta después. Por eso la primera vuelta ocurre incluso si la condición que decide repetir es falsa.",
+    technical:"La estructura postcondicional ejecuta el cuerpo al menos una vez; luego evalúa la condición de continuación y repite mientras esta sea verdadera.",
+    visual:{kind:"do-while",caption:"A diferencia de Mientras, primero se ejecuta el cuerpo.",steps:[["Entrar al cuerpo","La primera ejecución es obligatoria."],["Evaluar al final","Se comprueba la condición."],["V · Repetir / F · Salir","Vuelve al cuerpo o termina."]]},
+    example:{title:"Pedir una nota al menos una vez",code:"hacer | leer nota | hm nota < 0 O nota > 5",explanation:"Se solicita una nota y se repite solo si está fuera del rango. Una nota válida produce una sola lectura."},
+    manipulation:{prompt:"Prueba una entrada válida y otra inválida.",input:"4",steps:["El cuerpo solicita la nota aunque todavía no se haya evaluado nada.","Con 4, la condición de repetir es falsa.","El ciclo termina después de la primera ejecución."]},
+    check:{question:"¿Qué garantiza Hacer–Mientras?",options:["Que el cuerpo se ejecute al menos una vez","Que el cuerpo nunca se ejecute","Que la condición siempre sea verdadera"],answer:0,why:"La condición se evalúa después del cuerpo, por eso hay una ejecución mínima."}
+  },
+  {
+    id:"nested-loops",order:13,title:"Ciclos anidados",duration:"10 min",
+    objective:"Seguir un ciclo interior dentro de cada iteración de un ciclo exterior.",
+    intuitive:"Imagina filas y columnas. Por cada fila completa, se recorren todas las columnas. El ciclo interior vuelve a empezar cuando comienza la siguiente fila.",
+    technical:"Un ciclo anidado es una estructura de repetición contenida en el cuerpo de otra. El ciclo exterior avanza cuando termina por completo la ejecución del ciclo interior.",
+    visual:{kind:"nested",caption:"El contador interior se reinicia para cada vuelta exterior.",steps:[["Exterior: fila 1","El ciclo exterior selecciona la primera fila."],["Interior: columnas 1–3","Completa todas las columnas de esa fila."],["Exterior: fila 2","El interior vuelve a comenzar desde la columna 1."]]},
+    example:{title:"Cuadrícula 2 × 3",code:"para fila = 1; fila <= 2; fila++ | para col = 1; col <= 3; col++ | imp fila * col | fin | fin",explanation:"Hay dos filas y tres columnas. El cuerpo interior se ejecuta seis veces en total."},
+    manipulation:{prompt:"Cambia a 3 filas y 2 columnas.",input:"3,2",steps:["La fila exterior toma el valor 1.","Las dos columnas se recorren por completo.","La fila exterior avanza y el contador interior vuelve a 1."]},
+    check:{question:"¿Cuándo avanza el ciclo exterior?",options:["Después de cada instrucción interior","Cuando termina por completo el ciclo interior","Antes de empezar el ciclo interior"],answer:1,why:"Cada vuelta exterior espera a que termine toda la repetición interna."}
+  },
+  {
+    id:"validation-sentinel",order:14,title:"Validación y centinelas",duration:"10 min",
+    objective:"Diferenciar un dato válido de una señal de terminación y prevenir ciclos sin fin.",
+    intuitive:"Validar es insistir hasta recibir un dato aceptable. Un centinela es un valor especial que avisa que ya no hay más datos y no debe contarse como dato ordinario.",
+    technical:"La validación comprueba precondiciones y repite la lectura mientras la entrada esté fuera del dominio permitido. El centinela es una condición de parada explícita que debe excluirse de las operaciones sobre los datos, salvo que el enunciado indique lo contrario.",
+    visual:{kind:"validation",caption:"La condición debe distinguir entre dato útil, dato inválido y señal de parada.",steps:[["Leer dato","Se recibe un valor."],["Evaluar regla","¿Está dentro del dominio o es centinela?"],["Aceptar o repetir/salir","Continúa con dato válido, vuelve si es inválido o termina con centinela."]]},
+    example:{title:"Sumar hasta recibir cero",code:"S = 0 | leer n | mientras n <> 0 | S = S + n | leer n | fin | imp S",explanation:"Los números se suman. El cero termina la entrada y no cambia el acumulado."},
+    manipulation:{prompt:"Prueba 4, 7, 0 y luego solo 0.",input:"4,7,0",steps:["4 y 7 se acumulan.","0 activa la condición de parada y no se añade como dato ordinario.","Si el primer valor es 0, la suma queda en 0 y no hay datos procesados."]},
+    check:{question:"En una suma con centinela cero, ¿se incluye el cero como dato?",options:["Sí, siempre se suma","No, es la señal que termina la lectura","Solo si es el primer dato"],answer:1,why:"El centinela controla la terminación y debe excluirse del conjunto de datos que se están sumando."}
+  }
+];
