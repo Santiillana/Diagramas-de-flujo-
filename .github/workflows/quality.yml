@@ -35,3 +35,11 @@ jobs:
         run: npm test
       - name: Run browser acceptance tests
         run: npm run test:browser
+      - name: Upload visual audit captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit-${{ github.sha }}
+          path: test-results/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
