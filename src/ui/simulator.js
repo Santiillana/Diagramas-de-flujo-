@@ -321,7 +321,7 @@ function fitDiagram(){
   if(!viewBox?.width||!viewBox?.height)return;
   const availableWidth=Math.max(180,stage.clientWidth-48);
   const availableHeight=Math.max(180,stage.clientHeight-48);
-  const scale=Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height);
+  const scale=Math.max(.45,Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height));
   diagramFitWidth=viewBox.width*scale;
   diagramFitHeight=viewBox.height*scale;
   zoom=1;
