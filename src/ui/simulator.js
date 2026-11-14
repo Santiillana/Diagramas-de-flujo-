@@ -11,7 +11,7 @@ const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) 
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
-let diagramFitWidth=0, diagramFitHeight=0, zoom=1;
+let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
 
 function readPseudocodeSize(){
   try{
@@ -291,12 +291,16 @@ function applyDiagramZoom(){
   svg.style.maxWidth="none";
   svg.style.width=(diagramFitWidth*zoom)+"px";
   svg.style.height=(diagramFitHeight*zoom)+"px";
+  const stage=$("#diagram-stage");
+  if(stage)stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));
 }
 function zoomDiagram(change){
   const svg=$("#flow-svg");
   if(!svg)return;
   if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
   zoom=Math.max(.65,Math.min(3,zoom+change*.15));
+  const stage=$("#diagram-stage");
+  if(stage)stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
   applyDiagramZoom();
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
@@ -318,6 +322,10 @@ function fitDiagram(){
   diagramFitWidth=viewBox.width*scale;
   diagramFitHeight=viewBox.height*scale;
   zoom=1;
+  panOffset={x:0,y:0};
+  const canvas=$("#flow-diagram-container");
+  if(canvas)canvas.style.transform="translate(0,0)";
+  stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   applyDiagramZoom();
   stage.scrollTo({left:0,top:0,behavior:"auto"});
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
@@ -345,18 +353,23 @@ function updateFullscreenButton(){
   if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
-  const stage=$("#diagram-stage");
-  if(!stage)return;
+  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
+  if(!stage||!canvas)return;
   const insideStage=event=>{
     const box=stage.getBoundingClientRect();
     return event.clientX>=box.left&&event.clientX<=box.right&&
       event.clientY>=box.top&&event.clientY<=box.bottom;
   };
   document.addEventListener("pointerdown",event=>{
+    if(!insideStage(event))return;
     const target=event.target instanceof Element?event.target:null;
-    if(!insideStage(event)||target?.closest("#diagram-stage-tools"))return;
+    if(target?.closest("button,.diagram-header-tools"))return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
-    panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,left:stage.scrollLeft,top:stage.scrollTop};
+    panState={
+      pointerId:event.pointerId,
+      x:event.clientX,y:event.clientY,
+      originX:panOffset.x,originY:panOffset.y
+    };
     stage.classList.add("is-panning");
     stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
     cameraAuto=false;updateCameraButton();
@@ -364,9 +377,13 @@ function bindDiagramPan(){
   },true);
   document.addEventListener("pointermove",event=>{
     if(!panState||event.pointerId!==panState.pointerId)return;
-    stage.scrollLeft=panState.left-(event.clientX-panState.x);
-    stage.scrollTop=panState.top-(event.clientY-panState.y);
+    panOffset={
+      x:panState.originX+(event.clientX-panState.x),
+      y:panState.originY+(event.clientY-panState.y)
+    };
+    canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
     stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
+    stage.dataset.panOffset=panOffset.x+","+panOffset.y;
     event.preventDefault();
   },true);
   const end=event=>{
