@@ -237,8 +237,15 @@ function inputs(){
   return raw?raw.split(/[;,]/).map(x=>x.trim()):[];
 }
 function seekBuilder(index){
+  const control=$("#builder-last");
+  if(control)control.dataset.lastSeekAttempt=String(index);
   if(!runtimeTimeline)return;
+  const before=runtimeTimeline.index;
   runtimeTimeline.seek(index);
+  if(control){
+    control.dataset.lastSeekBefore=String(before);
+    control.dataset.lastSeekAfter=String(runtimeTimeline.index);
+  }
   renderBuilderTimeline();
 }
 function renderBuilderTimeline(){
