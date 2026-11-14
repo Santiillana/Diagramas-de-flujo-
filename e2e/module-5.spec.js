@@ -125,3 +125,24 @@ test("captura vistas del simulador, laboratorio y constructor en tres tamaños",
     await page.screenshot({path:testInfo.outputPath(name+"-builder.png"),fullPage:true,animations:"disabled"});
   }
 });
+
+
+test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persiste",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  const svg=page.locator("#flow-svg");
+  const fitted=await svg.evaluate(el=>el.getBoundingClientRect().width);
+  await page.locator("#diagram-zoom-in").click();
+  await page.locator("#diagram-zoom-in").click();
+  const enlarged=await svg.evaluate(el=>el.getBoundingClientRect().width);
+  expect(enlarged).toBeGreaterThan(fitted);
+  await page.locator("#diagram-fit").click();
+  await expect.poll(()=>svg.evaluate(el=>el.getBoundingClientRect().width)).toBeLessThan(enlarged);
+  await page.locator("#simulator-text-larger").click();
+  const stored=await page.evaluate(()=>localStorage.getItem("traza-pseudocode-size"));
+  expect(stored).toBe("11");
+  await page.reload();
+  await page.locator('[data-space="simulator"]').click();
+  const restored=await page.locator(".pseudocode-lines li").first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  expect(restored).toBe(11);
+});
