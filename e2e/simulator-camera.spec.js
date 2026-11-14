@@ -13,6 +13,8 @@ test("la cámara sigue los nodos con movimiento suave y puede reactivarse",async
  await page.locator("#diagram-camera-toggle").click();
  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
  await page.locator("#simulator-next").click();
+ await expect.poll(()=>stage.getAttribute("data-camera-target")).toBe("1");
+ await page.locator("#simulator-next").click();
  await expect.poll(()=>stage.getAttribute("data-camera-target")).toBe("2");
 });
 
