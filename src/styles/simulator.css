@@ -152,3 +152,9 @@
 @media(prefers-reduced-motion:reduce){
   .simulator-diagram-stage{scroll-behavior:auto}
 }
+
+/* El lienzo recibe los gestos; los controles del encabezado quedan por encima */
+.diagram-panel>.panel-heading{position:relative;z-index:5}
+.simulator-diagram-stage{position:relative;z-index:1}
+.simulator-diagram-stage .flow-svg{pointer-events:none}
+.simulator-diagram-stage .canvas-coordinate{pointer-events:none}
