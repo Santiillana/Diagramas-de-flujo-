@@ -4,6 +4,7 @@ test("la salida no repite el índice de la lista nativa", async ({ page }) => {
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-run").click();
+  await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output li").first()).toHaveText("1. 13");
 });
 
