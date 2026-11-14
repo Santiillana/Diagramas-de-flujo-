@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -83,9 +83,16 @@
             <details class="simulator-details"><summary>Entradas, salidas y restricciones</summary><div id="simulator-exercise-spec"></div></details>
             <label class="simulator-field"><span>MÉTODO</span><select id="simulator-method"></select></label>
             <label class="simulator-field"><span>DATOS DE ENTRADA</span><input id="simulator-inputs" type="text" inputmode="decimal" placeholder="Ejemplo: 8, 5" autocomplete="off"></label>
+            <button type="button" class="text-link simulator-restore" id="simulator-restore-inputs">↺ Restaurar datos de ejemplo</button>
             <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas.</p>
             <button type="button" class="button button-primary simulator-run" id="simulator-run">Ejecutar algoritmo <span aria-hidden="true">▶</span></button>
-            <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span></div>
+            <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span>
+              <div class="pseudocode-size-controls" aria-label="Tamaño del pseudocódigo">
+                <button type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto">A−</button>
+                <button type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto">A</button>
+                <button type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto">A+</button>
+              </div>
+            </div>
             <ol class="pseudocode-lines" id="pseudocode-lines" aria-label="Pseudocódigo del ejercicio"></ol>
           </div>
         </aside>
@@ -93,9 +100,11 @@
           <div class="panel-heading diagram-heading">
             <div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
             <div class="diagram-tools"><span class="canvas-status"><i></i> SVG SINCRONIZADO</span>
+              <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática activa">◎</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama">−</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama">+</button>
               <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama">⌗</button>
+              <button class="small-icon-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa" title="Pantalla completa">⛶</button>
             </div>
           </div>
           <div class="diagram-stage simulator-diagram-stage" id="diagram-stage">
@@ -114,6 +123,7 @@
             <div class="panel-heading"><div><p class="eyebrow">ESTADO ACTUAL</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
             <div id="variables-content" class="variables-content"><p class="empty-state-copy">Las variables aparecerán al iniciar la ejecución.</p></div>
             <div id="variable-change" class="variable-change">Sin cambios todavía.</div>
+            <div id="variable-history" class="variable-history" aria-live="polite"><span class="empty-state-copy">Selecciona una variable para inspeccionar su historial.</span></div>
           </section>
           <section class="panel output-panel" aria-labelledby="output-title">
             <div class="panel-heading"><div><p class="eyebrow">RESULTADOS</p><h3 id="output-title">Salida del algoritmo</h3></div><span id="output-count" class="panel-index">0</span></div>
