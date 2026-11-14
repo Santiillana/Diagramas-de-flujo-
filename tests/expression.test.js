@@ -44,7 +44,7 @@ test("traza el desglose aritmético en el orden real de evaluación",async()=>{
 
 test("el desglose respeta cortocircuito lógico y no evalúa la rama omitida",async()=>{
   const {traceExpression}=await import("../src/core/expression.js");
-  const trace=traceExpression("falso Y 1/0=0",{});
+  const trace=traceExpression("f Y 1/0=0",{f:false});
   assert.equal(trace.value,false);
   assert.equal(trace.steps.length,1);
   assert.equal(trace.steps[0].shortCircuited,true);
