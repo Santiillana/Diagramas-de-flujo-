@@ -43,7 +43,7 @@ test("Espacio reproduce y pausa sin reiniciar el paso actual",async({page})=>{
  await page.keyboard.press("ArrowRight");
  const start=Number(await page.locator("#simulator-timeline").inputValue());
  await page.keyboard.press("Space");
- await page.waitForTimeout(150);
+ await page.waitForTimeout(750);
  await page.keyboard.press("Space");
  const end=Number(await page.locator("#simulator-timeline").inputValue());
  expect(end).toBeGreaterThan(start);

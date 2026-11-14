@@ -354,7 +354,7 @@ function togglePredictionMode(){
 }
 function toggleShortcuts(){const panel=$("#simulator-shortcuts");if(panel)panel.hidden=!panel.hidden;}
 function bindKeyboard(){
-  document.addEventListener("keydown",event=>{
+  window.addEventListener("keydown",event=>{
     const space=document.body.dataset.activeSpace;
     if(!["simulator","lab"].includes(space)||event.altKey||event.ctrlKey||event.metaKey)return;
     const target=event.target;
@@ -384,7 +384,7 @@ function bindKeyboard(){
       case "p":case "P":event.preventDefault();togglePredictionMode();break;
       case "f":case "F":event.preventDefault();toggleDiagramFullscreen();break;
     }
-  });
+  },true);
 }
 function play(){
   if(!timeline)return;
