@@ -56,11 +56,11 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   const rect=await stage.boundingBox();
   await page.mouse.move(rect.x+Math.min(rect.width-30,280),rect.y+120);
   await page.mouse.down();
+  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
   await page.mouse.move(rect.x+40,rect.y+120,{steps:5});
   await page.mouse.up();
   const scrolled=await stage.evaluate(el=>el.scrollLeft);
-  expect(scrolled).toBeGreaterThanOrEqual(initial);
-  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
+  expect(scrolled).toBeGreaterThan(initial);
 });
 
 test("tema y reducción de movimiento no alteran el estado de ejecución",async({page})=>{
