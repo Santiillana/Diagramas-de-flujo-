@@ -42,7 +42,7 @@ test("cámara automática, texto escalable y fullscreen tienen controles utiliza
   await expect(page.locator("#diagram-fullscreen")).toBeVisible();
   await page.locator("#diagram-fullscreen").click();
   await expect.poll(()=>page.evaluate(()=>Boolean(document.fullscreenElement))).toBe(true);
-  await page.locator("#diagram-fullscreen").click();
+  await page.locator("#diagram-fullscreen-exit").click();
   await expect.poll(()=>page.evaluate(()=>Boolean(document.fullscreenElement))).toBe(false);
 });
 
@@ -51,6 +51,7 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#diagram-camera-toggle").click();
+  await page.locator("#diagram-zoom-in").click();
   await page.locator("#diagram-zoom-in").click();
   await page.locator("#diagram-zoom-in").click();
   const stage=page.locator("#diagram-stage");
