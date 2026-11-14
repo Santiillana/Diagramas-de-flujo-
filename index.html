@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es" data-theme="light" data-motion="full">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Laboratorio visual e interactivo para aprender a resolver problemas mediante diagramas de flujo.">
+  <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
+  <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
+  <link rel="stylesheet" href="./src/styles/responsive.css"><script type="module" src="./src/app.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Saltar al contenido</a>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#main-content" aria-label="Traza, laboratorio de diagramas de flujo">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4v7M20 29v7M8 20h7M25 20h7"/><rect x="14" y="11" width="12" height="18" rx="5"/><path d="M17.5 16h5M17.5 24h5"/></svg></span>
+      <span class="brand-copy"><strong>traza<span>.</span></strong><small>LABORATORIO DE FLUJOS</small></span>
+    </a>
+    <div class="topbar-status"><i class="status-indicator"></i><span>ENTORNO DE APRENDIZAJE</span><i class="status-divider"></i><span class="status-stage">BASE 01 · ARQUITECTURA</span></div>
+    <nav class="primary-nav" id="primary-nav" aria-label="Espacios de aprendizaje">
+      <button class="nav-button" type="button" data-space="learn" aria-current="false"><span class="nav-index">01</span>Aprende</button>
+      <button class="nav-button is-active" type="button" data-space="exercises" aria-current="page"><span class="nav-index">02</span>Ejercicios</button>
+      <button class="nav-button" type="button" data-space="simulator" aria-current="false"><span class="nav-index">03</span>Simulador</button>
+      <button class="nav-button" type="button" data-space="lab" aria-current="false"><span class="nav-index">04</span>Laboratorio</button>
+      <button class="nav-button" type="button" data-space="builder" aria-current="false"><span class="nav-index">05</span>Constructor</button>
+    </nav>
+    <div class="topbar-actions">
+      <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema oscuro" aria-pressed="false" title="Activar tema oscuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42m-9.88 9.88-1.42 1.42"/><circle cx="12" cy="12" r="4.2"/></svg></button>
+      <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l2.3-5 3.4 10L16 12h4M3 4h18v16H3z"/></svg></button>
+    </div>
+  </header>
+
+  <main class="page-shell" id="main-content">
+    <section class="page-heading" aria-label="Contexto del espacio">
+      <div><p class="eyebrow" id="space-kicker">ESPACIO 02 / 05 · PRÁCTICA GUIADA</p>
+        <h1 id="space-heading">Piensa el problema. Después, dibuja el camino.</h1>
+        <p class="page-subtitle" id="space-description">Un entorno para entender cómo se transforma una idea en instrucciones claras y verificables.</p>
+      </div><div class="heading-mark" aria-hidden="true"><span></span>V5</div>
+    </section>
+
+    <section class="space-view exercises-view" id="view-exercises" data-view="exercises" aria-labelledby="exercise-title">
+      <div class="challenge-gate">
+        <div class="challenge-copy"><div class="tag-row"><span class="tag tag-accent">MODO RETO</span><span class="tag tag-muted">CATÁLOGO EN PREPARACIÓN</span></div>
+          <p class="eyebrow">ANTES DE VER LA SOLUCIÓN</p>
+          <h2 id="exercise-title">Cada problema tiene una estructura. Aprende a reconocerla.</h2>
+          <p class="lead">Identifica lo que entra, determina qué debe ocurrir y piensa qué resultado debe salir. Las soluciones aparecerán cuando el contenido esté verificado.</p>
+          <div class="challenge-actions"><button class="button button-primary" type="button" data-go="learn">Explorar el espacio Aprende <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></button><a class="text-link" href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Abrir prototipo original ↗</a></div>
+        </div>
+        <aside class="challenge-card" aria-label="Guía para analizar un problema">
+          <div class="challenge-card-top"><span class="card-overline">ANÁLISIS DEL PROBLEMA</span><span class="step-count">01 <i>/</i> 03</span></div>
+          <div class="challenge-question"><span class="question-icon">↘</span><div><strong>Entradas</strong><p>¿Qué datos se necesitan?</p></div></div>
+          <div class="challenge-question"><span class="question-icon">◇</span><div><strong>Proceso</strong><p>¿Qué instrucciones transforman esos datos?</p></div></div>
+          <div class="challenge-question"><span class="question-icon">↗</span><div><strong>Salidas</strong><p>¿Qué resultado debe obtenerse?</p></div></div>
+          <div class="card-footnote"><i class="footnote-dot"></i> Una buena solución empieza con un buen análisis.</div>
+        </aside>
+      </div>
+      <div class="section-foot"><div><span class="section-marker">01</span>El catálogo definitivo se incorporará en el Módulo 2.</div><span class="muted-label">SIN EJERCICIOS NO VERIFICADOS</span></div>
+    </section>
+
+    <section class="space-view learn-view" id="view-learn" data-view="learn" aria-labelledby="learn-title" hidden>
+      <div class="section-intro"><div><p class="eyebrow">01 / APRENDE</p><h2 id="learn-title">Una idea a la vez. Una explicación que puedes seguir.</h2></div><span class="phase-chip">CONTENIDO · MÓDULO 2</span></div>
+      <div class="learning-grid">
+        <article class="learning-card learning-card-featured"><span class="learning-number">01</span><span class="learning-symbol">↘</span><h3>Leer un flujo</h3><p>Comprender cómo se conectan las instrucciones.</p><span class="card-status">Lección por integrar</span></article>
+        <article class="learning-card"><span class="learning-number">02</span><span class="learning-symbol">◇</span><h3>Reconocer símbolos</h3><p>Las formas que representan acciones y decisiones.</p><span class="card-status">Lección por integrar</span></article>
+        <article class="learning-card"><span class="learning-number">03</span><span class="learning-symbol">↔</span><h3>Entender los datos</h3><p>Entradas, valores, variables y resultados.</p><span class="card-status">Lección por integrar</span></article>
+        <article class="learning-card"><span class="learning-number">04</span><span class="learning-symbol">⌁</span><h3>Seguir la lógica</h3><p>Secuencias, decisiones y repeticiones.</p><span class="card-status">Lección por integrar</span></article>
+      </div>
+    </section>
+
+    <section class="space-view simulator-view" id="view-simulator" data-view="simulator" aria-labelledby="simulator-title" hidden>
+      <div class="section-intro simulator-intro"><div><p class="eyebrow">03 / SIMULADOR</p><h2 id="simulator-title">El algoritmo, visible paso a paso.</h2><p>Las vistas permanecerán conectadas. El motor de ejecución se incorporará cuando el contenido esté aprobado.</p></div><span class="phase-chip">LIENZO Y PANELES PREPARADOS</span></div>
+      <div class="simulator-grid">
+        <aside class="panel problem-panel" aria-labelledby="problem-title">
+          <div class="panel-heading"><div><p class="eyebrow">CONTEXTO</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><span class="panel-index">A</span></div>
+          <details class="problem-details" open><summary>Enunciado y análisis <span>⌄</span></summary><div class="detail-content">
+            <p class="placeholder-copy">El enunciado activo, las entradas, restricciones y salidas aparecerán al seleccionar un ejercicio verificado.</p>
+            <div class="mini-divider"></div><p class="eyebrow">PSEUDOCÓDIGO</p><pre class="code-placeholder">Aún no hay una ejecución activa.</pre><p class="helper-copy">El resaltado de línea seguirá el mismo paso que el diagrama.</p>
+          </div></details>
+        </aside>
+        <section class="panel diagram-panel" aria-labelledby="diagram-title">
+          <div class="panel-heading diagram-heading"><div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div><div class="diagram-tools"><span class="canvas-status"><i></i> LIENZO VECTORIAL</span><button class="small-icon-button" disabled aria-label="Ajustar diagrama" title="Disponible con el motor de diagramas">⌗</button></div></div>
+          <div class="diagram-stage"><div class="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true"><svg viewBox="0 0 84 84"><path d="M42 8v12M42 64v12M20 42h12m20 0h12"/><rect x="32" y="20" width="20" height="44" rx="8"/><path d="M36 31h12M36 53h12M42 36v12"/></svg></div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>El diagrama tendrá aquí su propio espacio.</h4><p>Los nodos, conectores, decisiones y retornos se dibujarán desde la estructura real del algoritmo.</p></div><span class="canvas-coordinate coordinate-top">X 000 · Y 000</span><span class="canvas-coordinate coordinate-bottom">SVG / VIEWPORT</span></div>
+          <div class="diagram-legend"><span><i class="legend-dot legend-current"></i>Paso activo</span><span><i class="legend-dot legend-route"></i>Ruta recorrida</span><span><i class="legend-dot legend-neutral"></i>Resto del flujo</span></div>
+        </section>
+        <aside class="inspector-stack" aria-label="Estado de ejecución">
+          <section class="panel scene-panel" aria-labelledby="scene-title"><div class="panel-heading"><div><p class="eyebrow">PANEL PROTAGONISTA</p><h3 id="scene-title">En escena</h3></div><span class="panel-index">B</span></div>
+            <div class="scene-placeholder"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual cobrará vida aquí.</strong><p>Entradas, asignaciones, cálculos y decisiones tendrán una visualización específica y sincronizada.</p><span class="mini-status">SIN EVENTO ACTIVO</span></div>
+          </section>
+          <section class="panel variables-panel" aria-labelledby="variables-title"><div class="panel-heading"><div><p class="eyebrow">PANEL PROTAGONISTA</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
+            <div class="variables-empty"><div class="variable-glyph">x = ?</div><div><strong>El estado aparecerá con cada paso.</strong><p>Valor actual, cambio anterior → nuevo e historial de cada variable.</p></div></div>
+            <div class="variable-summary"><span>VARIABLES</span><b>—</b><span>HISTORIAL</span><b>—</b></div>
+          </section>
+        </aside>
+        <section class="execution-dock" aria-label="Controles de ejecución">
+          <div class="dock-description"><i class="dock-live-dot"></i><div><strong>Recorrido de ejecución</strong><small>Los controles se activarán con el motor del Módulo 3.</small></div></div>
+          <div class="dock-controls"><button class="transport-button" disabled aria-label="Ir al inicio">|◀</button><button class="transport-button" disabled aria-label="Paso anterior">◀</button><button class="transport-button transport-play" disabled aria-label="Reproducir o pausar">▶</button><button class="transport-button" disabled aria-label="Paso siguiente">▶</button><button class="transport-button" disabled aria-label="Ir al final">▶|</button></div>
+          <div class="timeline-block"><div class="timeline-label"><span>PASO</span><b>— / —</b></div><div class="timeline-track"><i></i></div></div><span class="dock-speed">VELOCIDAD <b>1×</b></span>
+        </section>
+      </div>
+    </section>
+
+    <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
+      <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Experimenta sin perder de vista el flujo.</h2><p>El panel de actividad se organiza junto al diagrama: el contexto principal permanece visible durante el trabajo.</p></div><span class="phase-chip">ACTIVIDADES · MÓDULO 4</span></div>
+      <div class="lab-layout">
+        <section class="panel lab-context"><div class="panel-heading"><div><p class="eyebrow">CONTEXTO PERSISTENTE</p><h3>Diagrama y estado</h3></div><span class="panel-index">A</span></div>
+          <div class="lab-diagram-placeholder"><span class="eyebrow">EL DIAGRAMA NO SE OCULTA</span><div class="lab-flow-mark" aria-hidden="true"><i></i><b></b><i></i><b></b><i></i></div><p>Ejercicio, paso y variables seguirán disponibles al cambiar de actividad.</p></div>
+          <div class="lab-context-footer"><span>EN ESCENA <b>—</b></span><span>VARIABLES <b>—</b></span><span>FILA ACTUAL <b>—</b></span></div>
+        </section>
+        <aside class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">ELIGE UNA ACTIVIDAD</p><h3>Herramientas del laboratorio</h3></div><span class="panel-index">B</span></div>
+          <div class="activity-list">
+            <article class="activity-card"><span class="activity-icon">?</span><div><strong>Predice</strong><p>Anticipa el siguiente paso antes de revelarlo.</p></div><span class="activity-lock">M4</span></article>
+            <article class="activity-card"><span class="activity-icon">▦</span><div><strong>Tabla de seguimiento</strong><p>Inspecciona valores, cambios y vueltas.</p></div><span class="activity-lock">M4</span></article>
+            <article class="activity-card"><span class="activity-icon">↕</span><div><strong>Ordena instrucciones</strong><p>Reconstruye la secuencia correcta.</p></div><span class="activity-lock">M4</span></article>
+            <article class="activity-card"><span class="activity-icon">◇</span><div><strong>Identifica símbolo</strong><p>Relaciona la instrucción con su figura.</p></div><span class="activity-lock">M4</span></article>
+            <article class="activity-card"><span class="activity-icon">!</span><div><strong>Encuentra el error</strong><p>Detecta fallos con casos de prueba.</p></div><span class="activity-lock">M4</span></article>
+            <article class="activity-card"><span class="activity-icon">↗</span><div><strong>¿Y si…?</strong><p>Cambia un dato o condición y analiza el efecto.</p></div><span class="activity-lock">M4</span></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="space-view builder-view" id="view-builder" data-view="builder" aria-labelledby="builder-title" hidden>
+      <div class="section-intro"><div><p class="eyebrow">05 / CONSTRUCTOR</p><h2 id="builder-title">Construye el flujo. Comprueba que tenga sentido.</h2><p>El lienzo y la paleta usarán los mismos símbolos y reglas que entenderá el simulador.</p></div><span class="phase-chip">EDITOR COMPLETO · MÓDULO 4</span></div>
+      <div class="builder-grid">
+        <aside class="panel builder-palette"><div class="panel-heading"><div><p class="eyebrow">ELEMENTOS DISPONIBLES</p><h3>Símbolos</h3></div></div>
+          <div class="palette-item"><i class="palette-shape terminal-shape"></i><span><b>Inicio / Fin</b><small>Terminal</small></span><em>01</em></div>
+          <div class="palette-item"><i class="palette-shape io-shape"></i><span><b>Entrada / Salida</b><small>Datos</small></span><em>02</em></div>
+          <div class="palette-item"><i class="palette-shape process-shape"></i><span><b>Proceso</b><small>Instrucción</small></span><em>03</em></div>
+          <div class="palette-item"><i class="palette-shape decision-shape"></i><span><b>Decisión</b><small>Condición · V/F</small></span><em>04</em></div>
+          <div class="palette-item"><i class="palette-shape connector-shape"></i><span><b>Conector</b><small>Enlace</small></span><em>05</em></div><p class="helper-copy">Colocar, editar y conectar elementos se implementará en el Módulo 4.</p>
+        </aside>
+        <section class="panel builder-canvas"><div class="panel-heading"><div><p class="eyebrow">ÁREA DE TRABAJO</p><h3>Lienzo del constructor</h3></div><span class="canvas-status"><i></i> LIENZO VACÍO</span></div>
+          <div class="builder-empty"><span class="builder-crosshair">＋</span><strong>Tu diagrama empieza aquí.</strong><p>Agrega símbolos, crea conexiones y valida el recorrido antes de ejecutarlo.</p></div>
+        </section>
+        <aside class="panel builder-inspector"><div class="panel-heading"><div><p class="eyebrow">PROPIEDADES</p><h3>Inspector</h3></div></div><div class="inspector-empty"><span>⌘</span><strong>Ningún elemento seleccionado</strong><p>Las propiedades y los errores de conexión aparecerán aquí.</p></div></aside>
+      </div>
+    </section>
+
+    <footer class="page-footer"><span>TRAZA <i>·</i> REDISEÑO V5</span><span>La referencia original permanece intacta durante la transición.</span><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Abrir prototipo original ↗</a></footer>
+  </main>
+</div>
+<noscript><p class="noscript-message">Activa JavaScript para navegar por los cinco espacios. El prototipo original permanece disponible en la carpeta reference.</p></noscript>
+</body></html>
