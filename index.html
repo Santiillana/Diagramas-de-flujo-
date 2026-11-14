@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -68,37 +68,76 @@
     </section>
 
     <section class="space-view simulator-view" id="view-simulator" data-view="simulator" aria-labelledby="simulator-title" hidden>
-      <div class="section-intro simulator-intro"><div><p class="eyebrow">03 / SIMULADOR</p><h2 id="simulator-title">El algoritmo, visible paso a paso.</h2><p>Las vistas permanecerán conectadas. El motor de ejecución se incorporará cuando el contenido esté aprobado.</p></div><span class="phase-chip">LIENZO Y PANELES PREPARADOS</span></div>
+      <div class="section-intro simulator-intro">
+        <div><p class="eyebrow">03 / SIMULADOR</p><h2 id="simulator-title">El algoritmo, visible paso a paso.</h2>
+          <p>Una ejecución determinista mantiene sincronizados el pseudocódigo, el diagrama, las variables y la explicación.</p></div>
+        <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
+      </div>
       <div class="simulator-grid">
         <aside class="panel problem-panel" aria-labelledby="problem-title">
-          <div class="panel-heading"><div><p class="eyebrow">CONTEXTO</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><span class="panel-index">A</span></div>
-          <details class="problem-details" open><summary>Enunciado y análisis <span>⌄</span></summary><div class="detail-content">
-            <p class="placeholder-copy">El enunciado activo, las entradas, restricciones y salidas aparecerán al seleccionar un ejercicio verificado.</p>
-            <div class="mini-divider"></div><p class="eyebrow">PSEUDOCÓDIGO</p><pre class="code-placeholder">Aún no hay una ejecución activa.</pre><p class="helper-copy">El resaltado de línea seguirá el mismo paso que el diagrama.</p>
-          </div></details>
+          <div class="panel-heading"><div><p class="eyebrow">CONTEXTO DEL RETO</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><span class="panel-index">A</span></div>
+          <div class="simulator-problem-body">
+            <div class="simulator-exercise-kicker"><span class="exercise-number" id="simulator-exercise-number">01</span><span class="exercise-level level-basic" id="simulator-exercise-level">Básico</span></div>
+            <h4 id="simulator-exercise-title">Suma de dos números</h4>
+            <p id="simulator-exercise-statement" class="simulator-statement">Selecciona un ejercicio para empezar.</p>
+            <details class="simulator-details"><summary>Entradas, salidas y restricciones</summary><div id="simulator-exercise-spec"></div></details>
+            <label class="simulator-field"><span>MÉTODO</span><select id="simulator-method"></select></label>
+            <label class="simulator-field"><span>DATOS DE ENTRADA</span><input id="simulator-inputs" type="text" inputmode="decimal" placeholder="Ejemplo: 8, 5" autocomplete="off"></label>
+            <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas.</p>
+            <button type="button" class="button button-primary simulator-run" id="simulator-run">Ejecutar algoritmo <span aria-hidden="true">▶</span></button>
+            <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span></div>
+            <ol class="pseudocode-lines" id="pseudocode-lines" aria-label="Pseudocódigo del ejercicio"></ol>
+          </div>
         </aside>
         <section class="panel diagram-panel" aria-labelledby="diagram-title">
-          <div class="panel-heading diagram-heading"><div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div><div class="diagram-tools"><span class="canvas-status"><i></i> LIENZO VECTORIAL</span><button class="small-icon-button" disabled aria-label="Ajustar diagrama" title="Disponible con el motor de diagramas">⌗</button></div></div>
-          <div class="diagram-stage"><div class="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true"><svg viewBox="0 0 84 84"><path d="M42 8v12M42 64v12M20 42h12m20 0h12"/><rect x="32" y="20" width="20" height="44" rx="8"/><path d="M36 31h12M36 53h12M42 36v12"/></svg></div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>El diagrama tendrá aquí su propio espacio.</h4><p>Los nodos, conectores, decisiones y retornos se dibujarán desde la estructura real del algoritmo.</p></div><span class="canvas-coordinate coordinate-top">X 000 · Y 000</span><span class="canvas-coordinate coordinate-bottom">SVG / VIEWPORT</span></div>
+          <div class="panel-heading diagram-heading">
+            <div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
+            <div class="diagram-tools"><span class="canvas-status"><i></i> SVG SINCRONIZADO</span>
+              <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama">−</button>
+              <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama">+</button>
+              <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama">⌗</button>
+            </div>
+          </div>
+          <div class="diagram-stage simulator-diagram-stage" id="diagram-stage">
+            <div class="diagram-empty" id="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true">↘</div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>Selecciona un ejercicio</h4><p>El diagrama se genera desde las instrucciones analizadas, no desde una ilustración independiente.</p></div>
+            <div id="flow-diagram-container" class="flow-diagram-container"></div>
+            <span class="canvas-coordinate coordinate-top">TRAZA / SVG</span><span class="canvas-coordinate coordinate-bottom" id="diagram-dimensions">VIEWPORT</span>
+          </div>
           <div class="diagram-legend"><span><i class="legend-dot legend-current"></i>Paso activo</span><span><i class="legend-dot legend-route"></i>Ruta recorrida</span><span><i class="legend-dot legend-neutral"></i>Resto del flujo</span></div>
         </section>
-        <aside class="inspector-stack" aria-label="Estado de ejecución">
-          <section class="panel scene-panel" aria-labelledby="scene-title"><div class="panel-heading"><div><p class="eyebrow">PANEL PROTAGONISTA</p><h3 id="scene-title">En escena</h3></div><span class="panel-index">B</span></div>
-            <div class="scene-placeholder"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual cobrará vida aquí.</strong><p>Entradas, asignaciones, cálculos y decisiones tendrán una visualización específica y sincronizada.</p><span class="mini-status">SIN EVENTO ACTIVO</span></div>
+        <aside class="inspector-stack simulator-inspector" aria-label="Estado de ejecución">
+          <section class="panel scene-panel" aria-labelledby="scene-title">
+            <div class="panel-heading"><div><p class="eyebrow">EXPLICACIÓN DEL PASO</p><h3 id="scene-title">En escena</h3></div><span class="panel-index">B</span></div>
+            <div class="scene-placeholder" id="scene-content"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual aparecerá aquí.</strong><p>La escena explica la acción que realiza el algoritmo.</p></div>
           </section>
-          <section class="panel variables-panel" aria-labelledby="variables-title"><div class="panel-heading"><div><p class="eyebrow">PANEL PROTAGONISTA</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
-            <div class="variables-empty"><div class="variable-glyph">x = ?</div><div><strong>El estado aparecerá con cada paso.</strong><p>Valor actual, cambio anterior → nuevo e historial de cada variable.</p></div></div>
-            <div class="variable-summary"><span>VARIABLES</span><b>—</b><span>HISTORIAL</span><b>—</b></div>
+          <section class="panel variables-panel" aria-labelledby="variables-title">
+            <div class="panel-heading"><div><p class="eyebrow">ESTADO ACTUAL</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
+            <div id="variables-content" class="variables-content"><p class="empty-state-copy">Las variables aparecerán al iniciar la ejecución.</p></div>
+            <div id="variable-change" class="variable-change">Sin cambios todavía.</div>
+          </section>
+          <section class="panel output-panel" aria-labelledby="output-title">
+            <div class="panel-heading"><div><p class="eyebrow">RESULTADOS</p><h3 id="output-title">Salida del algoritmo</h3></div><span id="output-count" class="panel-index">0</span></div>
+            <ol id="simulator-output" class="simulator-output"><li>La salida se mostrará a medida que se ejecute.</li></ol>
           </section>
         </aside>
-        <section class="execution-dock" aria-label="Controles de ejecución">
-          <div class="dock-description"><i class="dock-live-dot"></i><div><strong>Recorrido de ejecución</strong><small>Los controles se activarán con el motor del Módulo 3.</small></div></div>
-          <div class="dock-controls"><button class="transport-button" disabled aria-label="Ir al inicio">|◀</button><button class="transport-button" disabled aria-label="Paso anterior">◀</button><button class="transport-button transport-play" disabled aria-label="Reproducir o pausar">▶</button><button class="transport-button" disabled aria-label="Paso siguiente">▶</button><button class="transport-button" disabled aria-label="Ir al final">▶|</button></div>
-          <div class="timeline-block"><div class="timeline-label"><span>PASO</span><b>— / —</b></div><div class="timeline-track"><i></i></div></div><span class="dock-speed">VELOCIDAD <b>1×</b></span>
+        <section class="panel trace-panel" aria-label="Historial de ejecución">
+          <div class="panel-heading"><div><p class="eyebrow">REGISTRO DETERMINISTA</p><h3>Historial de pasos</h3></div><span id="trace-count" class="panel-index">0</span></div>
+          <ol id="trace-history" class="trace-history"><li>Ejecuta el algoritmo para generar la traza.</li></ol>
+        </section>
+        <section class="execution-dock simulator-dock" aria-label="Controles de ejecución">
+          <div class="dock-description"><i class="dock-live-dot"></i><div><strong id="dock-step-title">Recorrido de ejecución</strong><small id="dock-step-description">Los controles se activan al ejecutar un algoritmo.</small></div></div>
+          <div class="dock-controls">
+            <button class="transport-button" type="button" id="simulator-first" aria-label="Ir al inicio" title="Ir al inicio">|◀</button>
+            <button class="transport-button" type="button" id="simulator-previous" aria-label="Paso anterior" title="Paso anterior">◀</button>
+            <button class="transport-button transport-play" type="button" id="simulator-play" aria-label="Reproducir o pausar" title="Reproducir">▶</button>
+            <button class="transport-button" type="button" id="simulator-next" aria-label="Paso siguiente" title="Paso siguiente">▶</button>
+            <button class="transport-button" type="button" id="simulator-last" aria-label="Ir al final" title="Ir al final">▶|</button>
+          </div>
+          <div class="timeline-block"><div class="timeline-label"><span>PASO</span><b id="timeline-count">— / —</b></div><input id="simulator-timeline" class="timeline-range" type="range" min="0" max="0" value="0" step="1" aria-label="Buscar un paso de la ejecución"></div>
+          <label class="dock-speed"><span>VELOCIDAD</span><select id="simulator-speed"><option value="1200">0.5×</option><option value="650" selected>1×</option><option value="300">2×</option><option value="140">4×</option></select></label>
         </section>
       </div>
     </section>
-
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
       <div class="section-intro"><div><p class="eyebrow">04 / LABORATORIO</p><h2 id="lab-title">Experimenta sin perder de vista el flujo.</h2><p>El panel de actividad se organiza junto al diagrama: el contexto principal permanece visible durante el trabajo.</p></div><span class="phase-chip">ACTIVIDADES · MÓDULO 4</span></div>
       <div class="lab-layout">

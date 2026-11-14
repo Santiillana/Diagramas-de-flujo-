@@ -1,33 +1,37 @@
 # Registro de decisiones técnicas
 
 ## D-001 · Aplicación estática con módulos nativos
-**Decisión:** HTML semántico, CSS modular y JavaScript nativo con módulos ES.  
-**Motivo:** GitHub Pages puede servir el proyecto directamente; no se necesita un framework ni un paso de compilación en esta etapa.
+HTML semántico, CSS modular y JavaScript ES. GitHub Pages sirve el proyecto directamente.
 
 ## D-002 · Separación de capas CSS
-**Decisión:** tokens, layout, componentes, movimiento y responsive en archivos separados.  
-**Motivo:** valores visuales, composición, piezas reutilizables, animaciones y reglas de pantalla evolucionan sin concentrarse en una hoja monolítica.
+Tokens, layout, componentes, movimiento, responsive y estilos de contenido separados por responsabilidad.
 
-## D-003 · El motor será la única fuente de verdad
-**Decisión:** M1 y M2 no crean un intérprete ficticio ni muestran pasos, resultados o variables como si fueran una ejecución real.  
-**Motivo:** la especificación exige sincronización determinista entre diagrama, pseudocódigo, escena, variables, historial y salida. El motor compartido es el alcance del M3.
+## D-003 · El motor es la única fuente de verdad
+M1 y M2 no simulan ejecución. M3 implementa un único parser e intérprete deterministas. Diagrama, pseudocódigo, En escena, Variables, historial y salida consumen snapshots del mismo registro de eventos.
 
 ## D-004 · Referencia original inmutable
-**Decisión:** conservar el HTML original byte por byte en `reference/diagramas_de_flujo_original.html`.  
-**Motivo:** evitar perder capacidades antes de implementar y comprobar equivalencias. Su inventario está en `docs/ORIGINAL_FEATURE_AUDIT.md`.
+El HTML original se conserva byte por byte en `reference/diagramas_de_flujo_original.html`. Una función se considera migrada solo tras comprobar su equivalencia funcional.
 
-## D-005 · Dock dentro del flujo de layout
-**Decisión:** el dock ocupa una fila propia del grid; no usa posición fija ni se superpone al lienzo.  
-**Motivo:** el diagrama mantiene su espacio y no queda tapado por los controles.
+## D-005 · Dock en el flujo de layout
+El dock ocupa una fila propia del grid y nunca se superpone al lienzo.
 
-## D-006 · Controles incompletos se muestran como no disponibles
-**Decisión:** controles del simulador, actividades del laboratorio y elementos del constructor que aún no existen se muestran como preparados/deshabilitados, sin fingir acciones.  
-**Motivo:** la interfaz no debe dar resultados falsos.
+## D-006 · No fingir controles incompletos
+Los controles se habilitan solo cuando la acción correspondiente existe.
 
 ## D-007 · Accesibilidad desde la arquitectura
-**Decisión:** navegación por botones, estados `aria-current` / `aria-pressed`, foco visible, enlace para saltar al contenido, movimiento reducido explícito y respeto a `prefers-reduced-motion`.  
-**Motivo:** teclado, contraste y movimiento forman parte de la base.
+Navegación por teclado, estados ARIA, foco visible, tema claro/oscuro, movimiento reducido y respeto a `prefers-reduced-motion`.
 
-## D-008 · Pruebas visuales de aceptación automatizadas
-**Decisión:** Playwright con Chromium y Ubuntu 24.04 en GitHub Actions.  
-**Motivo:** el runner `ubuntu-latest` cambió a Ubuntu 26.04 y Playwright 1.56.1 no instalaba Chromium; fijar 24.04 hizo reproducibles las pruebas de escritorio, tableta y móvil. El workflow valida navegación, overflow, dock, preferencias y referencia antes de aceptar M1.
+## D-008 · CI reproducible en Ubuntu 24.04
+Playwright 1.56.1 y Chromium se ejecutan sobre Ubuntu 24.04 porque el runner ubuntu-latest cambió a Ubuntu 26.04 y esa versión no tenía soporte de instalación de navegador compatible.
+
+## D-009 · Contenido V5 independiente de la UI
+14 lecciones y 40 ejercicios (20/10/10) residen en `src/content/`. Los conceptos de arreglos, matrices, funciones, procedimientos, recursividad y otros temas excluidos no se presentan como objetivos de aprendizaje.
+
+## D-010 · Gramática restringida, sin evaluación dinámica
+El parser de expresiones y el intérprete manejan solo operadores y estructuras explícitos del pseudocódigo educativo. Nunca ejecutar pseudocódigo como JavaScript; no usar `eval` ni `new Function`.
+
+## D-011 · Snapshots como contrato de sincronización
+Cada evento guarda variables, salida, nodo y línea, ruta lógica, cambios y contexto de iteración. La línea de tiempo navega esos snapshots sin volver a ejecutar estados previos; diagramas y paneles derivan del evento seleccionado.
+
+## D-012 · Constructor compila al motor común
+El M4 debe traducir los diagramas creados al pseudocódigo restringido de M3 y usar `executePseudocode`. No implementar un intérprete paralelo.

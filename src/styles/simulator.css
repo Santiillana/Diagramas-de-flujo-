@@ -1,0 +1,109 @@
+/* Módulo 3: simulación determinista y diagrama sincronizado */
+.simulator-grid{grid-template-columns:minmax(245px,.78fr) minmax(390px,1.45fr) minmax(255px,.82fr);grid-template-areas:"problem diagram inspector" "trace trace trace" "dock dock dock";align-items:start}
+.problem-panel{display:flex;flex-direction:column;max-height:calc(100vh - 130px);overflow:hidden}
+.simulator-problem-body{padding:0 16px 16px;overflow:auto}
+.simulator-exercise-kicker{display:flex;align-items:center;gap:8px;margin:5px 0 10px}
+.simulator-exercise-title,.simulator-problem-body h4{margin:7px 0;font-size:16px;line-height:1.3;letter-spacing:-.35px}
+.simulator-statement{color:var(--muted-strong);font-size:10px;line-height:1.65}
+.simulator-details{margin:10px 0;padding:9px 0;border-block:1px solid var(--line);color:var(--ink-soft);font-size:9px}
+.simulator-details summary{cursor:pointer;font-weight:750}
+.simulator-details ul{padding-left:17px;color:var(--muted-strong);line-height:1.6}
+.simulator-field{display:grid;gap:5px;margin:12px 0}
+.simulator-field>span{color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.8px}
+.simulator-field input,.simulator-field select{width:100%;min-height:36px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface);font-size:10px}
+.simulator-help{margin:-5px 0 10px;color:var(--muted);font-size:8px;line-height:1.5}
+.simulator-run{width:100%;min-height:39px}
+.pseudocode-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:16px 0 7px}
+.pseudocode-heading>span{color:var(--muted);font:8px ui-monospace,monospace}
+.pseudocode-lines{display:grid;gap:2px;margin:0;padding:7px 0;list-style:none;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);overflow:auto;max-height:320px}
+.pseudocode-lines li{display:grid;grid-template-columns:25px 1fr;gap:7px;padding:4px 8px;color:var(--muted-strong);font:9px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.pseudocode-lines li span:first-child{color:var(--muted);text-align:right}
+.pseudocode-lines li.is-active{color:var(--ink);background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent);font-weight:800}
+.pseudocode-lines li.is-visited:not(.is-active){color:var(--positive)}
+.diagram-panel{min-height:600px;min-width:0}
+.simulator-diagram-stage{min-height:505px;display:block;padding:25px;overflow:auto}
+.flow-diagram-container{width:100%;min-height:100%;display:grid;place-items:start center}
+.flow-svg{display:block;width:100%;height:auto;min-width:620px;max-width:none;overflow:visible;color:var(--muted-strong)}
+.diagram-node{color:var(--ink-soft)}
+.diagram-node rect,.diagram-node polygon,.diagram-node path,.diagram-node circle{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.65;vector-effect:non-scaling-stroke}
+.diagram-node text{fill:var(--ink);font:10px ui-sans-serif,system-ui,sans-serif;text-anchor:middle;pointer-events:none}
+.diagram-node.node-terminal rect{fill:var(--positive-soft);stroke:var(--positive)}
+.diagram-node.node-input polygon{fill:var(--accent-soft);stroke:var(--accent)}
+.diagram-node.node-output path{fill:var(--teal-soft);stroke:var(--teal)}
+.diagram-node.node-if polygon,.diagram-node.node-while polygon,.diagram-node.node-doWhile polygon{fill:var(--warning-soft);stroke:var(--warning)}
+.diagram-node.node-for polygon{fill:var(--accent-soft);stroke:var(--accent)}
+.diagram-node.node-merge circle{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.diagram-node.node-body rect{fill:var(--surface-soft);stroke:var(--line-strong);stroke-dasharray:4 4}
+.diagram-node.is-visited rect,.diagram-node.is-visited polygon,.diagram-node.is-visited path,.diagram-node.is-visited circle{stroke:var(--positive);stroke-width:2.2}
+.diagram-node.is-active rect,.diagram-node.is-active polygon,.diagram-node.is-active path,.diagram-node.is-active circle{stroke:var(--accent);stroke-width:3;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 40%,transparent))}
+.diagram-node.is-active text{fill:var(--accent-strong);font-weight:850}
+.diagram-edge path{fill:none;stroke:var(--line-strong);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.diagram-edge.is-back path{stroke:var(--teal);stroke-dasharray:5 4}
+.diagram-edge.is-near-active path{stroke:var(--accent);stroke-width:2.25}
+.diagram-edge-label{font:10px ui-monospace,monospace;font-weight:850;fill:var(--muted-strong);text-anchor:middle}
+.diagram-tools .small-icon-button{width:27px;height:27px;min-width:27px}
+.simulator-inspector{grid-template-rows:minmax(200px,auto) minmax(190px,auto) minmax(135px,auto);align-items:stretch}
+.scene-content{display:flex;flex-direction:column;gap:8px;padding:10px 16px 16px}
+.scene-event-type{color:var(--accent);font-size:8px;font-weight:850;letter-spacing:.8px}
+.scene-event-title{margin:0;font-size:13px;line-height:1.3}
+.scene-event-body{margin:0;color:var(--muted-strong);font-size:10px;line-height:1.65}
+.scene-event-technical{padding:9px;border:1px solid var(--line);border-radius:8px;color:var(--ink-soft);background:var(--surface-soft);font:9px/1.5 ui-monospace,monospace}
+.variables-content{padding:6px 14px 12px;overflow:auto}
+.variables-table{width:100%;border-collapse:collapse;font:9px ui-monospace,monospace}
+.variables-table th{padding:6px 4px;color:var(--muted);text-align:left;font-size:8px;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+.variables-table td{padding:7px 4px;color:var(--ink-soft);border-bottom:1px solid var(--line)}
+.variables-table tr.is-changed td{color:var(--accent-strong);font-weight:800;background:var(--accent-soft)}
+.variable-change{padding:8px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:8px;line-height:1.5}
+.output-panel{padding-bottom:8px}
+.simulator-output{display:grid;gap:5px;margin:0;padding:0 17px 10px 34px;color:var(--ink-soft);font:9px/1.5 ui-monospace,monospace;max-height:125px;overflow:auto}
+.empty-state-copy{padding:6px 2px;color:var(--muted);font-size:9px}
+.trace-panel{grid-area:trace;overflow:hidden}
+.trace-history{display:flex;gap:6px;margin:0;padding:0 14px 14px;list-style:none;overflow-x:auto}
+.trace-history li{flex:0 0 170px;min-height:66px;padding:8px;border:1px solid var(--line);border-radius:9px;color:var(--muted-strong);background:var(--surface-soft);text-align:left;cursor:pointer}
+.trace-history li.is-active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 15%,transparent)}
+.trace-history li span{display:block;color:var(--muted);font:8px ui-monospace,monospace}
+.trace-history li strong{display:block;margin-top:5px;color:var(--ink);font-size:9px;line-height:1.3}
+.simulator-dock{grid-area:dock;position:relative}
+.timeline-range{width:100%;accent-color:var(--accent);cursor:pointer}
+.dock-speed{display:grid;gap:4px;color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.6px;white-space:nowrap}
+.dock-speed select{padding:4px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);font-size:9px}
+.simulator-dock .transport-button:disabled{opacity:.35}
+.simulator-status-error{color:var(--danger)!important}
+.simulator-error{margin-top:8px;padding:9px;border:1px solid var(--danger);border-radius:8px;color:var(--danger);background:var(--danger-soft);font-size:9px;line-height:1.5}
+.simulator-dock .dock-controls{gap:6px}
+.simulator-dock .transport-button{width:34px;height:34px}
+.simulator-dock .transport-play{width:38px;height:38px;border-radius:11px}
+@media(max-width:1320px){
+  .simulator-grid{grid-template-columns:minmax(235px,.8fr) minmax(350px,1.3fr) minmax(245px,.85fr);grid-template-areas:"problem diagram inspector" "trace trace trace" "dock dock dock"}
+}
+@media(max-width:1080px){
+  .simulator-grid{grid-template-columns:minmax(0,1.4fr) minmax(245px,.9fr);grid-template-areas:"problem problem" "diagram inspector" "trace trace" "dock dock"}
+  .problem-panel{max-height:none}.simulator-problem-body{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  .simulator-exercise-kicker,.simulator-problem-body h4,.simulator-statement,.simulator-details{grid-column:1}
+  .simulator-field,.simulator-help,.simulator-run{grid-column:2}
+  .pseudocode-heading,.pseudocode-lines{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .simulator-grid{grid-template-columns:1fr;grid-template-areas:"problem" "diagram" "inspector" "trace" "dock"}
+  .simulator-problem-body{display:block}
+  .diagram-panel{min-height:440px}.simulator-diagram-stage{min-height:350px;padding:12px}
+  .flow-svg{min-width:560px}
+  .simulator-inspector{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+  .output-panel{grid-column:1/-1}
+  .simulator-dock{grid-template-columns:1fr auto}
+  .simulator-dock .dock-description{grid-column:1}
+  .simulator-dock .dock-controls{grid-column:1/-1;justify-content:center;grid-row:3}
+  .simulator-dock .timeline-block{grid-column:1/-1;grid-row:2}
+  .simulator-dock .dock-speed{grid-column:2;grid-row:1}
+}
+@media(max-width:440px){
+  .simulator-inspector{grid-template-columns:1fr;grid-template-rows:auto}
+  .output-panel{grid-column:auto}
+  .simulator-dock .dock-description small{max-width:180px}
+  .simulator-dock .transport-button{width:30px;height:30px}
+  .simulator-dock .transport-play{width:34px;height:34px}
+  .trace-history li{flex-basis:145px}
+}
+@media(prefers-reduced-motion:reduce){
+  .diagram-node rect,.diagram-node polygon,.diagram-node path,.diagram-node circle{filter:none}
+}

@@ -1,13 +1,13 @@
 # Traza — laboratorio visual de diagramas de flujo
 
-Rediseño modular del laboratorio educativo definido por el documento maestro V5.
+Rediseño modular del laboratorio educativo definido por la especificación maestra V5.
 
-## Estado
-- **Módulo 1:** aceptado e integrado en `main`.
-- **Módulo 2:** contenido y catálogo implementados; CI aprobada en la rama `module-2/lessons-exercise-catalog`.
-- **Módulo 3:** parser, intérprete y simulación sincronizada, siguiente etapa.
-- **Módulo 4:** laboratorio y constructor, depende del motor del M3.
-- **Módulo 5:** integración y publicación final.
+## Estado de construcción
+- **Módulo 1 — Arquitectura y experiencia visual:** aceptado e integrado en `main`.
+- **Módulo 2 — Aprende y 40 ejercicios:** aceptado e integrado en `main`.
+- **Módulo 3 — Parser, intérprete, diagramas y simulación:** implementado y validado en la rama `module-3/deterministic-pseudocode-engine`; PR de integración pendiente.
+- **Módulo 4 — Laboratorio y constructor gráfico:** siguiente etapa.
+- **Módulo 5 — Auditoría final, integración y publicación:** pendiente.
 
 ## Ejecutar en local
 
@@ -26,32 +26,45 @@ npm test
 npx playwright install chromium
 npm run test:browser
 ```
-El workflow ejecuta ambas suites en Ubuntu 24.04. La validación de M2 incluye las 14 lecciones, la distribución exacta 20/10/10, los datos de fichas, casos y métodos, búsqueda/filtros y navegación real con Chromium.
+El workflow instala Chromium y ejecuta ambas suites en Ubuntu 24.04.
 
 ## Contenido
 
-**Aprende:** 14 lecciones progresivas, cada una con explicación intuitiva, definición técnica, visualización por pasos, ejemplo guiado, manipulación y comprobación de comprensión.
+**Aprende:** 14 lecciones secuenciales con explicación intuitiva y técnica, visualización por pasos, ejemplo guiado, manipulación de datos y comprobación.
 
-**Ejercicios:** catálogo de 40 fichas oficiales (20 básicas, 10 intermedias, 10 avanzadas), con enunciado, objetivo, conceptos, entradas, salidas, restricciones, análisis, pseudocódigo por método, datos de ejemplo, pruebas y errores frecuentes.
+**Ejercicios:** catálogo de 40 retos oficiales (20 básicos, 10 intermedios y 10 avanzados). Cada ficha contiene enunciado, objetivo, conceptos, entradas, salidas, restricciones, análisis, métodos, pseudocódigo, ejemplos, pruebas y errores frecuentes.
 
-No se adelanta el motor: el pseudocódigo y sus resultados se ejecutarán en el Módulo 3 mediante un único intérprete seguro, sin `eval` ni `new Function`.
+## Simulador (Módulo 3)
 
-## Publicación en GitHub Pages
+El motor comprende la sintaxis del prototipo: `leer`, `imp`, asignación, `si/sino/fin`, `para`, `mientras` y `hacer/hm`. Las expresiones se tokenizan y analizan con gramática restringida; no se usan `eval` ni `new Function`.
+
+Cada paso genera un evento con snapshot de variables, salidas, línea fuente, nodo activo, ruta V/F y contexto de iteración. El mismo registro alimenta:
+- Pseudocódigo resaltado y diagrama SVG con símbolos y rutas.
+- Panel En escena, cambios de variables e historial.
+- Salida acumulada, línea de tiempo, avance, retroceso, salto y reproducción.
+- Mensajes didácticos para datos faltantes, entradas inválidas y ciclos protegidos.
+
+La ejecución es determinista: volver a un evento anterior restaura el snapshot exacto. Los límites de seguridad producen un error identificable, nunca un resultado válido inventado.
+
+## Publicar con GitHub Pages
 
 Después de integrar la rama de trabajo en `main`:
 1. Abre **Settings → Pages**.
 2. Selecciona **Deploy from a branch**.
-3. Selecciona `main` y la carpeta `/(root)`.
-4. Guarda la configuración. El punto de entrada es `index.html`.
+3. Selecciona `main` y `/(root)`.
+4. Guarda. El punto de entrada es `index.html`.
 
 ## Estructura
 
 ```text
 .
 ├── index.html
-├── src/content/   # lecciones y catálogo
-├── src/ui/        # navegación y vistas
-├── src/styles/    # sistema visual
+├── src/
+│   ├── content/
+│   ├── core/        # parser, expresiones, intérprete, traza
+│   ├── diagram/     # layout y render SVG
+│   ├── ui/          # navegación, contenido, simulador
+│   └── styles/
 ├── tests/
 ├── e2e/
 ├── docs/
@@ -59,8 +72,8 @@ Después de integrar la rama de trabajo en `main`:
 ```
 
 ## Continuidad
-- Especificación maestra: `docs/MASTER_SPEC.md`
+- Especificación: `docs/MASTER_SPEC.md`
 - Estado: `docs/IMPLEMENTATION_STATUS.md`
 - Decisiones: `docs/DECISIONS.md`
-- Auditoría del prototipo: `docs/ORIGINAL_FEATURE_AUDIT.md`
-- HTML original inmutable: `reference/diagramas_de_flujo_original.html`
+- Auditoría funcional: `docs/ORIGINAL_FEATURE_AUDIT.md`
+- Prototipo original inmutable: `reference/diagramas_de_flujo_original.html`
