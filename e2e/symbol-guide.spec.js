@@ -9,7 +9,7 @@ test("la guía abre desde Aprende y enfoca el símbolo de la lección actual",as
  await expect(dialog).toBeVisible();
  await expect(dialog.locator("#guide-process")).toBeVisible();
  await expect(dialog.locator("#guide-process")).toHaveClass(/is-contextual/);
- await expect(dialog).toContainText("Explicación técnica");
+ await expect(dialog).toContainText("EXPLICACIÓN TÉCNICA");
  await dialog.locator("[data-guide-close]").click();
  await expect(dialog).not.toBeVisible();
 });

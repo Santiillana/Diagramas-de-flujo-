@@ -74,6 +74,8 @@ function chooseTopic(topic){
  const entry=byId(topic);
  activeTopic=entry?.id??"";
  if(entry)activeCategory=entry.category;
+ else if(topic==="figures"||topic==="cycles")activeCategory=topic;
+ else activeCategory="figures";
 }
 
 function openGuide(topic=""){
@@ -121,6 +123,7 @@ function renderDialog(){
  dialog.addEventListener("input",event=>{
   if(event.target.matches("[data-guide-search]")){activeQuery=event.target.value;activeTopic="";renderItems();}
  });
+ dialog.addEventListener("cancel",event=>{event.preventDefault();dialog.close();});
  dialog.addEventListener("close",()=>{
   if(returnFocus instanceof HTMLElement&&returnFocus.isConnected)returnFocus.focus();
  });
@@ -131,6 +134,9 @@ export function initSymbolGuide(){
  if(!dialog)renderDialog();
  if(document.documentElement.dataset.symbolGuideBound==="true")return;
  document.documentElement.dataset.symbolGuideBound="true";
+ document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"&&dialog?.open){event.preventDefault();event.stopImmediatePropagation();dialog.close();}
+ },true);
  document.addEventListener("click",event=>{
   const trigger=event.target.closest("[data-open-symbol-guide]");
   if(!trigger)return;
