@@ -168,7 +168,7 @@ function getAvailableDiagramRect(stage){
   const gridHidden=grid?.classList.contains("panels-hidden");
   const visible=panel=>panel&&!panel.hidden&&!gridHidden&&
     !panel.classList.contains("is-panel-collapsed")&&!panel.classList.contains("is-auto-collapsed");
-  let left=bounds.left+18,right=bounds.right-18,top=bounds.top+112,bottom=bounds.bottom-150;
+  let left=bounds.left+18,right=bounds.right-18,top=bounds.top+154,bottom=bounds.bottom-150;
   if(mobile){
     const tabs=$("#simulator-mobile-tabs");
     if(tabs)bottom=Math.min(bottom,tabs.getBoundingClientRect().top-10);

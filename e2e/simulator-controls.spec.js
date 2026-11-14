@@ -19,6 +19,7 @@ test("los 40 ejercicios se pueden elegir y buscar dentro del simulador",async({p
 test("el simulador arranca en modo manual y las flechas recorren la misma traza",async({page})=>{
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
+ await page.locator("#diagram-stage").focus();
  const timeline=page.locator("#simulator-timeline");
  const before=await timeline.inputValue();
  await page.waitForTimeout(250);
@@ -38,6 +39,7 @@ test("el simulador arranca en modo manual y las flechas recorren la misma traza"
 test("Espacio reproduce y pausa sin reiniciar el paso actual",async({page})=>{
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
+ await page.locator("#diagram-stage").focus();
  await page.keyboard.press("ArrowRight");
  const start=Number(await page.locator("#simulator-timeline").inputValue());
  await page.keyboard.press("Space");
@@ -68,7 +70,7 @@ test("los atajos se ignoran dentro de campos y abren predicción, ayuda y labora
  await page.locator("#simulator-inputs").focus();
  await page.keyboard.press("ArrowRight");
  await expect(page.locator("#simulator-timeline")).toHaveValue(before);
- await page.locator("body").click({position:{x:5,y:150}});
+ await page.locator("#diagram-stage").focus();
  await page.keyboard.press("p");
  await expect(page.locator("#simulator-predict-toggle")).toHaveAttribute("aria-pressed","true");
  await page.keyboard.press("?");

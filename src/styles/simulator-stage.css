@@ -7,7 +7,7 @@ body[data-active-space="simulator"] .simulator-view{position:fixed;z-index:1;ins
 body[data-active-space="simulator"] .simulator-intro{display:none}
 .simulator-view>.simulator-grid{position:absolute;inset:0;display:block;width:100%;min-height:0;overflow:hidden;background-color:var(--surface-soft);background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:20px 20px}
 .simulator-grid>.diagram-panel{position:absolute;z-index:1;inset:0;display:block;min-height:0;width:100%;max-width:none;overflow:hidden;border:0;border-radius:0;background:transparent;box-shadow:none}
-.simulator-grid>.diagram-panel>.diagram-heading{position:absolute;z-index:4;top:12px;left:50%;display:flex;width:auto;max-width:min(720px,48vw);padding:6px;transform:translateX(-50%);border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:var(--shadow-md);backdrop-filter:blur(16px)}
+.simulator-grid>.diagram-panel>.diagram-heading{position:absolute;z-index:40;top:104px;left:50%;display:flex;width:auto;max-width:min(720px,48vw);padding:6px;transform:translateX(-50%);border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:var(--shadow-md);backdrop-filter:blur(16px)}
 .diagram-panel>.diagram-heading>div:first-child{display:none}
 .diagram-panel>.diagram-heading .diagram-header-tools{width:auto;max-width:100%;justify-content:center;overflow:visible}
 .simulator-grid>.diagram-panel>.simulator-diagram-stage{position:absolute;inset:0;display:grid;min-height:0;width:100%;max-width:none;margin:0;overflow:hidden;border:0;border-radius:0;background-color:transparent;background-image:none}
@@ -52,9 +52,9 @@ body[data-active-space="simulator"] .simulator-intro{display:none}
  .simulator-grid>.diagram-panel{display:block!important}
  .simulator-grid>.problem-panel,.simulator-grid>.trace-panel,
  .simulator-grid>.simulator-inspector>.scene-panel,.simulator-grid>.simulator-inspector>.variables-panel,.simulator-grid>.simulator-inspector>.output-panel{display:none!important}
- .simulator-grid>.problem-panel{top:54px;right:8px;bottom:142px;left:8px;width:auto;max-height:none}
+ .simulator-grid>.problem-panel{top:104px;right:8px;bottom:190px;left:8px;width:auto;max-height:none}
  .simulator-grid>.simulator-inspector{display:contents}
- .simulator-grid>.simulator-inspector>.scene-panel,.simulator-grid>.simulator-inspector>.variables-panel,.simulator-grid>.simulator-inspector>.output-panel,.simulator-grid>.trace-panel{position:absolute;top:54px;right:8px;bottom:190px;left:8px;width:auto;max-height:none;min-height:0;overflow:auto}
+ .simulator-grid>.simulator-inspector>.scene-panel,.simulator-grid>.simulator-inspector>.variables-panel,.simulator-grid>.simulator-inspector>.output-panel,.simulator-grid>.trace-panel{position:absolute;top:104px;right:8px;bottom:190px;left:8px;width:auto;max-height:none;min-height:0;overflow:auto}
  .simulator-grid>.simulator-inspector>.variables-panel{overflow-y:auto}
  body[data-simulator-mobile-panel="problem"] .simulator-grid>.problem-panel,
  body[data-simulator-mobile-panel="scene"] .simulator-grid>.simulator-inspector>.scene-panel,
