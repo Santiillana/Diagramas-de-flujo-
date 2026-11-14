@@ -211,3 +211,29 @@
   .flow-token{transition:none}
 }
 :root[data-motion="reduced"] .flow-token{transition:none}
+
+/* Movimiento didáctico: valor que entra, cambia o sale en la escena */
+.scene-value-transfer{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:9px 0;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);animation:scene-transfer-in 260ms cubic-bezier(.2,.8,.2,1) both}
+.scene-transfer-name{margin-right:auto;color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.8px}
+.scene-value-old{padding:4px 8px;border:1px solid var(--line-strong);border-radius:7px;color:var(--muted-strong);background:var(--surface);font:10px ui-monospace,monospace;text-decoration:line-through;animation:scene-value-away 360ms ease both}
+.scene-transfer-arrow{color:var(--muted);font-size:14px}
+.scene-value-new{padding:5px 10px;border:1px solid var(--positive);border-radius:8px;color:var(--positive);background:var(--positive-soft);font:800 13px ui-monospace,monospace;animation:scene-value-land 440ms cubic-bezier(.2,.8,.2,1) both}
+.scene-route-chip{padding:5px 10px;border-radius:8px;color:var(--positive);background:var(--positive-soft);font-size:10px}
+.scene-value-transfer.is-false .scene-route-chip{color:var(--danger);background:var(--danger-soft)}
+.scene-event-visual{animation:scene-symbol-in 250ms cubic-bezier(.2,.8,.2,1) both}
+.diagram-edge.is-route-active path{stroke:var(--positive);stroke-width:3.2;stroke-dasharray:7 4;animation:route-dash 650ms linear infinite}
+.diagram-edge.is-active-path path{stroke:var(--accent);stroke-width:2.5}
+@keyframes scene-transfer-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scene-value-away{from{opacity:1;transform:translateY(0)}to{opacity:.42;transform:translateY(-3px)}}
+@keyframes scene-value-land{from{opacity:0;transform:translateY(8px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes scene-symbol-in{from{opacity:.4;transform:scale(.82) rotate(-4deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes route-dash{to{stroke-dashoffset:-22}}
+@media(prefers-reduced-motion:reduce){
+  .scene-value-transfer,.scene-value-old,.scene-value-new,.scene-event-visual{animation:none}
+  .diagram-edge.is-route-active path{animation:none}
+}
+:root[data-motion="reduced"] .scene-value-transfer,
+:root[data-motion="reduced"] .scene-value-old,
+:root[data-motion="reduced"] .scene-value-new,
+:root[data-motion="reduced"] .scene-event-visual{animation:none}
+:root[data-motion="reduced"] .diagram-edge.is-route-active path{animation:none}
