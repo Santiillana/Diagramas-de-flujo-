@@ -36,7 +36,7 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 ## Instrucción maestra 2 — progreso
 | Tarea | Estado | Evidencia / notas |
 |---|---|---|
-| T0 · Higiene previa | **En curso** | Rama de trabajo creada; instalación reproducible, CI y escape HTML compartido en preparación |
+| T0 · Higiene previa | **Aceptado** | Commit `8ae08c1d55466cedd6af671a49c93089856b0bff`; CI #173: 224/224 Node y 38/38 Chromium, success |
 | T1 · Bugs conocidos | Pendiente | Salida duplicada, prioridad de `hidden`, textos del andamio y SVG vivo del Constructor |
 | A · Escenario | Pendiente | Paneles flotantes, dock y ocupación del lienzo |
 | B · Selector, teclado y velocidad | Pendiente | Arranque directo y accesos por teclado |
