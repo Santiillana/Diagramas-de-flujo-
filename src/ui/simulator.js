@@ -315,6 +315,7 @@ function bindDiagramPan(){
     if(event.pointerType==="mouse"&&event.button!==0)return;
     panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,left:stage.scrollLeft,top:stage.scrollTop};
     stage.classList.add("is-panning");
+    stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
     cameraAuto=false;updateCameraButton();
     event.preventDefault();
   },true);
@@ -322,6 +323,7 @@ function bindDiagramPan(){
     if(!panState||event.pointerId!==panState.pointerId)return;
     stage.scrollLeft=panState.left-(event.clientX-panState.x);
     stage.scrollTop=panState.top-(event.clientY-panState.y);
+    stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
     event.preventDefault();
   },true);
   const end=event=>{
