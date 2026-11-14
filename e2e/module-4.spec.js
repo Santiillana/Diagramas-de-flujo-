@@ -117,3 +117,20 @@ test("Laboratorio y constructor se adaptan a escritorio, tableta y móvil", asyn
     expect(overflow).toBeLessThanOrEqual(1);
   }
 });
+
+
+test("el constructor permite seleccionar, editar y reordenar instrucciones", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('[data-space="builder"]').click();
+  await page.locator('[data-builder-preset="sequence"]').click();
+  const processCard=page.locator('[data-node-card]').filter({hasText:"Proceso"}).first();
+  await processCard.locator("[data-select-node]").click();
+  await expect(page.locator("#builder-inspector-content")).toContainText("Expresión");
+  await page.locator('#builder-inspector-content [data-inspector-field="expression"]').fill("x*3");
+  await page.locator("#builder-inspector-form button[type=submit]").click();
+  await page.locator("#builder-inputs").fill("8");
+  await page.locator("#builder-run").click();
+  await page.locator("#builder-last").click();
+  await expect(page.locator("#builder-output")).toContainText("24");
+  await expect(page.locator("#builder-code")).toContainText("doble=x*3");
+});
