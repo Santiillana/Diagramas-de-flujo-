@@ -50,9 +50,9 @@ test("rechaza decisiones sin dos salidas y ciclos sin cuerpo",()=>{
 
 test("admite bloques anidados y compila su retorno",()=>{
   const flow=createFlowPreset("decision");
-  flow.nodes[2].trueBranch=[makeNode("while",{condition:"x<2",body:[
-    makeNode("process",{variable:"x",expression:"x+1"}),
-    makeNode("output",{expression:"x"})
+  flow.nodes[2].trueBranch=[makeNode("while",{condition:"n<2",body:[
+    makeNode("process",{variable:"n",expression:"n+1"}),
+    makeNode("output",{expression:"n"})
   ]})];
   const compiled=compileFlow(flow);
   assert.match(compiled.source,/mientras x<2/);
