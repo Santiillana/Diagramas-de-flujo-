@@ -133,6 +133,8 @@ test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persi
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   const svg=page.locator("#flow-svg");
+  await expect.poll(()=>svg.evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(300);
+  await expect(page.locator("#diagram-empty")).toBeHidden();
   const fitted=await svg.evaluate(el=>el.getBoundingClientRect().width);
   await page.locator("#diagram-zoom-in").click();
   await page.locator("#diagram-zoom-in").click();
