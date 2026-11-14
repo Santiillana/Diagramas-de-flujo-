@@ -397,7 +397,30 @@ function bindDiagramPan(){
   },{capture:true,passive:true});
 }
 
+function setMobilePanel(name){
+  const valid=["problem","diagram","scene","variables","output","history"];
+  if(!valid.includes(name))return;
+  document.body.dataset.simulatorMobilePanel=name;
+  $("#simulator-mobile-tabs")?.querySelectorAll("[data-mobile-panel]").forEach(button=>{
+    const active=button.dataset.mobilePanel===name;
+    button.setAttribute("aria-selected",String(active));
+    button.tabIndex=active?0:-1;
+  });
+}
 function bind(){
+  $("#simulator-mobile-tabs")?.addEventListener("click",event=>{
+    const tab=event.target.closest("[data-mobile-panel]");
+    if(tab)setMobilePanel(tab.dataset.mobilePanel);
+  });
+  $("#scene-minimize").addEventListener("click",()=>{
+    const panel=document.querySelector(".scene-panel");
+    const button=$("#scene-minimize");
+    const collapsed=panel.classList.toggle("is-collapsed");
+    button.setAttribute("aria-expanded",String(!collapsed));
+    button.setAttribute("aria-label",collapsed?"Expandir explicación":"Minimizar explicación");
+    button.title=collapsed?"Expandir explicación":"Minimizar explicación";
+    button.textContent=collapsed?"+":"−";
+  });
   $("#simulator-run").addEventListener("click",run);
   $("#simulator-restore-inputs").addEventListener("click",()=>{
     $("#simulator-inputs").value=defaultInputSample.join(", ");
@@ -452,6 +475,7 @@ function bind(){
   bindDiagramPan();
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
+    setMobilePanel("diagram");
     requestAnimationFrame(()=>fitDiagram());
   });
   const stage=$("#diagram-stage");
@@ -477,6 +501,7 @@ function bind(){
 export function initSimulator(){
   if(!$("#simulator-run"))return;
   setPseudocodeSize(readPseudocodeSize());
+  setMobilePanel("diagram");
   updateCameraButton();
   bind();prepare();
 }
