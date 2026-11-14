@@ -27,6 +27,8 @@ test("avanzar y retroceder reconstruye exactamente el estado del paso", async ({
 test("se puede seleccionar un ejercicio desde el catálogo y cambiar sus datos", async ({ page }) => {
   await page.goto("/");
   await page.locator('[data-select-exercise="14"]').click();
+  await page.locator("#exercise-detail [data-reveal-solution]").click();
+  await expect(page.locator("#exercise-detail [data-open-simulator]")).toBeVisible();
   await page.locator("#exercise-detail [data-open-simulator]").click();
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Sumar los números de 1 hasta N");
   await page.locator("#simulator-last").click();
