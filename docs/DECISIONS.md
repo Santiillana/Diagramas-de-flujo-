@@ -59,3 +59,7 @@ El desglose de cada operación utiliza el mismo evaluador de expresiones y el sn
 
 ## D-020 · El límite de Pages se declara, no se presume
 El proyecto estático es compatible con GitHub Pages, pero un merge no demuestra por sí mismo que Pages esté activado. La URL pública y la configuración de despliegue deben comprobarse tras configurar Settings → Pages.
+
+
+## D-021 · Las animaciones siguen eventos y conectores reales
+La ficha de recorrido se anima únicamente entre el nodo anterior y el actual de la traza del intérprete. La ruta se resuelve desde la arista SVG existente; los datos de variable, condición, rama y vuelta provienen del evento. La velocidad solo escala la duración visual, no modifica la ejecución. En movimiento reducido se conserva el estado semántico sin desplazamiento; apagado elimina las animaciones no esenciales.
