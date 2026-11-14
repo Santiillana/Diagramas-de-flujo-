@@ -38,7 +38,7 @@ function pathLabel(){
   return ["Flujo principal",...scopeStack.map(item=>{
     const node=findNode(item.nodeId);
     const prefix=item.slot==="trueBranch"?"V · Verdadera":item.slot==="falseBranch"?"F · Falsa":"Cuerpo del ciclo";
-    return (typeLabel[node?.type]??"Bloque")+" · "+prefix;
+    return (typeLabel[node?.type]??"Bloque")+" · "+(item.slot==="trueBranch"?"Rama Verdadera (V)":item.slot==="falseBranch"?"Rama Falsa (F)":prefix);
   })];
 }
 function selected(){
@@ -236,6 +236,11 @@ function inputs(){
   const raw=$("#builder-inputs").value.trim();
   return raw?raw.split(/[;,]/).map(x=>x.trim()):[];
 }
+function seekBuilder(index){
+  if(!runtimeTimeline)return;
+  runtimeTimeline.seek(index);
+  renderBuilderTimeline();
+}
 function renderBuilderTimeline(){
   if(!runtime||!runtimeTimeline)return;
   const event=runtimeTimeline.current;
@@ -253,6 +258,8 @@ function renderBuilderTimeline(){
   const outputs=event.outputs??[];
   $("#builder-output").innerHTML=outputs.length?outputs.map(x=>"<li>"+esc(fmt(x))+"</li>").join(""):"<li>Sin salida todavía.</li>";
   $("#builder-timeline-label").textContent="Paso "+(runtimeTimeline.index+1)+" / "+runtimeTimeline.length;
+  $("#builder-timeline-label").dataset.currentStep=String(runtimeTimeline.index+1);
+  $("#builder-timeline-label").dataset.totalSteps=String(runtimeTimeline.length);
   $("#builder-timeline").max=String(runtimeTimeline.length-1);
   $("#builder-timeline").value=String(runtimeTimeline.index);
   $("#builder-timeline").disabled=false;
@@ -312,12 +319,12 @@ function bindBuilder(){
   $("#builder-run").addEventListener("click",runBuilder);
   $("#builder-timeline").addEventListener("input",event=>{
     if(!runtimeTimeline)return;
-    runtimeTimeline.seek(Number(event.target.value));renderBuilderTimeline();
+    seekBuilder(Number(event.target.value));
   });
-  $("#builder-first").addEventListener("click",()=>{if(runtimeTimeline){runtimeTimeline.first();renderBuilderTimeline();}});
-  $("#builder-previous").addEventListener("click",()=>{if(runtimeTimeline){runtimeTimeline.previous();renderBuilderTimeline();}});
-  $("#builder-next").addEventListener("click",()=>{if(runtimeTimeline){runtimeTimeline.next();renderBuilderTimeline();}});
-  $("#builder-last").addEventListener("click",()=>{if(runtimeTimeline){runtimeTimeline.last();renderBuilderTimeline();}});
+  $("#builder-first").addEventListener("click",()=>seekBuilder(0));
+  $("#builder-previous").addEventListener("click",()=>seekBuilder((runtimeTimeline?.index??0)-1));
+  $("#builder-next").addEventListener("click",()=>seekBuilder((runtimeTimeline?.index??0)+1));
+  $("#builder-last").addEventListener("click",()=>seekBuilder((runtimeTimeline?.length??1)-1));
 }
 export function initBuilder(){
   if(!$("#builder-canvas-list"))return;
