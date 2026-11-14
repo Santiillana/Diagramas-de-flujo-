@@ -56,7 +56,7 @@ test("admite bloques anidados y compila su retorno",()=>{
   ]})];
   const compiled=compileFlow(flow);
   assert.match(compiled.source,/mientras x<2/);
-  assert.deepEqual(executePseudocode(compiled.source,[1]).outputs,[2,1===0?0:2]);
+  assert.deepEqual(executePseudocode(compiled.source,[1]).outputs,[2]);
 });
 
 test("cada nodo tiene ID único y los nodos se conservan en orden",()=>{
