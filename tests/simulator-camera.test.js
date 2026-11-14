@@ -28,15 +28,16 @@ test("gesto de pellizco usa dos punteros y ajusta zoom respecto a su centro",asy
  const simulator=await read("../src/ui/simulator.js");
  assert.match(simulator,/const activePointers=new Map\(\)/);
  assert.match(simulator,/startDistance/);
- assert.match(simulator,/startZoom\*factor/);
+ assert.match(simulator,/pinchState\.startZoom\*distance\(a,b\)\/pinchState\.startDistance/);
  assert.match(simulator,/stage\.classList\.add\("is-pinching"\)/);
 });
 test("pantalla completa usa el rectángulo de viewport y restablece el ajuste",async()=>{
- const [simulator,css]=await Promise.all([
-  read("../src/ui/simulator.js"),read("../src/styles/simulator.css")
+ const [simulator,css,stageCss]=await Promise.all([
+  read("../src/ui/simulator.js"),read("../src/styles/simulator.css"),read("../src/styles/simulator-stage.css")
  ]);
  assert.match(simulator,/document\.fullscreenElement===stage/);
  assert.match(simulator,/stage\.dataset\.fullscreen=String\(active\)/);
  assert.match(simulator,/requestFullscreen\(\{navigationUI:"hide"\}\)/);
- assert.match(css,/:fullscreen \.flow-diagram-container/);
+ assert.match(css,/:fullscreen \.flow-svg/);
+ assert.match(stageCss,/:fullscreen \.flow-diagram-container/);
 });
