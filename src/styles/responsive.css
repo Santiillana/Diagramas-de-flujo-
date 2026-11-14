@@ -1,0 +1,51 @@
+@media (max-width:1320px) {
+  .topbar { grid-template-columns:170px minmax(80px,1fr) auto; gap:12px; }
+  .topbar-status { display:none; } .primary-nav { justify-content:center; } .nav-button { padding:0 9px; }
+  .simulator-grid { grid-template-columns:minmax(205px,.75fr) minmax(340px,1.35fr) minmax(220px,.8fr); }
+  .execution-dock { gap:12px; }
+}
+@media (max-width:1080px) {
+  .topbar { grid-template-columns:155px minmax(0,1fr) auto; min-height:75px; padding-inline:20px; }
+  .primary-nav { justify-content:flex-start; overflow-x:auto; scrollbar-width:thin; }
+  .nav-button { min-height:40px; } .page-shell { width:min(100% - 40px,var(--content-width)); padding-top:25px; }
+  .simulator-grid { grid-template-columns:minmax(0,1.45fr) minmax(245px,.85fr); grid-template-areas:"problem problem" "diagram inspector" "dock dock"; }
+  .problem-panel .problem-details[open] .detail-content { display:grid; grid-template-columns:1fr 1fr; gap:0 22px; }
+  .problem-panel .problem-details[open] .mini-divider { display:none; }
+  .problem-panel .problem-details[open] .helper-copy { grid-column:2; }
+  .diagram-stage { min-height:440px; } .learning-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .builder-grid { grid-template-columns:minmax(180px,.7fr) minmax(0,1.5fr); }
+  .builder-inspector { grid-column:1/-1; } .inspector-empty { padding:24px; }
+}
+@media (max-width:760px) {
+  .topbar { grid-template-columns:1fr auto; gap:10px; padding:11px 15px 9px; }
+  .brand-mark { width:35px; height:35px; } .brand-copy strong { font-size:18px; }
+  .primary-nav { grid-column:1/-1; grid-row:2; width:100%; padding-bottom:2px; }
+  .topbar-actions { grid-column:2; grid-row:1; } .nav-button { min-height:36px; padding:0 10px; font-size:10px; } .nav-index { display:none; }
+  .page-shell { width:min(100% - 28px,var(--content-width)); padding-top:22px; }
+  .page-heading { margin-bottom:20px; } .page-heading h1 { font-size:27px; } .heading-mark { display:none; }
+  .challenge-gate { grid-template-columns:1fr; gap:24px; padding:25px 20px; border-radius:20px; }
+  .challenge-copy h2 { font-size:clamp(28px,8vw,39px); letter-spacing:-1.2px; } .tag-row { margin-bottom:22px; }
+  .challenge-card { padding:18px; } .challenge-actions { gap:14px; } .section-foot { align-items:flex-start; flex-direction:column; }
+  .section-intro { align-items:flex-start; flex-direction:column; gap:12px; } .phase-chip { white-space:normal; }
+  .learning-grid { grid-template-columns:1fr 1fr; gap:9px; } .learning-card { min-height:205px; padding:17px; } .learning-symbol { margin-bottom:20px; }
+  .simulator-grid { grid-template-columns:minmax(0,1fr); grid-template-areas:"problem" "diagram" "inspector" "dock"; }
+  .problem-panel .problem-details[open] .detail-content { display:block; }
+  .problem-panel .problem-details[open] .mini-divider { display:block; } .problem-panel .problem-details[open] .helper-copy { grid-column:auto; }
+  .diagram-panel { min-height:470px; } .diagram-stage { min-height:350px; }
+  .inspector-stack { grid-template-columns:1fr 1fr; grid-template-rows:minmax(250px,auto); }
+  .execution-dock { grid-template-columns:1fr auto; gap:12px; }
+  .timeline-block { grid-column:1/-1; grid-row:2; } .dock-speed { grid-column:2; grid-row:1; }
+  .dock-description { grid-column:1; } .dock-controls { grid-column:1/-1; justify-content:center; grid-row:3; }
+  .lab-layout { grid-template-columns:1fr; } .lab-context { min-height:350px; }
+  .builder-grid { grid-template-columns:1fr; } .builder-canvas { min-height:380px; } .builder-inspector { grid-column:auto; }
+  .page-footer { align-items:flex-start; flex-direction:column; gap:8px; }
+}
+@media (max-width:440px) {
+  .topbar { padding-inline:11px; } .brand-copy small { font-size:7px; } .icon-button { width:33px; height:33px; }
+  .page-shell { width:min(100% - 22px,var(--content-width)); } .page-heading h1 { font-size:24px; }
+  .challenge-copy h2 { font-size:28px; } .button { width:100%; }
+  .challenge-actions { align-items:stretch; flex-direction:column; } .challenge-actions .text-link { text-align:center; }
+  .learning-grid { grid-template-columns:1fr; } .learning-card { min-height:170px; }
+  .inspector-stack { grid-template-columns:1fr; } .diagram-legend { flex-wrap:wrap; gap:8px 13px; }
+  .lab-context-footer { flex-wrap:wrap; justify-content:flex-start; }
+}
