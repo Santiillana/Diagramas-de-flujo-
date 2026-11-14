@@ -72,13 +72,14 @@ export function highlightDiagram(container,diagram,options={}) {
   const routeNodeId=options.routeNodeId==null?null:String(options.routeNodeId);
   const route=options.route??null;
   const previous=options.previousNodeId==null?null:String(options.previousNodeId);
+  const edgeElements=[...container.querySelectorAll(".diagram-edge")];
   container.querySelectorAll(".diagram-node").forEach(element=>{
     const id=element.id.replace("flow-node-","");
     const model=diagram.byId.get(id);
     element.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
     element.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
   });
-  container.querySelectorAll(".diagram-edge").forEach(element=>{
+  edgeElements.forEach(element=>{
     const edge=diagram.edges.find(candidate=>candidate.id===element.dataset.edgeId);
     const from=edge?diagram.byId.get(edge.from):null;
     const to=edge?diagram.byId.get(edge.to):null;
@@ -87,21 +88,34 @@ export function highlightDiagram(container,diagram,options={}) {
     element.classList.toggle("is-route-active",isChosen);
     element.classList.toggle("is-active-path",!isChosen&&isSequential);
   });
-  const token=container.querySelector("#flow-token");
+  const token=container.querySelector(".flow-token");
   if(token){
-    const activeNode=[...diagram.nodes].find(node=>String(node.sourceId)===active);
-    if(activeNode){
-      token.setAttribute("cx",String(activeNode.x));
-      token.setAttribute("cy",String(Math.max(10,activeNode.y-12)));
+    let point=null;
+    if(previous&&active){
+      const travelled=diagram.edges.find(edge=>{
+        const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
+        return String(from?.sourceId)===previous&&String(to?.sourceId)===active;
+      });
+      if(travelled){
+        const edgeElement=edgeElements.find(element=>element.dataset.edgeId===travelled.id);
+        const path=edgeElement?.querySelector("path");
+        try{
+          const length=path?.getTotalLength?.();
+          if(path&&length>0)point=path.getPointAtLength(length*.58);
+        }catch{/* El navegador puede no exponer la métrica SVG en algunos contextos. */}
+        if(point)token.dataset.edgeId=travelled.id;
+      }
+    }
+    const activeNode=diagram.nodes.find(node=>String(node.sourceId)===active);
+    if(!point&&activeNode){
+      point={x:activeNode.x,y:Math.max(10,activeNode.y-12)};
+      delete token.dataset.edgeId;
+    }
+    if(point){
+      token.setAttribute("cx",String(point.x));
+      token.setAttribute("cy",String(point.y));
       token.setAttribute("visibility","visible");
       token.dataset.nodeId=active;
-    }else if(active==="start"||active==="end"){
-      const terminal=diagram.nodes.find(node=>node.id===active);
-      if(terminal){
-        token.setAttribute("cx",String(terminal.x));
-        token.setAttribute("cy",String(Math.max(10,terminal.y-12)));
-        token.setAttribute("visibility","visible");
-      }
     }
   }
 }
