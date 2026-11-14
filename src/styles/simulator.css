@@ -158,3 +158,8 @@
 .simulator-diagram-stage{position:relative;z-index:1}
 .simulator-diagram-stage .flow-svg{pointer-events:none}
 .simulator-diagram-stage .canvas-coordinate{pointer-events:none}
+
+/* La capa de SVG es de visualización; los gestos pertenecen al viewport y los botones al encabezado. */
+.diagram-panel>.diagram-heading{position:relative;z-index:20}
+.diagram-panel>.simulator-diagram-stage{position:relative;z-index:1}
+#flow-diagram-container{pointer-events:none}
