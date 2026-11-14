@@ -46,7 +46,7 @@ Verificación de integridad de referencias:
 
 ## Pruebas y resultados
 - 11/11 comprobaciones estáticas sobre los archivos recuperados desde la rama de trabajo: nombres de vistas, paneles del simulador, actividades del laboratorio, navegación por teclado, controles de tema/movimiento, breakpoints responsive, movimiento reducido, ausencia de \`eval\` / \`new Function\`, existencia del test suite y hashes de referencia.
-- La suite \`npm test\` está incorporada al repositorio y se ejecutará mediante GitHub Actions. No se ejecutó desde el contenedor de esta sesión porque no pudo resolver \`github.com\` al intentar clonar la rama.
+- Suite \`npm test\`: aprobada en ambos workflows GitHub Actions (push y pull request), job `Architecture checks`, 7/7 tests exitosos. [Push run](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43572798285) · [Pull request run](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43572803428).
 - No se realizó una inspección visual manual en navegador; escritorio, tableta y móvil siguen pendientes de comprobación.
 - Por estas limitaciones, el Módulo 1 permanece “En curso” y no se marca como aceptado.
 
