@@ -1,0 +1,27 @@
+name: quality
+
+on:
+  push:
+    branches:
+      - main
+      - "module-1/**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  architecture-tests:
+    name: Architecture checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run architecture tests
+        run: npm test

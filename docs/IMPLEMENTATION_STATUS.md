@@ -8,13 +8,14 @@
 - Rama de trabajo: \`module-1/architecture-visual-system\`
 - Estado inicial auditado: repositorio vacío, sin ramas ni commits.
 - Commit semilla de \`main\`: \`c6b931c98aa27627adf10fe80ec8457ea7826ef4\`
-- Prerrequisitos: ninguno aceptado todavía; los módulos posteriores dependen de la aceptación del anterior.
+- Commit principal de la arquitectura M1: [\`8a5ff2f8058ea5ab0ed1a7aa485f150adebc6a25\`](https://github.com/Santiillana/Diagramas-de-flujo-/commit/8a5ff2f8058ea5ab0ed1a7aa485f150adebc6a25)
+- No hay módulos previamente aceptados.
 
 ## Estado de los cinco módulos
 
 | Módulo | Estado | Commit de cierre | Pruebas | Bloqueos / pendientes |
 |---|---|---|---|---|
-| 1. Auditoría, arquitectura y experiencia visual | En curso | Pendiente de verificación y cierre | Por ejecutar | Validación funcional y visual; confirmar que la referencia original coincide byte por byte |
+| 1. Auditoría, arquitectura y experiencia visual | En curso; entrega inicial implementada, no aceptada todavía | Commit principal enlazado arriba | 11 comprobaciones estáticas sobre archivos recuperados desde GitHub; test suite Node pendiente de CI | Revisión en navegador y tamaños reales; revisar resultado de CI; cerrar checklist de equivalencia |
 | 2. Aprende y 40 ejercicios | Pendiente | — | No ejecutadas | Depende de la aceptación del Módulo 1 |
 | 3. Parser, intérprete y simulación sincronizada | Pendiente | — | No ejecutadas | Depende de los Módulos 1 y 2 |
 | 4. Laboratorio y constructor | Pendiente | — | No ejecutadas | Depende de los Módulos 1, 2 y 3 |
@@ -25,23 +26,31 @@
 - Sin framework ni dependencias de ejecución.
 - Entrada: \`index.html\`.
 - Navegación: \`src/ui/navigation.js\`.
-- Preferencias: \`src/ui/preferences.js\`.
+- Preferencias de tema y movimiento: \`src/ui/preferences.js\`.
 - Sistema visual: \`src/styles/\`.
 - Pruebas: \`tests/architecture.test.js\`.
-- Referencia funcional: \`reference/diagramas_de_flujo_original.html\`.
+- Workflow de calidad: \`.github/workflows/quality.yml\`.
+- Referencia funcional inmutable: \`reference/diagramas_de_flujo_original.html\`.
 
 ## Comandos
 - Desarrollo: \`python3 -m http.server 8000\`
-- Pruebas: \`npm test\`
+- Pruebas: \`npm test\` (Node.js 18+)
 - Build: no aplica; los archivos se sirven directamente.
 
 ## Funciones originales preservadas
 El HTML adjunto se incorpora como referencia inmutable y se enlaza desde la nueva interfaz. El prototipo sigue disponible durante la transición. La correspondencia del inventario está en \`docs/ORIGINAL_FEATURE_AUDIT.md\`; una función no se considera migrada solo por existir un panel visual equivalente.
 
+Verificación de integridad de referencias:
+- HTML original: Git blob \`9f7f5a3d68d10b004e2ea306df1109906f13bc33\`, coincide con \`git hash-object\` del adjunto.
+- Documento V5: Git blob \`c74422272ba8b89757af1be74bca2722337ec902\`, coincide con \`git hash-object\` del adjunto.
+
 ## Pruebas y resultados
-Pendientes de ejecución en esta revisión. No se declara todavía aceptación del Módulo 1. Las comprobaciones de navegador, tamaños reales y consola deben registrarse por separado; no sustituirlas por inferencias basadas en pruebas estáticas.
+- 11/11 comprobaciones estáticas sobre los archivos recuperados desde la rama de trabajo: nombres de vistas, paneles del simulador, actividades del laboratorio, navegación por teclado, controles de tema/movimiento, breakpoints responsive, movimiento reducido, ausencia de \`eval\` / \`new Function\`, existencia del test suite y hashes de referencia.
+- La suite \`npm test\` está incorporada al repositorio y se ejecutará mediante GitHub Actions. No se ejecutó desde el contenedor de esta sesión porque no pudo resolver \`github.com\` al intentar clonar la rama.
+- No se realizó una inspección visual manual en navegador; escritorio, tableta y móvil siguen pendientes de comprobación.
+- Por estas limitaciones, el Módulo 1 permanece “En curso” y no se marca como aceptado.
 
 ## Problemas conocidos y siguiente acción
 - Los cinco espacios tienen estructura visual y navegación; el contenido aprobado y las acciones de ejecución se mantienen como estados preparados.
 - Los controles cuyo motor todavía no existe permanecen deshabilitados.
-- Siguiente acción: ejecutar pruebas automatizadas y verificar la copia de referencia; actualizar este documento con resultados observados y el SHA de implementación.
+- Siguiente acción: revisar los resultados del workflow y abrir la aplicación en escritorio, tableta horizontal y móvil; resolver cualquier fallo antes de aceptar M1.
