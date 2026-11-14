@@ -99,16 +99,16 @@
         <section class="panel diagram-panel" aria-labelledby="diagram-title">
           <div class="panel-heading diagram-heading">
             <div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
-            <span class="canvas-status"><i></i> SVG SINCRONIZADO</span>
-          </div>
-          <div class="diagram-stage simulator-diagram-stage" id="diagram-stage">
-            <div class="diagram-tools diagram-stage-tools" role="group" aria-label="Controles del diagrama">
+            <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
+              <span class="canvas-status"><i></i> SVG SINCRONIZADO</span>
               <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática activa">◎</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama">−</button>
               <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama">+</button>
               <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama">⌗</button>
               <button class="small-icon-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa" title="Pantalla completa">⛶</button>
             </div>
+          </div>
+          <div class="diagram-stage simulator-diagram-stage" id="diagram-stage">
             <div class="diagram-empty" id="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true">↘</div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>Selecciona un ejercicio</h4><p>El diagrama se genera desde las instrucciones analizadas, no desde una ilustración independiente.</p></div>
             <div id="flow-diagram-container" class="flow-diagram-container"></div>
             <span class="canvas-coordinate coordinate-top">TRAZA / SVG</span><span class="canvas-coordinate coordinate-bottom" id="diagram-dimensions">VIEWPORT</span>
