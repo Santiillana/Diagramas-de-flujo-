@@ -10,7 +10,7 @@ test("Laboratorio conserva la traza y permite predecir el siguiente paso", async
   await expect(page.locator("#lab-task-title")).toHaveText("Predice el siguiente paso");
   await page.locator("#lab-task-content [data-predict]").first().click();
   await page.locator("#lab-reveal-prediction").click();
-  await expect(page.locator("#lab-predict-feedback")).toContainText("El paso real es");
+  await expect(page.locator("#lab-predict-feedback")).toContainText("El evento real es");
 });
 
 test("Tabla de seguimiento refleja los snapshots y la fila activa", async ({ page }) => {
@@ -58,7 +58,11 @@ test("Constructor ejecuta los presets de secuencia y decisión en el motor comú
   await page.locator('[data-builder-preset="sequence"]').click();
   await page.locator("#builder-inputs").fill("8");
   await page.locator("#builder-run").click();
+  await expect(page.locator("#builder-last")).toBeEnabled();
+  const initialTimeline = await page.locator("#builder-timeline-label").getAttribute("data-current-step");
   await page.locator("#builder-last").click();
+  await expect(page.locator("#builder-timeline-label")).toHaveAttribute("data-current-step",/^[2-9]\d*$/);
+  expect(await page.locator("#builder-timeline-label").getAttribute("data-current-step")).not.toBe(initialTimeline);
   await expect(page.locator("#builder-runtime-message")).toContainText("Ejecución de");
   await expect(page.locator("#builder-output")).toContainText("16");
   await page.locator('[data-builder-preset="decision"]').click();
