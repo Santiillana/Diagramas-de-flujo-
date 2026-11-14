@@ -133,3 +133,14 @@ body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-head
 body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading button{pointer-events:auto!important}
 body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.simulator-diagram-stage{pointer-events:auto!important}
 body[data-active-space="simulator"] .simulator-grid>.diagram-panel .diagram-legend{pointer-events:none}
+
+
+/* El lienzo y sus paneles reciben solo los gestos que les corresponden. */
+.simulator-view>.simulator-grid{pointer-events:none}
+.simulator-grid>.diagram-panel{pointer-events:none}
+.simulator-grid>.diagram-panel>.diagram-heading,
+.simulator-grid>.diagram-panel>.simulator-diagram-stage{pointer-events:auto}
+.simulator-grid>.problem-panel,
+.simulator-grid>.simulator-inspector,
+.simulator-grid>.trace-panel,
+.simulator-grid>.simulator-dock{pointer-events:auto}
