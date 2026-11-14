@@ -40,7 +40,7 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 | T1 · Bugs conocidos | **Aceptado** | Commits `ab141be8ea425f8dc2f16139e929da6405d3402f` + correcciones; CI #174: 228/228 Node y 41/41 Chromium, success |
 | A · Escenario | **Aceptado** | Commit `01bd31191199abbaddbe4936f32cb9829484967a` + correcciones; CI #177: 232/232 Node y 46/46 Chromium, success; capturas desktop/tablet/mobile |
 | B · Selector, teclado y velocidad | **Aceptado** | Commit `9c6cb7b4122b4a20b07c68eb7b3bf581ced4a4de`; CI #188: 235/235 Node y 51/51 Chromium, success; capturas desktop/tablet/mobile |
-| C · Animación por eventos | Pendiente | Movimiento escalado y tres niveles de movimiento |
+| C · Animación por eventos | **Aceptado** | Commit `1fc3872f4e381b4d6cc5b1740113fee31abcfd7e` + ajustes de pruebas; CI #191: 240/240 Node y 54/54 Chromium, success; capturas guardadas |
 | D · En escena visual | Pendiente | Visualizaciones por tipo de evento |
 | E · Cámara y fullscreen | Parcial en V5; falta auditoría frente a la nueva especificación |
 | F · Aprende vivo | Pendiente | Mini-programas interpretados por el motor único |
