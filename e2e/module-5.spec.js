@@ -152,3 +152,25 @@ test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persi
   const restored=await page.locator(".pseudocode-lines li").first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
   expect(restored).toBe(11);
 });
+
+
+test("las vistas móviles cambian de panel sin reiniciar la traza y la escena se puede minimizar",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-last").click();
+  const finalStep=await page.locator("#timeline-count").textContent();
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="variables"]').click();
+  await expect(page.locator("#variables-content")).toBeVisible();
+  await expect(page.locator("#timeline-count")).toHaveText(finalStep);
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="scene"]').click();
+  await expect(page.locator("#scene-content")).toBeVisible();
+  await page.locator("#scene-minimize").click();
+  await expect(page.locator("#scene-minimize")).toHaveAttribute("aria-expanded","false");
+  await expect(page.locator("#scene-content")).toBeHidden();
+  await page.locator("#scene-minimize").click();
+  await expect(page.locator("#scene-content")).toBeVisible();
+  await page.locator('#simulator-mobile-tabs [data-mobile-panel="diagram"]').click();
+  await expect(page.locator("#flow-diagram-container")).toBeVisible();
+  await expect(page.locator("#timeline-count")).toHaveText(finalStep);
+});
