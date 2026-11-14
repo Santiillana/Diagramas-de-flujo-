@@ -83,6 +83,7 @@ function markDirty(message="Cambios sin validar"){
     $("#builder-runtime-message").textContent="Hay errores en el flujo. Se conserva el último diagrama válido mientras corriges los símbolos señalados.";
   }
   renderCanvas();
+  $("#builder-status").textContent=validationErrors.length?"HAY ERRORES":message.toUpperCase();
   updateTimelineControls();
 }
 function scopeTitle(){
@@ -245,6 +246,7 @@ function validate(){
     $("#builder-errors").innerHTML='<p class="builder-success">El diagrama tiene Inicio, Fin, bloques completos y sintaxis compatible con el motor M3.</p>';
     $("#builder-code").textContent=compiled.source.split("|").join("\n");
     renderCanvas();
+    $("#builder-status").textContent="ESTRUCTURA VÁLIDA";
     return compiled;
   }catch(error){
     validationErrors=error.errors??[];
@@ -253,6 +255,7 @@ function validate(){
     $("#builder-errors").innerHTML='<ul class="builder-error-list">'+(errors.length?errors.map(item=>'<li data-error-node="'+esc(item.nodeId)+'"><strong>'+esc(item.field)+'</strong> · '+esc(item.message)+'</li>').join(""):'<li>'+esc(error.message)+'</li>')+'</ul>';
     $("#builder-code").textContent="Corrige los errores antes de compilar.";
     renderCanvas();
+    $("#builder-status").textContent="HAY ERRORES";
     return null;
   }
 }
