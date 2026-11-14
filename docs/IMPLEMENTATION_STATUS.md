@@ -42,7 +42,7 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 | B · Selector, teclado y velocidad | **Aceptado** | Commit `9c6cb7b4122b4a20b07c68eb7b3bf581ced4a4de`; CI #188: 235/235 Node y 51/51 Chromium, success; capturas desktop/tablet/mobile |
 | C · Animación por eventos | **Aceptado** | Commit `1fc3872f4e381b4d6cc5b1740113fee31abcfd7e` + ajustes de pruebas; CI #191: 240/240 Node y 54/54 Chromium, success; capturas guardadas |
 | D · En escena visual | **Aceptado** | Commit `30a67f23f6cfa3f9a6f65c12ac27273a613383d3` + corrección; CI #194: 245/245 Node y 57/57 Chromium, success; capturas guardadas |
-| E · Cámara y fullscreen | Parcial en V5; falta auditoría frente a la nueva especificación |
+| E · Cámara y fullscreen | **Aceptado** | Commits `c2628180da5166ce12a8cfbb951e59f4f48d0fd5`, `e32051cb7870fc79c726502b8d5b5d5ab4695adc` y correcciones; CI #198: 250/250 Node y 61/61 Chromium, success; capturas guardadas |
 | F · Aprende vivo | Pendiente | Mini-programas interpretados por el motor único |
 | G · Guía de figuras y ciclos | Pendiente | Catálogo de conceptos y ayuda contextual |
 | H · Laboratorio sin bloqueo | Pendiente | Verificar las seis actividades sin ejecución previa |

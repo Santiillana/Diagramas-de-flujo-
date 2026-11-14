@@ -63,3 +63,7 @@ El proyecto estático es compatible con GitHub Pages, pero un merge no demuestra
 
 ## D-021 · Las animaciones siguen eventos y conectores reales
 La ficha de recorrido se anima únicamente entre el nodo anterior y el actual de la traza del intérprete. La ruta se resuelve desde la arista SVG existente; los datos de variable, condición, rama y vuelta provienen del evento. La velocidad solo escala la duración visual, no modifica la ejecución. En movimiento reducido se conserva el estado semántico sin desplazamiento; apagado elimina las animaciones no esenciales.
+
+
+## D-022 · Cámara amortiguada y zoom focal
+El seguimiento automático interpola el desplazamiento del mismo canvas mediante amortiguación exponencial por fotograma. Los gestos manuales (arrastre, rueda y pellizco) detienen el auto-seguimiento hasta reactivarlo. El zoom anclado conserva el punto bajo el cursor o el centro entre punteros. En fullscreen, el ajuste se calcula sobre el rectángulo de viewport y el control de salida permanece dentro del escenario.
