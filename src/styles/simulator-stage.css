@@ -107,3 +107,21 @@ body[data-active-space="simulator"] .simulator-intro{display:none}
  .simulator-grid>.simulator-dock .dock-speed{grid-row:1}
  .simulator-shortcuts{right:8px;bottom:200px}
 }
+
+/* The diagram toolbar must remain above the full-bleed SVG hit area. */
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading{
+  position:fixed!important;
+  z-index:80!important;
+  top:calc(var(--simulator-topbar-height,82px) + 8px)!important;
+  left:50%;
+  pointer-events:auto!important;
+}
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading .diagram-header-tools,
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.diagram-heading button{
+  position:relative;
+  z-index:81;
+  pointer-events:auto!important;
+}
+body[data-active-space="simulator"] .simulator-grid>.diagram-panel>.simulator-diagram-stage{
+  z-index:1;
+}
