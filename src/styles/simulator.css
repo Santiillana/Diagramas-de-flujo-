@@ -107,3 +107,48 @@
 @media(prefers-reduced-motion:reduce){
   .diagram-node rect,.diagram-node polygon,.diagram-node path,.diagram-node circle{filter:none}
 }
+
+/* Módulo 5: inspección ampliada y accesibilidad del simulador */
+.diagram-tools .small-icon-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.diagram-tools .small-icon-button[aria-pressed="false"]{color:var(--muted)}
+.simulator-restore{display:inline-flex;align-self:flex-start;margin:-5px 0 4px;padding:3px 0;border:0;color:var(--accent);background:none;font-size:9px;font-weight:750;cursor:pointer}
+.simulator-restore:hover{text-decoration:underline}
+.pseudocode-heading{flex-wrap:wrap}
+.pseudocode-size-controls{display:inline-flex;align-items:center;gap:3px}
+.pseudocode-size-controls button{min-width:25px;height:25px;border:1px solid var(--line);border-radius:6px;color:var(--muted-strong);background:var(--surface);font-size:9px;font-weight:800;cursor:pointer}
+.pseudocode-size-controls button:hover{border-color:var(--accent);color:var(--accent)}
+.pseudocode-size-controls button:disabled{opacity:.35;cursor:default}
+.pseudocode-lines li{font-size:var(--pseudocode-font-size,10px)}
+.simulator-diagram-stage{cursor:grab;touch-action:pan-x pan-y}
+.simulator-diagram-stage.is-panning{cursor:grabbing;user-select:none}
+.simulator-diagram-stage:fullscreen{width:100vw;height:100vh;max-height:none;padding:clamp(16px,4vw,56px);background:var(--canvas);border:0;border-radius:0}
+.simulator-diagram-stage:fullscreen .flow-svg{width:auto!important;height:auto;max-width:100%!important;max-height:100%;min-width:0}
+.scene-event-visual{display:grid;place-items:center;width:42px;height:42px;margin:0 0 7px;border:1px solid var(--accent);border-radius:12px;color:var(--accent-strong);background:var(--accent-soft);font:800 21px/1 ui-monospace,monospace;box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent)}
+#scene-content[data-event-type="input"] .scene-event-visual{border-color:var(--teal);color:var(--teal);background:var(--teal-soft)}
+#scene-content[data-event-type="decision"] .scene-event-visual,#scene-content[data-event-type="loop-condition"] .scene-event-visual{border-color:var(--warning);color:var(--warning);background:var(--warning-soft)}
+#scene-content[data-event-type="error"] .scene-event-visual{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.scene-condition-result{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.scene-condition-result span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
+.scene-condition-result code{font:9px ui-monospace,monospace;color:var(--ink-soft)}
+.scene-condition-result strong{margin-left:auto;font-size:8px}
+.scene-condition-result strong.is-true{color:var(--positive)}
+.scene-condition-result strong.is-false{color:var(--danger)}
+.variable-history{padding:7px 12px 12px;border-top:1px solid var(--line)}
+.variable-history-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.variable-history-heading strong{font-size:9px}
+.variable-history-heading .text-link{border:0;background:none;color:var(--accent);font-size:8px;cursor:pointer}
+.variable-history-trigger{padding:0;border:0;color:var(--accent-strong);background:none;font:inherit;font-weight:800;cursor:pointer}
+.variable-history-trigger[aria-pressed="true"]{text-decoration:underline;text-underline-offset:3px}
+.variable-history-list{display:grid;gap:4px;margin:0;padding:0;list-style:none;max-height:180px;overflow:auto}
+.variable-history-list button{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;padding:6px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);text-align:left;cursor:pointer}
+.variable-history-list button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.variable-history-list span{grid-column:1;color:var(--muted);font-size:7px;font-weight:800}
+.variable-history-list strong{grid-column:2;grid-row:1/3;align-self:center;color:var(--ink-soft);font:9px ui-monospace,monospace}
+.variable-history-list small{grid-column:1;overflow:hidden;color:var(--muted-strong);font-size:7px;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){
+  .diagram-tools .canvas-status{display:none}
+  .simulator-diagram-stage.is-panning{touch-action:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .simulator-diagram-stage{scroll-behavior:auto}
+}
