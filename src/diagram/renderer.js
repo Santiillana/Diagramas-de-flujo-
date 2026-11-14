@@ -61,17 +61,47 @@ export function renderDiagram(container,diagram,options={}){
   }).join("");
   const svg='<svg class="flow-svg" id="flow-svg" role="img" aria-label="Diagrama de flujo generado desde el pseudocódigo" viewBox="0 0 '+diagram.width+' '+diagram.height+'" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>'+
-    '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g></svg>';
+    '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
+    '<circle id="flow-token" class="flow-token" cx="520" cy="20" r="7" visibility="hidden" aria-hidden="true"/></svg>';
   container.innerHTML=svg;
 }
 export function highlightDiagram(container,diagram,options={}) {
-  if (!container) return;
+  if (!container||!diagram) return;
   const active=options.activeNodeId==null?null:String(options.activeNodeId);
   const visited=new Set((options.visitedNodeIds??[]).map(String));
-  container.querySelectorAll(".diagram-node").forEach(node=>{
-    const id=node.id.replace("flow-node-","");
+  const routeNodeId=options.routeNodeId==null?null:String(options.routeNodeId);
+  const route=options.route??null;
+  const previous=options.previousNodeId==null?null:String(options.previousNodeId);
+  container.querySelectorAll(".diagram-node").forEach(element=>{
+    const id=element.id.replace("flow-node-","");
     const model=diagram.byId.get(id);
-    node.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
-    node.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
+    element.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
+    element.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
   });
+  container.querySelectorAll(".diagram-edge").forEach((element,index)=>{
+    const edge=diagram.edges[index];
+    const from=edge?diagram.byId.get(edge.from):null;
+    const to=edge?diagram.byId.get(edge.to):null;
+    const isChosen=Boolean(edge&&routeNodeId&&route&&from?.sourceId===Number(routeNodeId)&&edge.label===route);
+    const isSequential=Boolean(edge&&previous&&active&&from?.sourceId===Number(previous)&&to?.sourceId===Number(active));
+    element.classList.toggle("is-route-active",isChosen);
+    element.classList.toggle("is-active-path",!isChosen&&isSequential);
+  });
+  const token=container.querySelector("#flow-token");
+  if(token){
+    const activeNode=[...diagram.nodes].find(node=>String(node.sourceId)===active);
+    if(activeNode){
+      token.setAttribute("cx",String(activeNode.x));
+      token.setAttribute("cy",String(Math.max(10,activeNode.y-12)));
+      token.setAttribute("visibility","visible");
+      token.dataset.nodeId=active;
+    }else if(active==="start"||active==="end"){
+      const terminal=diagram.nodes.find(node=>node.id===active);
+      if(terminal){
+        token.setAttribute("cx",String(terminal.x));
+        token.setAttribute("cy",String(Math.max(10,terminal.y-12)));
+        token.setAttribute("visibility","visible");
+      }
+    }
+  }
 }
