@@ -256,3 +256,14 @@
 @media(prefers-reduced-motion:reduce){
   .diagram-panel #flow-diagram-container{transition:none}
 }
+
+/* M5 responsive hard boundary: SVG and toolbar cannot widen the page */
+.diagram-panel{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel>.diagram-heading{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel>.diagram-heading>div:first-child{min-width:0;max-width:100%}
+.diagram-panel>.diagram-heading .diagram-header-tools{width:100%;max-width:100%;min-width:0;flex:1 1 auto;flex-shrink:1;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;justify-content:flex-end}
+.diagram-panel>.diagram-heading .diagram-header-tools .canvas-status,
+.diagram-panel>.diagram-heading .diagram-header-tools button{flex:0 0 auto}
+.diagram-panel>.simulator-diagram-stage{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.diagram-panel #flow-diagram-container{width:100%;max-width:100%;min-width:0}
+.diagram-panel .diagram-legend{width:100%;max-width:100%;min-width:0;flex-wrap:wrap}
