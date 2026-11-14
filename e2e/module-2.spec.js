@@ -33,7 +33,7 @@ test("la ficha del ejercicio explica las entradas, métodos y pruebas", async ({
   await page.locator('[data-select-exercise="23"]').click();
   await expect(page.locator("#exercise-detail h3")).toHaveText("Fibonacci: términos que no superen 40");
   await expect(page.locator(".exercise-gate")).toBeVisible();
-  await expect(page.locator("#exercise-detail .method-tab")).toHaveCount(0);
+  await expect(page.locator("#exercise-detail .exercise-methods")).toBeHidden();
   await page.locator("[data-exercise-hint]").click();
   await expect(page.locator("[data-gate-feedback]")).toContainText("Conceptos");
   await page.locator("[data-reveal-solution]").click();
