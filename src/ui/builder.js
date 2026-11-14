@@ -239,22 +239,27 @@ function inputs(){
 function seekBuilder(index){
   const control=$("#builder-last");
   if(control)control.dataset.lastSeekAttempt=String(index);
-  if(!runtimeTimeline)return;
-  const before=runtimeTimeline.index;
+  if(!runtimeTimeline||!runtime)return;
   runtimeTimeline.seek(index);
+  const actualIndex=runtimeTimeline.index;
   if(control){
-    control.dataset.lastSeekBefore=String(before);
-    control.dataset.lastSeekAfter=String(runtimeTimeline.index);
+    control.dataset.lastSeekBefore=String(index);
+    control.dataset.lastSeekAfter=String(actualIndex);
   }
-  renderBuilderTimeline();
+  renderBuilderTimeline(actualIndex);
 }
-function renderBuilderTimeline(){
+function renderBuilderTimeline(requestedIndex=runtimeTimeline?.index??0){
   if(!runtime||!runtimeTimeline)return;
-  const event=runtimeTimeline.current;
-  const history=runtime.events.slice(0,runtimeTimeline.index+1);
-  if(runtimeDiagram)highlightDiagram($("#builder-diagram"),runtimeDiagram,{
-    activeNodeId:event.nodeId,visitedNodeIds:history.map(e=>e.nodeId).filter(id=>id!==null&&id!==undefined)
-  });
+  const index=Math.max(0,Math.min(runtime.events.length-1,Math.trunc(requestedIndex)));
+  const event=runtime.events[index];
+  const history=runtime.events.slice(0,index+1);
+  try{
+    if(runtimeDiagram)highlightDiagram($("#builder-diagram"),runtimeDiagram,{
+      activeNodeId:event.nodeId,visitedNodeIds:history.map(e=>e.nodeId).filter(id=>id!==null&&id!==undefined)
+    });
+  }catch(error){
+    $("#builder-runtime-message").textContent="El estado se calculó, pero no se pudo resaltar el SVG: "+error.message;
+  }
   const scene=event.scene??{title:event.type,body:event.message};
   $("#builder-scene").innerHTML='<strong>'+esc(scene.title)+'</strong><p>'+esc(scene.body)+'</p><small>'+esc(scene.technical??"")+'</small>';
   const vars=event.variables??{};
@@ -264,18 +269,21 @@ function renderBuilderTimeline(){
     "<p>Sin variables en este paso.</p>";
   const outputs=event.outputs??[];
   $("#builder-output").innerHTML=outputs.length?outputs.map(x=>"<li>"+esc(fmt(x))+"</li>").join(""):"<li>Sin salida todavía.</li>";
-  $("#builder-timeline-label").textContent="Paso "+(runtimeTimeline.index+1)+" / "+runtimeTimeline.length;
-  $("#builder-timeline-label").dataset.currentStep=String(runtimeTimeline.index+1);
-  $("#builder-timeline-label").dataset.totalSteps=String(runtimeTimeline.length);
-  $("#builder-timeline").max=String(runtimeTimeline.length-1);
-  $("#builder-timeline").value=String(runtimeTimeline.index);
+  $("#builder-timeline-label").textContent="Paso "+(index+1)+" / "+runtime.events.length;
+  $("#builder-timeline-label").dataset.currentStep=String(index+1);
+  $("#builder-timeline-label").dataset.totalSteps=String(runtime.events.length);
+  $("#builder-timeline").max=String(runtime.events.length-1);
+  $("#builder-timeline").value=String(index);
   $("#builder-timeline").disabled=false;
-  $("#builder-first").disabled=runtimeTimeline.index===0;
-  $("#builder-previous").disabled=runtimeTimeline.index===0;
-  $("#builder-next").disabled=runtimeTimeline.index===runtimeTimeline.length-1;
-  $("#builder-last").disabled=runtimeTimeline.index===runtimeTimeline.length-1;
-  $("#builder-runtime-message").textContent=runtime.ok?"Ejecución de "+runtime.events.length+" pasos. "+scene.body:"Ejecución detenida: "+runtime.error?.message;
+  $("#builder-first").disabled=index===0;
+  $("#builder-previous").disabled=index===0;
+  $("#builder-next").disabled=index===runtime.events.length-1;
+  $("#builder-last").disabled=index===runtime.events.length-1;
+  $("#builder-runtime-message").textContent=runtime.ok?
+    "Ejecución de "+runtime.events.length+" pasos. "+scene.body:
+    "Ejecución detenida: "+runtime.error?.message;
 }
+
 function runBuilder(){
   const compiled=validate();
   if(!compiled)return;
