@@ -7,7 +7,7 @@ Commit validado: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
 
 ## Resultado ejecutivo
 
-Los cinco módulos se han implementado. M1–M4 están integrados en `main`. M5 está implementado y su CI push está verde. El PR #6 está abierto y su CI de PR está en ejecución; por tanto no se afirma que la versión final ya esté en `main`.
+Los cinco módulos están integrados en `main`. El PR #6 de M5 se fusionó con el commit `e510f534049c0a990ee03fde38d6b21ec40e8505`; la CI de la rama principal pasó después de integrar.
 
 ### Estado por módulo
 
@@ -21,7 +21,8 @@ Los cinco módulos se han implementado. M1–M4 están integrados en `main`. M5 
 
 ## Evidencia M5
 
-CI: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106
+CI aceptación de M5: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106
+CI main final: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615474220
 
 - **Node:** 222 pruebas pasaron, 0 fallaron.
 - **Chromium:** 38 pruebas pasaron, 0 fallaron.
@@ -53,12 +54,11 @@ La comprobación de interacción móvil se ejecutó con Chromium emulado; no equ
 
 ## Publicación
 
-El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido estático en cada push a `main`. El primer intento posterior a la fusión terminó con HTTP 404 en “Configure GitHub Pages”: el sitio aún no está habilitado. El propietario debe ir a Settings → Pages → Build and deployment → Source y seleccionar GitHub Actions. Después, re-ejecutar Deploy GitHub Pages y comprobar la URL del entorno.
+El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido estático en cada push a `main`. El intento posterior a la fusión terminó con HTTP 404 en “Configure GitHub Pages” (https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615398257): el sitio aún no está habilitado. El propietario debe ir a Settings → Pages → Build and deployment → Source y seleccionar GitHub Actions. Después, re-ejecutar Deploy GitHub Pages y comprobar la URL del entorno.
 
-## Integración final pendiente
+## Estado final de integración
 
-1. Los checks del PR #6 pasaron y el PR fue fusionado en main.
-2. El primer intento de Deploy GitHub Pages falló porque la opción de Pages no estaba habilitada.
-3. El propietario debe seleccionar GitHub Actions como Source en Settings → Pages, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
-
-No debe declararse M5 integrado ni Pages publicado antes de completar esas acciones.
+- PR #6 se fusionó en `main`.
+- CI `main`: 222/222 Node y 38/38 Chromium.
+- El único bloqueo externo restante es activar GitHub Pages en Settings → Pages → Build and deployment → Source → GitHub Actions. Tras hacerlo, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
+- No se afirma que Pages esté publicado mientras esa activación no se realice y el deployment no termine correctamente.
