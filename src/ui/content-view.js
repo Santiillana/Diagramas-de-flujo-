@@ -270,7 +270,7 @@ function bindContentEvents(){
   $("#exercise-detail")?.addEventListener("click",event=>{
     if(event.target.closest("[data-save-attempt]")){
       const answer={};
-      $("[data-attempt-field]",$("#exercise-detail")).forEach(field=>answer[field.dataset.attemptField]=field.value);
+      $$("[data-attempt-field]",$("#exercise-detail")).forEach(field=>answer[field.dataset.attemptField]=field.value);
       try{localStorage.setItem("traza-exercise-attempt-"+selectedExercise.id,JSON.stringify(answer));}catch{}
       const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
       if(feedback)feedback.textContent="Tu análisis quedó guardado en este navegador.";

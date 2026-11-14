@@ -89,3 +89,6 @@
   .exercise-detail-panel{position:static;max-height:none}
   .exercise-detail-scroll{max-height:none}
 }
+
+/* Los estados hidden deben prevalecer sobre los display explícitos de los paneles. */
+.exercise-methods[hidden], .exercise-errors[hidden], .exercise-simulate[hidden], .exercise-spec[hidden] { display: none !important; }
