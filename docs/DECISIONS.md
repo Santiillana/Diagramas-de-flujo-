@@ -67,3 +67,7 @@ La ficha de recorrido se anima únicamente entre el nodo anterior y el actual de
 
 ## D-022 · Cámara amortiguada y zoom focal
 El seguimiento automático interpola el desplazamiento del mismo canvas mediante amortiguación exponencial por fotograma. Los gestos manuales (arrastre, rueda y pellizco) detienen el auto-seguimiento hasta reactivarlo. El zoom anclado conserva el punto bajo el cursor o el centro entre punteros. En fullscreen, el ajuste se calcula sobre el rectángulo de viewport y el control de salida permanece dentro del escenario.
+
+
+## D-023 · Mini-programas Aprende ejecutados por el intérprete único
+Cada una de las 14 lecciones tiene un pseudocódigo dentro de la gramática aprobada, entradas de ejemplo y salidas esperadas. La interfaz genera una ejecución determinista con el mismo parser, intérprete, línea de tiempo, layout SVG, resaltado y visualizador de eventos del Simulador. No mantiene cálculos didácticos paralelos para los resultados.
