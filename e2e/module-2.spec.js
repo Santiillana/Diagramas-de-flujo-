@@ -35,6 +35,7 @@ test("el catálogo muestra 45 ejercicios, filtra los niveles y pagina el resulta
 
 test("la ficha del ejercicio explica las entradas, métodos y pruebas", async ({ page }) => {
   await page.goto("/");
+  await page.locator("[data-page-next]").click();
   await page.locator('[data-select-exercise="23"]').click();
   await expect(page.locator("#exercise-detail h3")).toHaveText("Fibonacci: términos que no superen 40");
   await expect(page.locator(".exercise-gate")).toBeVisible();
