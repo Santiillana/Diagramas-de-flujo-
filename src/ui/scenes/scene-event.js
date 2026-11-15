@@ -84,9 +84,12 @@ function expressionDetails(event, previousVariables) {
   } catch {}
   const variable = event.change?.name;
   let role = null;
-  if (["loop-init","loop-update"].includes(event.type) || /\+\+|--/.test(source)) role = "contador";
-  else if (assignment && variable && new RegExp("\\b"+variable+"\\b").test(assignment[2]) && assignment[2].includes("*")) role = "acumulador de producto";
-  else if (assignment && variable && new RegExp("\\b"+variable+"\\b").test(assignment[2]) && assignment[2].includes("+")) role = "acumulador";
+  const selfReference = assignment && variable && new RegExp("\\b"+variable+"\\b").test(assignment[2]);
+  if (["loop-init","loop-update"].includes(event.type) || (selfReference && /[+-]\s*1\s*$/.test(assignment[2])) || /\+\+|--/.test(source)) role = "contador";
+  else if (selfReference && assignment[2].includes("*")) role = "acumulador de producto";
+  else if (selfReference && assignment[2].includes("+")) role = "acumulador";
+  else if (event.change?.previous === undefined) role = "valor inicial";
+  else if (assignment && /^[A-Za-z_][A-Za-z0-9_]*$/.test(assignment[2].trim())) role = "copia";
   else if (assignment) role = "cálculo";
   return {expression,substituted,partials,role};
 }
