@@ -405,6 +405,7 @@ function syncDockHeight(){
 function freeCanvasRect(){
   const stage=$("#diagram-stage"),header=$("#hd"),dock=$("#dock");
   if(!stage)return {left:0,top:0,right:innerWidth,bottom:innerHeight,width:innerWidth,height:innerHeight};
+  if(document.body.classList.contains("focus"))return {left:0,top:0,right:innerWidth,bottom:innerHeight,width:innerWidth,height:innerHeight};
   const box=stage.getBoundingClientRect();
   const hidden=document.body.dataset.simulatorPanels==="hidden";
   const mobile=matchMedia("(max-width: 900px)").matches;
@@ -427,15 +428,10 @@ function setCameraFree(){
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
   cameraRaf=0;
   updateCameraButton();
-  const follow=$("#sim-camera-follow");
-  if(follow){follow.hidden=false;follow.textContent="Cámara libre · Seguir el proceso";}
 }
 function setCameraFollowing(){
   cameraAuto=true;
   updateCameraButton();
-  const follow=$("#sim-camera-follow");
-  if(follow){follow.hidden=true;follow.textContent="Cámara libre · Seguir el proceso";}
-  if(timeline)centerActiveNode(timeline.current,"auto");
 }
 
 function publishTrace(){
@@ -636,40 +632,8 @@ function applyCanvasTransform(){
     wrap.style.backgroundSize=step+"px "+step+"px,"+step+"px "+step+"px,"+major+"px "+major+"px,"+major+"px "+major+"px";
     wrap.style.backgroundPosition=(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px";
   }
-  updateMinimap();
 }
-function updateMinimap(){
-  const host=$("#sim-minimap"),viewport=$("#sim-minimap-viewport");
-  if(!host||!viewport||!diagram||!diagramFitWidth)return;
-  const rect=freeCanvasRect(),stage=$("#diagram-stage").getBoundingClientRect();
-  const scale=fitScale*zoom,miniW=180,miniH=104,pad=7;
-  const usableW=miniW-pad*2,usableH=miniH-pad*2;
-  const ratio=Math.min(usableW/diagram.width,usableH/diagram.height);
-  const ox=(miniW-diagram.width*ratio)/2,oy=(miniH-diagram.height*ratio)/2;
-  const visible={x:(rect.left-stage.left-panOffset.x)/scale,y:(rect.top-stage.top-panOffset.y)/scale,width:rect.width/scale,height:rect.height/scale};
-  const x=Math.max(ox,Math.min(ox+usableW,ox+visible.x*ratio));
-  const y=Math.max(oy,Math.min(oy+usableH,oy+visible.y*ratio));
-  const w=Math.max(3,Math.min(usableW,visible.width*ratio));
-  const h=Math.max(3,Math.min(usableH,visible.height*ratio));
-  viewport.setAttribute("x",String(x));viewport.setAttribute("y",String(y));
-  viewport.setAttribute("width",String(Math.min(w,miniW-x)));viewport.setAttribute("height",String(Math.min(h,miniH-y)));
-  viewport.setAttribute("rx","3");
-}
-function renderMinimap(){
-  const svg=$("#sim-minimap-svg");
-  if(!svg||!diagram)return;
-  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
-  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
-  const edgeMarkup=diagram.edges.map(edge=>{
-    const path=$("#flow-diagram-container")?.querySelector('[data-edge-id="'+edge.id+'"] path');
-    const d=path?.getAttribute("d");
-    return d?'<path d="'+esc(d)+'"/>':"";
-  }).join("");
-  const nodeMarkup=diagram.nodes.map(node=>'<rect x="'+(node.x-node.width/2)+'" y="'+node.y+'" width="'+node.width+'" height="'+node.height+'" rx="2"/>').join("");
-  svg.innerHTML='<g transform="translate('+ox+' '+oy+') scale('+ratio+')"><g class="minimap-edges">'+edgeMarkup+'</g><g class="minimap-nodes">'+nodeMarkup+'</g></g>'+
-    '<rect id="sim-minimap-viewport" class="minimap-viewport" x="0" y="0" width="1" height="1" rx="3"/>';
-  updateMinimap();
-}
+function buildRouteGraph(){
 function buildRouteGraph(){
   routeGraph=new Map();routeWeights=new Map();routeCache.clear();
   if(!diagram)return;
@@ -887,20 +851,7 @@ function zoomDiagram(direction){
   const free=freeCanvasRect();
   zoomAt(zoom*(direction>0?1.18:1/1.18),free.left+free.width/2,free.top+free.height/2);
 }
-function jumpMinimap(event){
-  if(!diagram||!diagramFitWidth)return;
-  const svg=$("#sim-minimap-svg"),point=svg.createSVGPoint();
-  point.x=event.clientX;point.y=event.clientY;
-  const cursor=point.matrixTransform(svg.getScreenCTM().inverse());
-  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
-  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
-  const worldX=Math.max(0,Math.min(diagram.width,(cursor.x-ox)/ratio));
-  const worldY=Math.max(0,Math.min(diagram.height,(cursor.y-oy)/ratio));
-  const stage=$("#diagram-stage").getBoundingClientRect(),free=freeCanvasRect();
-  const centerX=free.left+free.width/2-stage.left,centerY=free.top+free.height/2-stage.top;
-  panOffset={x:centerX-worldX*fitScale*zoom,y:centerY-worldY*fitScale*zoom};
-  setCameraFree();applyCanvasTransform();
-}
+
 function centerDiagram(){
   if(!diagram)return;
   fitDiagram();setCameraFollowing();
@@ -1080,15 +1031,18 @@ function fitDiagram(){
   const viewBox=svg.viewBox?.baseVal;
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
-  const availableWidth=Math.max(180,free.width-24),availableHeight=Math.max(180,free.height-24);
-  fitScale=Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height);
+  const focus=document.body.classList.contains("focus");
+  fitScale=focus?Math.max(1.3,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.9/Math.min(viewBox.height,560)))):
+    Math.round(Math.max(300,Math.min(free.width-20,viewBox.width*2))*1.1)/viewBox.width;
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
-  zoom=1;panOffset={x:0,y:0};
+  zoom=1;
+  const stageBox=stage.getBoundingClientRect();
+  panOffset={x:free.left-stageBox.left+(free.width-diagramFitWidth)/2,y:free.top-stageBox.top+(free.height-diagramFitHeight)/2};
   if(cameraRaf)cancelAnimationFrame(cameraRaf);cameraRaf=0;
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
-  applyDiagramZoom();renderMinimap();
-  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+  applyDiagramZoom();
+  if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
 }async function toggleDiagramFullscreen(){
   const stage=$("#diagram-stage");
   if(!stage)return;
