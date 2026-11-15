@@ -40,8 +40,13 @@ export function initNavigation() {
   }
 
   document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-space]");
-    if (button && nav.contains(button)) activate(button.dataset.space);
+    const target = event.target instanceof Element ? event.target : null;
+    const button = target?.closest("[data-space]");
+    if (button) console.log("TRAZA_NAV_CLICK", button.dataset.space, nav.contains(button));
+    if (button && nav.contains(button)) {
+      activate(button.dataset.space);
+      console.log("TRAZA_NAV_ACTIVE", document.body.dataset.activeSpace, views.map(view => [view.dataset.view, view.hidden]));
+    }
   }, true);
   nav.addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
