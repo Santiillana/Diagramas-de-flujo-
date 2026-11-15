@@ -202,10 +202,10 @@
     </section>
 
     <section class="space-view builder-view" id="view-builder" data-view="builder" aria-labelledby="builder-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">05 / CONSTRUCTOR</p><h2 id="builder-title">Construye el flujo. Valida su lógica. Ejecútalo.</h2><p>Conecta símbolos y estructuras. El diagrama se compila al pseudocódigo del mismo motor que utiliza el simulador.</p></div><span class="phase-chip">UN SOLO MODELO · UN SOLO MOTOR</span></div>
+      <div class="section-intro"><div><p class="eyebrow">05 / CONSTRUCTOR</p><h2 id="builder-title">Construye el flujo. Valida su lógica. Ejecútalo.</h2><p>Organiza símbolos y bloques anidados. El diagrama se compila al pseudocódigo del mismo motor que utiliza el simulador.</p></div><span class="phase-chip">UN SOLO MODELO · UN SOLO MOTOR</span></div>
       <div class="builder-toolbar panel">
         <div><p class="eyebrow">PLANTILLAS DE INICIO</p><strong>Prueba con un flujo base o empieza desde cero.</strong></div>
-        <div class="builder-presets">
+        <div class="builder-presets"><button type="button" class="button button-secondary" id="builder-undo" disabled>Deshacer</button><button type="button" class="button button-secondary" id="builder-redo" disabled>Rehacer</button>
           <button type="button" class="button button-secondary" data-builder-preset="sequence">Secuencia</button>
           <button type="button" class="button button-secondary" data-builder-preset="decision">Decisión</button>
           <button type="button" class="button button-secondary" data-builder-preset="for">Para</button>
@@ -229,7 +229,7 @@
           <p class="helper-copy">Inicio y Fin son terminales fijos. Los conectores se recalculan al reordenar, agregar o eliminar elementos.</p>
         </aside>
         <section class="panel builder-editor">
-          <div class="panel-heading"><div><p class="eyebrow">LIENZO ESTRUCTURADO</p><h3>Secuencia y conexiones</h3></div><span class="canvas-status"><i></i><span id="builder-status">SIN VALIDAR</span></span></div>
+          <div class="panel-heading"><div><p class="eyebrow">LIENZO ESTRUCTURADO</p><h3>Secuencia y bloques</h3></div><span class="canvas-status"><i></i><span id="builder-status">SIN VALIDAR</span></span></div>
           <nav id="builder-breadcrumb" class="builder-breadcrumb" aria-label="Ubicación del bloque"></nav>
           <div id="builder-canvas-list" class="builder-canvas-list"></div>
           <div class="builder-canvas-actions"><button type="button" class="button button-secondary" id="builder-validate">Validar estructura</button><button type="button" class="button button-primary" id="builder-run">Ejecutar diagrama <span aria-hidden="true">▶</span></button></div>
