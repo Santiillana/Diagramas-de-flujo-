@@ -142,6 +142,18 @@
             <div class="diagram-empty" id="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true">↘</div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>Selecciona un ejercicio</h4><p>El diagrama se genera desde las instrucciones analizadas, no desde una ilustración independiente.</p></div>
             <div id="diagram-pan-hit" aria-hidden="true"></div>
             <div id="flow-diagram-container" class="flow-diagram-container"></div>
+            <button type="button" id="sim-camera-follow" class="sim-camera-follow" hidden>Seguir el proceso</button>
+            <aside id="sim-minimap" class="sim-minimap" aria-label="Minimapa del diagrama">
+              <span>VISTA GENERAL</span>
+              <svg id="sim-minimap-svg" viewBox="0 0 180 104" role="img" aria-label="Vista general y zona visible"></svg>
+            </aside>
+            <div id="simulator-shortcuts" class="simulator-shortcuts" role="dialog" aria-label="Atajos de teclado" hidden>
+              <strong>Atajos del simulador</strong>
+              <span>Espacio reproducir · ←/→ paso · Inicio/Fin extremos</span>
+              <span>+ / − zoom · 0 encuadrar · C centrar</span>
+              <span>P Predice · L Laboratorio · H enfoque · F pantalla completa</span>
+              <button type="button" id="simulator-shortcuts-close">Cerrar</button>
+            </div>
             <span class="canvas-coordinate coordinate-top">TRAZA / SVG</span><span class="canvas-coordinate coordinate-bottom" id="diagram-dimensions">VIEWPORT</span>
             <button type="button" id="diagram-fullscreen-exit" class="diagram-fullscreen-exit" hidden aria-label="Salir de pantalla completa">Salir de pantalla completa ✕</button>
           </div>

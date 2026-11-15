@@ -12,13 +12,14 @@ const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) 
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
-let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
+let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
+let cameraRaf=0, pointerState=new Map(), pinchState=null;
 
 function readPseudocodeSize(){
   try{
     const value=Number(window.localStorage.getItem("traza:v2:pseudocode-size")??window.localStorage.getItem("traza-pseudocode-size"));
     return Number.isFinite(value)&&value>=13&&value<=26?value:17;
-  }catch{return 16;}
+  }catch{return 17;}
 }
 
 
@@ -52,6 +53,41 @@ function openLabActivity(activity){
 function syncDockHeight(){
   const dock=$("#dock");
   if(dock)document.body.style.setProperty("--dk",Math.ceil(dock.getBoundingClientRect().height)+"px");
+}
+function freeCanvasRect(){
+  const stage=$("#diagram-stage"),header=$("#hd"),dock=$("#dock");
+  if(!stage)return {left:0,top:0,right:innerWidth,bottom:innerHeight,width:innerWidth,height:innerHeight};
+  const box=stage.getBoundingClientRect();
+  const hidden=document.body.dataset.simulatorPanels==="hidden";
+  const mobile=matchMedia("(max-width: 900px)").matches;
+  const leftPanel=$("#PL"),rightPanel=$("#RC");
+  let left=box.left+18,right=box.right-18,top=Math.max(box.top+12,(header?.getBoundingClientRect().bottom??box.top)+10);
+  let bottom=Math.min(box.bottom-18,(dock?.getBoundingClientRect().top??box.bottom)-14);
+  if(!hidden&&!mobile&&leftPanel&&getComputedStyle(leftPanel).display!=="none")left=Math.max(left,leftPanel.getBoundingClientRect().right+16);
+  if(!hidden&&!mobile&&rightPanel&&getComputedStyle(rightPanel).display!=="none")right=Math.min(right,rightPanel.getBoundingClientRect().left-16);
+  if(mobile){
+    const tabs=$("#simulator-mobile-tabs");
+    if(tabs&&getComputedStyle(tabs).display!=="none")bottom=Math.min(bottom,tabs.getBoundingClientRect().top-10);
+    if(document.body.dataset.simulatorMobilePanel!=="diagram")bottom=Math.min(bottom,box.bottom-210);
+  }
+  if(right-left<120){left=box.left+16;right=box.right-16;}
+  if(bottom-top<120){top=box.top+12;bottom=box.bottom-160;}
+  return {left,top,right,bottom,width:right-left,height:bottom-top};
+}
+function setCameraFree(){
+  cameraAuto=false;
+  if(cameraRaf)cancelAnimationFrame(cameraRaf);
+  cameraRaf=0;
+  updateCameraButton();
+  const follow=$("#sim-camera-follow");
+  if(follow)follow.hidden=false;
+}
+function setCameraFollowing(){
+  cameraAuto=true;
+  updateCameraButton();
+  const follow=$("#sim-camera-follow");
+  if(follow)follow.hidden=true;
+  if(timeline)centerActiveNode(timeline.current,"auto");
 }
 
 function publishTrace(){
@@ -236,18 +272,119 @@ function updateCameraButton(){
   button.title=cameraAuto?"Cámara automática activa":"Cámara automática desactivada";
   button.classList.toggle("is-active",cameraAuto);
 }
+function applyCanvasTransform(){
+  const canvas=$("#flow-diagram-container"),wrap=$("#wrap");
+  if(!canvas)return;
+  canvas.style.transformOrigin="0 0";
+  canvas.style.transform="translate3d("+panOffset.x+"px,"+panOffset.y+"px,0) scale("+zoom+")";
+  canvas.dataset.cameraX=String(panOffset.x);
+  canvas.dataset.cameraY=String(panOffset.y);
+  canvas.dataset.cameraZoom=String(zoom);
+  if(wrap){
+    const step=20*zoom,major=100*zoom;
+    wrap.style.backgroundSize=step+"px "+step+"px,"+step+"px "+step+"px,"+major+"px "+major+"px,"+major+"px "+major+"px";
+    wrap.style.backgroundPosition=(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px";
+  }
+  updateMinimap();
+}
+function updateMinimap(){
+  const host=$("#sim-minimap"),viewport=$("#sim-minimap-viewport");
+  if(!host||!viewport||!diagram||!diagramFitWidth)return;
+  const rect=freeCanvasRect(),stage=$("#diagram-stage").getBoundingClientRect();
+  const scale=fitScale*zoom,miniW=180,miniH=104,pad=7;
+  const usableW=miniW-pad*2,usableH=miniH-pad*2;
+  const ratio=Math.min(usableW/diagram.width,usableH/diagram.height);
+  const ox=(miniW-diagram.width*ratio)/2,oy=(miniH-diagram.height*ratio)/2;
+  const visible={x:(rect.left-stage.left-panOffset.x)/scale,y:(rect.top-stage.top-panOffset.y)/scale,width:rect.width/scale,height:rect.height/scale};
+  const x=Math.max(ox,Math.min(ox+usableW,ox+visible.x*ratio));
+  const y=Math.max(oy,Math.min(oy+usableH,oy+visible.y*ratio));
+  const w=Math.max(3,Math.min(usableW,visible.width*ratio));
+  const h=Math.max(3,Math.min(usableH,visible.height*ratio));
+  viewport.setAttribute("x",String(x));viewport.setAttribute("y",String(y));
+  viewport.setAttribute("width",String(Math.min(w,miniW-x)));viewport.setAttribute("height",String(Math.min(h,miniH-y)));
+  viewport.setAttribute("rx","3");
+}
+function renderMinimap(){
+  const svg=$("#sim-minimap-svg");
+  if(!svg||!diagram)return;
+  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
+  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
+  const edgeMarkup=diagram.edges.map(edge=>{
+    const a=diagram.byId.get(edge.from),b=diagram.byId.get(edge.to);
+    if(!a||!b)return "";
+    return '<path d="M '+(ox+a.x*ratio)+' '+(oy+(a.y+a.height/2)*ratio)+' L '+(ox+b.x*ratio)+' '+(oy+(b.y+b.height/2)*ratio)+'"/>';
+  }).join("");
+  const nodeMarkup=diagram.nodes.map(node=>{
+    const width=Math.max(2,node.width*ratio),height=Math.max(2,node.height*ratio);
+    return '<rect x="'+(ox+(node.x-node.width/2)*ratio)+'" y="'+(oy+node.y*ratio)+'" width="'+width+'" height="'+height+'" rx="1"/>';
+  }).join("");
+  svg.innerHTML='<g class="minimap-edges">'+edgeMarkup+'</g><g class="minimap-nodes">'+nodeMarkup+'</g><rect id="sim-minimap-viewport" class="minimap-viewport" x="0" y="0" width="1" height="1" rx="3"/>';
+  updateMinimap();
+}
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
-  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
-  const node=document.getElementById("flow-node-"+event.nodeId);
-  if(!stage||!canvas||!node)return;
-  const bounds=stage.getBoundingClientRect(),target=node.getBoundingClientRect();
-  const dx=bounds.left+stage.clientWidth/2-(target.left+target.width/2);
-  const dy=bounds.top+stage.clientHeight/2-(target.top+target.height/2);
-  panOffset={x:panOffset.x+dx,y:panOffset.y+dy};
-  canvas.style.transition=behavior==="auto"||document.documentElement.dataset.motion==="reduced"?"none":"transform 320ms cubic-bezier(.2,.8,.2,1)";
-  canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
+  const stage=$("#diagram-stage"),node=document.getElementById("flow-node-"+event.nodeId);
+  if(!stage||!node)return;
+  const free=freeCanvasRect(),target=node.getBoundingClientRect();
+  const goal={
+    x:panOffset.x+(free.left+free.width/2-(target.left+target.width/2)),
+    y:panOffset.y+(free.top+free.height/2-(target.top+target.height/2))
+  };
+  if(cameraRaf)cancelAnimationFrame(cameraRaf);
+  if(behavior==="auto"||document.documentElement.dataset.motion==="reduced"){
+    panOffset=goal;cameraRaf=0;applyCanvasTransform();
+  }else{
+    const start={...panOffset},started=performance.now(),duration=130/Math.sqrt(currentSpeedFactor());
+    const step=now=>{
+      if(!cameraAuto)return;
+      const elapsed=now-started,eased=1-Math.exp(-Math.max(0,elapsed)/duration);
+      panOffset={x:start.x+(goal.x-start.x)*eased,y:start.y+(goal.y-start.y)*eased};
+      applyCanvasTransform();
+      if(elapsed<duration*4&&Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y)>.7)cameraRaf=requestAnimationFrame(step);
+      else{panOffset=goal;cameraRaf=0;applyCanvasTransform();}
+    };
+    cameraRaf=requestAnimationFrame(step);
+  }
   stage.dataset.cameraTarget=String(event.nodeId);
+}
+function currentSpeedFactor(){
+  const value=Number($("#simulator-speed")?.value??650);
+  return value<=100?8:value<=180?4:value<=400?2:value<=800?1:.5;
+}
+function zoomAt(nextZoom,clientX,clientY){
+  const stage=$("#diagram-stage");
+  if(!stage)return;
+  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.25,Math.min(3,nextZoom));
+  const anchorX=clientX-box.left,anchorY=clientY-box.top;
+  const worldX=(anchorX-panOffset.x)/oldZoom,worldY=(anchorY-panOffset.y)/oldZoom;
+  zoom=target;
+  panOffset={x:anchorX-worldX*zoom,y:anchorY-worldY*zoom};
+  setCameraFree();
+  stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
+  applyCanvasTransform();
+}
+function zoomDiagram(direction){
+  if(!diagramFitWidth)fitDiagram();
+  const free=freeCanvasRect();
+  zoomAt(zoom*(direction>0?1.18:1/1.18),free.left+free.width/2,free.top+free.height/2);
+}
+function jumpMinimap(event){
+  if(!diagram||!diagramFitWidth)return;
+  const svg=$("#sim-minimap-svg"),point=svg.createSVGPoint();
+  point.x=event.clientX;point.y=event.clientY;
+  const cursor=point.matrixTransform(svg.getScreenCTM().inverse());
+  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
+  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
+  const worldX=Math.max(0,Math.min(diagram.width,(cursor.x-ox)/ratio));
+  const worldY=Math.max(0,Math.min(diagram.height,(cursor.y-oy)/ratio));
+  const stage=$("#diagram-stage").getBoundingClientRect(),free=freeCanvasRect();
+  const centerX=free.left+free.width/2-stage.left,centerY=free.top+free.height/2-stage.top;
+  panOffset={x:centerX-worldX*fitScale*zoom,y:centerY-worldY*fitScale*zoom};
+  setCameraFree();applyCanvasTransform();
+}
+function centerDiagram(){
+  if(!diagram)return;
+  fitDiagram();setCameraFollowing();
 }
 function renderOperationBreakdown(event){
   let expression=null;
@@ -391,51 +528,26 @@ function play(){
 function applyDiagramZoom(){
   const svg=$("#flow-svg");
   if(!svg||!diagramFitWidth||!diagramFitHeight)return;
-  svg.style.minWidth="0";
-  svg.style.maxWidth="none";
-  svg.style.width=(diagramFitWidth*zoom)+"px";
-  svg.style.height=(diagramFitHeight*zoom)+"px";
-  const stage=$("#diagram-stage");
-  if(stage)stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));
-}
-function zoomDiagram(change){
-  const svg=$("#flow-svg");
-  if(!svg)return;
-  if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
-  zoom=Math.max(.65,Math.min(3,zoom+change*.15));
-  const stage=$("#diagram-stage");
-  if(stage)stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
-  applyDiagramZoom();
-  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-}
-function setPseudocodeSize(size){
-  pseudocodeSize=Math.max(13,Math.min(26,size));
-  document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
-  document.body.style.setProperty("--fs",String(pseudocodeSize));
-  $("#simulator-text-smaller").disabled=pseudocodeSize<=13;
-  $("#simulator-text-larger").disabled=pseudocodeSize>=26;
-  try{window.localStorage.setItem("traza:v2:pseudocode-size",String(pseudocodeSize));}catch{}
+  svg.style.minWidth="0";svg.style.maxWidth="none";
+  svg.style.width=diagramFitWidth+"px";svg.style.height=diagramFitHeight+"px";
+  applyCanvasTransform();
 }
 function fitDiagram(){
-  const stage=$("#diagram-stage"),svg=$("#flow-svg");
-  if(!stage||!svg)return;
+  const stage=$("#diagram-stage"),svg=$("#flow-svg"),canvas=$("#flow-diagram-container");
+  if(!stage||!svg||!diagram)return;
   const viewBox=svg.viewBox?.baseVal;
   if(!viewBox?.width||!viewBox?.height)return;
-  const availableWidth=Math.max(180,stage.clientWidth-48);
-  const availableHeight=Math.max(180,stage.clientHeight-48);
-  const scale=Math.max(.45,Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height));
-  diagramFitWidth=viewBox.width*scale;
-  diagramFitHeight=viewBox.height*scale;
-  zoom=1;
-  panOffset={x:0,y:0};
-  const canvas=$("#flow-diagram-container");
-  if(canvas)canvas.style.transform="translate(0,0)";
+  const free=freeCanvasRect();
+  const availableWidth=Math.max(180,free.width-24),availableHeight=Math.max(180,free.height-24);
+  fitScale=Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height);
+  diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
+  zoom=1;panOffset={x:0,y:0};
+  if(cameraRaf)cancelAnimationFrame(cameraRaf);cameraRaf=0;
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
-  applyDiagramZoom();
-  stage.scrollTo({left:0,top:0,behavior:"auto"});
+  if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
+  applyDiagramZoom();stage.scrollLeft=0;stage.scrollTop=0;renderMinimap();
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-}
-async function toggleDiagramFullscreen(){
+}async function toggleDiagramFullscreen(){
   const stage=$("#diagram-stage");
   if(!stage)return;
   try{
@@ -458,52 +570,80 @@ function updateFullscreenButton(){
   if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
-  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
-  if(!stage||!canvas)return;
-  const insideStage=event=>{
-    const box=stage.getBoundingClientRect();
-    return event.clientX>=box.left&&event.clientX<=box.right&&
-      event.clientY>=box.top&&event.clientY<=box.bottom;
-  };
-  document.addEventListener("pointerdown",event=>{
-    if(!insideStage(event))return;
-    const target=event.target instanceof Element?event.target:null;
-    if(target&&!stage.contains(target))return;
-    if(target?.closest("button,.diagram-header-tools"))return;
+  const stage=$("#diagram-stage"),hit=$("#diagram-pan-hit"),canvas=$("#flow-diagram-container");
+  if(!stage||!hit||!canvas)return;
+  const getPoints=()=>[...pointerState.values()];
+  const onDown=event=>{
     if(event.pointerType==="mouse"&&event.button!==0)return;
-    panState={
-      pointerId:event.pointerId,
-      x:event.clientX,y:event.clientY,
-      originX:panOffset.x,originY:panOffset.y
-    };
+    if(event.target.closest("button,a,input,select,textarea"))return;
+    event.preventDefault();
+    try{hit.setPointerCapture(event.pointerId);}catch{}
+    pointerState.set(event.pointerId,{x:event.clientX,y:event.clientY,type:event.pointerType});
+    setCameraFree();
+    if(pointerState.size>=2){
+      const [a,b]=getPoints();
+      pinchState={distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),zoom,center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
+      panState=null;
+    }else{
+      panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,originX:panOffset.x,originY:panOffset.y};
+    }
     stage.classList.add("is-panning");
     stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
-    cameraAuto=false;updateCameraButton();
-    event.preventDefault();
-  },true);
-  document.addEventListener("pointermove",event=>{
-    if(!panState||event.pointerId!==panState.pointerId)return;
-    panOffset={
-      x:panState.originX+(event.clientX-panState.x),
-      y:panState.originY+(event.clientY-panState.y)
-    };
-    canvas.style.transform="translate("+panOffset.x+"px,"+panOffset.y+"px)";
+  };
+  const onMove=event=>{
+    if(!pointerState.has(event.pointerId))return;
+    pointerState.set(event.pointerId,{x:event.clientX,y:event.clientY,type:event.pointerType});
+    if(pointerState.size>=2){
+      const [a,b]=getPoints(),distance=Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));
+      const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+      if(!pinchState)pinchState={distance,zoom,center};
+      zoomAt(pinchState.zoom*distance/pinchState.distance,center.x,center.y);
+      stage.dataset.pinchZoom=String(zoom);
+      return;
+    }
+    if(!panState||panState.pointerId!==event.pointerId)return;
+    panOffset={x:panState.originX+(event.clientX-panState.x),y:panState.originY+(event.clientY-panState.y)};
+    applyCanvasTransform();
     stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
     stage.dataset.panOffset=panOffset.x+","+panOffset.y;
-    event.preventDefault();
-  },true);
-  const end=event=>{
-    if(!panState||event.pointerId!==panState.pointerId)return;
-    panState=null;stage.classList.remove("is-panning");
   };
-  document.addEventListener("pointerup",end,true);
-  document.addEventListener("pointercancel",end,true);
-  document.addEventListener("wheel",event=>{
-    if(insideStage(event)&&cameraAuto){cameraAuto=false;updateCameraButton();}
-  },{capture:true,passive:true});
-}
-
-function setMobilePanel(name){
+  const onUp=event=>{
+    if(!pointerState.has(event.pointerId))return;
+    pointerState.delete(event.pointerId);
+    if(pointerState.size>=2){
+      const [a,b]=getPoints();
+      pinchState={distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),zoom,center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
+      panState=null;
+    }else if(pointerState.size===1){
+      const [remainingId,point]=[...pointerState.entries()][0];
+      panState={pointerId:remainingId,x:point.x,y:point.y,originX:panOffset.x,originY:panOffset.y};
+      pinchState=null;
+    }else{
+      panState=null;pinchState=null;stage.classList.remove("is-panning");
+    }
+    try{if(hit.hasPointerCapture(event.pointerId))hit.releasePointerCapture(event.pointerId);}catch{}
+  };
+  hit.addEventListener("pointerdown",onDown);
+  hit.addEventListener("pointermove",onMove);
+  hit.addEventListener("pointerup",onUp);
+  hit.addEventListener("pointercancel",onUp);
+  hit.addEventListener("lostpointercapture",onUp);
+  hit.addEventListener("wheel",event=>{
+    event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+  },{passive:false});
+  stage.addEventListener("wheel",event=>{
+    if(event.target.closest("#sim-minimap"))return;
+    event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+  },{passive:false});
+  const minimap=$("#sim-minimap");
+  if(minimap){
+    let dragging=false;
+    minimap.addEventListener("pointerdown",event=>{dragging=true;try{minimap.setPointerCapture(event.pointerId);}catch{}jumpMinimap(event);});
+    minimap.addEventListener("pointermove",event=>{if(dragging)jumpMinimap(event);});
+    const end=()=>{dragging=false;};
+    minimap.addEventListener("pointerup",end);minimap.addEventListener("pointercancel",end);
+  }
+}function setMobilePanel(name){
   const valid=["problem","diagram","scene","variables","output","history"];
   if(!valid.includes(name))return;
   document.body.dataset.simulatorMobilePanel=name;
@@ -557,6 +697,7 @@ function bind(){
   });
   $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
   $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
+  $("#simulator-shortcuts-close")?.addEventListener("click",()=>{$("#simulator-shortcuts").hidden=true;});
   document.addEventListener("fullscreenchange",updateFullscreenButton);
   $("#variables-content").addEventListener("click",event=>{
     const button=event.target.closest("[data-variable-history]");
@@ -593,8 +734,29 @@ function bind(){
   });
   $("#diagram-zoom-in").addEventListener("click",()=>zoomDiagram(1));
   $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
-  $("#diagram-fit").addEventListener("click",fitDiagram);
+  $("#diagram-fit").addEventListener("click",centerDiagram);
+  $("#sim-camera-follow")?.addEventListener("click",setCameraFollowing);
   bindDiagramPan();
+  document.addEventListener("keydown",event=>{
+    const target=event.target;
+    if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
+    if(event.altKey||event.ctrlKey||event.metaKey)return;
+    const key=event.key;
+    if(key===" "){event.preventDefault();play();}
+    else if(key==="ArrowRight"){event.preventDefault();move(1);}
+    else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
+    else if(key==="Home"){event.preventDefault();seek(0);}
+    else if(key==="End"){event.preventDefault();seek((timeline?.length??1)-1);}
+    else if(key==="+"||key==="="){event.preventDefault();zoomDiagram(1);}
+    else if(key==="-"){event.preventDefault();zoomDiagram(-1);}
+    else if(key==="0"){event.preventDefault();centerDiagram();}
+    else if(key.toLowerCase()==="c"){event.preventDefault();if(timeline)centerActiveNode(timeline.current,"auto");}
+    else if(key.toLowerCase()==="p"){event.preventDefault();openLabActivity("predict");}
+    else if(key.toLowerCase()==="l"){event.preventDefault();openLabActivity(null);}
+    else if(key.toLowerCase()==="h"){event.preventDefault();document.body.dataset.simulatorPanels=document.body.dataset.simulatorPanels==="hidden"?"visible":"hidden";requestAnimationFrame(()=>fitDiagram());}
+    else if(key.toLowerCase()==="f"){event.preventDefault();toggleDiagramFullscreen();}
+    else if(key==="?"){event.preventDefault();const help=$("#simulator-shortcuts");if(help)help.hidden=!help.hidden;}
+  });
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
@@ -630,6 +792,7 @@ export function initSimulator(){
   if(!$("#simulator-run"))return;
   setPseudocodeSize(readPseudocodeSize());
   paintExerciseSelector();
+  document.documentElement.style.setProperty("--fs",String(pseudocodeSize));
   syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();

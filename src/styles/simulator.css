@@ -672,3 +672,48 @@ body[data-active-space="simulator"] #PR .trace-history li *{pointer-events:none}
   body[data-active-space="simulator"] #PR>.trace-panel{height:auto;min-height:0;flex:1 1 auto}
   body[data-active-space="simulator"] #PR .trace-history li{width:100%}
 }
+
+/* Etapa 2 · una cámara, cuadrícula transformada, gestos capturados y minimapa */
+body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}
+body[data-active-space="simulator"] #diagram-pan-hit{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+body[data-active-space="simulator"] #diagram-pan-hit:active{cursor:grabbing}
+body[data-active-space="simulator"] #wrap{
+  background-image:
+    linear-gradient(to right,var(--grid) 1px,transparent 1px),
+    linear-gradient(to bottom,var(--grid) 1px,transparent 1px),
+    linear-gradient(to right,color-mix(in srgb,var(--grid) 65%,var(--pen)) 1px,transparent 1px),
+    linear-gradient(to bottom,color-mix(in srgb,var(--grid) 65%,var(--pen)) 1px,transparent 1px)
+}
+body[data-active-space="simulator"] .sim-minimap{
+  position:fixed;z-index:75;left:50%;bottom:calc(var(--dk) + 20px);transform:translateX(-50%);
+  display:grid;gap:3px;width:196px;padding:7px 8px 8px;border:1px solid var(--line);border-radius:11px;
+  color:var(--pen);background:color-mix(in srgb,var(--card) 92%,transparent);
+  backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] .sim-minimap>span{font:700 9px/1 ui-monospace,monospace;letter-spacing:.08em}
+body[data-active-space="simulator"] #sim-minimap-svg{display:block;width:100%;height:auto;max-height:104px;overflow:visible;touch-action:none;cursor:crosshair}
+body[data-active-space="simulator"] .minimap-edges path{fill:none;stroke:var(--pen);stroke-width:1.2;opacity:.7}
+body[data-active-space="simulator"] .minimap-nodes rect{fill:var(--card);stroke:var(--info);stroke-width:1}
+body[data-active-space="simulator"] .minimap-viewport{fill:color-mix(in srgb,var(--hl) 18%,transparent);stroke:var(--hl);stroke-width:1.4;vector-effect:non-scaling-stroke}
+body[data-active-space="simulator"] .sim-camera-follow{
+  position:fixed;z-index:72;left:50%;top:66px;transform:translateX(-50%);min-height:38px;padding:7px 14px;
+  border:1px solid var(--hl);border-radius:999px;color:#1f2b36;background:var(--hl);
+  box-shadow:0 6px 20px rgba(0,0,0,.2);font-weight:800;cursor:pointer;pointer-events:auto
+}
+body[data-active-space="simulator"] .simulator-shortcuts{
+  position:fixed;z-index:140;left:50%;top:64px;transform:translateX(-50%);display:grid;gap:8px;
+  width:min(380px,calc(100vw - 24px));padding:15px;border:1px solid var(--line);border-radius:12px;
+  color:var(--ink);background:var(--card);box-shadow:0 12px 35px rgba(0,0,0,.3);font-size:13px
+}
+body[data-active-space="simulator"] .simulator-shortcuts[hidden],
+body[data-active-space="simulator"] .sim-camera-follow[hidden]{display:none!important}
+body[data-active-space="simulator"] .simulator-shortcuts button{min-height:38px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink)}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-minimap{left:auto;right:8px;bottom:calc(var(--dk) + 65px);width:145px}
+  body[data-active-space="simulator"] #sim-minimap-svg{max-height:82px}
+  body[data-active-space="simulator"] .sim-camera-follow{top:102px}
+}
+@media(max-width:600px){
+  body[data-active-space="simulator"] .sim-minimap{opacity:.92;width:118px;padding:5px}
+  body[data-active-space="simulator"] .sim-minimap>span{font-size:8px}
+}
