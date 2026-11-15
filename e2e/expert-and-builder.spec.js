@@ -33,3 +33,36 @@ test("el constructor permite deshacer y rehacer una instrucción", async ({ page
   await page.locator("#builder-redo").click();
   await expect(cards).toHaveCount(initialCount+1);
 });
+
+test("el catálogo busca por número y pagina sin perder los filtros", async ({ page }) => {
+  await page.locator("#exercise-search").fill("45");
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(1);
+  await expect(page.locator('[data-select-exercise="45"]')).toBeVisible();
+  await page.locator("#exercise-search").fill("");
+  await page.locator("#exercise-level").selectOption("all");
+  await expect(page.locator("[data-page-next]")).toBeEnabled();
+  await page.locator("[data-page-next]").click();
+  await expect(page.locator(".exercise-pagination")).toContainText("Página 2");
+});
+
+test("el panel de inicio actualiza el progreso y sus accesos llevan al espacio correcto", async ({ page }) => {
+  await expect(page.locator("#home-lesson-count")).toHaveText("17");
+  await expect(page.locator("#home-exercise-count")).toHaveText("45");
+  await expect(page.locator("#home-expert-count")).toHaveText("5");
+  await page.locator('[data-go="builder"]').click();
+  await expect(page.locator("#view-builder")).toBeVisible();
+  await expect(page.locator('[data-space="builder"]')).toHaveAttribute("aria-current","page");
+});
+
+test("el Constructor restaura plantillas y admite deshacer/rehacer con teclado", async ({ page }) => {
+  await page.locator('[data-space="builder"]').click();
+  await page.locator('[data-builder-preset="decision"]').click();
+  const cards=page.locator("#builder-canvas-list .builder-node-card");
+  const before=await cards.count();
+  await page.locator('[data-add-node="process"]').click();
+  await expect(cards).toHaveCount(before+1);
+  await page.locator("#view-builder").press("Control+z");
+  await expect(cards).toHaveCount(before);
+  await page.locator("#view-builder").press("Control+Shift+z");
+  await expect(cards).toHaveCount(before+1);
+});
