@@ -1,5 +1,7 @@
 import { flattenPseudocode } from "../core/parser.js";
 import { executePseudocode } from "../core/interpreter.js";
+import { buildArrowChallenge, buildGapChallenge, mixedModeOrder } from "./lab/generators.js";
+import { normalizeProgress, recordLabResult, modeStars } from "./lab/progress.js";
 
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -12,6 +14,93 @@ let predictionAnswer=null;
 let whatIfResult=null;
 let orderChecked=false;
 let errorScenario=0;
+let labAttempt=0;
+let gapHints=0;
+let mixedQueue=[];
+let labProgress=loadLabProgress();
+
+function loadLabProgress(){
+  try{
+    const saved=window.localStorage.getItem("traza:v2:progress");
+    return normalizeProgress(saved?JSON.parse(saved):null);
+  }catch{return normalizeProgress(null);}
+}
+function saveLabProgress(){
+  try{window.localStorage.setItem("traza:v2:progress",JSON.stringify(labProgress));}catch{}
+}
+function updateProgressBadges(){
+  const exerciseId=trace?.exercise?.id;
+  if(!exerciseId)return;
+  $("#lab-activity-list")?.querySelectorAll("[data-lab-activity]").forEach(button=>{
+    const stars=modeStars(labProgress,exerciseId,button.dataset.labActivity);
+    let output=button.querySelector(".activity-progress");
+    if(!output){
+      output=document.createElement("span");
+      output.className="activity-progress";
+      output.setAttribute("aria-label","Estrellas de progreso");
+      button.append(output);
+    }
+    output.textContent="★".repeat(stars)+"☆".repeat(3-stars);
+  });
+}
+function recordResult(mode,correct,hints=0){
+  const exerciseId=trace?.exercise?.id;
+  if(!exerciseId)return;
+  labProgress=recordLabResult(labProgress,{exerciseId,mode,correct,hints});
+  saveLabProgress();
+  updateProgressBadges();
+}
+function mixedAdvanceMarkup(){
+  return mixedQueue.length
+    ? '<button type="button" class="button button-secondary" id="lab-next-mixed">Siguiente reto mixto</button>'
+    : "";
+}
+function bindMixedAdvance(){
+  $("#lab-next-mixed")?.addEventListener("click",nextMixed);
+}
+function nextMixed(){
+  const next=mixedQueue.shift();
+  if(!next){
+    $("#lab-task-title").textContent="Práctica mixta completada";
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Has completado los cinco retos.</strong><p>La práctica quedó guardada en tu progreso.</p></div>';
+    return;
+  }
+  labAttempt++;
+  setActivity(next,{keepMixed:true});
+}
+function startMixedPractice(){
+  if(!requireTrace())return;
+  const pool=["predict","order","symbol","error","fill-gap","follow-arrow"];
+  mixedQueue=mixedModeOrder(trace.exercise.id,labAttempt,pool).slice(0,5);
+  nextMixed();
+}
+function addLabActivity(id,title,description,icon){
+  const list=$("#lab-activity-list");
+  if(!list||list.querySelector('[data-lab-activity="'+id+'"]'))return;
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="activity-card";
+  button.dataset.labActivity=id;
+  button.innerHTML='<span class="activity-icon" aria-hidden="true">'+icon+'</span><span><strong></strong><small></small></span><span class="activity-arrow" aria-hidden="true">›</span>';
+  button.querySelector("strong").textContent=title;
+  button.querySelector("small").textContent=description;
+  list.append(button);
+}
+function addMixedPracticeButton(){
+  const view=$("#view-lab");
+  const layout=view?.querySelector(".lab-layout");
+  if(!layout||$("#lab-start-mixed"))return;
+  const actions=document.createElement("div");
+  actions.className="lab-practice-actions";
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="button button-primary";
+  button.id="lab-start-mixed";
+  button.textContent="Empezar práctica mixta · 5 retos";
+  button.addEventListener("click",startMixedPractice);
+  actions.append(button);
+  layout.before(actions);
+}
 const symbolMap={
   input:{name:"Entrada de datos",options:["Paralelogramo","Rectángulo","Rombo"],correct:"Paralelogramo",why:"Leer recibe datos del exterior; se representa con un paralelogramo."},
   assignment:{name:"Proceso / asignación",options:["Rectángulo","Óvalo","Rombo"],correct:"Rectángulo",why:"Una asignación transforma o actualiza un valor; corresponde al símbolo de proceso."},
@@ -31,8 +120,8 @@ function publishContext(detail){
   if(!detail?.execution?.events?.length)return;
   trace=detail;
   updateLabContext();
-  if(activity==="predict")renderActivity();
-  if(activity==="table")renderActivity();
+  if(["predict","table","follow-arrow"].includes(activity))renderActivity();
+  updateProgressBadges();
 }
 function updateLabContext(){
   if(!trace)return;
@@ -66,14 +155,15 @@ function updateLabContext(){
   $("#lab-current-step").innerHTML="PASO <b>"+(index+1)+" / "+execution.events.length+"</b>";
   $("#lab-current-exercise").innerHTML="EJERCICIO <b>"+(exercise?.id??"—")+"</b>";
 }
-function setActivity(next){
+function setActivity(next,options={}){
+  if(!options.keepMixed)mixedQueue=[];
   activity=next;
   predictionAnswer=null;
   whatIfResult=null;
   orderChecked=false;
   $("#lab-activity-list").querySelectorAll("[data-lab-activity]").forEach(button=>
     button.classList.toggle("is-active",button.dataset.labActivity===next));
-  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento",order:"Ordena instrucciones",symbol:"Identifica el símbolo",error:"Encuentra el error",whatif:"¿Y si…?"};
+  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento",order:"Ordena instrucciones",symbol:"Identifica el símbolo",error:"Encuentra el error",whatif:"¿Y si…?", "fill-gap":"Completa el hueco","follow-arrow":"Sigue la flecha"};
   $("#lab-task-title").textContent=titles[next]??"Actividad";
   renderActivity();
 }
