@@ -268,3 +268,51 @@
  .concept-filter-chip,.lesson-phase,.lesson-scene-host .scene-figure{transition:none;animation:none!important}
 }
 body.has-exercise-modal{overflow:hidden}
+
+/* Variantes visuales faltantes: cada una de las 17 lecciones conserva su propio lenguaje gráfico. */
+.lesson-idea-scene[data-lesson-kind="sequence"],.lesson-visual-sequence{--lesson-scene-accent:#5b947d}
+.lesson-idea-scene[data-lesson-kind="decision-nested"],.lesson-visual-decision-nested{--lesson-scene-accent:#d38b37}
+.lesson-idea-scene[data-lesson-kind="counter"],.lesson-visual-counter{--lesson-scene-accent:#4c8db4}
+.lesson-idea-scene[data-lesson-kind="nested"],.lesson-visual-nested{--lesson-scene-accent:#ba8250}
+.lesson-idea-scene[data-lesson-kind="validation"],.lesson-visual-validation{--lesson-scene-accent:#bf6b68}
+.lesson-idea-scene[data-lesson-kind="comparison"],.lesson-visual-comparison{--lesson-scene-accent:#c18d38}
+.lesson-idea-scene[data-lesson-kind="while"],.lesson-visual-while{--lesson-scene-accent:#4f9a8e}
+.lesson-idea-scene[data-lesson-kind="do-while"],.lesson-visual-do-while{--lesson-scene-accent:#b57a4c}
+.lesson-idea-scene[data-lesson-kind="counter"] .lesson-scene-host,
+.lesson-visual-counter .lesson-scene-host{
+  background:repeating-linear-gradient(90deg,transparent 0 29px,color-mix(in srgb,var(--lesson-scene-accent) 16%,transparent) 30px 31px),var(--surface)
+}
+.lesson-idea-scene[data-lesson-kind="decision-nested"] .lesson-scene-host,
+.lesson-visual-decision-nested .lesson-scene-host{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--lesson-scene-accent) 12%,var(--surface)),var(--surface) 52%,color-mix(in srgb,var(--positive) 8%,var(--surface)))
+}
+.lesson-idea-scene[data-lesson-kind="nested"] .lesson-scene-host,
+.lesson-visual-nested .lesson-scene-host{
+  background:repeating-radial-gradient(circle at 50% 50%,transparent 0 13px,color-mix(in srgb,var(--lesson-scene-accent) 14%,transparent) 14px 15px),var(--surface)
+}
+.lesson-idea-scene[data-lesson-kind="validation"] .lesson-scene-host,
+.lesson-visual-validation .lesson-scene-host{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--danger) 9%,var(--surface)) 0 33%,var(--surface) 33% 66%,color-mix(in srgb,var(--positive) 9%,var(--surface)) 66%)
+}
+.lesson-idea-scene[data-lesson-kind="comparison"] .lesson-scene-host,
+.lesson-visual-comparison .lesson-scene-host{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--lesson-scene-accent) 10%,var(--surface)) 0 49%,transparent 49% 51%,color-mix(in srgb,var(--positive) 9%,var(--surface)) 51%)
+}
+.lesson-idea-scene[data-lesson-kind="sequence"] .lesson-scene-host,
+.lesson-visual-sequence .lesson-scene-host{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--lesson-scene-accent) 12%,var(--surface)),var(--surface) 50%,color-mix(in srgb,var(--teal) 10%,var(--surface)))
+}
+.lesson-idea-scene[data-lesson-kind="for"] .lesson-scene-host,
+.lesson-visual-for .lesson-scene-host{background:repeating-conic-gradient(from 0deg at 50% 50%,color-mix(in srgb,var(--lesson-scene-accent) 7%,var(--surface)) 0 12deg,var(--surface) 12deg 24deg)}
+.lesson-idea-scene[data-lesson-kind="while"] .lesson-scene-host,
+.lesson-visual-while .lesson-scene-host{background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--lesson-scene-accent) 16%,var(--surface)),var(--surface) 65%)}
+.lesson-idea-scene[data-lesson-kind="do-while"] .lesson-scene-host,
+.lesson-visual-do-while .lesson-scene-host{background:radial-gradient(ellipse at 50% 55%,color-mix(in srgb,var(--lesson-scene-accent) 15%,var(--surface)),var(--surface) 65%)}
+.lesson-visual .scene-figure{max-width:100%}
+.lesson-visual .scene-figure strong,.lesson-visual .scene-figure code{overflow-wrap:anywhere}
+.lesson-visual .scene-figure-host svg{max-width:100%}
+.lesson-visual[data-visual-kind="decision"] .scene-figure-host,
+.lesson-visual[data-visual-kind="decision-nested"] .scene-figure-host{--scene-pulse-color:#d38b37}
+.lesson-visual[data-visual-kind="for"] .scene-figure-host,
+.lesson-visual[data-visual-kind="while"] .scene-figure-host,
+.lesson-visual[data-visual-kind="do-while"] .scene-figure-host{--scene-pulse-color:#ba8250}
