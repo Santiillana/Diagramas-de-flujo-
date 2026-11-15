@@ -30,6 +30,175 @@ function stop(){
 }
 function method(){return exercise?.methods[methodIndex]??null;}
 
+
+const WINDOW_META=[
+  {id:"context",label:"Problema",icon:"P",selector:"#sim-window-context",side:"left"},
+  {id:"data",label:"Tus datos",icon:"D",selector:"#sim-window-data",side:"left"},
+  {id:"pseudocode",label:"Pseudocódigo",icon:"{}",selector:"#sim-window-code",side:"left"},
+  {id:"scene",label:"En escena",icon:"E",selector:"#PV",side:"right"},
+  {id:"variables",label:"Variables",icon:"V",selector:"#PR>.variables-panel",side:"right"},
+  {id:"output",label:"Pantalla",icon:"▣",selector:"#PR>.output-panel",side:"right"},
+  {id:"history",label:"Historial",icon:"H",selector:"#PR>.trace-panel",side:"right"}
+];
+const minimizedWindows=new Set(),pinnedWindows=new Set(),restoredOverrides=new Set();
+let dismissedVfStep=-1,vfRaf=0;
+function getWindowElement(id){
+  const meta=WINDOW_META.find(item=>item.id===id);
+  return meta?document.querySelector(meta.selector):null;
+}
+function persistWindowState(){
+  try{window.localStorage.setItem("traza:v2:windows",JSON.stringify({minimized:[...minimizedWindows],pinned:[...pinnedWindows]}));}catch{}
+}
+function loadWindowState(){
+  try{
+    const saved=JSON.parse(window.localStorage.getItem("traza:v2:windows")??"{}");
+    (saved.minimized??[]).forEach(id=>minimizedWindows.add(id));
+    (saved.pinned??[]).forEach(id=>pinnedWindows.add(id));
+  }catch{}
+}
+function windowCounter(id){
+  if(id==="context")return exerciseId;
+  if(id==="data")return parseInputs().length;
+  if(id==="pseudocode")return $("#pseudocode-lines")?.children.length??0;
+  if(id==="scene")return timeline?timeline.index+1:0;
+  if(id==="variables")return Object.keys(timeline?.current?.variables??{}).length;
+  if(id==="output")return timeline?.current?.outputs?.length??0;
+  return execution?.events?.length??0;
+}
+function renderWindowRail(){
+  const rail=$("#sim-window-rail");
+  if(!rail)return;
+  const compact=innerWidth<1100&&innerWidth>900;
+  const hidden=WINDOW_META.filter(meta=>{
+    const el=getWindowElement(meta.id);
+    const auto=compact&&meta.side==="left"&&!pinnedWindows.has(meta.id)&&!restoredOverrides.has(meta.id);
+    return Boolean(el?.hidden||auto);
+  });
+  rail.innerHTML=hidden.map(meta=>{
+    const count=windowCounter(meta.id);
+    return '<button type="button" class="sim-window-restore" data-window-restore="'+meta.id+'" aria-label="Restaurar '+meta.label+(count?" · "+count:"")+'" title="'+meta.label+(count?" · "+count:"")+'"><span>'+meta.icon+'</span><b>'+count+'</b></button>';
+  }).join("");
+  rail.hidden=hidden.length===0;
+}
+function applyWindowState(){
+  const compact=innerWidth<1100&&innerWidth>900;
+  for(const meta of WINDOW_META){
+    const el=getWindowElement(meta.id);
+    if(!el)continue;
+    const auto=compact&&meta.side==="left"&&!pinnedWindows.has(meta.id)&&!restoredOverrides.has(meta.id);
+    el.hidden=minimizedWindows.has(meta.id)||auto;
+    const pin=document.querySelector('[data-window-pin="'+meta.id+'"]');
+    if(pin){
+      pin.setAttribute("aria-pressed",String(pinnedWindows.has(meta.id)));
+      pin.classList.toggle("is-pinned",pinnedWindows.has(meta.id));
+      pin.title=pinnedWindows.has(meta.id)?"Desfijar ventana":"Fijar ventana";
+    }
+  }
+  renderWindowRail();
+  requestAnimationFrame(()=>{if(diagramFitWidth){updateMinimap();if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");}});
+}
+function minimizeWindow(id){
+  if(!WINDOW_META.some(item=>item.id===id))return;
+  minimizedWindows.add(id);restoredOverrides.delete(id);persistWindowState();applyWindowState();
+}
+function restoreWindow(id){
+  minimizedWindows.delete(id);
+  const meta=WINDOW_META.find(item=>item.id===id);
+  if(meta?.side==="left"&&innerWidth<1100&&innerWidth>900)restoredOverrides.add(id);
+  persistWindowState();applyWindowState();
+}
+function toggleWindowPin(id){
+  if(pinnedWindows.has(id))pinnedWindows.delete(id);
+  else pinnedWindows.add(id);
+  persistWindowState();applyWindowState();
+}
+function bindWindows(){
+  loadWindowState();
+  applyWindowState();
+  document.addEventListener("click",event=>{
+    const minimize=event.target.closest("[data-window-minimize]");
+    const pin=event.target.closest("[data-window-pin]");
+    const restore=event.target.closest("[data-window-restore]");
+    if(minimize){minimizeWindow(minimize.dataset.windowMinimize);return;}
+    if(pin){toggleWindowPin(pin.dataset.windowPin);return;}
+    if(restore){restoreWindow(restore.dataset.windowRestore);return;}
+  });
+  window.addEventListener("resize",()=>{restoredOverrides.clear();applyWindowState();});
+}
+function rectIntersects(a,b,gap=0){
+  return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap;
+}
+function contextWindowMarkup(event){
+  const name=event.change?.name??"Variable";
+  if(event.type==="input")return {
+    title:"Entra un dato",
+    body:'<div class="sim-vf-flow"><span class="sim-vf-chip">'+esc(fmt(event.value??event.change?.value))+'</span><span>↓</span><b>'+esc(name)+'</b></div><p>El siguiente valor de entrada se guarda en la variable '+esc(name)+'.</p>'
+  };
+  if(["assignment","loop-init","loop-update"].includes(event.type)&&event.change){
+    return {
+      title:"La variable cambia",
+      body:'<div class="sim-vf-flow">'+(event.change.previous===undefined?"":'<s>'+esc(fmt(event.change.previous))+'</s><span>→</span>')+'<b>'+esc(name)+'</b><strong>'+esc(fmt(event.change.value))+'</strong></div><p>'+esc(brief(event))+'</p>'
+    };
+  }
+  if(event.type==="decision"||event.type==="loop-condition"||event.type==="branch"){
+    return {
+      title:event.type==="decision"?"Decisión":"Condición del ciclo",
+      body:'<p class="sim-vf-condition">'+esc(substituteValues(event.condition??event.sourceText,event.variables))+'</p><strong class="sim-vf-result '+(event.result?"is-true":"is-false")+'">'+(event.result?"V · VERDADERA":"F · FALSA")+'</strong><p>'+(event.result?"Se sigue la rama verdadera.":"Se sigue la rama falsa.")+'</p>'
+    };
+  }
+  if(event.type==="output")return {title:"Sale en pantalla",body:'<div class="sim-vf-output">'+esc(fmt(event.value))+'</div><p>El resultado aparece en Pantalla.</p>'};
+  if(event.type==="program-end")return {title:"Algoritmo finalizado",body:'<p>El recorrido terminó. Las variables y la pantalla conservan el estado final.</p>'};
+  return {title:"Paso activo",body:'<p>'+esc(brief(event))+'</p>'};
+}
+function placeContextWindow(event){
+  const box=$("#vf"),node=document.getElementById("flow-node-"+event.nodeId);
+  if(!box||box.hidden)return;
+  const nodeRect=node?.getBoundingClientRect();
+  const width=box.offsetWidth||278,height=box.offsetHeight||132,margin=12;
+  const dockHeight=Number((getComputedStyle(document.body).getPropertyValue("--dk")||"143").replace("px",""))||143;
+  const viewport={left:12,top:matchMedia("(max-width:900px)").matches?104:64,right:innerWidth-12,bottom:innerHeight-dockHeight-24};
+  const figure=nodeRect??{left:innerWidth/2-30,top:innerHeight/2-20,right:innerWidth/2+30,bottom:innerHeight/2+20,width:60,height:40};
+  const midY=figure.top+figure.height/2,midX=figure.left+figure.width/2;
+  const candidates=[
+    {left:figure.right+margin,top:midY-height/2},
+    {left:figure.left-width-margin,top:midY-height/2},
+    {left:midX-width/2,top:figure.top-height-margin},
+    {left:midX-width/2,top:figure.bottom+margin}
+  ];
+  const obstacles=[...document.querySelectorAll("#flow-svg .flow-edges path,#flow-svg .diagram-edge-label,#PL .sim-window,#RC #PV,#PR>.panel,#dock,#hd")].filter(el=>getComputedStyle(el).display!=="none").map(el=>el.getBoundingClientRect());
+  const valid=rect=>rect.left>=viewport.left&&rect.top>=viewport.top&&rect.left+width<=viewport.right&&rect.top+height<=viewport.bottom&&
+    !rectIntersects(rect,figure,6)&&!obstacles.some(other=>rectIntersects(rect,other,4));
+  let chosen=candidates.find(valid),cable=false;
+  if(!chosen){
+    cable=true;
+    chosen={left:Math.max(viewport.left,Math.min(viewport.right-width,figure.right+margin)),top:Math.max(viewport.top,Math.min(viewport.bottom-height,midY-height/2))};
+  }
+  box.style.left=chosen.left+"px";box.style.top=chosen.top+"px";
+  box.dataset.cable=String(cable);
+  box.dataset.anchorNode=String(event.nodeId??"");
+}
+function showContextWindow(event){
+  const box=$("#vf");
+  if(!box||!event||timeline?.index===dismissedVfStep)return;
+  const view=contextWindowMarkup(event);
+  $("#vf-title").textContent=view.title;
+  $("#vf-content").innerHTML=view.body;
+  box.hidden=false;
+  if(vfRaf)cancelAnimationFrame(vfRaf);
+  const started=performance.now();
+  const track=now=>{
+    placeContextWindow(event);
+    if(now-started<620)vfRaf=requestAnimationFrame(track);
+    else vfRaf=0;
+  };
+  vfRaf=requestAnimationFrame(track);
+}
+function closeContextWindow(){
+  dismissedVfStep=timeline?.index??-1;
+  const box=$("#vf");if(box)box.hidden=true;
+  if(vfRaf)cancelAnimationFrame(vfRaf);vfRaf=0;
+}
+
 function paintExerciseSelector(){
   const host=$("#sim-exercise-strip");
   if(!host)return;
@@ -435,6 +604,7 @@ function render(){
     });
   }
   centerActiveNode(e);
+  showContextWindow(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
   $("#scene-content").dataset.eventType=e.type;
@@ -703,6 +873,8 @@ function bind(){
   $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
   $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
   $("#simulator-shortcuts-close")?.addEventListener("click",()=>{$("#simulator-shortcuts").hidden=true;});
+  $("#vf-close")?.addEventListener("click",closeContextWindow);
+  bindWindows();
   document.addEventListener("fullscreenchange",updateFullscreenButton);
   $("#variables-content").addEventListener("click",event=>{
     const button=event.target.closest("[data-variable-history]");
