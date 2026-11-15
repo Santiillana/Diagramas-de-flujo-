@@ -926,7 +926,7 @@ body[data-active-space="simulator"]{
   --ok:var(--traza-green);
   --no:var(--traza-pink);
   --info:var(--traza-blue);
-  --fs:17px;
+  --fs:17;
   background:
     radial-gradient(1200px 700px at 50% 30%,rgba(40,70,160,.28),transparent 60%),
     radial-gradient(900px 600px at 88% 92%,rgba(110,50,180,.20),transparent 60%),
@@ -1299,3 +1299,10 @@ body[data-active-space="simulator"] .flow-token-label{
 @media(max-width:900px){
   body[data-active-space="simulator"] .sim-tool-button{font-size:11px}
 }
+
+body[data-active-space="simulator"] #wrap{
+  background-size:20px 20px,20px 20px,100px 100px,100px 100px!important;
+}
+body[data-active-space="simulator"].focus #vf{display:none!important}
+body[data-active-space="simulator"].focus #simulator-question{bottom:88px}
+body[data-active-space="simulator"].focus #diagram-stage .diagram-fullscreen-exit{position:fixed}
