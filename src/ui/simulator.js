@@ -642,7 +642,6 @@ function applyCanvasTransform(){
   }
 }
 function buildRouteGraph(){
-function buildRouteGraph(){
   routeGraph=new Map();routeWeights=new Map();routeCache.clear();
   if(!diagram)return;
   for(const id of diagram.byId.keys())routeGraph.set(String(id),[]);
