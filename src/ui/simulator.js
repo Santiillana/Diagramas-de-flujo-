@@ -549,7 +549,7 @@ function bind(){
   });
   $("#simulator-text-smaller").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize-1));
   $("#simulator-text-larger").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize+1));
-  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(16));
+  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(17));
   $("#diagram-camera-toggle").addEventListener("click",()=>{
     cameraAuto=!cameraAuto;updateCameraButton();
     if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");

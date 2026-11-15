@@ -40,15 +40,18 @@ for (const viewport of [
   });
 }
 
-test("el dock ocupa su propia fila y no cubre el diagrama", async ({ page }) => {
+test("el dock flota sobre el lienzo sin consumir una fila del simulador", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const diagram = await page.locator(".diagram-panel").boundingBox();
   const dock = await page.locator(".execution-dock").boundingBox();
-  expect(diagram).not.toBeNull();
+  const stage = await page.locator("#wrap").boundingBox();
+  const position = await page.locator(".execution-dock").evaluate(element => getComputedStyle(element).position);
   expect(dock).not.toBeNull();
-  expect(dock.y).toBeGreaterThanOrEqual(diagram.y + diagram.height);
+  expect(stage).not.toBeNull();
+  expect(position).toBe("fixed");
+  expect(Math.abs(1000 - dock.y - dock.height - 10)).toBeLessThanOrEqual(2);
+  expect(dock.y + dock.height).toBeGreaterThan(stage.y + stage.height - 1);
 });
 
 test("tema y movimiento reducido responden a controles y preferencia del sistema", async ({ page }) => {
