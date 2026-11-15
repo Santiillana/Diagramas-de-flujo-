@@ -397,9 +397,8 @@ function paintExerciseSelector(){
     const queryMatch=!query||(String(item.id)+" "+item.title+" "+(labels[item.level]??item.level)).toLocaleLowerCase("es").includes(query);
     return levelMatch&&queryMatch;
   });
-  if(selected&&!filtered.some(item=>item.id===selected.id))filtered.unshift(selected);
   select.innerHTML=filtered.map(item=>'<option value="'+item.id+'">'+String(item.id).padStart(2,"0")+' · '+esc(item.title)+'</option>').join("");
-  select.value=String(exerciseId);
+  select.value=filtered.some(item=>String(item.id)===String(exerciseId))?String(exerciseId):String(filtered[0]?.id??"");
   host.setAttribute("aria-label","Ejercicio actual: "+(selected?.title??"sin seleccionar"));
 }
 function openLabActivity(activity){
