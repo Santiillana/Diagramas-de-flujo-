@@ -153,3 +153,15 @@ test("el constructor comprueba el diagrama contra todos los casos del ejercicio 
  await expect(page.locator("#builder-oracle-results")).toContainText("de 6 casos superados");
  await expect(page.locator("#builder-oracle-results")).toContainText("Primer caso no superado");
 });
+
+test("la validación del Constructor muestra cada caso y la traza del primer contraejemplo",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="builder"]').click();
+ await page.locator('[data-builder-preset="for"]').click();
+ await page.locator("#builder-oracle-exercise").selectOption("14");
+ await page.locator("#builder-oracle-run").click();
+ await expect(page.locator(".builder-oracle-case-list li")).toHaveCount(6);
+ await expect(page.locator(".builder-oracle-case-list li.is-wrong")).toHaveCount(4);
+ await page.locator(".builder-oracle-counterexample summary").click();
+ await expect(page.locator(".builder-oracle-counterexample li").first()).toBeVisible();
+});

@@ -2,6 +2,7 @@ import { escapeHTML as esc } from "./escape.js";
 import { makeNode, createFlowPreset, validateFlow, compileFlow } from "../core/flow-compiler.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
 import { exercises } from "../content/exercises.js";
+import { referenceOutput } from "../content/reference-oracle.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 
@@ -343,27 +344,29 @@ function runOracleChecks(){
   if(!item)return;
   const scenarios=item.methods.flatMap(method=>method.tests.map(scenario=>({method:method.name,...scenario})));
   const results=scenarios.map(scenario=>{
+    const expected=referenceOutput(item.id,scenario.input);
     try{
       const execution=executePseudocode(compiled.source,scenario.input);
-      const expected=scenario.expected;
       const actual=execution.outputs??[];
       const equal=execution.ok&&actual.length===expected.length&&actual.every((value,index)=>{
         const reference=expected[index];
         return typeof reference==="number"&&typeof value==="number"?
           Math.abs(value-reference)<1e-9:value===reference;
       });
-      return {...scenario,passed:equal,actual:actual.map(fmt).join(", ")||"Sin salida",expected:expected.map(fmt).join(", ")||"Sin salida",error:execution.error?.message};
+      return {...scenario,passed:equal,actual:actual.map(fmt).join(", ")||"Sin salida",expected:expected.map(fmt).join(", ")||"Sin salida",error:execution.error?.message,trace:execution.events??[]};
     }catch(error){
-      return {...scenario,passed:false,actual:"Error de ejecución",expected:scenario.expected.map(fmt).join(", "),error:error.message};
+      return {...scenario,passed:false,actual:"Error de ejecución",expected:expected.map(fmt).join(", ")||"Sin salida",error:error.message,trace:[]};
     }
   });
   const passed=results.filter(result=>result.passed).length;
   const failed=results.find(result=>!result.passed);
   const host=$("#builder-oracle-results");
   host.innerHTML='<strong>'+passed+' de '+results.length+' casos superados</strong>'+
+    '<ul class="builder-oracle-case-list">'+results.map(result=>'<li class="'+(result.passed?"is-correct":"is-wrong")+'"><b>'+(result.passed?"PASA":"FALLA")+'</b> · '+esc(result.method)+' · '+esc(result.name)+'<span>Esperado: '+esc(result.expected)+' · obtenido: '+esc(result.actual)+'</span></li>').join("")+'</ul>'+
     (passed===results.length?'<p>Tu diagrama coincide con todos los casos de referencia de este ejercicio.</p>':
     '<p>Primer caso no superado: <b>'+esc(failed.method)+' · '+esc(failed.name)+'</b></p><p>Esperado: <code>'+esc(failed.expected)+'</code> · Obtenido: <code>'+esc(failed.actual)+'</code></p>'+
-    (failed.error?'<p>'+esc(failed.error)+'</p>':''));
+    (failed.error?'<p>'+esc(failed.error)+'</p>':'')+
+    '<details class="builder-oracle-counterexample"><summary>Ver traza del contraejemplo paso a paso</summary><ol>'+failed.trace.map((event,index)=>'<li><b>Paso '+(index+1)+' · '+esc(event.scene?.title??event.type)+'</b><span>'+esc(event.scene?.body??event.message??"")+'</span>'+(Object.keys(event.variables??{}).length?'<code>'+esc(JSON.stringify(event.variables))+'</code>':'')+(event.outputs?.length?'<code>Salida: '+esc(event.outputs.map(fmt).join(", "))+'</code>':'')+'</li>').join("")+'</ol></details>'));
   host.classList.toggle("is-correct",passed===results.length);
   host.classList.toggle("is-wrong",passed!==results.length);
 }
