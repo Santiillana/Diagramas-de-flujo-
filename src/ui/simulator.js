@@ -38,98 +38,50 @@ function method(){return exercise?.methods[methodIndex]??null;}
 
 
 const WINDOW_META=[
-  {id:"context",label:"Problema",icon:"P",selector:"#sim-window-context",side:"left"},
-  {id:"data",label:"Tus datos",icon:"D",selector:"#sim-window-data",side:"left"},
-  {id:"pseudocode",label:"Pseudocódigo",icon:"{}",selector:"#sim-window-code",side:"left"},
-  {id:"scene",label:"En escena",icon:"E",selector:"#PV",side:"right"},
-  {id:"variables",label:"Variables",icon:"V",selector:"#PR>.variables-panel",side:"right"},
-  {id:"output",label:"Pantalla",icon:"▣",selector:"#PR>.output-panel",side:"right"},
-  {id:"history",label:"Historial",icon:"H",selector:"#PR>.trace-panel",side:"right"}
+  {id:"context",label:"Problema",selector:"#sim-window-context"},
+  {id:"pseudocode",label:"Pseudocódigo",selector:"#sim-window-code"},
+  {id:"scene",label:"En escena",selector:"#PV"},
+  {id:"variables",label:"Variables",selector:"#PR"}
 ];
-const minimizedWindows=new Set(),pinnedWindows=new Set(),restoredOverrides=new Set();
-let dismissedVfStep=-1,vfRaf=0;
+const hiddenWindows=new Set();
+let dismissedVfStep=-1,vfRaf=0,contextTimer=0;
 function getWindowElement(id){
   const meta=WINDOW_META.find(item=>item.id===id);
   return meta?document.querySelector(meta.selector):null;
 }
 function persistWindowState(){
-  try{window.localStorage.setItem("traza:v2:windows",JSON.stringify({minimized:[...minimizedWindows],pinned:[...pinnedWindows]}));}catch{}
+  try{localStorage.setItem("traza:v3:windows",JSON.stringify([...hiddenWindows]));}catch{}
 }
 function loadWindowState(){
   try{
-    const saved=JSON.parse(window.localStorage.getItem("traza:v2:windows")??"{}");
-    (saved.minimized??[]).forEach(id=>minimizedWindows.add(id));
-    (saved.pinned??[]).forEach(id=>pinnedWindows.add(id));
+    const saved=JSON.parse(localStorage.getItem("traza:v3:windows")||"[]");
+    if(Array.isArray(saved))saved.filter(id=>WINDOW_META.some(item=>item.id===id)).forEach(id=>hiddenWindows.add(id));
   }catch{}
 }
-function windowCounter(id){
-  if(id==="context")return exerciseId;
-  if(id==="data")return parseInputs().length;
-  if(id==="pseudocode")return $("#pseudocode-lines")?.children.length??0;
-  if(id==="scene")return timeline?timeline.index+1:0;
-  if(id==="variables")return Object.keys(timeline?.current?.variables??{}).length;
-  if(id==="output")return timeline?.current?.outputs?.length??0;
-  return execution?.events?.length??0;
-}
-function renderWindowRail(){
-  const rail=$("#sim-window-rail");
-  if(!rail)return;
-  const compact=innerWidth<1100&&innerWidth>900;
-  const hidden=WINDOW_META.filter(meta=>{
-    const el=getWindowElement(meta.id);
-    const auto=compact&&meta.side==="left"&&!pinnedWindows.has(meta.id)&&!restoredOverrides.has(meta.id);
-    return Boolean(el?.hidden||auto);
-  });
-  rail.innerHTML=hidden.map(meta=>{
-    const count=windowCounter(meta.id);
-    return '<button type="button" class="sim-window-restore" data-window-restore="'+meta.id+'" aria-label="Restaurar '+meta.label+(count?" · "+count:"")+'" title="'+meta.label+(count?" · "+count:"")+'"><span>'+meta.icon+'</span><b>'+count+'</b></button>';
-  }).join("");
-  rail.hidden=hidden.length===0;
-}
 function applyWindowState(){
-  const compact=innerWidth<1100&&innerWidth>900;
   for(const meta of WINDOW_META){
-    const el=getWindowElement(meta.id);
-    if(!el)continue;
-    const auto=compact&&meta.side==="left"&&!pinnedWindows.has(meta.id)&&!restoredOverrides.has(meta.id);
-    el.hidden=minimizedWindows.has(meta.id)||auto;
-    const pin=document.querySelector('[data-window-pin="'+meta.id+'"]');
-    if(pin){
-      pin.setAttribute("aria-pressed",String(pinnedWindows.has(meta.id)));
-      pin.classList.toggle("is-pinned",pinnedWindows.has(meta.id));
-      pin.title=pinnedWindows.has(meta.id)?"Desfijar ventana":"Fijar ventana";
-    }
+    const element=getWindowElement(meta.id);
+    if(element)element.hidden=hiddenWindows.has(meta.id);
+    const toggle=document.querySelector('[data-window-toggle="'+meta.id+'"]');
+    if(toggle)toggle.checked=!hiddenWindows.has(meta.id);
   }
-  renderWindowRail();
   requestAnimationFrame(()=>{if(diagramFitWidth&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");});
 }
-function minimizeWindow(id){
+function setWindowVisible(id,visible){
   if(!WINDOW_META.some(item=>item.id===id))return;
-  minimizedWindows.add(id);restoredOverrides.delete(id);persistWindowState();applyWindowState();
-}
-function restoreWindow(id){
-  minimizedWindows.delete(id);
-  const meta=WINDOW_META.find(item=>item.id===id);
-  if(meta?.side==="left"&&innerWidth<1100&&innerWidth>900)restoredOverrides.add(id);
-  persistWindowState();applyWindowState();
-}
-function toggleWindowPin(id){
-  if(pinnedWindows.has(id))pinnedWindows.delete(id);
-  else pinnedWindows.add(id);
+  if(visible)hiddenWindows.delete(id);else hiddenWindows.add(id);
   persistWindowState();applyWindowState();
 }
 function bindWindows(){
-  loadWindowState();
-  applyWindowState();
-  document.addEventListener("click",event=>{
-    const minimize=event.target.closest("[data-window-minimize]");
-    const pin=event.target.closest("[data-window-pin]");
-    const restore=event.target.closest("[data-window-restore]");
-    if(minimize){minimizeWindow(minimize.dataset.windowMinimize);return;}
-    if(pin){toggleWindowPin(pin.dataset.windowPin);return;}
-    if(restore){restoreWindow(restore.dataset.windowRestore);return;}
+  loadWindowState();applyWindowState();
+  document.querySelectorAll("[data-window-toggle]").forEach(toggle=>{
+    toggle.addEventListener("change",()=>setWindowVisible(toggle.dataset.windowToggle,toggle.checked));
   });
-  window.addEventListener("resize",()=>{restoredOverrides.clear();applyWindowState();});
+  document.querySelector("[data-hide-all-windows]")?.addEventListener("click",()=>{
+    for(const meta of WINDOW_META)hiddenWindows.add(meta.id);
+    persistWindowState();applyWindowState();
+  });
+  window.addEventListener("resize",()=>applyWindowState());
 }
 function rectIntersects(a,b,gap=0){
   return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap;
