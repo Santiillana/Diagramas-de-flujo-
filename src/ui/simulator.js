@@ -532,6 +532,15 @@ function applyDiagramZoom(){
   svg.style.width=diagramFitWidth+"px";svg.style.height=diagramFitHeight+"px";
   applyCanvasTransform();
 }
+function setPseudocodeSize(size){
+  pseudocodeSize=Math.max(13,Math.min(26,size));
+  document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
+  document.body.style.setProperty("--fs",String(pseudocodeSize));
+  const smaller=$("#simulator-text-smaller"),larger=$("#simulator-text-larger");
+  if(smaller)smaller.disabled=pseudocodeSize<=13;
+  if(larger)larger.disabled=pseudocodeSize>=26;
+  try{window.localStorage.setItem("traza:v2:pseudocode-size",String(pseudocodeSize));}catch{}
+}
 function fitDiagram(){
   const stage=$("#diagram-stage"),svg=$("#flow-svg"),canvas=$("#flow-diagram-container");
   if(!stage||!svg||!diagram)return;
