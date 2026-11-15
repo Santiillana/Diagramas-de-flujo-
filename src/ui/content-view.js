@@ -2,6 +2,7 @@ import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
 import { renderScene } from "./scenes/index.js";
+import { parsePseudocode } from "../core/parser.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -25,9 +26,19 @@ let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
 let exerciseClassOnly = false;
+let exerciseCategory = "all";
 let exercisePage = 0;
 const PAGE_SIZE = 12;
 const CLASS_EXERCISES = new Set([22,23,24,28]);
+
+function exerciseCategories(item){
+  const categories=new Set();
+  const labels={input:"Entrada",assignment:"Proceso",output:"Salida",if:"Decisión",for:"Repetición",while:"Repetición",doWhile:"Repetición"};
+  const walk=nodes=>{for(const node of nodes){if(labels[node.type])categories.add(labels[node.type]);if(node.type==="if"){walk(node.thenBody);walk(node.elseBody);}if(["for","while","doWhile"].includes(node.type))walk(node.body);}};
+  for(const method of item.methods){try{walk(parsePseudocode(method.pseudocode).body);}catch{}}
+  return [...categories];
+}
+
 
 function readLearnProgress(){
   try{
@@ -187,8 +198,9 @@ function renderExerciseCards(){
   const filtered=exercises.filter(item=>{
     const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
     const matchesClass=!exerciseClassOnly||CLASS_EXERCISES.has(item.id);
+    const matchesCategory=exerciseCategory==="all"||exerciseCategories(item).includes(exerciseCategory);
     const searchable=[item.title,item.statement,item.purpose,...item.concepts].join(" ").toLocaleLowerCase("es");
-    return matchesLevel&&matchesClass&&(!query||searchable.includes(query)||String(item.id)===query);
+    return matchesLevel&&matchesClass&&matchesCategory&&(!query||searchable.includes(query)||String(item.id)===query);
   });
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE)); exercisePage=Math.min(exercisePage,pages-1);
   const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
@@ -318,6 +330,7 @@ function bindContentEvents(){
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});
+  $("#exercise-category")?.addEventListener("change",event=>{exerciseCategory=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#view-exercises")?.addEventListener("click",event=>{if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}});
   $("#exercise-grid")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-select-exercise]");
