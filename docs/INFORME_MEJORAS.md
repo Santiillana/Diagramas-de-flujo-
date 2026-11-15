@@ -86,3 +86,12 @@ El trabajo está implementado en la rama de mejoras, pero todavía no se declara
 - Fase 6 implementada: panel de inicio integrado al espacio de Ejercicios, con accesos rápidos y progreso guardado; Constructor con historial de 60 estados, deshacer/rehacer y atajos de teclado.
 - Fase 7 en validación: se agregaron oráculos independientes para los cinco ejercicios expertos, pruebas de ejecución de las 17 lecciones y pruebas de navegador para catálogo, filtros, paginación e historial del Constructor.
 - PR #7 abierto contra main. La rama no está fusionada. La aceptación depende de que la última ejecución de CI pase Node y Playwright y de revisar sus capturas.
+
+
+## Resultado final de validación — 15 de noviembre de 2026
+
+- GitHub Actions, ejecución 43676037183: correcta en el commit e0965e061c9ff7c59f58fefba695a675ba23f75c.
+- Pruebas Node: 259 aprobadas, 0 fallidas.
+- Pruebas Playwright: 41 aprobadas, 0 fallidas.
+- Capturas visuales de escritorio, tableta y móvil generadas y cargadas como artefacto ui-audit-6d586d57f574e1ab1be50f01d8e2b5a57d705362.
+- La PR #7 está abierta contra main y los checks están en verde. No se fusionó; main permanece intacta.
