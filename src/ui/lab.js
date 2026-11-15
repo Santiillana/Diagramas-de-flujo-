@@ -345,9 +345,42 @@ function renderOrder(){
   if(!orderedLines.length||orderedLines.length!==lines.length)orderedLines=[...lines].reverse();
   $("#lab-task-content").innerHTML=
     '<p class="lab-muted">Reordena las instrucciones para reconstruir el pseudocódigo original. Este ejercicio no modifica la ejecución que aparece a la izquierda.</p>'+
-    '<ol class="lab-sort-list">'+orderedLines.map((line,index)=>'<li><code>'+esc(line)+'</code><span class="lab-sort-controls"><button type="button" data-order-up="'+index+'" '+(index===0?"disabled":"")+' aria-label="Subir instrucción">↑</button><button type="button" data-order-down="'+index+'" '+(index===orderedLines.length-1?"disabled":"")+' aria-label="Bajar instrucción">↓</button></span></li>').join("")+'</ol>'+
+    '<ol class="lab-sort-list">'+orderedLines.map((line,index)=>'<li draggable="true" data-order-item="'+index+'"><span class="lab-drag-grip" aria-hidden="true">⠿</span><code>'+esc(line)+'</code><span class="lab-sort-controls"><button type="button" data-order-up="'+index+'" '+(index===0?"disabled":"")+' aria-label="Subir instrucción">↑</button><button type="button" data-order-down="'+index+'" '+(index===orderedLines.length-1?"disabled":"")+' aria-label="Bajar instrucción">↓</button></span></li>').join("")+'</ol>'+
     '<div class="lab-task-actions"><button type="button" class="button button-secondary" id="lab-order-reset">Mezclar de nuevo</button><button type="button" class="button button-primary" id="lab-order-check">Comprobar orden</button></div>'+
     '<div id="lab-order-feedback" class="lab-feedback" role="status">'+(orderChecked?"Orden comprobado.":"")+'</div>';
+  const sortList=$("#lab-task-content .lab-sort-list");
+  let dragIndex=null;
+  sortList.addEventListener("dragstart",event=>{
+    const item=event.target.closest("[data-order-item]");
+    if(!item)return;
+    dragIndex=Number(item.dataset.orderItem);
+    item.classList.add("is-dragging");
+    event.dataTransfer.effectAllowed="move";
+    event.dataTransfer.setData("text/plain",String(dragIndex));
+  });
+  sortList.addEventListener("dragover",event=>{
+    const item=event.target.closest("[data-order-item]");
+    if(dragIndex===null||!item)return;
+    event.preventDefault();
+    sortList.querySelectorAll(".is-drop-target").forEach(node=>node.classList.remove("is-drop-target"));
+    item.classList.add("is-drop-target");
+  });
+  sortList.addEventListener("drop",event=>{
+    const item=event.target.closest("[data-order-item]");
+    if(dragIndex===null||!item)return;
+    event.preventDefault();
+    const to=Number(item.dataset.orderItem);
+    if(Number.isInteger(to)&&to!==dragIndex){
+      const [moving]=orderedLines.splice(dragIndex,1);
+      orderedLines.splice(to,0,moving);
+      orderChecked=false;renderOrder();
+    }
+    dragIndex=null;
+  });
+  sortList.addEventListener("dragend",()=>{
+    dragIndex=null;
+    sortList.querySelectorAll(".is-dragging,.is-drop-target").forEach(node=>node.classList.remove("is-dragging","is-drop-target"));
+  });
   $("#lab-order-reset").addEventListener("click",()=>{orderedLines=[...lines].reverse();orderChecked=false;renderOrder();});
   $("#lab-order-check").addEventListener("click",()=>{
     const correct=orderedLines.every((line,index)=>line===lines[index]);
