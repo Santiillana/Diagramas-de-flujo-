@@ -83,3 +83,22 @@ test("los controles de ciclo saltan a la siguiente vuelta y permiten salir",asyn
  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-exit");
  await expect(exitLoop).toBeDisabled();
 });
+
+test("el progreso conserva pistas usadas y diagnostica errores frecuentes",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="1"]').click();
+ await page.locator("[data-exercise-hint]").click();
+ await expect(page.locator("[data-gate-feedback]")).toContainText("Pista 1");
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1 pistas usadas");
+ await page.locator("[data-reveal-solution]").click();
+ await page.locator("[data-solution-input]").fill("2,3");
+ await page.locator("[data-solution-prediction]").fill("[6]");
+ await page.locator("[data-run-solution]").click();
+ await expect(page.locator("[data-solution-feedback]")).toContainText("Posible confusión");
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1 errores por revisar");
+ await page.reload();
+ await page.locator('[data-space="exercises"]').click();
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1 pistas usadas");
+ await expect(page.locator("#exercise-progress-summary")).toContainText("1 errores por revisar");
+});

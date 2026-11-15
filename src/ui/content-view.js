@@ -302,7 +302,7 @@ function runCustomExercisePrediction(){
   }else if(matchesReference===true){
     const diagnostic=selectedExercise.errors?.[0]??"Compara el orden de las operaciones y el valor de las variables.";
     recordExercisePredictionError(selectedExercise.id,diagnostic);
-    feedback.textContent="El método coincide con la salida de referencia, pero tu predicción fue distinta. Posible confusión: "+diagnostic+" "+actualText;
+    feedback.textContent="El método coincide con la salida de referencia, pero tu predicción no coincide. Posible confusión: "+diagnostic+" "+actualText;
     feedback.classList.add("is-wrong");
   }else if(matchesReference===false&&matchesPrediction===true){
     feedback.textContent="Predijiste correctamente lo que hace este método, pero el resultado no coincide con la referencia. El método necesita revisión. "+actualText;
