@@ -468,6 +468,7 @@ function bindDiagramPan(){
   document.addEventListener("pointerdown",event=>{
     if(!insideStage(event))return;
     const target=event.target instanceof Element?event.target:null;
+    if(target&&!stage.contains(target))return;
     if(target?.closest("button,.diagram-header-tools"))return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
     panState={
