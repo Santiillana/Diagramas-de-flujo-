@@ -72,3 +72,20 @@ test("cada escena devuelve una descripción accesible no vacía",()=>{
     assert.ok(scene.markup.length>0,event.type);
   }
 });
+
+test("las condiciones compuestas muestran el valor de cada parte y el resultado conjunto",()=>{
+  const execution=executePseudocode("leer a,b|si a>0 Y b<5|imp a|fin",[2,7]);
+  const event=execution.events.find(item=>item.type==="decision");
+  const model=renderScene(event,{execution,events:execution.events}).model;
+  assert.equal(model.condition.parts.length,2);
+  assert.deepEqual(model.condition.parts.map(item=>item.result),[true,false]);
+  assert.equal(model.condition.result,false);
+});
+
+test("la escena de proceso muestra la expresión con los valores de la ejecución",()=>{
+  const execution=executePseudocode("leer n|n=n+1|imp n",[4]);
+  const event=execution.events.find(item=>item.type==="assignment");
+  const model=renderScene(event,{execution,events:execution.events,inputValues:[4]}).model;
+  assert.equal(model.substituted,"4+1");
+  assert.equal(model.role,"contador");
+});
