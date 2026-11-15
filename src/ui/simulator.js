@@ -1344,7 +1344,7 @@ function bindDiagramPan(){
 }
 
 function setMobilePanel(name){
-  const valid=["problem","diagram","scene","variables","output","history"];
+  const valid=["problem","diagram","scene","variables"];
   if(!valid.includes(name))return;
   document.body.dataset.simulatorMobilePanel=name;
   $("#simulator-mobile-tabs")?.querySelectorAll("[data-mobile-panel]").forEach(button=>{
@@ -1353,37 +1353,41 @@ function setMobilePanel(name){
     button.tabIndex=active?0:-1;
   });
 }
+function setPresentationMode(value){
+  const mode=value==="complete"?"complete":"appear";
+  document.body.dataset.presentationMode=mode;
+  try{localStorage.setItem("traza:v3:presentation-mode",mode);}catch{}
+  const control=$("#simulator-presentation-mode");if(control)control.value=mode;
+}
+function toggleControls(open){
+  const panel=$("#simulator-controls-panel"),button=$("#simulator-controls-toggle");
+  if(!panel||!button)return;
+  const visible=typeof open==="boolean"?open:panel.hidden;
+  panel.hidden=!visible;
+  button.setAttribute("aria-expanded",String(visible));
+  button.classList.toggle("is-active",visible);
+  if(visible)$("#sim-exercise-search")?.focus({preventScroll:true});
+}
+
 function bind(){
   $("#sim-exercise-strip")?.addEventListener("input",event=>{
-    if(event.target.id==="sim-exercise-search"||event.target.id==="sim-exercise-level-filter")paintExerciseSelector();
+    if(["sim-exercise-search","sim-exercise-level-filter"].includes(event.target.id))paintExerciseSelector();
   });
   $("#sim-exercise-strip")?.addEventListener("change",event=>{
     if(event.target.id!=="sim-exercise-select")return;
     exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
   });
-  $("#simulator-exercise-nav-toggle")?.addEventListener("click",event=>{
-    const nav=$("#simulator-exercise-nav"),toggle=event.currentTarget;
-    if(!nav)return;
-    const open=!nav.classList.contains("is-open");
-    nav.classList.toggle("is-open",open);
-    toggle.setAttribute("aria-expanded",String(open));
-    toggle.setAttribute("aria-label",open?"Cerrar navegación numerada de ejercicios":"Abrir navegación numerada de ejercicios");
-    if(open)nav.querySelector('[data-exercise-shortcut="'+exerciseId+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
-  });
-  $("#simulator-exercise-nav")?.addEventListener("click",event=>{
+  $("#simulator-controls-toggle")?.addEventListener("click",()=>toggleControls());
+  $("#simulator-controls-panel")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-exercise-shortcut]");
     if(!button)return;
-    $("#simulator-exercise-nav").classList.remove("is-open");
-    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
-    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
-    exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;prepare();showChallengeGate();
+    exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;
+    prepare();toggleControls(false);
   });
   document.addEventListener("pointerdown",event=>{
-    const nav=$("#simulator-exercise-nav");
-    if(!nav?.classList.contains("is-open")||event.target.closest("#simulator-exercise-nav,#simulator-exercise-nav-toggle"))return;
-    nav.classList.remove("is-open");
-    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
-    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
+    const panel=$("#simulator-controls-panel");
+    if(!panel||panel.hidden||event.target.closest("#simulator-controls-panel,#simulator-controls-toggle"))return;
+    toggleControls(false);
   });
   $("#simulator-method-tabs")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-method-index]");
@@ -1391,15 +1395,6 @@ function bind(){
     const next=Number(button.dataset.methodIndex);
     if(!Number.isInteger(next)||next<0||next>=exercise.methods.length||next===methodIndex)return;
     methodIndex=next;prepare();
-  });
-  $("#simulator-challenge-reveal")?.addEventListener("click",()=>{
-    hideChallengeGate(true);
-  });
-  $("#simulator-challenge-skip")?.addEventListener("change",event=>setChallengeSkip(event.target.checked));
-  $("#simulator-challenge-reopen")?.addEventListener("click",()=>showChallengeGate(true));
-  $("#simulator-practice-actions")?.addEventListener("click",event=>{
-    const button=event.target.closest("[data-simulator-practice]");
-    if(button)openLabActivity(button.dataset.simulatorPractice);
   });
   $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
   $("#focus-predict")?.addEventListener("click",()=>{togglePredictionMode();showFocusControls();});
@@ -1409,39 +1404,25 @@ function bind(){
     if(event.target.closest("#simulator-question-reveal"))revealPrediction();
     if(event.target.closest("#simulator-question-close")){predictionPending=null;$("#simulator-question").hidden=true;}
   });
-  $("#simulator-panel-toggle")?.addEventListener("click",()=>{
-    const hidden=document.body.dataset.simulatorPanels==="hidden";
-    document.body.dataset.simulatorPanels=hidden?"visible":"hidden";
-    $("#simulator-panel-toggle").setAttribute("aria-pressed",String(!hidden));
-    $("#simulator-panel-toggle").setAttribute("aria-label",hidden?"Ocultar paneles":"Mostrar paneles");
-  });
+  $("#simulator-presentation-mode")?.addEventListener("change",event=>setPresentationMode(event.target.value));
   $("#simulator-mobile-tabs")?.addEventListener("click",event=>{
     const tab=event.target.closest("[data-mobile-panel]");
     if(tab)setMobilePanel(tab.dataset.mobilePanel);
   });
-  $("#scene-minimize").addEventListener("click",()=>{
-    const panel=document.querySelector(".scene-panel");
-    const button=$("#scene-minimize");
-    const collapsed=panel.classList.toggle("is-collapsed");
-    button.setAttribute("aria-expanded",String(!collapsed));
-    button.setAttribute("aria-label",collapsed?"Expandir explicación":"Minimizar explicación");
-    button.title=collapsed?"Expandir explicación":"Minimizar explicación";
-    button.textContent=collapsed?"+":"−";
-  });
-  $("#simulator-run").addEventListener("click",run);
-  $("#simulator-restore-inputs").addEventListener("click",()=>{
+  $("#simulator-run")?.addEventListener("click",run);
+  $("#simulator-restore-inputs")?.addEventListener("click",()=>{
     $("#simulator-inputs").value=defaultInputSample.join(", ");
     run();
   });
-  $("#simulator-text-smaller").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize-1));
-  $("#simulator-text-larger").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize+1));
-  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(17));
-  $("#diagram-camera-toggle").addEventListener("click",()=>{
+  $("#simulator-text-smaller")?.addEventListener("click",()=>setPseudocodeSize(pseudocodeSize-1));
+  $("#simulator-text-larger")?.addEventListener("click",()=>setPseudocodeSize(pseudocodeSize+1));
+  $("#simulator-text-reset")?.addEventListener("click",()=>setPseudocodeSize(17));
+  $("#diagram-camera-toggle")?.addEventListener("click",()=>{
     cameraAuto=!cameraAuto;updateCameraButton();
     if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
   });
-  $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
-  $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
+  $("#diagram-fullscreen")?.addEventListener("click",toggleDiagramFullscreen);
+  $("#diagram-fullscreen-exit")?.addEventListener("click",toggleDiagramFullscreen);
   $("#focus-previous")?.addEventListener("click",()=>{move(-1);showFocusControls();});
   $("#focus-next")?.addEventListener("click",()=>{move(1);showFocusControls();});
   $("#focus-progress")?.addEventListener("input",event=>{seek(Number(event.target.value));showFocusControls();});
@@ -1463,78 +1444,70 @@ function bind(){
     }
     updateFullscreenButton();
   });
-  $("#variables-content").addEventListener("click",event=>{
-    const button=event.target.closest("[data-variable-history]");
-    if(button){selectedVariable=button.dataset.variableHistory;render();}
+  $("#variables-content")?.addEventListener("click",event=>{
+    const card=event.target.closest("[data-variable-history]");
+    if(card){selectedVariable=card.dataset.variableHistory;render();}
   });
-  $("#variable-history").addEventListener("click",event=>{
+  $("#variable-history")?.addEventListener("click",event=>{
     if(event.target.closest("#variable-history-clear")){selectedVariable=null;render();return;}
     const row=event.target.closest("[data-variable-step]");
     if(row)seek(Number(row.dataset.variableStep));
   });
-  $("#simulator-method").addEventListener("change",event=>{
-    methodIndex=Number(event.target.value)||0;
-    prepare();
+  $("#simulator-method")?.addEventListener("change",event=>{
+    methodIndex=Number(event.target.value)||0;prepare();
   });
-  $("#simulator-inputs").addEventListener("keydown",event=>{
+  $("#simulator-inputs")?.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();run();}
   });
-  $("#simulator-first").addEventListener("click",()=>seek(0));
-  $("#simulator-previous").addEventListener("click",()=>move(-1));
-  $("#simulator-next").addEventListener("click",()=>move(1));
-  $("#simulator-last").addEventListener("click",()=>seek((timeline?.length??1)-1));
-  $("#simulator-play").addEventListener("click",play);
-  $("#simulator-timeline").addEventListener("input",event=>seek(Number(event.target.value)));
-  $("#simulator-speed").addEventListener("change",()=>{
+  $("#simulator-first")?.addEventListener("click",()=>seek(0));
+  $("#simulator-previous")?.addEventListener("click",()=>move(-1));
+  $("#simulator-next")?.addEventListener("click",()=>move(1));
+  $("#simulator-last")?.addEventListener("click",()=>seek((timeline?.length??1)-1));
+  $("#simulator-play")?.addEventListener("click",play);
+  $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
+  $("#simulator-speed")?.addEventListener("change",()=>{
+    document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
     if(timer!==null){stop();play();}
   });
-  $("#trace-history").addEventListener("click",event=>{
+  $("#trace-history")?.addEventListener("click",event=>{
     const row=event.target.closest("[data-history-step]");if(row)seek(Number(row.dataset.historyStep));
   });
-  $("#trace-history").addEventListener("keydown",event=>{
+  $("#trace-history")?.addEventListener("keydown",event=>{
     if((event.key==="Enter"||event.key===" ")&&event.target.matches("[data-history-step]")){
       event.preventDefault();seek(Number(event.target.dataset.historyStep));
     }
   });
-  $("#diagram-zoom-in").addEventListener("click",()=>zoomDiagram(1));
-  $("#diagram-zoom-out").addEventListener("click",()=>zoomDiagram(-1));
-  $("#diagram-fit").addEventListener("click",centerDiagram);
-  $("#sim-camera-follow")?.addEventListener("click",setCameraFollowing);
+  $("#diagram-zoom-in")?.addEventListener("click",()=>zoomDiagram(1));
+  $("#diagram-zoom-out")?.addEventListener("click",()=>zoomDiagram(-1));
+  $("#diagram-fit")?.addEventListener("click",centerDiagram);
   bindDiagramPan();
   document.addEventListener("keydown",event=>{
     const target=event.target;
     if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
     if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
-    if(key==="Escape"&&!$("#simulator-challenge")?.hidden){event.preventDefault();hideChallengeGate(true);return;}
-    if(key==="Escape"&&$("#simulator-exercise-nav")?.classList.contains("is-open")){
-      event.preventDefault();$("#simulator-exercise-nav").classList.remove("is-open");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");return;
-    }
+    if(key==="Escape"&&$("#simulator-controls-panel")&&!$("#simulator-controls-panel").hidden){event.preventDefault();toggleControls(false);return;}
     if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
     else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
     else if(key==="Home"){event.preventDefault();seek(0);}
     else if(key==="End"){event.preventDefault();seek((timeline?.length??1)-1);}
-    else if(key==="+"||key==="="){event.preventDefault();zoomDiagram(1);}
-    else if(key==="-"){event.preventDefault();zoomDiagram(-1);}
     else if(key==="0"){event.preventDefault();centerDiagram();}
     else if(key.toLowerCase()==="c"){event.preventDefault();if(cameraAuto)setCameraFree();else setCameraFollowing();}
     else if(key.toLowerCase()==="p"){event.preventDefault();togglePredictionMode();}
-    else if(key.toLowerCase()==="h"){event.preventDefault();document.body.dataset.simulatorPanels=document.body.dataset.simulatorPanels==="hidden"?"visible":"hidden";requestAnimationFrame(()=>fitDiagram());}
     else if(key.toLowerCase()==="f"){event.preventDefault();toggleDiagramFullscreen();}
     else if(key==="?"){event.preventDefault();const help=$("#simulator-shortcuts");if(help)help.hidden=!help.hidden;}
   });
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
-    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();});
+    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
   });
   syncDockHeight();
   const dock=$("#dock");
   if(dock&&"ResizeObserver" in window){
-    const dockObserver=new ResizeObserver(()=>syncDockHeight());
-    dockObserver.observe(dock);
+    const dockObserver=new ResizeObserver(()=>syncDockHeight());dockObserver.observe(dock);
   }
   const stage=$("#diagram-stage");
   if(stage&&"ResizeObserver" in window){
@@ -1544,11 +1517,9 @@ function bind(){
     });
     observer.observe(stage);
   }
-  const freeAreaObserver=new ResizeObserver(()=>{
-    requestAnimationFrame(()=>{
-      if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-    });
-  });
+  const freeAreaObserver=new ResizeObserver(()=>requestAnimationFrame(()=>{
+    if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+  }));
   for(const selector of ["#hd","#PL","#RC","#dock","#simulator-mobile-tabs"]){
     const element=$(selector);if(element)freeAreaObserver.observe(element);
   }
@@ -1558,17 +1529,21 @@ function bind(){
     methodIndex=Number(event.detail?.methodIndex)||0;
     selectedVariable=null;
     prepare();
+    requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
   });
   document.addEventListener("traza:jump-to-step",event=>{
     if(Number.isInteger(event.detail?.index))seek(event.detail.index);
   });
   document.addEventListener("traza:lab-sync-request",publishTrace);
 }
+
 export function initSimulator(){
   if(!$("#simulator-run"))return;
   setPseudocodeSize(readPseudocodeSize());
   paintExerciseSelector();
   document.documentElement.style.setProperty("--fs",String(pseudocodeSize));
+  setPresentationMode((()=>{try{return localStorage.getItem("traza:v3:presentation-mode")||"appear";}catch{return "appear";}})());
+  document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
   syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();
