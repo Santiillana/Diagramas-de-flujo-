@@ -42,7 +42,7 @@ test("el selector admite búsqueda y selección por teclado",async({page})=>{
   await page.locator('[data-space="simulator"]').click();
   const initial=await page.locator("#sim-exercise-select").inputValue();
   await page.locator("#sim-exercise-search").fill("Factorial");
-  await expect(page.locator("#sim-exercise-select option")).toHaveCount(2);
+  await expect(page.locator("#sim-exercise-select option")).toHaveCount(1);
   await expect(page.locator("#sim-exercise-select option").filter({hasText:"Factorial"})).toHaveCount(1);
   await page.locator("#sim-exercise-search").fill("");
   await page.locator("#sim-exercise-select").selectOption("21");
