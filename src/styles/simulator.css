@@ -118,7 +118,7 @@
 .pseudocode-size-controls button{min-width:25px;height:25px;border:1px solid var(--line);border-radius:6px;color:var(--muted-strong);background:var(--surface);font-size:13px;font-weight:800;cursor:pointer}
 .pseudocode-size-controls button:hover{border-color:var(--accent);color:var(--accent)}
 .pseudocode-size-controls button:disabled{opacity:.35;cursor:default}
-.pseudocode-lines li{font-size:max(13px,var(--pseudocode-font-size,14px))}
+.pseudocode-lines li{font-size:max(13px,var(--pseudocode-font-size,16px))}
 .simulator-diagram-stage{cursor:grab;touch-action:pan-x pan-y}
 .simulator-diagram-stage.is-panning{cursor:grabbing;user-select:none}
 .simulator-diagram-stage:fullscreen{width:100vw;height:100vh;max-height:none;padding:clamp(16px,4vw,56px);background:var(--canvas);border:0;border-radius:0}
