@@ -12,6 +12,7 @@ const LEVELS = {
   basic:{label:"Básico",className:"level-basic"},
   intermediate:{label:"Intermedio",className:"level-intermediate"},
   advanced:{label:"Avanzado",className:"level-advanced"},
+  expert:{label:"Experto",className:"level-expert"},
   expert:{label:"Experto",className:"level-expert"}
 };
 let selectedLesson = lessons[0].id;
@@ -24,6 +25,10 @@ let exerciseRevealed = false;
 let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
+let exerciseClassOnly = false;
+let exercisePage = 0;
+const PAGE_SIZE = 12;
+const CLASS_EXERCISES = new Set([22,23,24,28]);
 let exerciseClassOnly = false;
 let exercisePage = 0;
 const PAGE_SIZE = 12;
