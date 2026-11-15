@@ -7,7 +7,7 @@ test("el renderer admite prefijos de IDs para que varias vistas compartan el mis
  const renderer=await read("../src/diagram/renderer.js");
  assert.match(renderer,/idPrefix=String\(options\.idPrefix\?\?""\)/);
  assert.match(renderer,/data-diagram-node-id/);
- assert.match(renderer,/escape\(idPrefix\).*flow-svg/);
- assert.match(renderer,/escape\(idPrefix\).*flow-arrow/);
+ assert.match(renderer,/escape\(idPrefix\)[\\s\\S]*flow-svg/);
+ assert.match(renderer,/escape\(idPrefix\)[\\s\\S]*flow-arrow/);
  assert.match(renderer,/dataset\.diagramNodeId/);
 });
