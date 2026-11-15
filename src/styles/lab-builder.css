@@ -154,3 +154,13 @@
 .lab-trace-answer.is-correct{border-color:var(--positive);background:var(--positive-soft)}
 .lab-trace-answer.is-wrong{border-color:var(--danger);background:var(--danger-soft)}
 .lab-trace-table td{min-width:90px}
+
+.builder-oracle-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px;margin-top:12px}
+.builder-oracle-controls .builder-field{min-width:0}
+.builder-oracle-controls .button{min-height:40px;white-space:normal}
+.builder-oracle-results{margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:9px;color:var(--muted-strong);background:var(--surface-soft);font-size:13px;line-height:1.55}
+.builder-oracle-results strong{color:var(--ink)}
+.builder-oracle-results p{margin:5px 0 0}
+.builder-oracle-results.is-correct{border-color:var(--positive);background:var(--positive-soft)}
+.builder-oracle-results.is-wrong{border-color:var(--warning);background:var(--warning-soft)}
+@media(max-width:760px){.builder-oracle-controls{grid-template-columns:1fr}}

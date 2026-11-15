@@ -1,6 +1,7 @@
 import { escapeHTML as esc } from "./escape.js";
 import { makeNode, createFlowPreset, validateFlow, compileFlow } from "../core/flow-compiler.js";
 import { executePseudocode, createTimeline } from "../core/interpreter.js";
+import { exercises } from "../content/exercises.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 
@@ -334,6 +335,44 @@ function runBuilder(){
     $("#builder-errors").innerHTML='<p class="builder-error-message">'+esc(error.message)+'</p>';
   }
 }
+
+function runOracleChecks(){
+  const compiled=validate();
+  if(!compiled)return;
+  const item=exercises.find(exercise=>exercise.id===Number($("#builder-oracle-exercise").value));
+  if(!item)return;
+  const scenarios=item.methods.flatMap(method=>method.tests.map(scenario=>({method:method.name,...scenario})));
+  const results=scenarios.map(scenario=>{
+    try{
+      const execution=executePseudocode(compiled.source,scenario.input);
+      const expected=scenario.expected;
+      const actual=execution.outputs??[];
+      const equal=execution.ok&&actual.length===expected.length&&actual.every((value,index)=>{
+        const reference=expected[index];
+        return typeof reference==="number"&&typeof value==="number"?
+          Math.abs(value-reference)<1e-9:value===reference;
+      });
+      return {...scenario,passed:equal,actual:actual.map(fmt).join(", ")||"Sin salida",expected:expected.map(fmt).join(", ")||"Sin salida",error:execution.error?.message};
+    }catch(error){
+      return {...scenario,passed:false,actual:"Error de ejecución",expected:scenario.expected.map(fmt).join(", "),error:error.message};
+    }
+  });
+  const passed=results.filter(result=>result.passed).length;
+  const failed=results.find(result=>!result.passed);
+  const host=$("#builder-oracle-results");
+  host.innerHTML='<strong>'+passed+' de '+results.length+' casos superados</strong>'+
+    (passed===results.length?'<p>Tu diagrama coincide con todos los casos de referencia de este ejercicio.</p>':
+    '<p>Primer caso no superado: <b>'+esc(failed.method)+' · '+esc(failed.name)+'</b></p><p>Esperado: <code>'+esc(failed.expected)+'</code> · Obtenido: <code>'+esc(failed.actual)+'</code></p>'+
+    (failed.error?'<p>'+esc(failed.error)+'</p>':''));
+  host.classList.toggle("is-correct",passed===results.length);
+  host.classList.toggle("is-wrong",passed!==results.length);
+}
+function populateOracleExercises(){
+  const select=$("#builder-oracle-exercise");
+  if(!select)return;
+  select.innerHTML=exercises.map(item=>'<option value="'+item.id+'">Ejercicio '+String(item.id).padStart(2,"0")+' · '+esc(item.title)+'</option>').join("");
+}
+
 function bindBuilder(){
   $("#builder-canvas-list").addEventListener("click",event=>{
     const select=event.target.closest("[data-select-node]");
@@ -364,6 +403,7 @@ function bindBuilder(){
   }));
   $("#builder-validate").addEventListener("click",validate);
   $("#builder-run").addEventListener("click",runBuilder);
+  $("#builder-oracle-run").addEventListener("click",runOracleChecks);
   $("#builder-timeline").addEventListener("input",event=>{
     if(!runtimeTimeline)return;
     seekBuilder(Number(event.target.value));
@@ -374,6 +414,7 @@ function bindBuilder(){
   $("#builder-last").addEventListener("click",()=>seekBuilder((runtimeTimeline?.length??1)-1));
 }
 export function initBuilder(){
+  populateOracleExercises();
   if(!$("#builder-canvas-list"))return;
   bindBuilder();
   renderEditor();

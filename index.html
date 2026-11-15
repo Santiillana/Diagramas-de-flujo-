@@ -253,6 +253,11 @@
         <div class="builder-preview-grid">
           <section class="builder-preview-column"><p class="eyebrow">PSEUDOCÓDIGO COMPILADO</p><pre id="builder-code" class="builder-code">Añade instrucciones y valida el flujo.</pre>
             <label class="builder-field"><span>DATOS DE ENTRADA</span><input id="builder-inputs" type="text" placeholder="Ejemplo: 8" autocomplete="off"></label>
+            <div class="builder-oracle-controls">
+              <label class="builder-field"><span>COMPROBAR CONTRA UN EJERCICIO</span><select id="builder-oracle-exercise" aria-label="Ejercicio de referencia"></select></label>
+              <button type="button" class="button button-secondary" id="builder-oracle-run">Probar con casos de referencia</button>
+            </div>
+            <div id="builder-oracle-results" class="builder-oracle-results" role="status" aria-live="polite">Selecciona un ejercicio para comprobar tu algoritmo contra sus casos de referencia.</div>
             <div id="builder-runtime-message" class="builder-runtime-message" role="status">El constructor aún no ha generado una ejecución.</div>
           </section>
           <section class="builder-preview-column"><p class="eyebrow">DIAGRAMA SVG</p><div id="builder-diagram" class="builder-diagram"><p class="empty-state-copy">El SVG aparecerá cuando el diagrama sea válido.</p></div></section>
