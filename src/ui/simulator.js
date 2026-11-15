@@ -354,6 +354,11 @@ function render(){
   $("#simulator-next").disabled=timeline.index>=timeline.length-1;
   $("#simulator-last").disabled=timeline.index>=timeline.length-1;
   $("#simulator-play").disabled=timeline.index>=timeline.length-1;
+  const activeLoop=(e.loopStack??[]).at(-1);
+  const nextIteration=activeLoop&&execution.events.findIndex((item,index)=>index>timeline.index&&item.type==="loop-enter"&&item.nodeId===activeLoop.nodeId&&item.iteration>activeLoop.iteration);
+  const loopExit=activeLoop&&execution.events.findIndex((item,index)=>index>timeline.index&&item.type==="loop-exit"&&item.nodeId===activeLoop.nodeId);
+  $("#simulator-next-loop").disabled=!(activeLoop&&nextIteration>=0);
+  $("#simulator-exit-loop").disabled=!(activeLoop&&loopExit>=0);
   if(e.type==="error"){
     $("#simulator-status").textContent="DETENIDO · "+e.message;
     $("#simulator-status").classList.add("simulator-status-error");
@@ -394,6 +399,22 @@ function move(delta){
   timeline.seek(timeline.index+delta);render();
   if(timeline.index===timeline.length-1)stop();
 }
+
+function jumpToNextLoopIteration(){
+  if(!timeline||!execution)return;
+  const activeLoop=(timeline.current?.loopStack??[]).at(-1);
+  if(!activeLoop)return;
+  const index=execution.events.findIndex((item,i)=>i>timeline.index&&item.type==="loop-enter"&&item.nodeId===activeLoop.nodeId&&item.iteration>activeLoop.iteration);
+  if(index>=0)seek(index);
+}
+function exitCurrentLoop(){
+  if(!timeline||!execution)return;
+  const activeLoop=(timeline.current?.loopStack??[]).at(-1);
+  if(!activeLoop)return;
+  const index=execution.events.findIndex((item,i)=>i>timeline.index&&item.type==="loop-exit"&&item.nodeId===activeLoop.nodeId);
+  if(index>=0)seek(index);
+}
+
 function speedFactor(){return Number($("#simulator-speed")?.value)||1;}
 function setSpeedFactor(value){
   const selected=SPEEDS.reduce((best,item)=>Math.abs(item-value)<Math.abs(best-value)?item:best,SPEEDS[0]);
@@ -445,6 +466,7 @@ function bindKeyboard(){
       case "-":event.preventDefault();zoomDiagram(-1);break;
       case "0":event.preventDefault();fitDiagram();break;
       case "c":case "C":event.preventDefault();$("#diagram-camera-toggle").click();break;
+      case "n":case "N":event.preventDefault();jumpToNextLoopIteration();break;
       case "p":case "P":event.preventDefault();togglePredictionMode();break;
       case "f":case "F":event.preventDefault();toggleDiagramFullscreen();break;
     }
@@ -660,6 +682,8 @@ function bind(){
   $("#simulator-first").addEventListener("click",()=>seek(0));
   $("#simulator-previous").addEventListener("click",()=>move(-1));
   $("#simulator-next").addEventListener("click",()=>move(1));
+  $("#simulator-next-loop").addEventListener("click",jumpToNextLoopIteration);
+  $("#simulator-exit-loop").addEventListener("click",exitCurrentLoop);
   $("#simulator-last").addEventListener("click",()=>seek((timeline?.length??1)-1));
   $("#simulator-play").addEventListener("click",play);
   $("#simulator-timeline").addEventListener("input",event=>seek(Number(event.target.value)));

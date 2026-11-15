@@ -64,3 +64,20 @@ test("el enlace de compartir identifica el método seleccionado",async({page})=>
  await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/metodo=1/);
  await expect(page.locator("[data-share-feedback]")).not.toBeEmpty();
 });
+
+test("los controles de ciclo saltan a la siguiente vuelta y permiten salir",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="simulator"]').click();
+ await page.locator("#simulator-exercise-picker [data-simulator-exercise='10']").click();
+ await page.locator("#simulator-run").click();
+ const nextLoop=page.locator("#simulator-next-loop");
+ const exitLoop=page.locator("#simulator-exit-loop");
+ await expect(nextLoop).toBeDisabled();
+ await page.locator("#simulator-timeline").fill("3");
+ await expect(nextLoop).toBeEnabled();
+ await nextLoop.click();
+ await expect(page.locator("#dock-step-title")).toContainText("loop-enter");
+ await expect(exitLoop).toBeEnabled();
+ await exitLoop.click();
+ await expect(exitLoop).toBeDisabled();
+});
