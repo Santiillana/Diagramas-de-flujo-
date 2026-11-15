@@ -21,6 +21,15 @@ let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
 let projectorActive = false;
+let sharedExerciseData=null;
+let onboardingStep=-1;
+function hasCompletedOnboarding(){try{return localStorage.getItem("traza-onboarding-complete")==="true";}catch{return false;}}
+const onboardingSteps=[
+  {title:"Elige un reto",body:"Cada ficha reúne el objetivo, las entradas, las salidas y las restricciones del problema."},
+  {title:"Piensa antes de revelar",body:"En modo reto, escribe qué datos entran, qué proceso aplicarías y qué resultado esperas."},
+  {title:"Pide una pista",body:"Las pistas se liberan en orden. Puedes avanzar sin mostrar todavía la solución completa."},
+  {title:"Ejecuta y compara",body:"Revela el método, prueba tus propios datos y compara tu predicción con la ejecución real."}
+];
 const EXERCISE_PROGRESS_KEY = "traza-exercise-progress-v1";
 let exerciseProgress = readExerciseProgress();
 
