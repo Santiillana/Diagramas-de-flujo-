@@ -320,3 +320,255 @@
 
 .dock-loop-round{display:inline-flex;width:max-content;margin:3px 0 0;padding:4px 9px;border:1px solid var(--fig-loop);border-radius:999px;color:var(--ink);background:color-mix(in srgb,var(--fig-loop) 16%,var(--surface));font-size:13px;font-weight:800}
 .dock-loop-round[hidden]{display:none}
+
+/* TRAZA: compositor inmersivo derivado de los bloques v1-v5 de la referencia original */
+body[data-active-space="simulator"]{
+  --bg:#111b24;--grid:#1b2b37;--card:#1a2733;--ink:#e8eff4;--pen:#9fb0bc;--line:#34495a;
+  --hl:#ffd23f;--ok:#3ccf8e;--no:#ff6b85;--info:#7aa8ff;--fs:17;--dk:150px;--k:1;
+  overflow:hidden;background:var(--bg);color:var(--ink)
+}
+html[data-theme="light"] body[data-active-space="simulator"]{
+  --bg:#f4f7f2;--grid:#d6e4ea;--card:#fff;--ink:#1f2b36;--pen:#55656f;--line:#c9d3da;
+  --hl:#ffd23f;--ok:#1d9a62;--no:#d23c57;--info:#2c6bdc
+}
+body[data-active-space="simulator"] .topbar#hd{
+  position:fixed;z-index:70;inset:0 0 auto;height:54px;min-height:54px;width:100%;max-width:none;margin:0;
+  display:flex;align-items:center;gap:10px;padding:0 12px;border:0;border-bottom:1px solid var(--line);
+  color:var(--ink);background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px)
+}
+body[data-active-space="simulator"] .brand{flex:0 0 auto;gap:7px}
+body[data-active-space="simulator"] .brand-mark{width:30px;height:30px;border-radius:9px}
+body[data-active-space="simulator"] .brand-mark svg{width:22px;height:22px}
+body[data-active-space="simulator"] .brand-copy strong{font-size:18px;letter-spacing:-.7px}
+body[data-active-space="simulator"] .brand-copy small{display:none}
+body[data-active-space="simulator"] .primary-nav{display:flex;flex:0 0 auto;gap:2px;min-width:0;overflow:visible}
+body[data-active-space="simulator"] .primary-nav .nav-button{min-height:34px;padding:0 7px;border-radius:8px;font-size:13px;white-space:nowrap}
+body[data-active-space="simulator"] .primary-nav .nav-index{display:none}
+.simulator-toolbar{display:none}
+body[data-active-space="simulator"] .simulator-toolbar{display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:0}
+.sim-exercise-strip{display:flex;align-items:center;gap:4px;flex:1 1 250px;min-width:90px;max-width:440px;overflow-x:auto;overflow-y:hidden;padding:4px 1px;scrollbar-width:thin}
+.sim-exercise-chip{flex:0 0 27px;width:27px;height:27px;padding:0;border:2px solid var(--sim-level);border-radius:50%;color:var(--ink);background:var(--card);font:750 10px/1 ui-monospace,monospace;cursor:pointer}
+.sim-exercise-chip.level-basic{--sim-level:#1d9a62}
+.sim-exercise-chip.level-intermediate{--sim-level:#2c6bdc}
+.sim-exercise-chip.level-advanced{--sim-level:#c2338f}
+.sim-exercise-chip.is-selected{color:#111b24;background:var(--sim-level);box-shadow:0 0 0 2px color-mix(in srgb,var(--sim-level) 25%,transparent)}
+.sim-toolbar-controls{display:flex;align-items:center;gap:3px;flex:0 0 auto}
+.sim-tool-button{display:grid;place-items:center;min-width:32px;height:34px;padding:0 6px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:color-mix(in srgb,var(--card) 88%,transparent);font-size:14px;font-weight:750;cursor:pointer}
+.sim-tool-button:hover{border-color:var(--info);color:var(--info)}
+.sim-tool-button[aria-pressed="true"]{color:var(--hl);border-color:var(--hl);background:color-mix(in srgb,var(--hl) 10%,var(--card))}
+body[data-active-space="simulator"] .topbar-actions{display:flex;flex:0 0 auto;gap:3px}
+body[data-active-space="simulator"] .topbar-actions .icon-button{width:32px;height:32px}
+body[data-active-space="simulator"] #main-content.page-shell{width:100%;max-width:none;margin:0;padding:0}
+body[data-active-space="simulator"] #main-content>.page-heading,
+body[data-active-space="simulator"] .simulator-intro{display:none}
+body[data-active-space="simulator"] .simulator-view{display:block;position:static;width:100%;min-height:0;margin:0;padding:0}
+body[data-active-space="simulator"] .simulator-mobile-tabs{display:none}
+body[data-active-space="simulator"] .simulator-grid{
+  display:block!important;position:fixed;z-index:1;inset:54px 0 0;width:100vw;height:auto;margin:0;padding:0;
+  grid-template-columns:none;grid-template-areas:none;overflow:visible;pointer-events:none
+}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+  position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:hidden;border:0;border-radius:0;background:transparent;box-shadow:none;pointer-events:none
+}
+body[data-active-space="simulator"] .diagram-heading,
+body[data-active-space="simulator"] .diagram-legend{display:none!important}
+body[data-active-space="simulator"] #wrap.sim-wrap{
+  position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;overflow:hidden;
+  border:0;border-radius:0;background-color:var(--bg);
+  background-image:linear-gradient(to right,var(--grid) 1px,transparent 1px),linear-gradient(to bottom,var(--grid) 1px,transparent 1px);
+  background-size:20px 20px;pointer-events:auto
+}
+body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+  position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:hidden;overscroll-behavior:none;border:0;border-radius:0;background:transparent;touch-action:none;cursor:grab
+}
+body[data-active-space="simulator"] #diagram-stage.is-panning{cursor:grabbing}
+body[data-active-space="simulator"] #flow-diagram-container{
+  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;margin:0;padding:0;overflow:visible;transform-origin:0 0;will-change:transform;pointer-events:none
+}
+body[data-active-space="simulator"] #flow-diagram-container .flow-svg{display:block;width:auto;height:auto;min-width:0;max-width:none;overflow:visible;color:var(--pen)}
+body[data-active-space="simulator"] .diagram-empty{position:absolute;inset:45% 10px auto;text-align:center;pointer-events:none}
+body[data-active-space="simulator"] .canvas-coordinate{display:none}
+body[data-active-space="simulator"] .problem-panel#PL{
+  position:fixed;z-index:20;top:64px;left:10px;bottom:auto;width:calc(var(--fs)*21px);max-width:calc(100vw - 20px);
+  max-height:calc(100vh - var(--dk) - 86px);display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);
+  box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] .problem-panel#PL>.panel-heading{flex:0 0 auto;padding:12px 14px;border-bottom:1px solid var(--line)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-problem-body{flex:1 1 auto;min-height:0;padding:8px 14px 14px;overflow:auto;overscroll-behavior:contain}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-exercise-title{font-size:1.18em;color:var(--ink)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-statement{font-size:.9em;line-height:1.45;color:var(--pen)}
+body[data-active-space="simulator"] .sim-context-notes{display:grid;gap:8px;margin:8px 0 12px}
+body[data-active-space="simulator"] .sim-context-notes section{padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--card) 68%,transparent)}
+body[data-active-space="simulator"] .sim-context-notes h4{margin:0 0 3px;color:var(--info);font-size:.78em}
+body[data-active-space="simulator"] .sim-context-notes p{margin:0;color:var(--pen);font-size:.78em;line-height:1.4}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field{margin:8px 0}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field>span{color:var(--pen)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field input,
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field select{
+  min-height:40px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card);font-size:.9em
+}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-help{font-size:.76em;color:var(--pen)}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-heading{margin:12px 0 6px}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines{
+  max-height:270px;overflow:auto;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--card) 78%,transparent)
+}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines li{
+  grid-template-columns:28px 1fr;padding:4px 8px;color:var(--pen);font:calc(var(--fs)*.82px)/1.45 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines li.is-active{color:#1f2b36;background:#ffe27a;box-shadow:inset 3px 0 #ffd23f}
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  position:fixed;z-index:20;top:64px;right:10px;bottom:calc(var(--dk) + 22px);width:min(calc(var(--fs)*30px),34vw);
+  display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;pointer-events:none
+}
+body[data-active-space="simulator"] #PV.scene-panel{
+  position:relative;flex:0 0 calc(var(--fs)*20px);height:calc(var(--fs)*20px);min-height:0;display:flex;flex-direction:column;
+  overflow:hidden;padding:0;border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] #PV>.panel-heading{flex:0 0 auto;padding:10px 14px;border-bottom:1px solid var(--line)}
+body[data-active-space="simulator"] #PV #scene-content{flex:1 1 auto;min-height:0;overflow:auto;padding:9px 14px 12px}
+body[data-active-space="simulator"] #PR.sim-right-content{
+  display:grid;grid-template-rows:minmax(155px,auto) minmax(115px,auto) minmax(120px,1fr);gap:10px;
+  flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;pointer-events:auto
+}
+body[data-active-space="simulator"] #PR>.panel{
+  min-width:0;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;
+  color:var(--ink);background:color-mix(in srgb,var(--card) 90%,transparent);
+  backdrop-filter:blur(8px);box-shadow:0 8px 28px rgba(0,0,0,.2)
+}
+body[data-active-space="simulator"] #PR>.variables-panel{display:flex;flex-direction:column}
+body[data-active-space="simulator"] #PR .variables-content{flex:0 1 auto;min-height:50px;max-height:120px;overflow:auto;padding:4px 12px}
+body[data-active-space="simulator"] #PR .variables-table{font-size:.82em}
+body[data-active-space="simulator"] #PR .variable-change{padding:6px 12px;font-size:.78em;color:var(--pen)}
+body[data-active-space="simulator"] #PR .variable-history{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 12px 10px}
+body[data-active-space="simulator"] #PR>.output-panel{display:flex;flex-direction:column}
+body[data-active-space="simulator"] #PR .simulator-output{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;color:var(--ok);background:#07120f;font-size:.82em}
+body[data-active-space="simulator"] #PR>.trace-panel{display:flex;flex-direction:column;min-height:0}
+body[data-active-space="simulator"] #PR .trace-history{flex-direction:column;overflow:auto;min-height:0;padding:4px 12px 10px}
+body[data-active-space="simulator"] #PR .trace-history li{flex:0 0 auto;width:100%;min-height:48px}
+body[data-active-space="simulator"] #dock.simulator-dock{
+  position:fixed;z-index:45;left:50%;right:auto;bottom:10px;transform:translateX(-50%);
+  display:grid;grid-template-columns:minmax(190px,1fr) auto minmax(160px,1.2fr) auto;align-items:center;
+  gap:10px;width:min(920px,calc(100vw - 20px));min-width:0;margin:0;padding:9px 14px;
+  border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 8px 28px rgba(0,0,0,.22);
+  pointer-events:auto
+}
+body[data-active-space="simulator"] #dock .dock-description{min-width:0;gap:9px}
+body[data-active-space="simulator"] #dock .dock-description strong{display:block;color:var(--ink);font-size:.98em;line-height:1.25}
+body[data-active-space="simulator"] #dock .dock-description small{display:block;color:var(--pen);font-size:.77em;line-height:1.3}
+body[data-active-space="simulator"] #dock .dock-controls{display:flex;align-items:center;gap:4px}
+body[data-active-space="simulator"] #dock .transport-button{width:40px;height:40px;min-width:40px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--card)}
+body[data-active-space="simulator"] #dock .transport-play{width:44px;height:44px;border-radius:50%;color:#17212a;background:var(--hl);border-color:var(--hl)}
+body[data-active-space="simulator"] #dock .timeline-block{min-width:100px}
+body[data-active-space="simulator"] #dock .timeline-label{display:flex;justify-content:space-between;gap:8px;color:var(--pen);font-size:.72em}
+body[data-active-space="simulator"] #dock .timeline-range{width:100%;accent-color:var(--hl)}
+body[data-active-space="simulator"] #dock .dock-speed{display:grid;gap:3px;color:var(--pen);font-size:.7em}
+body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card);font-size:1em}
+body[data-active-space="simulator"] .diagram-node rect,
+body[data-active-space="simulator"] .diagram-node polygon,
+body[data-active-space="simulator"] .diagram-node path,
+body[data-active-space="simulator"] .diagram-node circle{fill:var(--card);stroke:var(--line);stroke-width:1.8;vector-effect:non-scaling-stroke}
+body[data-active-space="simulator"] .diagram-node.is-visited rect,
+body[data-active-space="simulator"] .diagram-node.is-visited polygon,
+body[data-active-space="simulator"] .diagram-node.is-visited path{fill:color-mix(in srgb,var(--ok) 16%,var(--card));stroke:var(--ok)}
+body[data-active-space="simulator"] .diagram-node.is-active rect,
+body[data-active-space="simulator"] .diagram-node.is-active polygon,
+body[data-active-space="simulator"] .diagram-node.is-active path{fill:#ffe27a;stroke:#ffd23f;stroke-width:3}
+body[data-active-space="simulator"] .diagram-node.is-active text{fill:#1f2b36;font-weight:800}
+body[data-active-space="simulator"] .diagram-node text{fill:var(--ink);font:calc(var(--fs)*.85px) system-ui,sans-serif;text-anchor:middle}
+body[data-active-space="simulator"] .diagram-edge path{fill:none;stroke:var(--pen);stroke-width:1.8}
+body[data-active-space="simulator"] .diagram-edge.is-route-active path{stroke:var(--ok);stroke-width:3}
+body[data-active-space="simulator"] .diagram-edge-label{fill:var(--pen);font:700 15px ui-monospace,monospace}
+body[data-active-space="simulator"] .scene-event-title{font-size:1em;color:var(--ink)}
+body[data-active-space="simulator"] .scene-event-body,
+body[data-active-space="simulator"] .scene-event-technical{font-size:.82em;color:var(--pen)}
+body[data-active-space="simulator"] .scene-event-technical{border-color:var(--line);background:color-mix(in srgb,var(--card) 72%,transparent)}
+body[data-active-space="simulator"] .panel-heading h3{font-size:1.02em;color:var(--ink)}
+body[data-active-space="simulator"] .panel-heading .eyebrow{color:var(--pen)}
+body[data-active-space="simulator"] .panel-index{color:var(--info);border-color:var(--line)}
+body[data-active-space="simulator"] .sim-glass{isolation:isolate}
+body[data-active-space="simulator"] [data-sim-hidden="true"]{display:none!important}
+body[data-active-space="simulator"][data-simulator-panels="hidden"] #PL,
+body[data-active-space="simulator"][data-simulator-panels="hidden"] #RC{display:none!important}
+body[data-active-space="simulator"] .problem-panel#PL,
+body[data-active-space="simulator"] #RC{font-size:calc(var(--fs)*1px)}
+@media(max-width:1250px) and (min-width:901px){
+  body[data-active-space="simulator"] .brand{display:none}
+  body[data-active-space="simulator"] .primary-nav .nav-button{padding-inline:5px;font-size:12px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:280px}
+  body[data-active-space="simulator"] .sim-tool-button{min-width:29px;padding-inline:4px}
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .topbar#hd{
+    height:94px;min-height:94px;padding:4px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:39px 43px;gap:2px 6px
+  }
+  body[data-active-space="simulator"] .brand{display:none}
+  body[data-active-space="simulator"] .primary-nav{grid-column:1/-1;grid-row:1;width:100%;padding-right:72px;overflow-x:auto;justify-content:flex-start}
+  body[data-active-space="simulator"] .primary-nav .nav-button{flex:0 0 auto;min-height:36px;padding-inline:8px;font-size:12px}
+  body[data-active-space="simulator"] .topbar-actions{position:absolute;right:7px;top:7px;z-index:3}
+  body[data-active-space="simulator"] .simulator-toolbar{grid-column:1/-1;grid-row:2;width:100%;min-width:0;gap:5px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:150px;flex:1 1 95px}
+  body[data-active-space="simulator"] .sim-exercise-chip{flex-basis:25px;width:25px;height:25px}
+  body[data-active-space="simulator"] .sim-toolbar-controls{gap:2px;min-width:0;flex:1 1 auto;justify-content:flex-end;overflow-x:auto}
+  body[data-active-space="simulator"] .sim-tool-button{flex:0 0 36px;min-width:36px;height:40px}
+  body[data-active-space="simulator"] .simulator-grid{top:94px}
+  body[data-active-space="simulator"] .problem-panel#PL{
+    display:none;top:auto;left:8px;right:8px;bottom:calc(var(--dk) + 57px);width:auto;max-height:min(48vh,390px);max-width:none
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] .problem-panel#PL{display:flex}
+  body[data-active-space="simulator"] #RC{
+    display:none;top:auto;left:8px;right:8px;bottom:calc(var(--dk) + 57px);width:auto;height:min(48vh,390px);max-height:none;gap:0
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #RC{display:flex}
+  body[data-active-space="simulator"] #PV{display:none}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV{display:flex}
+  body[data-active-space="simulator"] #PR{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #PR,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #PR{display:grid!important;grid-template-rows:1fr}
+  body[data-active-space="simulator"] #PR>.panel{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR>.variables-panel,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #PR>.output-panel,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #PR>.trace-panel{display:flex!important}
+  body[data-active-space="simulator"] .simulator-mobile-tabs{
+    position:fixed;z-index:42;left:8px;right:8px;bottom:calc(var(--dk) + 15px);display:flex;gap:4px;
+    margin:0;padding:4px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--line);border-radius:11px;
+    background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(8px);pointer-events:auto
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs button{
+    flex:1 0 auto;min-width:40px;min-height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;
+    color:var(--pen);background:transparent;font-size:12px;font-weight:800;white-space:nowrap
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--info);color:var(--ink);background:color-mix(in srgb,var(--info) 16%,var(--card))}
+  body[data-active-space="simulator"] #dock.simulator-dock{
+    left:8px;right:8px;bottom:8px;transform:none;width:auto;grid-template-columns:1fr auto;gap:6px 8px;padding:7px 9px
+  }
+  body[data-active-space="simulator"] #dock .dock-description{grid-column:1;grid-row:1}
+  body[data-active-space="simulator"] #dock .dock-controls{grid-column:2;grid-row:1;gap:2px}
+  body[data-active-space="simulator"] #dock .transport-button{width:36px;height:36px;min-width:36px}
+  body[data-active-space="simulator"] #dock .transport-play{width:40px;height:40px}
+  body[data-active-space="simulator"] #dock .timeline-block{grid-column:1/-1;grid-row:2}
+  body[data-active-space="simulator"] #dock .dock-speed{grid-column:1/-1;grid-row:3;display:flex;align-items:center;justify-content:space-between}
+  body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px}
+  body[data-active-space="simulator"] #PR .variables-content{max-height:160px}
+}
+@media(max-width:430px){
+  body[data-active-space="simulator"] .sim-tool-button{flex-basis:34px;min-width:34px;height:38px;padding:0 3px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:115px}
+  body[data-active-space="simulator"] #dock .dock-description small{max-width:160px}
+  body[data-active-space="simulator"] #dock .transport-button{width:32px;height:34px;min-width:32px}
+  body[data-active-space="simulator"] #dock .transport-play{width:36px;height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}
+}

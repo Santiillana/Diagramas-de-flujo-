@@ -11,13 +11,13 @@ const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
-let cameraAuto=true, panState=null, pseudocodeSize=16, selectedVariable=null, defaultInputSample=[];
+let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
 
 function readPseudocodeSize(){
   try{
     const value=Number(window.localStorage.getItem("traza:v2:pseudocode-size")??window.localStorage.getItem("traza-pseudocode-size"));
-    return Number.isFinite(value)&&value>=13&&value<=26?value:16;
+    return Number.isFinite(value)&&value>=13&&value<=26?value:17;
   }catch{return 16;}
 }
 
@@ -28,6 +28,32 @@ function stop(){
   if(b){b.textContent="▶";b.title="Reproducir";b.setAttribute("aria-label","Reproducir");}
 }
 function method(){return exercise?.methods[methodIndex]??null;}
+
+function paintExerciseSelector(){
+  const host=$("#sim-exercise-strip");
+  if(!host)return;
+  if(host.dataset.ready!=="true"){
+    host.innerHTML=exercises.map(item=>{
+      const level=item.level==="basic"?"basic":item.level==="advanced"?"advanced":"intermediate";
+      return '<button class="sim-exercise-chip level-'+level+'" type="button" data-sim-exercise="'+item.id+'" aria-label="Ejercicio '+item.id+' - '+esc(item.title)+'" title="'+esc(item.title)+'">'+String(item.id).padStart(2,"0")+'</button>';
+    }).join("");
+    host.dataset.ready="true";
+  }
+  host.querySelectorAll("[data-sim-exercise]").forEach(button=>{
+    const active=Number(button.dataset.simExercise)===exerciseId;
+    button.classList.toggle("is-selected",active);
+    button.setAttribute("aria-pressed",String(active));
+  });
+}
+function openLabActivity(activity){
+  document.querySelector('[data-space="lab"]')?.click();
+  if(activity)requestAnimationFrame(()=>document.querySelector('[data-lab-activity="'+activity+'"]')?.click());
+}
+function syncDockHeight(){
+  const dock=$("#dock");
+  if(dock)document.body.style.setProperty("--dk",Math.ceil(dock.getBoundingClientRect().height)+"px");
+}
+
 function publishTrace(){
   if(!execution||!timeline)return;
   document.dispatchEvent(new CustomEvent("traza:execution-updated",{detail:{
@@ -52,11 +78,20 @@ function prepare(){
   exercise=getExercise(exerciseId)??exercises[0];
   exerciseId=exercise.id;
   methodIndex=Math.max(0,Math.min(methodIndex,exercise.methods.length-1));
+  paintExerciseSelector();
   $("#simulator-exercise-number").textContent=String(exercise.id).padStart(2,"0");
   $("#simulator-exercise-level").textContent=labels[exercise.level]??exercise.level;
   $("#simulator-exercise-level").className="exercise-level "+(exercise.level==="basic"?"level-basic":exercise.level==="intermediate"?"level-intermediate":"level-advanced");
   $("#simulator-exercise-title").textContent=exercise.title;
   $("#simulator-exercise-statement").textContent=exercise.statement;
+  $("#simulator-purpose").textContent=exercise.purpose??exercise.objective??"Comprender qué resuelve el algoritmo.";
+  $("#simulator-idea").textContent=exercise.analysis??(exercise.concepts??[]).join(" · ");
+  const sourceForCycle=method().pseudocode.toLowerCase();
+  const cycles=[];
+  if(sourceForCycle.includes("para "))cycles.push("Para");
+  if(sourceForCycle.includes("mientras "))cycles.push("Mientras");
+  if(sourceForCycle.includes("hacer"))cycles.push("Hacer–Mientras");
+  $("#simulator-cycle").textContent=cycles.length?[...new Set(cycles)].join(" · "):"Este algoritmo no necesita ciclos.";
   $("#simulator-exercise-spec").innerHTML=[
     ["Entradas",exercise.inputs],["Salidas",exercise.outputs],["Restricciones",exercise.constraints]
   ].map(([name,items])=>'<p class="eyebrow">'+name.toUpperCase()+'</p><ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>').join("");
@@ -376,6 +411,7 @@ function zoomDiagram(change){
 function setPseudocodeSize(size){
   pseudocodeSize=Math.max(13,Math.min(26,size));
   document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
+  document.body.style.setProperty("--fs",String(pseudocodeSize));
   $("#simulator-text-smaller").disabled=pseudocodeSize<=13;
   $("#simulator-text-larger").disabled=pseudocodeSize>=26;
   try{window.localStorage.setItem("traza:v2:pseudocode-size",String(pseudocodeSize));}catch{}
@@ -477,6 +513,22 @@ function setMobilePanel(name){
   });
 }
 function bind(){
+  $("#sim-exercise-strip")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-sim-exercise]");
+    if(!button)return;
+    exerciseId=Number(button.dataset.simExercise)||1;
+    methodIndex=0;
+    selectedVariable=null;
+    prepare();
+  });
+  $("#simulator-predict")?.addEventListener("click",()=>openLabActivity("predict"));
+  $("#simulator-lab")?.addEventListener("click",()=>openLabActivity(null));
+  $("#simulator-panel-toggle")?.addEventListener("click",()=>{
+    const hidden=document.body.dataset.simulatorPanels==="hidden";
+    document.body.dataset.simulatorPanels=hidden?"visible":"hidden";
+    $("#simulator-panel-toggle").setAttribute("aria-pressed",String(!hidden));
+    $("#simulator-panel-toggle").setAttribute("aria-label",hidden?"Ocultar paneles":"Mostrar paneles");
+  });
   $("#simulator-mobile-tabs")?.addEventListener("click",event=>{
     const tab=event.target.closest("[data-mobile-panel]");
     if(tab)setMobilePanel(tab.dataset.mobilePanel);
@@ -545,8 +597,14 @@ function bind(){
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
-    requestAnimationFrame(()=>fitDiagram());
+    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();});
   });
+  syncDockHeight();
+  const dock=$("#dock");
+  if(dock&&"ResizeObserver" in window){
+    const dockObserver=new ResizeObserver(()=>syncDockHeight());
+    dockObserver.observe(dock);
+  }
   const stage=$("#diagram-stage");
   if(stage&&"ResizeObserver" in window){
     const observer=new ResizeObserver(entries=>{
@@ -570,6 +628,8 @@ function bind(){
 export function initSimulator(){
   if(!$("#simulator-run"))return;
   setPseudocodeSize(readPseudocodeSize());
+  paintExerciseSelector();
+  syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();
   bind();prepare();
