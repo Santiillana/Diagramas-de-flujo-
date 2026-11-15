@@ -381,12 +381,12 @@ body[data-active-space="simulator"] #wrap.sim-wrap{
 }
 body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
   position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0;
-  overflow:hidden;overscroll-behavior:none;border:0;border-radius:0;background:transparent;touch-action:none;cursor:grab
+  overflow:hidden;overscroll-behavior:none;border:0;border-radius:0;background:transparent;touch-action:none;cursor:default;pointer-events:none
 }
 body[data-active-space="simulator"] #diagram-stage.is-panning{cursor:grabbing}
 body[data-active-space="simulator"] #flow-diagram-container{
   position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;width:100%!important;height:100%!important;
-  min-width:0!important;min-height:0!important;margin:0;padding:0;overflow:visible;transform-origin:0 0;will-change:transform;pointer-events:none
+  min-width:0!important;min-height:0!important;margin:0;padding:0;overflow:visible;transform-origin:0 0;will-change:transform;pointer-events:none;z-index:2
 }
 body[data-active-space="simulator"] #flow-diagram-container .flow-svg{display:block;width:auto;height:auto;min-width:0;max-width:none;overflow:visible;color:var(--pen)}
 body[data-active-space="simulator"] .diagram-empty{position:absolute;inset:45% 10px auto;text-align:center;pointer-events:none}
@@ -587,3 +587,14 @@ body[data-active-space="simulator"] #PR .trace-history,
 body[data-active-space="simulator"] #PR .trace-history li{pointer-events:auto}
 body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:0}
 body[data-active-space="simulator"] #dock{z-index:65}
+
+/* Solo el área libre del escenario recibe gestos; los paneles son controles prioritarios. */
+body[data-active-space="simulator"] #diagram-pan-hit{
+  position:absolute;z-index:1;inset:0 520px 160px 370px;min-width:0;min-height:0;
+  pointer-events:auto;touch-action:none;cursor:grab;background:transparent
+}
+body[data-active-space="simulator"] #diagram-pan-hit:active{cursor:grabbing}
+body[data-active-space="simulator"] #diagram-stage{pointer-events:none}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #diagram-pan-hit{inset:0 0 190px 0}
+}

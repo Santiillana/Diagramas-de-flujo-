@@ -39,10 +39,10 @@ export function initNavigation() {
     }
   }
 
-  nav.addEventListener("click", (event) => {
+  document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-space]");
     if (button && nav.contains(button)) activate(button.dataset.space);
-  });
+  }, true);
   nav.addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
     const current = buttons.indexOf(document.activeElement);
