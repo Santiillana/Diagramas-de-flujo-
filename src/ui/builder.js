@@ -365,7 +365,7 @@ function bindBuilder(){
   }));
   $("#builder-undo")?.addEventListener("click",undoBuilder);
   $("#builder-redo")?.addEventListener("click",redoBuilder);
-  $("#view-builder")?.addEventListener("keydown",event=>{
+  $("#lab-builder-stage")?.addEventListener("keydown",event=>{
     if(!(event.ctrlKey||event.metaKey)||event.target.matches("input,textarea"))return;
     if(event.key.toLowerCase()==="z"){event.preventDefault();event.shiftKey?redoBuilder():undoBuilder();}
     else if(event.key.toLowerCase()==="y"){event.preventDefault();redoBuilder();}
