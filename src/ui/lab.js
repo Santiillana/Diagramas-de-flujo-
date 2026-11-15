@@ -211,6 +211,7 @@ function renderPredict(){
     };
     const expected=labels[next.type]??next.type;
     const correct=predictionAnswer===expected;
+    recordResult("predict",correct);
     const symbol=next.type==="input"?"Paralelogramo":
       ["assignment","loop-init","loop-update"].includes(next.type)?"Rectángulo de proceso":
       next.type==="output"?"Documento / salida":
@@ -220,10 +221,11 @@ function renderPredict(){
       "<strong>"+(correct?"Predicción correcta.":"La predicción no coincide.")+"</strong>"+
       "<p>El evento real es <b>"+esc(expected)+"</b>: "+esc(next.scene?.body??next.message??"")+"</p>"+
       "<p>Símbolo relacionado: "+esc(symbol)+". "+esc(next.scene?.technical??"")+"</p>"+
-      "<button type='button' class='text-link' id='lab-go-predicted'>Inspeccionar el paso "+(targetIndex+1)+" ↗</button>";
+      "<button type='button' class='text-link' id='lab-go-predicted'>Inspeccionar el paso "+(targetIndex+1)+" ↗</button>"+mixedAdvanceMarkup();
     feedback.classList.toggle("is-correct",correct);
     feedback.classList.toggle("is-wrong",!correct);
     $("#lab-go-predicted")?.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("traza:jump-to-step",{detail:{index:targetIndex}})));
+    bindMixedAdvance();
   });
   $("#lab-task-content").querySelectorAll("[data-predict]").forEach(button=>{
     button.addEventListener("click",()=>{
@@ -276,10 +278,13 @@ function renderOrder(){
   $("#lab-order-reset").addEventListener("click",()=>{orderedLines=[...lines].reverse();orderChecked=false;renderOrder();});
   $("#lab-order-check").addEventListener("click",()=>{
     const correct=orderedLines.every((line,index)=>line===lines[index]);
+    recordResult("order",correct);
     orderChecked=true;
     $("#lab-order-feedback").innerHTML=correct?
       "<strong>Correcto.</strong> El orden coincide con el pseudocódigo de este método.":
       "<strong>Hay instrucciones fuera de lugar.</strong> Revisa la secuencia y vuelve a comprobarla.";
+    $("#lab-order-feedback").innerHTML+=mixedAdvanceMarkup();
+    bindMixedAdvance();
     $("#lab-order-feedback").classList.toggle("is-correct",correct);
     $("#lab-order-feedback").classList.toggle("is-wrong",!correct);
   });
@@ -310,7 +315,9 @@ function renderSymbol(){
     '<div id="lab-symbol-feedback" class="lab-feedback" role="status"></div></div>';
   $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(button=>button.addEventListener("click",()=>{
     const correct=button.dataset.symbolChoice===model.correct;
-    $("#lab-symbol-feedback").innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>No exactamente.</strong> ")+esc(model.why);
+    recordResult("symbol",correct);
+    $("#lab-symbol-feedback").innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>No exactamente.</strong> ")+esc(model.why)+mixedAdvanceMarkup();
+    bindMixedAdvance();
     $("#lab-symbol-feedback").classList.toggle("is-correct",correct);
     $("#lab-symbol-feedback").classList.toggle("is-wrong",!correct);
     $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(item=>item.disabled=true);
@@ -331,10 +338,12 @@ function renderError(){
     const actual=tested.outputs[0];
     const correct=tested.ok&&JSON.stringify(tested.outputs)===JSON.stringify([scenario.expected]);
     const chosen=button.dataset.errorChoice==="correct";
+    recordResult("error",chosen===correct);
     const feedback=$("#lab-error-feedback");
     feedback.innerHTML=(chosen===correct?"<strong>Buena detección.</strong> ":"<strong>Revisa el contraejemplo.</strong> ")+
       "<p>Entrada: "+esc(JSON.stringify(scenario.inputs))+". Resultado del algoritmo: "+esc(JSON.stringify(actual))+
-      "; resultado esperado: "+esc(JSON.stringify(scenario.expected))+".</p><p>"+esc(scenario.explanation)+"</p>";
+      "; resultado esperado: "+esc(JSON.stringify(scenario.expected))+".</p><p>"+esc(scenario.explanation)+"</p>"+mixedAdvanceMarkup();
+    bindMixedAdvance();
     feedback.classList.toggle("is-correct",chosen===correct);
     feedback.classList.toggle("is-wrong",chosen!==correct);
     $("#lab-task-content").querySelectorAll("[data-error-choice]").forEach(item=>item.disabled=true);
@@ -487,6 +496,10 @@ export function initLab(){
   document.addEventListener("traza:execution-updated",event=>{
     publishContext(event.detail);
   });
+  addLabActivity("fill-gap","Completa el hueco","Escribe una expresión y comprueba la ejecución.","▤");
+  addLabActivity("follow-arrow","Sigue la flecha","Predice la siguiente figura del recorrido.","➜");
+  addMixedPracticeButton();
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
   setActivity("predict");
+  updateProgressBadges();
 }
