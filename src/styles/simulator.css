@@ -1569,7 +1569,7 @@ body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
   position:absolute!important;inset:48px 0 0!important;display:grid!important;
   grid-template-columns:minmax(245px,.76fr) minmax(460px,1.72fr) minmax(290px,.86fr);
   grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"problem diagram inspector" "dock dock dock";
-  align-items:stretch;gap:0;min-width:0;min-height:0;width:100%;height:calc(100% - 48px);
+  align-items:stretch;gap:0;min-width:0;min-height:0;width:100%;height:auto!important;
   margin:0;padding:12px;overflow:hidden;pointer-events:auto;background:transparent
 }
 body[data-active-space="simulator"] #PL.problem-panel{
@@ -1904,7 +1904,7 @@ body[data-active-space="simulator"].focus .simulator-grid-four #dock{display:non
   body[data-active-space="simulator"] .simulator-statusbar h2{font-size:16px}
   body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
     inset:40px 0 0!important;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;
-    grid-template-areas:"diagram" "dock";height:100%;padding:5px
+    grid-template-areas:"diagram" "dock";height:auto!important;padding:5px
   }
   body[data-active-space="simulator"] #PL,
   body[data-active-space="simulator"] #RC{display:none!important}
@@ -1950,3 +1950,37 @@ body[data-active-space="simulator"].focus .simulator-grid-four #dock{display:non
 }
 :root[data-motion="reduced"] body[data-active-space="simulator"] .diagram-node.is-active,
 :root[data-motion="reduced"] body[data-active-space="simulator"] .sim-context-window.is-arriving{animation:none!important;transition:none!important}
+
+/* Ajustes de cámara, presentación y visibilidad contextual */
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"] .simulator-grid-four,
+body[data-active-space="simulator"][data-sim-windows-hidden~="pseudocode"] .simulator-grid-four{
+  grid-template-columns:minmax(0,1fr) minmax(290px,.72fr)
+}
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"] #PL,
+body[data-active-space="simulator"][data-sim-windows-hidden~="pseudocode"] #PL{grid-template-rows:minmax(0,1fr)}
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"][data-sim-windows-hidden~="pseudocode"] .simulator-grid-four,
+body[data-active-space="simulator"][data-sim-windows-hidden~="scene"][data-sim-windows-hidden~="variables"] .simulator-grid-four{
+  grid-template-columns:minmax(0,1fr);grid-template-areas:"diagram" "dock"
+}
+body[data-active-space="simulator"][data-sim-windows-hidden~="scene"] #RC,
+body[data-active-space="simulator"][data-sim-windows-hidden~="variables"] #RC{grid-template-rows:minmax(0,1fr)}
+body[data-active-space="simulator"] #sim-window-data .simulator-input-warning{margin:0;color:#ffc1a4;font-size:10px}
+body[data-active-space="simulator"][data-presentation-mode="appear"] #scene-content .scene-figure-host{animation:sim-scene-reveal var(--sim-animation-duration,500ms) cubic-bezier(.2,.8,.3,1) both}
+body[data-active-space="simulator"][data-presentation-mode="appear"] #scene-content .scene-event-body,
+body[data-active-space="simulator"][data-presentation-mode="appear"] #scene-content .scene-symbol-explanation,
+body[data-active-space="simulator"][data-presentation-mode="appear"] #scene-content .scene-order-explanation{animation:sim-copy-reveal var(--sim-animation-duration,500ms) ease both}
+body[data-active-space="simulator"][data-presentation-mode="appear"] .variable-card{animation:sim-variable-reveal var(--sim-animation-duration,500ms) ease both}
+body[data-active-space="simulator"][data-presentation-mode="complete"] #scene-content .scene-figure-host,
+body[data-active-space="simulator"][data-presentation-mode="complete"] #scene-content .scene-event-body,
+body[data-active-space="simulator"][data-presentation-mode="complete"] #scene-content .scene-symbol-explanation,
+body[data-active-space="simulator"][data-presentation-mode="complete"] #scene-content .scene-order-explanation,
+body[data-active-space="simulator"][data-presentation-mode="complete"] .variable-card{animation:none!important;transition:none!important}
+@keyframes sim-scene-reveal{from{opacity:.25;transform:translateY(9px) scale(.985);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+@keyframes sim-copy-reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes sim-variable-reveal{from{opacity:.3;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:900px){
+  body[data-active-space="simulator"][data-sim-windows-hidden~="context"] #PL,
+  body[data-active-space="simulator"][data-sim-windows-hidden~="pseudocode"] #PL{display:none!important}
+  body[data-active-space="simulator"][data-sim-windows-hidden~="scene"] #PV,
+  body[data-active-space="simulator"][data-sim-windows-hidden~="variables"] #PR{display:none!important}
+}
