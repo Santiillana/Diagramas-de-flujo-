@@ -2,13 +2,13 @@ import { test, expect } from "@playwright/test";
 
 test("pulido global mantiene cuerpo legible y pseudocódigo a 14 px",async({page})=>{
  await page.goto("/");
- await page.locator('[data-select-exercise="1"]').click();
+ await page.locator('[data-space="simulator"]').click();
  const metrics=await page.evaluate(()=>{
   const px=selector=>Number.parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
   return {
    body:px("body"),
    lesson:px("#lesson-detail .lesson-explanation p"),
-   pseudocode:px(".exercise-pseudocode"),
+   pseudocode:px(".pseudocode-lines li"),
    dock:px(".simulator-dock #dock-step-title")
   };
  });

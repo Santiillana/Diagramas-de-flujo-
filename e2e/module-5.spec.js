@@ -146,11 +146,11 @@ test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persi
   await expect.poll(()=>svg.evaluate(el=>el.getBoundingClientRect().width)).toBeLessThan(enlarged);
   await page.locator("#simulator-text-larger").click();
   const stored=await page.evaluate(()=>localStorage.getItem("traza-pseudocode-size"));
-  expect(stored).toBe("11");
+  expect(stored).toBe("15");
   await page.reload();
   await page.locator('[data-space="simulator"]').click();
   const restored=await page.locator(".pseudocode-lines li").first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  expect(restored).toBe(11);
+  expect(restored).toBe(15);
 });
 
 
