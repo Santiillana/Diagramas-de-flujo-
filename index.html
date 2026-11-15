@@ -11,7 +11,7 @@
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 <div class="app-shell">
-  <header class="topbar">
+  <header class="topbar" id="hd">
     <a class="brand" href="#main-content" aria-label="Traza, laboratorio de diagramas de flujo">
       <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4v7M20 29v7M8 20h7M25 20h7"/><rect x="14" y="11" width="12" height="18" rx="5"/><path d="M17.5 16h5M17.5 24h5"/></svg></span>
       <span class="brand-copy"><strong>traza<span>.</span></strong><small>LABORATORIO DE FLUJOS</small></span>
@@ -23,6 +23,22 @@
       <button class="nav-button" type="button" data-space="lab" aria-current="false"><span class="nav-index" aria-hidden="true">✳</span>Laboratorio</button>
       <button class="nav-button" type="button" data-space="builder" aria-current="false"><span class="nav-index" aria-hidden="true">✎</span>Constructor</button>
     </nav>
+    <div class="simulator-toolbar" id="simulator-toolbar" aria-label="Herramientas del simulador">
+      <div class="sim-exercise-strip" id="sim-exercise-strip" aria-label="Seleccionar ejercicio"></div>
+      <div class="sim-toolbar-controls" role="group" aria-label="Controles visuales">
+        <button class="sim-tool-button" type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto" title="Reducir texto">A−</button>
+        <button class="sim-tool-button" type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto" title="Tamaño normal">A</button>
+        <button class="sim-tool-button" type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto" title="Aumentar texto">A+</button>
+        <button class="sim-tool-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática">◎</button>
+        <button class="sim-tool-button" type="button" id="simulator-predict" title="Abrir Predice en Laboratorio">🎯</button>
+        <button class="sim-tool-button" type="button" id="simulator-lab" title="Abrir Laboratorio">🧪</button>
+        <button class="sim-tool-button" type="button" id="simulator-panel-toggle" aria-label="Ocultar paneles" aria-pressed="false" title="Mostrar u ocultar paneles">≡</button>
+        <button class="sim-tool-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Alejar">−</button>
+        <button class="sim-tool-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Acercar">+</button>
+        <button class="sim-tool-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Encuadrar">⌗</button>
+        <button class="sim-tool-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa" title="Pantalla completa">⛶</button>
+      </div>
+    </div>
     <div class="topbar-actions">
       <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema oscuro" aria-pressed="false" title="Activar tema oscuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42m-9.88 9.88-1.42 1.42"/><circle cx="12" cy="12" r="4.2"/></svg></button>
       <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l2.3-5 3.4 10L16 12h4M3 4h18v16H3z"/></svg></button>
@@ -93,70 +109,68 @@
         <button type="button" role="tab" data-mobile-panel="history" aria-selected="false">Historial</button>
       </div>
       <div class="simulator-grid">
-        <aside class="panel problem-panel" aria-labelledby="problem-title">
+        <aside class="panel problem-panel sim-glass" id="PL" aria-labelledby="problem-title">
           <div class="panel-heading"><div><p class="eyebrow">EL PROBLEMA</p><h3 id="problem-title">Problema y pseudocódigo</h3></div><span class="panel-index">A</span></div>
           <div class="simulator-problem-body">
             <div class="simulator-exercise-kicker"><span class="exercise-number" id="simulator-exercise-number">01</span><span class="exercise-level level-basic" id="simulator-exercise-level">Básico</span></div>
             <h4 id="simulator-exercise-title">Suma de dos números</h4>
             <p id="simulator-exercise-statement" class="simulator-statement">Selecciona un ejercicio para empezar.</p>
+            <div class="sim-context-notes">
+              <section><h4>¿Para qué sirve?</h4><p id="simulator-purpose">Comprender qué resuelve el algoritmo.</p></section>
+              <section><h4>Idea clave</h4><p id="simulator-idea">La idea central aparecerá aquí.</p></section>
+              <section><h4>Ciclo usado</h4><p id="simulator-cycle">Este algoritmo no necesita ciclos.</p></section>
+            </div>
             <details class="simulator-details"><summary>Entradas, salidas y restricciones</summary><div id="simulator-exercise-spec"></div></details>
             <label class="simulator-field"><span>MÉTODO</span><select id="simulator-method"></select></label>
             <label class="simulator-field"><span>DATOS DE ENTRADA</span><input id="simulator-inputs" type="text" inputmode="decimal" placeholder="Ejemplo: 8, 5" autocomplete="off"></label>
             <button type="button" class="text-link simulator-restore" id="simulator-restore-inputs">↺ Restaurar datos de ejemplo</button>
             <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas.</p>
             <button type="button" class="button button-primary simulator-run" id="simulator-run">Ejecutar algoritmo <span aria-hidden="true">▶</span></button>
-            <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span>
-              <div class="pseudocode-size-controls" aria-label="Tamaño del pseudocódigo">
-                <button type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto">A−</button>
-                <button type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto">A</button>
-                <button type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto">A+</button>
-              </div>
-            </div>
+            <div class="pseudocode-heading"><p class="eyebrow">PSEUDOCÓDIGO EN EJECUCIÓN</p><span id="pseudocode-line-count">— líneas</span></div>
             <ol class="pseudocode-lines" id="pseudocode-lines" aria-label="Pseudocódigo del ejercicio"></ol>
           </div>
         </aside>
-        <section class="panel diagram-panel" aria-labelledby="diagram-title">
+        <section class="panel diagram-panel sim-world-panel" aria-labelledby="diagram-title">
           <div class="panel-heading diagram-heading">
             <div><p class="eyebrow">VISTA CENTRAL</p><h3 id="diagram-title">Diagrama de flujo</h3></div>
             <div class="diagram-tools diagram-header-tools" role="group" aria-label="Controles del diagrama">
               <span class="canvas-status"><i></i> DIAGRAMA ACTUALIZADO</span>
-              <button class="small-icon-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática activa">◎</button>
-              <button class="small-icon-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama">−</button>
-              <button class="small-icon-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama">+</button>
-              <button class="small-icon-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama">⌗</button>
-              <button class="small-icon-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa" title="Pantalla completa">⛶</button>
             </div>
           </div>
+          <div id="wrap" class="sim-wrap">
           <div class="diagram-stage simulator-diagram-stage" id="diagram-stage">
             <div class="diagram-empty" id="diagram-empty"><div class="diagram-empty-icon" aria-hidden="true">↘</div><span class="eyebrow">ESPERANDO EL FLUJO</span><h4>Selecciona un ejercicio</h4><p>El diagrama se genera desde las instrucciones analizadas, no desde una ilustración independiente.</p></div>
             <div id="flow-diagram-container" class="flow-diagram-container"></div>
             <span class="canvas-coordinate coordinate-top">TRAZA / SVG</span><span class="canvas-coordinate coordinate-bottom" id="diagram-dimensions">VIEWPORT</span>
             <button type="button" id="diagram-fullscreen-exit" class="diagram-fullscreen-exit" hidden aria-label="Salir de pantalla completa">Salir de pantalla completa ✕</button>
           </div>
+          </div>
           <div class="diagram-legend"><span><i class="legend-dot legend-current"></i>Paso activo</span><span><i class="legend-dot legend-route"></i>Ruta recorrida</span><span><i class="legend-dot legend-neutral"></i>Resto del flujo</span></div>
         </section>
-        <aside class="inspector-stack simulator-inspector" aria-label="Estado de ejecución">
-          <section class="panel scene-panel" aria-labelledby="scene-title">
+        <aside class="inspector-stack simulator-inspector" id="RC" aria-label="Estado de ejecución">
+          <section class="panel scene-panel sim-glass" id="PV" aria-labelledby="scene-title">
             <div class="panel-heading"><div><p class="eyebrow">EXPLICACIÓN DEL PASO</p><h3 id="scene-title">En escena</h3></div><div class="scene-heading-actions"><button type="button" id="scene-minimize" class="small-icon-button" aria-controls="scene-content" aria-expanded="true" aria-label="Minimizar explicación" title="Minimizar explicación">−</button><span class="panel-index">B</span></div></div>
             <div class="scene-placeholder" id="scene-content"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual aparecerá aquí.</strong><p>La escena explica la acción que realiza el algoritmo.</p></div>
           </section>
-          <section class="panel variables-panel" aria-labelledby="variables-title">
+          <div id="PR" class="sim-right-content">
+          <section class="panel variables-panel sim-glass" aria-labelledby="variables-title">
             <div class="panel-heading"><div><p class="eyebrow">ESTADO ACTUAL</p><h3 id="variables-title">Variables</h3></div><span class="panel-index">C</span></div>
             <div id="variables-content" class="variables-content"><p class="empty-state-copy">Las variables aparecerán al iniciar la ejecución.</p></div>
             <div id="variable-change" class="variable-change">Sin cambios todavía.</div>
             <div id="variable-history" class="variable-history" aria-live="polite"><span class="empty-state-copy">Selecciona una variable para inspeccionar su historial.</span></div>
           </section>
-          <section class="panel output-panel" aria-labelledby="output-title">
+          <section class="panel output-panel sim-glass" aria-labelledby="output-title">
             <div class="panel-heading"><div><p class="eyebrow">RESULTADOS</p><h3 id="output-title">Salida del algoritmo</h3></div><span id="output-count" class="panel-index">0</span></div>
             <ol id="simulator-output" class="simulator-output"><li>La salida se mostrará a medida que se ejecute.</li></ol>
           </section>
+          <section class="panel trace-panel sim-glass" aria-label="Historial de ejecución">
+            <div class="panel-heading"><div><p class="eyebrow">HISTORIAL</p><h3>Pasos recorridos</h3></div><span id="trace-count" class="panel-index">0</span></div>
+            <ol id="trace-history" class="trace-history"><li>Ejecuta el algoritmo para generar la traza.</li></ol>
+          </section>
+          </div>
         </aside>
-        <section class="panel trace-panel" aria-label="Historial de ejecución">
-          <div class="panel-heading"><div><p class="eyebrow">PASOS RECORRIDOS</p><h3>Historial de pasos</h3></div><span id="trace-count" class="panel-index">0</span></div>
-          <ol id="trace-history" class="trace-history"><li>Ejecuta el algoritmo para generar la traza.</li></ol>
-        </section>
-        <section class="execution-dock simulator-dock" aria-label="Controles de ejecución">
-          <div class="dock-description"><i class="dock-live-dot"></i><div><strong id="dock-step-title">Recorrido de ejecución</strong><small id="dock-step-description">Los controles se activan al ejecutar un algoritmo.</small></div></div>
+        <section class="execution-dock simulator-dock" id="dock" aria-label="Controles de ejecución">
+          <div class="dock-description"><i class="dock-live-dot"></i><div><strong id="dock-step-title" aria-live="polite">Recorrido de ejecución</strong><small id="dock-step-description">Los controles se activan al ejecutar un algoritmo.</small></div></div>
           <div class="dock-controls">
             <button class="transport-button" type="button" id="simulator-first" aria-label="Ir al inicio" title="Ir al inicio">|◀</button>
             <button class="transport-button" type="button" id="simulator-previous" aria-label="Paso anterior" title="Paso anterior">◀</button>
@@ -165,7 +179,7 @@
             <button class="transport-button" type="button" id="simulator-last" aria-label="Ir al final" title="Ir al final">▶|</button>
           </div>
           <div class="timeline-block"><div class="timeline-label"><span>PASO</span><b id="timeline-count">— / —</b></div><input id="simulator-timeline" class="timeline-range" type="range" min="0" max="0" value="0" step="1" aria-label="Buscar un paso de la ejecución"></div>
-          <label class="dock-speed"><span>VELOCIDAD</span><select id="simulator-speed"><option value="1200">0.5×</option><option value="650" selected>1×</option><option value="300">2×</option><option value="140">4×</option></select></label>
+          <label class="dock-speed"><span>VELOCIDAD</span><select id="simulator-speed"><option value="1200">0.5×</option><option value="650" selected>1×</option><option value="300">2×</option><option value="140">4×</option><option value="80">8×</option></select></label>
         </section>
       </div>
     </section>
