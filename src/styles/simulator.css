@@ -455,7 +455,7 @@ body[data-active-space="simulator"] #PR .trace-history li{flex:0 0 auto;width:10
 body[data-active-space="simulator"] #dock.simulator-dock{
   position:fixed;z-index:45;left:50%;right:auto;bottom:10px;transform:translateX(-50%);
   display:grid;grid-template-columns:minmax(190px,1fr) auto minmax(160px,1.2fr) auto;align-items:center;
-  gap:10px;width:min(920px,calc(100vw - 20px));min-width:0;margin:0;padding:9px 14px;
+  gap:10px;width:min(920px,calc(100vw - 20px));min-width:0;min-height:143px;margin:0;padding:9px 14px;
   border:1px solid var(--line);border-radius:14px;color:var(--ink);
   background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 8px 28px rgba(0,0,0,.22);
   pointer-events:auto
@@ -551,7 +551,7 @@ body[data-active-space="simulator"] #RC{font-size:calc(var(--fs)*1px)}
   }
   body[data-active-space="simulator"] .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--info);color:var(--ink);background:color-mix(in srgb,var(--info) 16%,var(--card))}
   body[data-active-space="simulator"] #dock.simulator-dock{
-    left:8px;right:8px;bottom:8px;transform:none;width:auto;grid-template-columns:1fr auto;gap:6px 8px;padding:7px 9px
+    left:8px;right:8px;bottom:8px;transform:none;width:auto;min-height:0;grid-template-columns:1fr auto;gap:6px 8px;padding:7px 9px
   }
   body[data-active-space="simulator"] #dock .dock-description{grid-column:1;grid-row:1}
   body[data-active-space="simulator"] #dock .dock-controls{grid-column:2;grid-row:1;gap:2px}
