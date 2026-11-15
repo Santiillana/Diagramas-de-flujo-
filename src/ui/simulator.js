@@ -1128,7 +1128,17 @@ function bindDiagramPan(){
   document.addEventListener("pointercancel",onUp,true);
   hit.addEventListener("lostpointercapture",onUp);
   hit.addEventListener("wheel",event=>{
-    event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+    event.preventDefault();
+    if(event.ctrlKey||event.metaKey){
+      zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+      return;
+    }
+    setCameraFree();
+    if(event.shiftKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)){
+      panOffset.x-=event.shiftKey&&event.deltaX===0?event.deltaY:event.deltaX;
+    }else panOffset.y-=event.deltaY;
+    applyCanvasTransform();
+    stage.dataset.wheelPan=String((Number(stage.dataset.wheelPan)||0)+1);
   },{passive:false});
   const minimap=$("#sim-minimap");
   if(minimap){
