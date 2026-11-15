@@ -182,26 +182,29 @@ function updateLessonData(){
   output.textContent="Salida: "+result+(variables?" | Variables: "+variables:"");
 }
 function renderExerciseCards(){
-  const host=$("#exercise-grid");
-  if(!host)return;
+  const host=$("#exercise-grid"); if(!host)return;
   const query=exerciseQuery.trim().toLocaleLowerCase("es");
   const filtered=exercises.filter(item=>{
     const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
+    const matchesClass=!exerciseClassOnly||CLASS_EXERCISES.has(item.id);
     const searchable=[item.title,item.statement,item.purpose,...item.concepts].join(" ").toLocaleLowerCase("es");
-    return matchesLevel&&(!query||searchable.includes(query)||String(item.id)===query);
+    return matchesLevel&&matchesClass&&(!query||searchable.includes(query)||String(item.id)===query);
   });
-  $("#exercise-count").textContent=filtered.length+" de 40 ejercicios";
-  host.innerHTML=filtered.length?filtered.map(item=>{
+  const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE)); exercisePage=Math.min(exercisePage,pages-1);
+  const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
+  $("#exercise-count").textContent=filtered.length+" ejercicios · página "+(exercisePage+1)+" de "+pages;
+  host.innerHTML=visible.length?visible.map(item=>{
     const level=LEVELS[item.level];
-    return `
-      <button type="button" class="exercise-card ${selectedExercise?.id===item.id?"is-selected":""}" data-select-exercise="${item.id}">
-        <span class="exercise-card-top"><span class="exercise-number">${String(item.id).padStart(2,"0")}</span><span class="exercise-level ${level.className}">${level.label}</span></span>
-        <strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.concepts.slice(0,3).join(" · "))}</small>
-        <span class="exercise-card-footer">${item.methods.length} ${item.methods.length===1?"método":"métodos"} <span aria-hidden="true">↗</span></span>
-      </button>`;
-  }).join(""):'<div class="catalog-empty">No hay ejercicios que coincidan con esa búsqueda.</div>';
+    return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?'is-selected':'')+'" data-select-exercise="'+item.id+'">'+
+      '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,'0')+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
+      (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':'')+
+      '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.concepts.slice(0,3).join(' · '))+'</small>'+
+      '<span class="exercise-card-footer">'+item.methods.length+' '+(item.methods.length===1?'método':'métodos')+' <span aria-hidden="true">↗</span></span></button>';
+  }).join(''):'<div class="catalog-empty">No hay ejercicios que coincidan con esa búsqueda.</div>';
+  let pagination=host.parentElement.querySelector('.exercise-pagination');
+  if(!pagination){pagination=document.createElement('nav');pagination.className='exercise-pagination';pagination.setAttribute('aria-label','Páginas de ejercicios');host.after(pagination);}
+  pagination.innerHTML='<button type="button" data-page-prev '+(exercisePage===0?'disabled':'')+'>Anterior</button><span>Página '+(exercisePage+1)+' de '+pages+'</span><button type="button" data-page-next '+(exercisePage>=pages-1?'disabled':'')+'>Siguiente</button>';
 }
-
 function renderExerciseDetail(){
   const host=$("#exercise-detail");
   if(!host)return;
@@ -312,8 +315,10 @@ function bindContentEvents(){
       feedback.classList.toggle("is-wrong",chosen!==lesson.check.answer);
     }
   });
-  $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;renderExerciseCards();});
-  $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;renderExerciseCards();});
+  $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
+  $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
+  $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});
+  $("#view-exercises")?.addEventListener("click",event=>{if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}});
   $("#exercise-grid")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-select-exercise]");
     if(card)selectExercise(card.dataset.selectExercise);
