@@ -317,3 +317,6 @@
 .scene-loop-body{border-color:var(--fig-loop);text-align:center}
 .scene-empty-memory{padding:6px 9px;border:1px dashed var(--line-strong);border-radius:8px;color:var(--muted)}
 @media(max-width:520px){.scene-process{grid-template-columns:1fr}.scene-process-bubble{order:2}.scene-process-result{order:3}.scene-loop-cells{gap:4px}.scene-loop-cell{padding:7px 3px}}
+
+.dock-loop-round{display:inline-flex;width:max-content;margin:3px 0 0;padding:4px 9px;border:1px solid var(--fig-loop);border-radius:999px;color:var(--ink);background:color-mix(in srgb,var(--fig-loop) 16%,var(--surface));font-size:13px;font-weight:800}
+.dock-loop-round[hidden]{display:none}
