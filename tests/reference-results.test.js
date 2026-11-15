@@ -182,7 +182,8 @@ function referenceOutput(id, input) {
         total+=weight/(1+x*x);
         weight=weight===4?2:4;
       }
-      const integral=h/3*total;\n      return a===0&&b===1?[integral,Math.abs(integral-Math.PI/4)]:[integral];
+      const integral=h/3*total;
+      return a===0&&b===1?[integral,Math.abs(integral-Math.PI/4)]:[integral];
     }
     default: throw new Error("No existe oráculo para el ejercicio " + id);
   }
