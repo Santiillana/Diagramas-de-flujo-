@@ -155,21 +155,79 @@ function updateLabContext(){
   $("#lab-current-step").innerHTML="PASO <b>"+(index+1)+" / "+execution.events.length+"</b>";
   $("#lab-current-exercise").innerHTML="EJERCICIO <b>"+(exercise?.id??"—")+"</b>";
 }
+let labMode="read";
+const labActivities={
+  read:[
+    ["predict","Predice el paso","Anticipa qué hará la ficha antes de revelar el evento real","?"],
+    ["table","Tabla de seguimiento","Lee los valores, las vueltas y los cambios de cada variable","▦"],
+    ["follow-arrow","Sigue la flecha","Elige la figura siguiente y descubre por qué esa ruta es correcta","➜"]
+  ],
+  build:[
+    ["order","Ordena instrucciones","Organiza las líneas para reconstruir el algoritmo","↕"],
+    ["symbol","Elige la figura","Relaciona cada instrucción con el símbolo que la representa","◇"],
+    ["fill-gap","Completa el hueco","Escribe la instrucción que falta y comprueba la ejecución","▤"]
+  ],
+  debug:[
+    ["error","Encuentra el error","Detecta una inicialización o condición que rompe el algoritmo","!"],
+    ["whatif","Compara dos recorridos","Cambia una instrucción y observa cómo se separan los resultados","↗"]
+  ]
+};
+function renderLabActivityMenu(){
+  const list=$("#lab-activity-list");if(!list)return;
+  list.innerHTML=(labActivities[labMode]??[]).map(([id,title,description,icon])=>
+    '<button type="button" class="activity-card '+(activity===id?"is-active":"")+'" data-lab-activity="'+id+'"><span class="activity-icon" aria-hidden="true">'+icon+'</span><span><strong>'+title+'</strong><small>'+description+'</small></span><span class="activity-arrow" aria-hidden="true">›</span></button>'
+  ).join("");
+  list.querySelectorAll("[data-lab-activity]").forEach(button=>{
+    const stars=modeStars(labProgress,trace?.exercise?.id,button.dataset.labActivity);
+    const progress=document.createElement("span");progress.className="activity-progress";
+    progress.textContent="★".repeat(stars)+"☆".repeat(3-stars);progress.setAttribute("aria-label",stars+" de tres estrellas");
+    button.append(progress);
+  });
+  $("#lab-open-builder")?.toggleAttribute("hidden",labMode!=="build");
+  const labels={
+    read:["01 · LEER","Sigue la ficha","Aprende a seguir cada flecha, anticipar decisiones y registrar cambios."],
+    build:["02 · ESCRIBIR","Arma el diagrama","Ordena instrucciones, elige símbolos y completa el flujo."],
+    debug:["03 · DEPURAR","Caza el error","Encuentra el paso que falla y compara las consecuencias."]
+  };
+  const [kicker,title,description]=labels[labMode]??labels.read;
+  if($("#lab-mode-kicker"))$("#lab-mode-kicker").textContent=kicker;
+  if($("#lab-mode-title"))$("#lab-mode-title").textContent=title;
+  if($("#lab-mode-description"))$("#lab-mode-description").textContent=description;
+  const activityHeading=$("#lab-activity-heading");
+  if(activityHeading)activityHeading.textContent=labMode==="read"?"Lee y comprende":labMode==="build"?"Construye paso a paso":"Revisa y corrige";
+}
+function showLabMode(mode){
+  labMode=["read","build","debug"].includes(mode)?mode:"read";
+  $("#lab-mode-cards")?.querySelectorAll("[data-lab-mode]").forEach(button=>{
+    const active=button.dataset.labMode===labMode;
+    button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));
+  });
+  if($("#lab-mode-cards"))$("#lab-mode-cards").hidden=true;
+  if($("#lab-practice-workspace"))$("#lab-practice-workspace").hidden=false;
+  if($("#lab-builder-stage"))$("#lab-builder-stage").hidden=true;
+  renderLabActivityMenu();
+  const first=labActivities[labMode]?.[0];
+  if(first)setActivity(first[0]);
+  else $("#lab-task-content").innerHTML="<p>Selecciona una actividad para comenzar.</p>";
+}
+function returnToLabModes(){
+  if($("#lab-builder-stage"))$("#lab-builder-stage").hidden=true;
+  if($("#lab-practice-workspace"))$("#lab-practice-workspace").hidden=true;
+  if($("#lab-mode-cards"))$("#lab-mode-cards").hidden=false;
+}
 function setActivity(next,options={}){
   if(!options.keepMixed)mixedQueue=[];
   activity=next;
-  predictionAnswer=null;
-  whatIfResult=null;
-  orderChecked=false;
-  $("#lab-activity-list").querySelectorAll("[data-lab-activity]").forEach(button=>
+  predictionAnswer=null;whatIfResult=null;orderChecked=false;
+  $("#lab-activity-list")?.querySelectorAll("[data-lab-activity]").forEach(button=>
     button.classList.toggle("is-active",button.dataset.labActivity===next));
-  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento",order:"Ordena instrucciones",symbol:"Identifica el símbolo",error:"Encuentra el error",whatif:"¿Y si…?", "fill-gap":"Completa el hueco","follow-arrow":"Sigue la flecha"};
-  $("#lab-task-title").textContent=titles[next]??"Actividad";
+  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento","follow-arrow":"Sigue la flecha",order:"Ordena instrucciones",symbol:"Identifica la figura",error:"Encuentra el error",whatif:"¿Y si…?","fill-gap":"Completa el hueco"};
+  if($("#lab-task-title"))$("#lab-task-title").textContent=titles[next]??"Actividad";
   renderActivity();
 }
 function requireTrace(){
   if(trace)return true;
-  $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Primero necesitas una ejecución.</strong><p>Abre Ejercicios, elige un reto y pulsa «Preparar este método en el simulador». El laboratorio mantendrá esa traza mientras practicas.</p><button type="button" class="button button-primary" id="lab-go-exercises">Ir a Ejercicios</button></div>';
+  $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Primero necesitas una ejecución.</strong><p>Elige un ejercicio en el Catálogo, revisa el enunciado y abre el Simulador. Después vuelve aquí para practicar con esa misma ejecución.</p><button type="button" class="button button-primary" id="lab-go-exercises">Ir al catálogo</button></div>';
   $("#lab-go-exercises")?.addEventListener("click",()=>document.querySelector('[data-space="exercises"]')?.click());
   return false;
 }
@@ -488,22 +546,27 @@ function renderActivity(){
   else if(activity==="follow-arrow")renderFollowArrow();
 }
 export function initLab(){
+  $("#lab-mode-cards")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-lab-mode]");
+    if(button)showLabMode(button.dataset.labMode);
+  });
+  $("#lab-back-to-modes")?.addEventListener("click",returnToLabModes);
   $("#lab-activity-list")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-lab-activity]");
     if(button)setActivity(button.dataset.labActivity);
   });
-  $("#lab-open-simulator")?.addEventListener("click",()=>document.querySelector('[data-space="simulator"]')?.click());
-  document.addEventListener("traza:execution-updated",event=>{
-    publishContext(event.detail);
+  $("#lab-open-builder")?.addEventListener("click",()=>{
+    if(!requireTrace())return;
+    if($("#lab-practice-workspace"))$("#lab-practice-workspace").hidden=true;
+    if($("#lab-builder-stage"))$("#lab-builder-stage").hidden=false;
+    document.dispatchEvent(new CustomEvent("traza:lab-builder-open"));
   });
-  addLabActivity("fill-gap","Completa el hueco","Escribe una expresión y comprueba la ejecución.","▤");
-  addLabActivity("follow-arrow","Sigue la flecha","Predice la siguiente figura del recorrido.","➜");
-  const activityHeading=$("#lab-activity-list")?.closest(".activity-panel")?.querySelector(".panel-heading h3");
-  if(activityHeading)activityHeading.textContent="Ocho formas de pensar";
-  const countLabel=$("#view-lab .section-intro .phase-chip");
-  if(countLabel)countLabel.textContent="8 ACTIVIDADES · PRÁCTICA COMPARTIDA";
-  addMixedPracticeButton();
+  $("#lab-builder-back")?.addEventListener("click",()=>{
+    if($("#lab-builder-stage"))$("#lab-builder-stage").hidden=true;
+    if($("#lab-practice-workspace"))$("#lab-practice-workspace").hidden=false;
+  });
+  $("#lab-open-simulator")?.addEventListener("click",()=>document.querySelector('#primary-nav [data-space="simulator"]')?.click());
+  document.addEventListener("traza:execution-updated",event=>publishContext(event.detail));
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
-  setActivity("predict");
   updateProgressBadges();
 }
