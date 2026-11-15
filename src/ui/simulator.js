@@ -759,6 +759,9 @@ function routeCoordinates(route){
 function clearDiagramTrail(){
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   $("#flow-trail")?.setAttribute("points","");
+  $("#flow-active-trail")?.setAttribute("points","");
+  $("#flow-token-ring")?.setAttribute("visibility","hidden");
+  $("#flow-token-label")?.setAttribute("visibility","hidden");
   $("#flow-diagram-container .flow-token")?.setAttribute("visibility","hidden");
 }
 function drawExecutionTrail(events){
