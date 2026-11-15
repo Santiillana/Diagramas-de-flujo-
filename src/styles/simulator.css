@@ -877,3 +877,14 @@ body[data-active-space="simulator"] .sim-window-restore .sim-pulse-count{right:-
   body[data-active-space="simulator"] .sim-window.is-pulsing,
   body[data-active-space="simulator"] .sim-window-restore.is-pulsing{animation:none;box-shadow:0 0 0 2px var(--window-identity,var(--hl))}
 }
+
+body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-active{
+  transform-box:fill-box;transform-origin:center;animation:sim-active-node-pop .45s ease-out
+}
+@keyframes sim-active-node-pop{
+  0%{scale:1.14;filter:drop-shadow(0 0 8px rgba(255,210,63,.75))}
+  100%{scale:1;filter:drop-shadow(0 0 0 transparent)}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-active{animation:none}
+}

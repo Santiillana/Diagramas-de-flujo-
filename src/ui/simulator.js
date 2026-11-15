@@ -810,7 +810,6 @@ function renderOperationBreakdown(event){
 function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
-  if(choreographyPlayback)choreographEvent(e);
   const seen=execution.events.slice(0,timeline.index+1);
   pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean));
   if(diagram){
@@ -826,7 +825,10 @@ function render(){
     animateTokenRoute(walked,e);
   }
   centerActiveNode(e);
-  showContextWindow(e);
+  if(choreographyPlayback){
+    const contextTimer=setTimeout(()=>showContextWindow(e),100/currentSpeedFactor());
+    flightTimeouts.push(contextTimer);
+  }else showContextWindow(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
   $("#scene-content").dataset.eventType=e.type;
@@ -855,6 +857,7 @@ function render(){
   const out=e.outputs??[];
   $("#output-count").textContent=String(out.length);
   $("#simulator-output").innerHTML=out.length?out.map((v,i)=>'<li><span class="output-index">'+(i+1)+'.</span> '+esc(fmt(v))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
+  if(choreographyPlayback)choreographEvent(e);
   $("#trace-history").querySelectorAll("[data-history-step]").forEach(item=>item.classList.toggle("is-active",Number(item.dataset.historyStep)===timeline.index));
   $("#trace-history").querySelector('[data-history-step="'+timeline.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
   $("#timeline-count").textContent=(timeline.index+1)+" / "+timeline.length;
@@ -904,8 +907,8 @@ function seek(index){
 }
 function move(delta){
   if(!timeline)return;
+  stop();
   timeline.seek(timeline.index+delta);render();
-  if(timeline.index===timeline.length-1)stop();
 }
 function play(){
   if(!timeline)return;
