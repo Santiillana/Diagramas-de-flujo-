@@ -18,26 +18,72 @@ const LEVELS = {
 let selectedLesson = lessons[0].id;
 let lessonVisualStep = 0;
 let lessonScreenStep = 0;
+let lessonPlaybackTimer = 0;
+let lessonPlaying = false;
 let learnProgress = readLearnProgress();
 let selectedExercise = null;
 let selectedMethod = 0;
-let exerciseRevealed = false;
-let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
 let exerciseClassOnly = false;
-let exerciseCategory = "all";
+let selectedConcepts = new Set();
+let conceptMatchMode = "all";
 let exercisePage = 0;
+let modalExercise = null;
 const PAGE_SIZE = 12;
 const CLASS_EXERCISES = new Set([22,23,24,28]);
 
-function exerciseCategories(item){
-  const categories=new Set();
-  const labels={input:"Entrada",assignment:"Proceso",output:"Salida",if:"Decisión",for:"Repetición",while:"Repetición",doWhile:"Repetición"};
-  const walk=nodes=>{for(const node of nodes){if(labels[node.type])categories.add(labels[node.type]);if(node.type==="if"){walk(node.thenBody);walk(node.elseBody);}if(["for","while","doWhile"].includes(node.type))walk(node.body);}};
-  for(const method of item.methods){try{walk(parsePseudocode(method.pseudocode).body);}catch{}}
-  return [...categories];
+function exerciseConceptLabels(item){
+  const labels=new Set();
+  const map={input:"Entrada de datos",assignment:"Asignación",output:"Imprimir",if:"Decisiones",for:"Ciclo Para",while:"Ciclo Mientras",doWhile:"Ciclo Hacer–Mientras"};
+  let nestedLoop=false;
+  for(const method of item.methods){
+    try{
+      const root=parsePseudocode(method.pseudocode);
+      const walk=(nodes,depth=0)=>{
+        for(const node of nodes??[]){
+          if(map[node.type])labels.add(map[node.type]);
+          if(["for","while","doWhile"].includes(node.type)){
+            if(depth>0)nestedLoop=true;
+            walk(node.body,depth+1);
+          }
+          if(node.type==="if"){
+            walk(node.thenBody,depth);walk(node.elseBody,depth);
+          }
+        }
+      };
+      walk(root.body);
+      const source=method.pseudocode.toLocaleLowerCase("es");
+      if(/(?:\+|-|\*|\/)/.test(source))labels.add("Operaciones aritméticas");
+      if(/(?:<=|>=|<>|!=|==|<|>)/.test(source))labels.add("Comparaciones");
+    }catch{}
+  }
+  const concepts=(item.concepts??[]).join(" ").toLocaleLowerCase("es");
+  if(/acumulador|sumatoria|suma acumul/.test(concepts))labels.add("Acumuladores");
+  if(/contador|contar|cantidad|intento/.test(concepts))labels.add("Contadores");
+  if(/promedio|media|notas/.test(concepts)||/promedio/.test(item.title.toLocaleLowerCase("es")))labels.add("Promedios");
+  if(/máximo|mayor|mínimo|menor/.test(concepts+" "+item.title.toLocaleLowerCase("es")))labels.add("Máximo y mínimo");
+  if(/centinela/.test(concepts+" "+item.statement.toLocaleLowerCase("es")))labels.add("Centinelas");
+  if(/validar|validación|rango/.test(concepts+" "+item.title.toLocaleLowerCase("es")))labels.add("Validación");
+  if(/factorial|potencia|exponente|fibonacci|serie/.test((item.title+" "+concepts).toLocaleLowerCase("es")))labels.add("Series y potencias");
+  if(nestedLoop||/anidados/.test(concepts))labels.add("Ciclos anidados");
+  return [...labels];
 }
+function exerciseConceptUniverse(){
+  return [...new Set(exercises.flatMap(exerciseConceptLabels))].sort((a,b)=>a.localeCompare(b,"es"));
+}
+function renderConceptFilters(){
+  const host=$("#exercise-concepts");if(!host)return;
+  host.innerHTML=exerciseConceptUniverse().map(label=>
+    '<button type="button" class="concept-filter-chip '+(selectedConcepts.has(label)?"is-selected":"")+'" data-concept-filter="'+escapeHTML(label)+'" aria-pressed="'+String(selectedConcepts.has(label))+'">'+escapeHTML(label)+'</button>'
+  ).join("");
+  $$("[data-concept-mode]").forEach(button=>{
+    button.setAttribute("aria-pressed",String(button.dataset.conceptMode===conceptMatchMode));
+  });
+  const summary=$("#exercise-filter-summary");
+  if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · "+(conceptMatchMode==="all"?"deben aparecer todos":"al menos uno"):"Todos los conceptos";
+}
+
 
 
 function readLearnProgress(){
