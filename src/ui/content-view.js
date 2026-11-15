@@ -269,95 +269,95 @@ function updateLessonData(){
   output.textContent="Salida: "+result+(variables?" | Variables: "+variables:"");
 }
 function renderExerciseCards(){
-  const host=$("#exercise-grid"); if(!host)return;
+  const host=$("#exercise-grid");if(!host)return;
   const query=exerciseQuery.trim().toLocaleLowerCase("es");
   const filtered=exercises.filter(item=>{
+    const concepts=exerciseConceptLabels(item);
     const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
     const matchesClass=!exerciseClassOnly||CLASS_EXERCISES.has(item.id);
-    const matchesCategory=exerciseCategory==="all"||exerciseCategories(item).includes(exerciseCategory);
-    const searchable=[item.title,item.statement,item.purpose,...item.concepts].join(" ").toLocaleLowerCase("es");
-    return matchesLevel&&matchesClass&&matchesCategory&&(!query||searchable.includes(query)||String(item.id)===query);
+    const matchesConcepts=!selectedConcepts.size||(conceptMatchMode==="all"
+      ?[...selectedConcepts].every(tag=>concepts.includes(tag))
+      :[...selectedConcepts].some(tag=>concepts.includes(tag)));
+    const searchable=[item.title,item.statement,item.purpose,...item.concepts,...concepts].join(" ").toLocaleLowerCase("es");
+    return matchesLevel&&matchesClass&&matchesConcepts&&(!query||searchable.includes(query)||String(item.id)===query);
   });
-  const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE)); exercisePage=Math.min(exercisePage,pages-1);
+  const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+  exercisePage=Math.min(exercisePage,pages-1);
   const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
-  $("#exercise-count").textContent=filtered.length+" ejercicios · página "+(exercisePage+1)+" de "+pages;
+  $("#exercise-count").textContent=filtered.length+" de "+exercises.length+" ejercicios";
   host.innerHTML=visible.length?visible.map(item=>{
     const level=LEVELS[item.level];
-    return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?'is-selected':'')+'" data-select-exercise="'+item.id+'">'+
-      '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,'0')+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
-      (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':'')+
-      '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.concepts.slice(0,3).join(' · '))+'</small>'+
-      '<span class="exercise-card-footer">'+item.methods.length+' '+(item.methods.length===1?'método':'métodos')+' <span aria-hidden="true">↗</span></span></button>';
-  }).join(''):'<div class="catalog-empty">No hay ejercicios que coincidan con esa búsqueda.</div>';
-  let pagination=host.parentElement.querySelector('.exercise-pagination');
-  if(!pagination){pagination=document.createElement('nav');pagination.className='exercise-pagination';pagination.setAttribute('aria-label','Páginas de ejercicios');host.after(pagination);}
-  pagination.innerHTML='<button type="button" data-page-prev '+(exercisePage===0?'disabled':'')+'>Anterior</button><span>Página '+(exercisePage+1)+' de '+pages+'</span><button type="button" data-page-next '+(exercisePage>=pages-1?'disabled':'')+'>Siguiente</button>';
+    const labels=exerciseConceptLabels(item);
+    return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?"is-selected":"")+'" data-select-exercise="'+item.id+'" aria-pressed="'+String(selectedExercise?.id===item.id)+'">'+
+      '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
+      (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+
+      '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.statement)+'</small>'+
+      '<span class="exercise-card-concepts">'+labels.slice(0,4).map(label=>'<i>'+escapeHTML(label)+'</i>').join("")+'</span>'+
+      '<span class="exercise-card-footer">Ver enunciado y requisitos <span aria-hidden="true">↗</span></span></button>';
+  }).join(""):'<div class="catalog-empty"><strong>No hay ejercicios con estos filtros.</strong><p>Quita algún concepto o limpia la búsqueda para volver a ver el catálogo.</p></div>';
+  let pagination=host.parentElement.querySelector(".exercise-pagination");
+  if(!pagination){pagination=document.createElement("nav");pagination.className="exercise-pagination";pagination.setAttribute("aria-label","Páginas de ejercicios");host.after(pagination);}
+  pagination.hidden=filtered.length<=PAGE_SIZE;
+  pagination.innerHTML='<button type="button" data-page-prev '+(exercisePage===0?"disabled":"")+'>Anterior</button><span>Página '+(exercisePage+1)+' de '+pages+'</span><button type="button" data-page-next '+(exercisePage>=pages-1?"disabled":"")+'>Siguiente</button>';
+  renderConceptFilters();
 }
 function renderExerciseDetail(){
-  const host=$("#exercise-detail");
-  if(!host)return;
+  const host=$("#exercise-detail");if(!host)return;
   const item=selectedExercise;
   if(!item){
-    host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">45</span><p class="eyebrow">CATÁLOGO PROGRESIVO</p><h3>Selecciona un reto para analizarlo.</h3><p>Las fichas incluyen objetivo, conceptos, entradas, salidas, restricciones, métodos, pruebas y errores frecuentes.</p></div>';
+    host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">45</span><p class="eyebrow">INFORMACIÓN DEL EJERCICIO</p><h3>Selecciona un ejercicio.</h3><p>Verás el enunciado, su objetivo, los conceptos que necesitas y las restricciones. La solución se mantiene oculta hasta que decidas abrirla en el Simulador.</p></div>';
     return;
   }
-  selectedMethod=Math.min(selectedMethod,item.methods.length-1);
-  const method=item.methods[selectedMethod];
   const level=LEVELS[item.level];
-  host.innerHTML=`
-    <div class="exercise-detail-scroll">
-      <header class="exercise-detail-heading"><div class="exercise-detail-kicker"><span class="exercise-number">${String(item.id).padStart(2,"0")}</span><span class="exercise-level ${level.className}">${level.label}</span></div>
-        <h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.statement)}</p></header>
-      <section class="exercise-spec"><div class="exercise-section-heading"><p class="eyebrow">OBJETIVO Y CONCEPTOS</p></div>
-        <p>${escapeHTML(item.purpose)}</p><div class="concept-tags">${item.concepts.map(tag=>`<span>${escapeHTML(tag)}</span>`).join("")}</div></section>
-      <div class="exercise-io-grid">
-        <section><p class="eyebrow">ENTRADAS</p><ul>${item.inputs.map(x=>`<li>${escapeHTML(x)}</li>`).join("")||"<li>No requiere entradas.</li>"}</ul></section>
-        <section><p class="eyebrow">SALIDAS</p><ul>${item.outputs.map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul></section>
-      </div>
-      <section class="exercise-spec"><p class="eyebrow">RESTRICCIONES</p><ul>${item.constraints.map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
-        <p class="eyebrow">ANÁLISIS DEL PROBLEMA</p><p>${escapeHTML(item.analysis)}</p></section>
-      <section class="exercise-methods"><div class="exercise-section-heading"><div><p class="eyebrow">MÉTODOS DE RESOLUCIÓN</p><h4>${item.methods.length} ${item.methods.length===1?"método validable":"alternativas comparables"}</h4></div></div>
-        <div class="method-tabs" role="tablist" aria-label="Métodos del ejercicio">
-          ${item.methods.map((m,i)=>`<button type="button" role="tab" aria-selected="${i===selectedMethod}" class="method-tab ${i===selectedMethod?"is-active":""}" data-method-index="${i}">${escapeHTML(m.name)}</button>`).join("")}
-        </div>
-        ${method.note?`<p class="method-note">${escapeHTML(method.note)}</p>`:""}
-        <pre class="exercise-pseudocode"><code>${escapeHTML(method.pseudocode.split("|").join("\n"))}</code></pre>
-        <p class="exercise-analysis"><b>Cómo funciona:</b> ${escapeHTML(item.analysis)}</p>
-        <div class="exercise-example-case"><span class="eyebrow">DATOS DE EJEMPLO</span><code>${escapeHTML(method.sample.join(", ")||"Sin datos de entrada")}</code>
-          <span class="eyebrow">PRIMER RESULTADO ESPERADO</span><code>${escapeHTML(JSON.stringify(method.tests[0].expected))}</code></div>
-        <details class="exercise-test-cases"><summary>Ver casos de prueba (${method.tests.length})</summary><ul>${method.tests.map(t=>`<li><b>${escapeHTML(t.name)}</b><span>Entrada: ${escapeHTML(JSON.stringify(t.input))}</span><span>Salida: ${escapeHTML(JSON.stringify(t.expected))}</span></li>`).join("")}</ul></details>
-      </section>
-      <section class="exercise-errors"><p class="eyebrow">ERRORES FRECUENTES</p><ul>${item.errors.map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul></section>
-      <button type="button" class="button button-primary exercise-simulate" data-open-simulator>Preparar este método en el simulador <span aria-hidden="true">→</span></button>
-    </div>`;
-  applyChallengeGate();
+  const concepts=exerciseConceptLabels(item);
+  host.innerHTML='<div class="exercise-detail-scroll">'+
+    '<header class="exercise-detail-heading"><div class="exercise-detail-kicker"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></div>'+
+    '<h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.statement)+'</p></header>'+
+    '<section class="exercise-spec"><p class="eyebrow">OBJETIVO</p><p>'+escapeHTML(item.purpose)+'</p></section>'+
+    '<section class="exercise-spec"><p class="eyebrow">CONCEPTOS NECESARIOS</p><div class="concept-tags">'+concepts.map(tag=>'<span>'+escapeHTML(tag)+'</span>').join("")+'</div></section>'+
+    '<section class="exercise-spec"><p class="eyebrow">DATOS QUE DEBES CONSIDERAR</p><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
+    '<section class="exercise-spec"><p class="eyebrow">CONDICIONES Y RESTRICCIONES</p><ul>'+item.constraints.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
+    '<button type="button" class="button button-primary exercise-simulate" data-start-exercise>Ver en el Simulador <span aria-hidden="true">→</span></button>'+
+    '<p class="exercise-detail-note">El pseudocódigo y la solución solo se mostrarán después de confirmar que ya intentaste resolverlo.</p>'+
+    '</div>';
 }
-
-function applyChallengeGate(){
-  const host=$("#exercise-detail");
-  const item=selectedExercise;
-  const scroll=host?.querySelector(".exercise-detail-scroll");
-  if(!host||!item||!scroll)return;
-  const gate=document.createElement("section");
-  gate.className="exercise-gate";
-  gate.innerHTML='<p class="eyebrow">MODO RETO · ANTES DE VER LA SOLUCIÓN</p><h4>Piensa entradas, proceso y salidas</h4><p>Registra tu análisis. Puedes pedir una pista o revelar la explicación cuando estés preparado.</p><div class="exercise-attempt-fields"><label>Entradas<textarea data-attempt-field="inputs" rows="2" placeholder="¿Qué datos se necesitan?"></textarea></label><label>Proceso<textarea data-attempt-field="process" rows="2" placeholder="¿Cómo se transforman los datos?"></textarea></label><label>Salidas<textarea data-attempt-field="outputs" rows="2" placeholder="¿Qué debe mostrarse?"></textarea></label></div><div class="exercise-gate-actions"><button type="button" class="button button-secondary" data-save-attempt>Guardar análisis</button><button type="button" class="text-button" data-exercise-hint>Ver una pista</button><button type="button" class="button button-primary" data-reveal-solution>Revelar explicación</button></div><p class="exercise-gate-feedback" data-gate-feedback role="status"></p>';
-  scroll.prepend(gate);
-  let saved={};
-  try{saved=JSON.parse(localStorage.getItem("traza-exercise-attempt-"+item.id)||"{}");}catch{}
-  $$('[data-attempt-field]',gate).forEach(field=>{field.value=saved[field.dataset.attemptField]||"";});
-  const hiddenSelectors=[".exercise-methods",".exercise-errors",".exercise-simulate",".exercise-detail-scroll > .exercise-spec:nth-of-type(2)"];
-  if(!exerciseRevealed)hiddenSelectors.forEach(selector=>{const element=scroll.querySelector(selector);if(element)element.hidden=true;});
-  else gate.querySelector('[data-reveal-solution]').textContent="Explicación revelada";
+function openExerciseTryModal(){
+  const item=selectedExercise,modal=$("#exercise-try-modal");
+  if(!item||!modal)return;
+  modalExercise=item;
+  const level=LEVELS[item.level];
+  $("#exercise-try-level").textContent=level.label;
+  $("#exercise-try-level").className="exercise-level "+level.className;
+  $("#exercise-try-title").textContent=String(item.id).padStart(2,"0")+" · "+item.title;
+  $("#exercise-try-statement").textContent=item.statement;
+  $("#exercise-try-guidance").innerHTML=
+    '<section><strong>Conceptos que necesitas</strong><p>'+exerciseConceptLabels(item).map(escapeHTML).join(" · ")+'</p></section>'+
+    '<section><strong>Datos de entrada</strong><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
+    '<section><strong>Condiciones importantes</strong><ul>'+item.constraints.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>';
+  modal.hidden=false;
+  document.body.classList.add("has-exercise-modal");
+  $("#exercise-try-back")?.focus({preventScroll:true});
+}
+function closeExerciseTryModal(){
+  const modal=$("#exercise-try-modal");
+  if(modal)modal.hidden=true;
+  document.body.classList.remove("has-exercise-modal");
+  modalExercise=null;
+}
+function confirmExerciseInSimulator(){
+  const item=modalExercise;if(!item)return;
+  closeExerciseTryModal();
+  selectedMethod=0;
+  document.dispatchEvent(new CustomEvent("traza:request-simulation",{detail:{exerciseId:item.id,methodIndex:0}}));
+  document.querySelector('#primary-nav [data-space="simulator"]')?.click();
 }
 function selectExercise(id){
   selectedExercise=exercises.find(item=>item.id===Number(id))??null;
   selectedMethod=0;
-  exerciseRevealed=false;
-  exerciseHintStep=0;
   renderExerciseCards();
   renderExerciseDetail();
   if(selectedExercise){
-    const card=$(`[data-select-exercise="${selectedExercise.id}"]`);
+    const card=$('[data-select-exercise="'+selectedExercise.id+'"]');
     card?.scrollIntoView({block:"nearest"});
   }
 }
