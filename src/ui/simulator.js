@@ -1216,7 +1216,7 @@ function fitDiagram(){
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
   const focus=document.body.classList.contains("focus");
-  fitScale=focus?Math.max(1.3,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.9/Math.min(viewBox.height,560)))):
+  fitScale=focus?Math.max(1.3,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.9/Math.min(viewBox.height,560))*1.08):
     Math.round(Math.max(300,Math.min(free.width-20,viewBox.width*2))*1.1)/viewBox.width;
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
   zoom=1;
