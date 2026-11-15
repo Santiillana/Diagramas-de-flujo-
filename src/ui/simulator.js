@@ -86,16 +86,78 @@ function typeName(type){
     "loop-enter":"ITERACIÓN","loop-update":"AVANCE","loop-exit":"SALIDA DE CICLO",
     "program-end":"FIN",error:"ERROR"})[type]??String(type).toUpperCase();
 }
+function substituteValues(expression,values){
+  let result=String(expression??"");
+  for(const [name,value] of Object.entries(values??{}).sort((a,b)=>b[0].length-a[0].length)){
+    result=result.replace(new RegExp("\\b"+name+"\\b","g"),fmt(value));
+  }
+  return result;
+}
+function loopNodeType(event){
+  return diagram?.byId.get(String(event?.nodeId))?.type??null;
+}
+function loopCountBefore(event){
+  return execution?.events.slice(0,event.step).filter(item=>
+    item.type==="loop-enter"&&String(item.nodeId)===String(event.nodeId)
+  ).length??0;
+}
 function brief(e){
   if(e.type==="input")return "Leer "+e.change?.name+" = "+fmt(e.value);
-  if(["assignment","loop-init","loop-update"].includes(e.type))return (e.change?.name??"Variable")+" = "+fmt(e.change?.value);
+  if(e.type==="loop-init")return (e.change?.name??"El contador")+" nace valiendo "+fmt(e.change?.value)+".";
+  if(e.type==="loop-update")return "Avanza "+e.change?.name+" de "+fmt(e.change?.previous)+" a "+fmt(e.change?.value)+".";
+  if(e.type==="assignment"){
+    const match=/^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)\s*(.+)$/.exec(e.expression??e.sourceText??"");
+    const before=execution?.events[e.step-1]?.variables??{};
+    const calculation=match?substituteValues(match[2],before):fmt(e.change?.value);
+    const previous=e.change?.previous===undefined?"nace":"pasa de "+fmt(e.change.previous);
+    const self=match&&new RegExp("\\b"+match[1]+"\\b").test(match[2]);
+    const role=self&&/[+-]\s*1\s*$/.test(match[2])?"contador":
+      self&&match[2].includes("*")?"acumulador de producto":
+      self&&match[2].includes("+")?"acumulador":
+      e.change?.previous===undefined?"valor inicial":
+      /^[A-Za-z_][A-Za-z0-9_]*$/.test(match?.[2]?.trim()??"")?"copia":"cálculo";
+    return e.change?.name+" "+previous+"; "+calculation+" = "+fmt(e.change?.value)+". "+role+".";
+  }
   if(e.type==="output")return "Imprimir "+fmt(e.value);
-  if(e.type==="decision"||e.type==="loop-condition")return (e.result?"V":"F")+" · "+(e.condition??"");
-  if(e.type==="loop-enter")return "Vuelta "+e.iteration;
-  if(e.type==="loop-exit")return "Ciclo terminado";
-  if(e.type==="program-start")return "Comienza el algoritmo";
-  if(e.type==="program-end")return "El algoritmo finalizó";
+  if(e.type==="decision"||e.type==="branch"){
+    const substituted=substituteValues(e.condition,e.variables);
+    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+(e.result?"V (verdadero). Sigue el camino V.":"F (falso). Sigue el camino F.");
+  }
+  if(e.type==="loop-condition"){
+    const substituted=substituteValues(e.condition,e.variables);
+    const type=loopNodeType(e);
+    const completed=loopCountBefore(e);
+    const round=type==="doWhile"?completed:(e.result?completed+1:completed);
+    const outcome=e.result
+      ? (type==="doWhile"?"V. Se repite el cuerpo.":"V. Entra al cuerpo.")
+      : (type==="doWhile"?"F. Sale; el cuerpo ya se ejecutó.":"F. Sale del ciclo.");
+    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+outcome+(round>0?" Vuelta "+round+".":"");
+  }
+  if(e.type==="loop-enter")return "Vuelta "+e.iteration+". Entra al cuerpo del ciclo.";
+  if(e.type==="loop-exit")return "Ciclo terminado después de "+(e.iteration??0)+" vueltas.";
+  if(e.type==="program-start")return "Comienza el algoritmo. La memoria está vacía.";
+  if(e.type==="program-end")return "El algoritmo finalizó.";
   return e.message||typeName(e.type);
+}
+function updateLoopBadge(event){
+  let badge=$("#simulator-loop-round");
+  if(!badge){
+    badge=document.createElement("span");
+    badge.id="simulator-loop-round";
+    badge.className="dock-loop-round";
+    badge.hidden=true;
+    $("#dock-step-title")?.insertAdjacentElement("afterend",badge);
+  }
+  const type=loopNodeType(event);
+  let round=null;
+  if(event.type==="loop-enter")round=event.iteration;
+  else if(event.type==="loop-exit")round=event.iteration;
+  else if(event.type==="loop-condition"&&type){
+    const completed=loopCountBefore(event);
+    round=type==="doWhile"?completed:(event.result?completed+1:completed);
+  }else if(event.loopStack?.length)round=event.loopStack.at(-1).iteration;
+  badge.hidden=!(Number(round)>0);
+  badge.textContent=Number(round)>0?"Vuelta "+round:"";
 }
 function history(){
   $("#trace-history").innerHTML=execution.events.map(e=>'<li data-history-step="'+e.step+'" role="button" tabindex="0" class="'+(e.step===timeline.index?"is-active":"")+'"><span>PASO '+String(e.step+1).padStart(2,"0")+' · '+typeName(e.type)+'</span><strong>'+esc(brief(e))+'</strong></li>').join("");
@@ -213,9 +275,10 @@ function render(){
     '<strong class="scene-value-new">'+esc(fmt(e.change.value))+'</strong></div>':
     e.type==="output"?'<div class="scene-value-transfer"><span class="scene-transfer-name">SALIDA</span><strong class="scene-value-new">'+esc(fmt(e.value))+'</strong></div>':
     e.condition?'<div class="scene-value-transfer '+(e.result?"is-true":"is-false")+'"><span class="scene-transfer-name">RUTA ELEGIDA</span><strong class="scene-route-chip">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"";
+  const sceneNarration=["assignment","decision","branch","loop-init","loop-condition","loop-update"].includes(e.type)?brief(e):scene.body;
   $("#scene-content").innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
-    '<p class="scene-event-body">'+esc(scene.body)+'</p>'+transfer+
+    '<p class="scene-event-body">'+esc(sceneNarration)+'</p>'+transfer+
     '<div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
     loopExplanation+
     renderOperationBreakdown(e)+
@@ -235,6 +298,7 @@ function render(){
   $("#simulator-timeline").value=String(timeline.index);
   $("#dock-step-title").textContent=typeName(e.type)+" · "+(timeline.index+1);
   $("#dock-step-description").textContent=brief(e);
+  updateLoopBadge(e);
   $("#simulator-first").disabled=timeline.index===0;
   $("#simulator-previous").disabled=timeline.index===0;
   $("#simulator-next").disabled=timeline.index>=timeline.length-1;
