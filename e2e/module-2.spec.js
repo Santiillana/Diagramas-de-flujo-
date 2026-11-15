@@ -17,6 +17,10 @@ test("Aprende presenta las diecisiete lecciones en cinco pantallas progresivas",
   await page.locator("[data-lesson-next]").click();
   await page.locator("[data-lesson-complete]").click();
   await expect(page.locator(".lesson-completion")).toHaveText("COMPLETADA");
+  await page.reload();
+  await page.locator('[data-space="learn"]').click();
+  await page.locator('[data-lesson-id="variables"]').click();
+  await expect(page.locator(".lesson-completion")).toHaveText("COMPLETADA");
 });
 
 test("el catálogo muestra 45 ejercicios, filtra los niveles y pagina el resultado", async ({ page }) => {
