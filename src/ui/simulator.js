@@ -411,18 +411,13 @@ function variableTone(name){
 function pseudocode(source,active=null,visited=[],activeVariables=[]){
   const host=$("#pseudocode-lines");
   const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
-  const seen=new Set(visited),names=[...new Set(activeVariables)].filter(Boolean).sort((a,b)=>b.length-a.length);
-  const matcher=names.length?new RegExp("\\b("+names.map(name=>name.replace(/[.*+?^${}()|[\\]\\]/g,"\\function pseudocode(source,active=null,visited=[]){
-  const host=$("#pseudocode-lines");
-  const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
   const seen=new Set(visited);
-  $("#pseudocode-line-count").textContent=rows.length+" líneas";
-  host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+esc(row.text)+'</code></li>').join("");
-  if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
-}")).join("|")+")\\b","g"):null;
+  const names=[...new Set(activeVariables)].filter(name=>/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)).sort((a,b)=>b.length-a.length);
+  const matcher=names.length?new RegExp("\\b("+names.join("|")+")\\b","g"):null;
   const variableMarkup=text=>{
     if(!matcher)return esc(text);
-    let output="",last=0;matcher.lastIndex=0;
+    let output="",last=0;
+    matcher.lastIndex=0;
     for(const match of text.matchAll(matcher)){
       output+=esc(text.slice(last,match.index));
       output+='<mark class="pseudocode-variable '+variableTone(match[0])+'" data-variable="'+esc(match[0])+'">'+esc(match[0])+'</mark>';
