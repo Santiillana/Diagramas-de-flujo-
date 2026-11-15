@@ -12,7 +12,9 @@ test("hay cinco retos expertos de matemáticas y algoritmos", () => {
 
 test("los cinco programas expertos se pueden ejecutar con sus datos de ejemplo", () => {
   for (const item of expert) {
-    const result = executePseudocode(item.methods[0].pseudocode, item.methods[0].sample);
+    let result;
+    try { result = executePseudocode(item.methods[0].pseudocode, item.methods[0].sample); }
+    catch (error) { assert.fail(item.title + " / " + item.methods[0].name + ": " + error.message); }
     assert.equal(result.ok, true, item.title + ": " + result.error?.message);
     assert.ok(result.events.length > 0);
   }
