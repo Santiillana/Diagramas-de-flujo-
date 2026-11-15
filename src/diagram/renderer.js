@@ -40,7 +40,7 @@ export function renderDiagram(container, diagram, options = {}) {
   if (!container || !diagram) return;
   const active = options.activeNodeId == null ? null : String(options.activeNodeId);
   const visited = new Set((options.visitedNodeIds ?? []).map(String));
-  const idPrefix = String(options.idPrefix ?? "");
+  const idPrefix=String(options.idPrefix??"");
   const edgeMarkup = diagram.edges.map(edge => {
     const d = edgePath(edge, diagram);
     if (!d) return "";
@@ -185,7 +185,11 @@ export function animateDiagramTransition(container, diagram, options = {}) {
   const path=group?.querySelector("path");
   let total=0;try{total=path?.getTotalLength?.()??0;}catch{total=0;}
   if(!path||!Number.isFinite(total)||total<=0){staticPosition();return 0;}
-  const backwards=Boolean(reverse),duration=(total<1?150:Math.min(500+total*1.6,1500))/speed,start=performance.now();
+  const backwards=Boolean(reverse);
+  const svg=container.querySelector(".flow-svg"),viewBox=svg?.viewBox?.baseVal;
+  const renderedScale=viewBox?.width?svg.getBoundingClientRect().width/viewBox.width:1;
+  const totalPixels=total*renderedScale*Math.max(.01,Number(options.zoom)||1);
+  const duration=(totalPixels<1?150:Math.min(500+totalPixels*1.6,1500))/speed,start=performance.now();
   const points=[];
   token.setAttribute("visibility","visible");token.setAttribute("r","9");
   token.dataset.edgeId=travelled.id;token.dataset.nodeId=activeId;token.dataset.travelling="true";

@@ -9,7 +9,8 @@ test("la ficha recorre el conector SVG real con duración ligada a su longitud",
  assert.match(renderer,/getTotalLength/);
  assert.match(renderer,/getPointAtLength/);
  assert.match(renderer,/requestAnimationFrame/);
- assert.match(renderer,/Math\.min\(500\+total\*1\.6,1500\)/);
+ assert.match(renderer,/totalPixels=total\*renderedScale/);
+ assert.match(renderer,/Math\.min\(500\+totalPixels\*1\.6,1500\)/);
  assert.match(renderer,/cubicBezierProgress/);
  assert.match(renderer,/flow-trail/);
 });

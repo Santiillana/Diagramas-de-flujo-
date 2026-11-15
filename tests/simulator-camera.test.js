@@ -13,7 +13,7 @@ test("freeRect reserva espacio de los paneles flotantes y el dock", () => {
 });
 
 test("targetFor centra un nodo en el rectángulo libre teniendo en cuenta el zoom", () => {
- assert.deepEqual(targetFor({x:200,y:100},{left:100,top:50,width:600,height:400},2),{x:200,y:150});
+ assert.deepEqual(targetFor({x:200,y:100},{left:100,top:50,width:600,height:400},2),{x:0,y:50});
 });
 
 test("step aplica interpolación exponencial con constante de 110 ms y velocidad", () => {

@@ -23,7 +23,9 @@ test("la rueda acerca el diagrama al cursor y desactiva la cámara automática",
  await page.locator('[data-space="simulator"]').click();
  const stage=page.locator("#diagram-stage"),box=await stage.boundingBox();
  await page.mouse.move(box.x+box.width*.55,box.y+box.height*.45);
+ await page.keyboard.down("Control");
  await page.mouse.wheel(0,-180);
+ await page.keyboard.up("Control");
  await expect.poll(async()=>Number(await stage.getAttribute("data-zoom"))).toBeGreaterThan(1);
  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
  await expect(stage).toHaveAttribute("data-wheel-zoom","1");

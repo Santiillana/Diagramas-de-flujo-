@@ -226,7 +226,7 @@ function applyCanvasOffset(){
   const viewBox=svg.viewBox?.baseVal;
   const scaleX=viewBox?.width?diagramFitWidth/viewBox.width:1;
   const scaleY=viewBox?.height?diagramFitHeight/viewBox.height:1;
-  const tx=panOffset.x/Math.max(.0001,scaleX*zoom),ty=panOffset.y/Math.max(.0001,scaleY*zoom);
+  const tx=panOffset.x/Math.max(.0001,scaleX),ty=panOffset.y/Math.max(.0001,scaleY);
   camera?.setAttribute("transform","translate("+tx+" "+ty+") scale("+zoom+")");
   const stage=$("#diagram-stage");
   if(stage)stage.dataset.panOffset=panOffset.x+","+panOffset.y;
@@ -330,6 +330,7 @@ function render(){
       previousNodeId:priorEvent?.nodeId??null,
       activeNodeId:e.nodeId,
       speed:speedFactor(),
+      zoom,
       motionMode:document.documentElement.dataset.motion??"full",
       onFrame:point=>centerDiagramPoint(point)
     });
@@ -515,8 +516,8 @@ function applyDiagramZoom(){
   if(!svg||!diagramFitWidth||!diagramFitHeight)return;
   svg.style.minWidth="0";
   svg.style.maxWidth="none";
-  svg.style.width=(diagramFitWidth*zoom)+"px";
-  svg.style.height=(diagramFitHeight*zoom)+"px";
+  svg.style.width=diagramFitWidth+"px";
+  svg.style.height=diagramFitHeight+"px";
   applyCanvasOffset();
   const stage=$("#diagram-stage");
   if(stage){stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));stage.dataset.zoom=zoom.toFixed(3);}
@@ -527,18 +528,24 @@ function setDiagramZoomAt(nextZoom,anchor,manual=false){
   if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
   const next=Math.max(.65,Math.min(3,nextZoom));
   if(Math.abs(next-zoom)<.0005)return;
-  const rectBefore=svg.getBoundingClientRect();
-  const focus=anchor??{x:rectBefore.left+rectBefore.width/2,y:rectBefore.top+rectBefore.height/2};
+  const viewBox=svg.viewBox?.baseVal;
+  if(!viewBox?.width||!viewBox?.height)return;
+  const bounds=stage.getBoundingClientRect();
+  const focus=anchor??{x:bounds.left+bounds.width/2,y:bounds.top+bounds.height/2};
+  const scaleX=diagramFitWidth/viewBox.width,scaleY=diagramFitHeight/viewBox.height;
+  const pointX=(focus.x-bounds.left-panOffset.x)/(scaleX*zoom);
+  const pointY=(focus.y-bounds.top-panOffset.y)/(scaleY*zoom);
   const previousZoom=zoom;
   if(manual){cameraAuto=false;updateCameraButton();stopCameraAnimation();}
-  zoom=next;applyDiagramZoom();
-  const rectAfter=svg.getBoundingClientRect(),ratio=zoom/previousZoom;
-  const projectedX=rectAfter.left+(focus.x-rectBefore.left)*ratio;
-  const projectedY=rectAfter.top+(focus.y-rectBefore.top)*ratio;
-  panOffset={x:panOffset.x+focus.x-projectedX,y:panOffset.y+focus.y-projectedY};
-  applyCanvasOffset();
-  stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
+  zoom=next;
+  panOffset={
+    x:focus.x-bounds.left-pointX*scaleX*zoom,
+    y:focus.y-bounds.top-pointY*scaleY*zoom
+  };
+  applyDiagramZoom();
+  stage.dataset.zoomBefore=previousZoom.toFixed(3);
   stage.dataset.zoom=zoom.toFixed(3);
+  stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
   if(!manual&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
 function zoomDiagram(change,anchor){

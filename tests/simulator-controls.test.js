@@ -26,7 +26,8 @@ test("los atajos principales recorren el estado compartido del intérprete",asyn
 test("las seis velocidades discretas incluyen ajuste fino y escalan el intervalo",async()=>{
  const [simulator,html]=await Promise.all([read("../src/ui/simulator.js"),read("../index.html")]);
  assert.match(simulator,/SPEEDS=\[0\.25,0\.5,1,2,4,8\]/);
- assert.match(simulator,/Math\.round\(650\/speedFactor\(\)\)/);
+ assert.match(simulator,/Math\.max\(150,lastAnimationDuration\|\|150\)/);
+ assert.match(simulator,/setTimeout\(advance/);
  for(const value of ["0.25","0.5","1","2","4","8"])assert.match(html,new RegExp('option value="'+value+'"'));
  assert.match(html,/id="simulator-speed-fine"/);
 });

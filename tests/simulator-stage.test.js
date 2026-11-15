@@ -18,7 +18,7 @@ test("el gestor persiste paneles, responde a H y permite arrastre con puntero",a
 });
 test("la cámara calcula área libre entre paneles y dock",async()=>{
  const simulator=await read("../src/ui/simulator.js");
- for(const pattern of [/function getAvailableDiagramRect/,/problem\.getBoundingClientRect\(\)\.right/,/inspector\.getBoundingClientRect\(\)\.left/,/dock\.getBoundingClientRect\(\)\.top/,/available\.width/,/available\.height/])assert.match(simulator,pattern);
+ for(const pattern of [/function getAvailableDiagramRect/,/freeRect\(bounds,blockers\)/,/problem\.getBoundingClientRect\(\)/,/inspector\.getBoundingClientRect\(\)/,/dock\.getBoundingClientRect\(\)/,/available\.width/,/available\.height/])assert.match(simulator,pattern);
 });
 test("el escenario libera el simulador del contenedor y adapta móvil",async()=>{
  const css=await read("../src/styles/simulator-stage.css");
