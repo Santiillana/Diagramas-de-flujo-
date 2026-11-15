@@ -144,6 +144,46 @@ function referenceOutput(id, input) {
       return [greater.length, values.filter(value => value < reference).length,
         values.filter(value => value === reference).length, sum(greater)];
     }
+    case 41: {
+      let a=n[0],b=n[1],iterations=0;
+      const A=a,B=b;
+      while(a!==b){if(a>b)a-=b;else b-=a;iterations++;}
+      return [a,(A/a)*B,iterations];
+    }
+    case 42: {
+      const value=n[0],divisors=[];
+      for(let d=1;d<value;d++)if(value/d===Math.floor(value/d))divisors.push(d);
+      return [divisors.length===1?"PRIMO":"COMPUESTO",divisors.length,sum(divisors)];
+    }
+    case 43: {
+      const [a,b,c,d,e,f,g,h,i,r,s,t]=n;
+      const det=(a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g));
+      if(det===0)return ["SISTEMA SINGULAR"];
+      const dx=r*(e*i-f*h)-b*(s*i-f*t)+c*(s*h-e*t);
+      const dy=a*(s*i-f*t)-r*(d*i-f*g)+c*(d*t-s*g);
+      const dz=a*(e*t-s*h)-b*(d*t-s*g)+r*(d*h-e*g);
+      return [det,dx/det,dy/det,dz/det];
+    }
+    case 44: {
+      let x=n[0],tol=n[1],max=n[2],delta=tol+1,der=3*x*x-2,k=0;
+      while((delta>tol||delta< -tol)&&k<max&&der!==0){
+        const fx=x*x*x-2*x-5,nuevo=x-fx/der;
+        delta=nuevo-x;x=nuevo;der=3*x*x-2;k++;
+      }
+      return [x,x*x*x-2*x-5,k];
+    }
+    case 45: {
+      const [a,b,count]=n;
+      if(count%2!==0)return ["N DEBE SER PAR"];
+      const h=(b-a)/count;
+      let total=1/(1+a*a)+1/(1+b*b),weight=4;
+      for(let k=1;k<count;k++){
+        const x=a+k*h;
+        total+=weight/(1+x*x);
+        weight=weight===4?2:4;
+      }
+      return [h/3*total];
+    }
     default: throw new Error("No existe oráculo para el ejercicio " + id);
   }
 }
@@ -161,7 +201,7 @@ function assertOutput(actual, expected, context) {
   }
 }
 
-test("cada resultado esperado de los 40 ejercicios coincide con un cálculo independiente", async t => {
+test("cada resultado esperado de los 45 ejercicios coincide con un cálculo independiente", async t => {
   let scenarios = 0;
   for (const item of exercises) {
     for (const method of item.methods) {
