@@ -1,5 +1,7 @@
 import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
+import { executePseudocode } from "../core/interpreter.js";
+import { renderScene } from "./scenes/index.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -13,7 +15,8 @@ const LEVELS = {
 };
 let selectedLesson = lessons[0].id;
 let lessonVisualStep = 0;
-let lessonPracticeStep = 0;
+let lessonScreenStep = 0;
+let learnProgress = readLearnProgress();
 let selectedExercise = null;
 let selectedMethod = 0;
 let exerciseRevealed = false;
@@ -21,124 +24,158 @@ let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
 
+function readLearnProgress(){
+  try{
+    const value=JSON.parse(localStorage.getItem("traza:v2:learn")||"null");
+    if(!value||value.version!==2||!Array.isArray(value.completed))return {version:2,completed:[],current:lessons[0].id,screen:0};
+    const valid=lessons.some(item=>item.id===value.current);
+    return {version:2,completed:value.completed.filter(id=>lessons.some(item=>item.id===id)),current:valid?value.current:lessons[0].id,
+      screen:Number.isInteger(value.screen)?Math.max(0,Math.min(4,value.screen)):0};
+  }catch{return {version:2,completed:[],current:lessons[0].id,screen:0};}
+}
+function saveLearnProgress(){
+  learnProgress.current=selectedLesson;
+  learnProgress.screen=lessonScreenStep;
+  try{localStorage.setItem("traza:v2:learn",JSON.stringify(learnProgress));}catch{}
+}
+function completeLesson(){
+  if(!learnProgress.completed.includes(selectedLesson))learnProgress.completed.push(selectedLesson);
+  saveLearnProgress();
+  lessonList();
+  renderLesson();
+}
+const lessonBlocks=[
+  {title:"Fundamentos",ids:["algorithm","reading"]},
+  {title:"Figuras",ids:["terminals","input","process","output"]},
+  {title:"Variables y cuentas",ids:["variables","arithmetic"]},
+  {title:"Decisiones",ids:["comparisons","decisions","nested-decisions"]},
+  {title:"Repeticiones",ids:["counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"]}
+];
 function lessonList(){
   const host=$("#lesson-catalog");
   if(!host)return;
-  host.innerHTML=lessons.map((lesson,index)=>`
-    <button class="lesson-list-item ${lesson.id===selectedLesson?"is-selected":""}" type="button"
-      data-lesson-id="${escapeHTML(lesson.id)}" aria-current="${lesson.id===selectedLesson?"true":"false"}">
-      <span class="lesson-list-number">${String(index+1).padStart(2,"0")}</span>
-      <span class="lesson-list-copy"><strong>${escapeHTML(lesson.title)}</strong><small>${escapeHTML(lesson.duration)}</small></span>
-      <span class="lesson-list-arrow" aria-hidden="true">›</span>
-    </button>`).join("");
+  host.innerHTML=lessonBlocks.map(group=>
+    '<div class="lesson-catalog-group"><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p>'+
+    lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
+      const index=lessons.findIndex(item=>item.id===lesson.id);
+      const done=learnProgress.completed.includes(lesson.id);
+      return '<button class="lesson-list-item '+(lesson.id===selectedLesson?"is-selected":"")+'" type="button" data-lesson-id="'+escapeHTML(lesson.id)+'" aria-current="'+(lesson.id===selectedLesson?"true":"false")+'">'+
+        '<span class="lesson-list-number">'+String(index+1).padStart(2,"0")+'</span>'+
+        '<span class="lesson-list-copy"><strong>'+escapeHTML(lesson.title)+'</strong><small>'+escapeHTML(lesson.duration)+'</small></span>'+
+        '<span class="lesson-list-state" aria-label="'+(done?"Completada":"Pendiente")+'">'+(done?"✓":"")+'</span></button>';
+    }).join("")+'</div>'
+  ).join("");
 }
-
+function lessonInputs(value){
+  return String(value??"").split(/[;,]/).map(part=>part.trim()).filter(Boolean).map(Number);
+}
+function runLesson(lesson,values=lesson.miniProgram.sample){
+  try{return executePseudocode(lesson.miniProgram.code,values);}
+  catch(error){return {ok:false,error:{message:error.message},events:[],outputs:[],variables:{}};}
+}
+function relevantLessonEvents(lesson,execution){
+  const targets={
+    terminals:["program-start","program-end"],input:["input"],process:["assignment"],output:["output"],
+    comparisons:["decision"],decisions:["decision","branch"],"nested-decisions":["decision","branch"],
+    for:["loop-init","loop-condition","loop-update"],while:["loop-condition","loop-enter"],
+    "do-while":["loop-enter","loop-condition"],"nested-loops":["loop-init","loop-enter","loop-condition"],
+    "validation-sentinel":["input","loop-condition","assignment"]
+  };
+  const selected=targets[lesson.id];
+  const events=selected?execution.events.filter(event=>selected.includes(event.type)):execution.events.filter(event=>!["program-start","program-end"].includes(event.type));
+  return events.length?events:execution.events;
+}
+function lessonScene(lesson,position=0){
+  const execution=runLesson(lesson);
+  if(!execution.ok||!execution.events.length)return '<div class="lesson-scene-unavailable">'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</div>';
+  const events=relevantLessonEvents(lesson,execution);
+  const index=Math.max(0,Math.min(position,events.length-1));
+  const event=events[index];
+  const rendered=renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample});
+  const body=event.scene?.body??event.message??event.sourceText??"";
+  return '<div class="lesson-scene-host" role="img" aria-label="'+rendered.alt+'">'+rendered.markup+'</div>'+
+    (body?'<p class="lesson-scene-caption">'+escapeHTML(body)+'</p>':"");
+}
 function visualMarkup(lesson){
-  const visual=lesson.visual;
-  const index=Math.min(lessonVisualStep,visual.steps.length-1);
-  const kind=visual.kind;
-  const symbols=kind.includes("decision")?["Pregunta","V · Verdadero","F · Falso"]:
-    kind==="while"?["Condición","Cuerpo","Retorno"]:
-    kind==="do-while"?["Cuerpo","Condición","Repetir / salir"]:
-    kind==="for"?["Preparación","Condición","Avance"]:
-    kind==="nested"?["Ciclo exterior","Ciclo interior","Siguiente vuelta"]:
-    kind==="variable"?["Nombre","Valor anterior","Valor nuevo"]:
-    kind==="counter"?["Inicializar","Actualizar","Acumular"]:
-    kind==="validation"?["Leer","Comprobar","Aceptar / repetir"]:
-    kind==="calculation"?["Operación 1","Operación 2","Resultado"]:
-    ["Inicio","Proceso","Fin"];
-  return `
-    <section class="lesson-visual" aria-label="Visualización de ${escapeHTML(lesson.title)}">
-      <div class="lesson-visual-head"><div><p class="eyebrow">VISUALIZACIÓN INTERACTIVA</p><strong>${escapeHTML(visual.caption)}</strong></div>
-        <span class="visual-step-count">${index+1} / ${visual.steps.length}</span></div>
-      <div class="visual-track visual-kind-${escapeHTML(kind)}" data-visual-step="${index}">
-        ${visual.steps.map((step,i)=>`
-          <div class="visual-stage-node ${i===index?"is-current":i<index?"is-complete":""}" data-visual-node="${i}">
-            <span class="visual-node-index">${i+1}</span><strong>${escapeHTML(symbols[i]??step[0])}</strong>
-            <small>${escapeHTML(step[0])}</small>
-          </div>${i<visual.steps.length-1?'<span class="visual-track-arrow" aria-hidden="true">→</span>':""}`).join("")}
-      </div>
-      <div class="visual-explanation" aria-live="polite"><span>PASO ${index+1}</span><p>${escapeHTML(visual.steps[index][1])}</p></div>
-      <div class="visual-controls"><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>
-        <button type="button" class="button button-primary" data-visual-next ${index>=visual.steps.length-1?"disabled":""}>Siguiente paso <span aria-hidden="true">→</span></button></div>
-    </section>`;
+  const execution=runLesson(lesson);
+  const events=execution.ok?relevantLessonEvents(lesson,execution):[];
+  const index=Math.min(lessonVisualStep,Math.max(0,events.length-1));
+  const event=events[index];
+  const scene=event?renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample}):null;
+  return '<section class="lesson-visual" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
+    '<div class="lesson-visual-head"><div><p class="eyebrow">ESCENA DEL ALGORITMO</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
+    '<span class="visual-step-count">'+(index+1)+' / '+events.length+'</span></div>'+
+    (scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
+    '<p class="lesson-scene-caption">'+escapeHTML(event?.scene?.body??event?.message??event?.sourceText??"")+'</p>'+
+    '<div class="visual-controls"><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
+    '<button type="button" class="button button-primary" data-visual-next '+(index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button></div></section>';
 }
-
 function renderLesson(){
-  const lesson=lessons.find(x=>x.id===selectedLesson)??lessons[0];
+  const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
   const host=$("#lesson-detail");
   if(!host)return;
-  host.innerHTML=`
-    <header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN ${String(lesson.order).padStart(2,"0")} / 14 · ${escapeHTML(lesson.duration.toUpperCase())}</p>
-      <h3>${escapeHTML(lesson.title)}</h3><p>${escapeHTML(lesson.objective)}</p></div><span class="lesson-completion" aria-label="Lección de la ruta">TRAZA · APRENDE</span></header>
-    <div class="lesson-explanation-grid">
-      <section class="lesson-explanation"><span class="explanation-label">01 · INTUITIVA</span><p>${escapeHTML(lesson.intuitive)}</p></section>
-      <section class="lesson-explanation lesson-technical"><span class="explanation-label">02 · TÉCNICA</span><p>${escapeHTML(lesson.technical)}</p></section>
-    </div>
-    ${visualMarkup(lesson)}
-    <section class="lesson-example"><div class="lesson-section-heading"><div><p class="eyebrow">EJEMPLO GUIADO</p><h4>${escapeHTML(lesson.example.title)}</h4></div><span class="panel-index">03</span></div>
-      <pre class="lesson-code"><code>${escapeHTML(lesson.example.code)}</code></pre><p>${escapeHTML(lesson.example.explanation)}</p>
-    </section>
-    <section class="lesson-practice">
-      <div class="lesson-section-heading"><div><p class="eyebrow">MANIPULA LOS DATOS</p><h4>${escapeHTML(lesson.manipulation.prompt)}</h4></div><span class="panel-index">04</span></div>
-      <div class="practice-sequence" aria-live="polite">${lesson.manipulation.steps.slice(0,lessonPracticeStep+1).map((step,i)=>`<p><b>${i+1}</b>${escapeHTML(step)}</p>`).join("")}</div>
-      <div class="visual-controls"><span class="practice-progress">Paso ${lessonPracticeStep+1} de ${lesson.manipulation.steps.length}</span>
-        <button type="button" class="button button-secondary" data-practice-reset>Reiniciar</button>
-        <button type="button" class="button button-primary" data-practice-next ${lessonPracticeStep>=lesson.manipulation.steps.length-1?"disabled":""}>Ver siguiente paso</button></div>
-    </section>
-    <section class="lesson-check">
-      <div class="lesson-section-heading"><div><p class="eyebrow">COMPRUEBA TU COMPRENSIÓN</p><h4>${escapeHTML(lesson.check.question)}</h4></div><span class="panel-index">05</span></div>
-      <div class="lesson-options">${lesson.check.options.map((option,i)=>`<button type="button" class="lesson-option" data-check-option="${i}"><span>${String.fromCharCode(65+i)}</span>${escapeHTML(option)}</button>`).join("")}</div>
-      <p class="lesson-feedback" id="lesson-feedback" role="status"></p>
-    </section>`;
-  const practice=host.querySelector(".lesson-practice");
-  if(practice){
-    const label=document.createElement("label");
-    label.className="lesson-data-control";
-    label.textContent="Modifica el dato de prueba";
-    const input=document.createElement("input");
-    input.id="lesson-data-input";
-    input.type="text";
-    input.value=lesson.manipulation.input;
-    input.setAttribute("aria-label","Dato o datos de prueba");
-    label.append(input);
-    const output=document.createElement("p");
-    output.className="lesson-data-result";
-    output.id="lesson-data-result";
-    output.setAttribute("role","status");
-    practice.prepend(output);
-    practice.prepend(label);
-    updateLessonData();
+  const screen=lessonScreenStep;
+  const stepNames=["Idea","Escena","Ejemplo","Inténtalo","Resumen"];
+  let body="";
+  if(screen===0){
+    body='<section class="lesson-screen lesson-screen-idea"><p class="eyebrow">¿PARA QUÉ SIRVE?</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p>'+
+      '<details class="lesson-technical"><summary>Versión técnica</summary><p>'+escapeHTML(lesson.technical)+'</p></details>'+
+      '<div class="lesson-idea-scene">'+lessonScene(lesson,0)+'</div>'+
+      '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p></section>';
+  }else if(screen===1){
+    body=visualMarkup(lesson);
+  }else if(screen===2){
+    body='<section class="lesson-screen lesson-screen-example"><div class="lesson-section-heading"><div><p class="eyebrow">EJEMPLO CON VALORES</p><h4>'+escapeHTML(lesson.miniProgram.title)+'</h4></div></div>'+
+      '<label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label>'+
+      '<pre class="lesson-code"><code>'+escapeHTML(lesson.miniProgram.code.split("|").join("\n"))+'</code></pre>'+
+      '<div class="lesson-example-output" id="lesson-data-result" role="status"></div>'+
+      '<button type="button" class="button button-primary" data-run-mini-program>Ejecutar con estos datos</button>'+
+      '<p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p></section>';
+  }else if(screen===3){
+    body='<section class="lesson-screen lesson-screen-try"><p class="eyebrow">INTÉNTALO</p><h4>'+escapeHTML(lesson.tryIt?.prompt??"Predice antes de ver la respuesta.")+'</h4>'+
+      '<p class="lesson-common-error"><b>Error común:</b> '+escapeHTML(lesson.commonError??"Revisa el orden de las instrucciones.")+'</p>'+
+      '<div class="lesson-section-heading"><div><p class="eyebrow">COMPRUEBA TU COMPRENSIÓN</p><h4>'+escapeHTML(lesson.check.question)+'</h4></div></div>'+
+      '<div class="lesson-options">'+lesson.check.options.map((option,index)=>
+        '<button type="button" class="lesson-option" data-check-option="'+index+'"><span>'+String.fromCharCode(65+index)+'</span>'+escapeHTML(option)+'</button>'
+      ).join("")+'</div><p class="lesson-feedback" id="lesson-feedback" role="status"></p></section>';
+  }else{
+    body='<section class="lesson-screen lesson-screen-summary"><p class="eyebrow">LO QUE YA SABES</p><h4>'+escapeHTML(lesson.title)+'</h4>'+
+      '<p class="lesson-summary-text">'+escapeHTML(lesson.summary??lesson.objective)+'</p>'+
+      '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.objective)+'</p>'+
+      '<button type="button" class="button button-primary" data-lesson-complete>'+(learnProgress.completed.includes(lesson.id)?"Lección completada":"Marcar lección completada")+'</button></section>';
   }
+  const currentIndex=lessons.findIndex(item=>item.id===lesson.id);
+  host.innerHTML='<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / 17 · '+escapeHTML(lesson.duration.toUpperCase())+'</p>'+
+    '<h3>'+escapeHTML(lesson.title)+'</h3><p>'+escapeHTML(lesson.objective)+'</p></div><span class="lesson-completion">'+(learnProgress.completed.includes(lesson.id)?"COMPLETADA":"PANTALLA "+(screen+1)+" DE 5")+'</span></header>'+
+    '<nav class="lesson-screen-tabs" aria-label="Pantallas de la lección">'+stepNames.map((name,index)=>
+      '<span class="lesson-screen-step '+(index===screen?"is-current":index<screen?"is-past":"")+'">'+(index+1)+". "+name+'</span>'
+    ).join("")+'</nav>'+body+
+    '<nav class="lesson-screen-navigation" aria-label="Navegación de la lección">'+
+      '<button type="button" class="button button-secondary" data-lesson-prev '+(screen===0?"disabled":"")+'>Anterior</button>'+
+      '<span class="lesson-screen-count">'+(screen+1)+' de 5</span>'+
+      '<button type="button" class="button button-primary" data-lesson-next>'+(screen===4?(currentIndex<lessons.length-1?"Siguiente lección":"Terminar ruta"):"Siguiente")+' <span aria-hidden="true">→</span></button></nav>';
+  if(screen===2)updateLessonData();
+  saveLearnProgress();
 }
-
 function updateLessonData(){
-  const lesson=lessons.find(x=>x.id===selectedLesson)??lessons[0];
+  const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
   const input=$("#lesson-data-input");
   const output=$("#lesson-data-result");
   if(!input||!output)return;
-  const values=input.value.split(",").map(value=>value.trim()).map(Number);
-  const n=values[0];
-  const fmt=value=>Number.isFinite(value)?String(Number(value.toFixed(4))):"—";
-  let result="Modifica los datos para observar el efecto.";
-  switch(lesson.id){
-    case "algorithm": result=Number.isFinite(n)?"doble = "+fmt(n)+" × 2 = "+fmt(n*2):"Introduce un número real."; break;
-    case "reading": result="Ruta: A → B → C → Fin. La flecha determina el siguiente paso."; break;
-    case "terminals": result="Recorrido: Inicio → instrucciones → Fin."; break;
-    case "io-process": result=values.length>=2&&values.slice(0,2).every(Number.isFinite)?"Área = "+fmt(values[0])+" × "+fmt(values[1])+" = "+fmt(values[0]*values[1]):"Introduce base y altura separadas por coma."; break;
-    case "variables": result=Number.isFinite(n)?"x: "+fmt(n)+" → "+fmt(n+5)+" después de x = x + 5.":"Introduce el valor inicial de x."; break;
-    case "arithmetic": result=values.length>=4&&values.slice(0,4).every(Number.isFinite)?"("+fmt(values[0])+" + "+fmt(values[1])+") × "+fmt(values[2])+" − "+fmt(values[3])+" = "+fmt((values[0]+values[1])*values[2]-values[3]):"Introduce cuatro números separados por coma."; break;
-    case "decisions": result=Number.isFinite(n)?"nota "+fmt(n)+" ≥ 3: "+(n>=3?"V · aprueba":"F · reprueba")+".":"Introduce una nota."; break;
-    case "nested-decisions": result=Number.isFinite(n)?"Clasificación: "+(n>0?"positivo":n<0?"negativo":"cero")+".":"Introduce un número."; break;
-    case "counters-accumulators": { const nums=values.filter(Number.isFinite); result=nums.length?"Contador = "+nums.length+"; acumulador = "+fmt(nums.reduce((sum,value)=>sum+value,0))+".":"Introduce números separados por coma."; break; }
-    case "for": case "while": { if(!Number.isInteger(n)){result="Introduce un límite entero.";} else {const count=Math.max(0,Math.min(50,n));result=count?"Valores visitados: "+Array.from({length:count},(_,i)=>i+1).join(", ")+".":"La condición inicial es falsa: cero iteraciones.";} break; }
-    case "do-while": { const valid=values.find(value=>Number.isFinite(value)&&value>=0&&value<=5); result=valid===undefined?"El cuerpo se ejecuta una vez; introduce una nota válida entre 0 y 5 para salir.":"Primera nota válida: "+fmt(valid)+". El cuerpo se ejecuta al menos una vez."; break; }
-    case "nested-loops": { if(values.length<2||!values.slice(0,2).every(Number.isInteger)){result="Introduce filas y columnas como dos enteros.";} else {const rows=Math.max(0,Math.min(20,values[0])),cols=Math.max(0,Math.min(20,values[1]));result=rows+" filas × "+cols+" columnas = "+(rows*cols)+" combinaciones.";} break; }
-    case "validation-sentinel": {const end=values.indexOf(0),used=(end<0?values:values.slice(0,end)).filter(Number.isFinite);result="Datos procesados: "+used.length+"; suma: "+fmt(used.reduce((sum,value)=>sum+value,0))+". "+(end<0?"Aún no aparece el centinela 0.":"El cero detiene la lectura y no se suma.");break;}
+  const values=lessonInputs(input.value);
+  if(values.some(value=>!Number.isFinite(value))){
+    output.textContent="Usa números válidos separados por comas.";
+    return;
   }
-  output.textContent=result;
+  const execution=runLesson(lesson,values);
+  if(!execution.ok){
+    output.textContent=execution.error?.message??"No se pudo ejecutar el ejemplo.";
+    return;
+  }
+  const result=execution.outputs.length?execution.outputs.map(value=>String(value)).join(" · "):"El programa terminó sin mostrar datos.";
+  const variables=Object.entries(execution.variables??{}).map(([name,value])=>name+" = "+value).join(" · ");
+  output.textContent="Salida: "+result+(variables?" | Variables: "+variables:"");
 }
-
 function renderExerciseCards(){
   const host=$("#exercise-grid");
   if(!host)return;
