@@ -1,9 +1,7 @@
 name: Create simulator v3 pre-release backup tag
 
 on:
-  push:
-    branches:
-      - mejoras/simulador-v3
+  workflow_dispatch:
 
 permissions:
   contents: write
