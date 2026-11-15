@@ -12,8 +12,6 @@ const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) 
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado",expert:"Experto"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
-let challengeSkip=(()=>{try{return window.localStorage.getItem("traza:v3:challenge-skip")==="true";}catch{return false;}})();
-const challengeSeenExercises=new Set();
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
 let predictEnabled=false,predictionPending=null,predictionResume=false,predictionCorrect=0,predictionAttempts=0;
@@ -332,31 +330,6 @@ function paintMethodTabs(){
       '<span class="simulator-method-index">'+String(index+1).padStart(2,"0")+'</span>'+
       '<span class="simulator-method-name">'+esc(item.name)+'</span></button>'
   ).join("");
-}
-function setChallengeSkip(value){
-  challengeSkip=Boolean(value);
-  try{window.localStorage.setItem("traza:v3:challenge-skip",String(challengeSkip));}catch{}
-  const checkbox=$("#simulator-challenge-skip");
-  if(checkbox)checkbox.checked=challengeSkip;
-}
-function showChallengeGate(force=false){
-  const panel=$("#simulator-challenge");
-  if(!panel||!exercise||(!force&&(challengeSkip||challengeSeenExercises.has(exercise.id))))return;
-  $("#simulator-challenge-level").textContent=(labels[exercise.level]??exercise.level).toUpperCase();
-  $("#simulator-challenge-title").textContent=String(exercise.id).padStart(2,"0")+" · "+exercise.title;
-  $("#simulator-challenge-statement").textContent=exercise.statement;
-  const checkbox=$("#simulator-challenge-skip");if(checkbox)checkbox.checked=challengeSkip;
-  panel.hidden=false;
-  $("#simulator-challenge-reveal")?.focus({preventScroll:true});
-}
-function hideChallengeGate(markSeen=false){
-  const panel=$("#simulator-challenge");
-  if(markSeen&&exercise)challengeSeenExercises.add(exercise.id);
-  if(panel)panel.hidden=true;
-}
-function openLabActivity(activity){
-  document.querySelector('[data-space="lab"]')?.click();
-  if(activity)requestAnimationFrame(()=>document.querySelector('[data-lab-activity="'+activity+'"]')?.click());
 }
 function syncDockHeight(){
   const dock=$("#dock");
