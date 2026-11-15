@@ -57,8 +57,8 @@ test("la ficha recorre las rutas SVG y dibuja el rastro activo e histórico",asy
   await page.locator('[data-space="simulator"]').click();
   for(let step=0;step<3;step++)await page.locator("#simulator-next").click();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
-  await expect(page.locator("#flow-active-trail")).toBeAttached();
-  await expect(page.locator("#flow-trail")).toBeAttached();
-  await expect.poll(async()=>((await page.locator("#flow-active-trail").getAttribute("points"))??"").trim().split(/\s+/).length).toBeGreaterThan(1);
+  await expect(page.locator("#diagram-stage #flow-active-trail")).toBeAttached();
+  await expect(page.locator("#diagram-stage #flow-trail")).toBeAttached();
+  await expect.poll(async()=>((await page.locator("#diagram-stage #flow-active-trail").getAttribute("points"))??"").trim().split(/\s+/).length).toBeGreaterThan(1);
   await expect(page.locator("#flow-svg .diagram-edge.is-token-route")).not.toHaveCount(0);
 });
