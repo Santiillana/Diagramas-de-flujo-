@@ -780,35 +780,64 @@ function drawExecutionTrail(events){
     stage.dataset.trailNodeCount=String(events.filter(event=>event.nodeId!==null&&event.nodeId!==undefined).length);
   }
 }
-function animateTokenRoute(route,event){
+function animateTokenRoute(route,event,animate=choreographyPlayback){
   const token=$("#flow-diagram-container .flow-token");
+  const trail=$("#flow-active-trail"),label=$("#flow-token-label"),ring=$("#flow-token-ring");
   if(!token)return;
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   const points=routeCoordinates(route);
   const node=diagram?.nodes.find(item=>String(item.sourceId)===String(event?.nodeId));
   const target=points.length?points[points.length-1]:node?{x:node.x,y:Math.max(10,node.y-12)}:null;
-  if(!target)return;
-  const reduced=document.documentElement.dataset.motion==="reduced"||matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(points.length<2||reduced||currentSpeedFactor()>=4){
-    token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));token.setAttribute("visibility","visible");return;
+  if(!target){token.setAttribute("visibility","hidden");return;}
+  const reduced=reducedMotion(),speed=currentSpeedFactor();
+  const caption=event?.change?event.change.name+" ← "+fmt(event.change.value):
+    event?.condition?event.condition+" → "+(event.result?"V":"F"):
+    event?.type==="output"?"imprime "+fmt(event.value):typeName(event?.type??"paso");
+  token.setAttribute("visibility","visible");
+  if(label){label.textContent=caption;label.setAttribute("x",String(target.x+16));label.setAttribute("y",String(target.y-14));label.setAttribute("visibility","visible");}
+  const place=point=>{
+    token.setAttribute("cx",String(point.x));token.setAttribute("cy",String(point.y));
+    if(label){label.setAttribute("x",String(point.x+16));label.setAttribute("y",String(point.y-14));}
+  };
+  if(points.length<2||!animate||reduced||speed>=4){
+    place(target);if(trail)trail.setAttribute("points","");
+    if(ring)ring.setAttribute("visibility","hidden");
+    return;
   }
   const lengths=[0];let total=0;
   for(let index=1;index<points.length;index++){
     total+=Math.hypot(points[index].x-points[index-1].x,points[index].y-points[index-1].y);
     lengths.push(total);
   }
-  token.setAttribute("cx",String(points[0].x));token.setAttribute("cy",String(points[0].y));token.setAttribute("visibility","visible");
-  const duration=480/Math.sqrt(currentSpeedFactor());let started=0;
+  if(total<1){place(target);return;}
+  const pointsValue=points.map(point=>point.x+","+point.y).join(" ");
+  if(trail){trail.setAttribute("points",pointsValue);trail.style.strokeDasharray=String(total);trail.style.strokeDashoffset=String(total);}
+  place(points[0]);
+  const duration=(total<1?150:Math.min(500+total*1.6,1500))/speed;
+  let started=0;
   const frame=now=>{
     if(!started)started=now;
-    const progress=Math.min(1,(now-started)/duration),distance=progress*total;
+    const u=Math.min(1,(now-started)/duration);
+    const eased=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    const distance=total*eased;
     let index=1;while(index<lengths.length-1&&lengths[index]<distance)index++;
     const segment=lengths[index]-lengths[index-1]||1,ratio=(distance-lengths[index-1])/segment;
-    const a=points[index-1],b=points[index];
-    token.setAttribute("cx",String(a.x+(b.x-a.x)*ratio));
-    token.setAttribute("cy",String(a.y+(b.y-a.y)*ratio));
-    if(progress<1)tokenRaf=requestAnimationFrame(frame);
-    else{token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));tokenRaf=0;}
+    const from=points[index-1],to=points[index];
+    const point={x:from.x+(to.x-from.x)*ratio,y:from.y+(to.y-from.y)*ratio};
+    place(point);
+    if(trail)trail.style.strokeDashoffset=String(total*(1-eased));
+    if(u<1)tokenRaf=requestAnimationFrame(frame);
+    else{
+      place(target);tokenRaf=0;
+      if(trail)trail.style.strokeDashoffset="0";
+      if(ring){
+        ring.setAttribute("cx",String(target.x));ring.setAttribute("cy",String(target.y));ring.setAttribute("visibility","visible");
+        ring.classList.remove("is-expanding");void ring.getBoundingClientRect();ring.classList.add("is-expanding");
+      }
+      token.classList.remove("is-bouncing");void token.getBoundingClientRect();token.classList.add("is-bouncing");
+      const timer=setTimeout(()=>{if(trail)trail.setAttribute("points","");token.classList.remove("is-bouncing");},420);
+      pulseTimeouts.push(timer);
+    }
   };
   tokenRaf=requestAnimationFrame(frame);
 }
