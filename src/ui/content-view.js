@@ -11,7 +11,8 @@ const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
 const LEVELS = {
   basic:{label:"Básico",className:"level-basic"},
   intermediate:{label:"Intermedio",className:"level-intermediate"},
-  advanced:{label:"Avanzado",className:"level-advanced"}
+  advanced:{label:"Avanzado",className:"level-advanced"},
+  expert:{label:"Experto",className:"level-expert"}
 };
 let selectedLesson = lessons[0].id;
 let lessonVisualStep = 0;
@@ -23,6 +24,10 @@ let exerciseRevealed = false;
 let exerciseHintStep = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
+let exerciseClassOnly = false;
+let exercisePage = 0;
+const PAGE_SIZE = 12;
+const CLASS_EXERCISES = new Set([22,23,24,28]);
 
 function readLearnProgress(){
   try{
@@ -271,17 +276,26 @@ function bindContentEvents(){
     const button=event.target.closest("[data-lesson-id]");
     if(!button)return;
     selectedLesson=button.dataset.lessonId;
-    lessonVisualStep=0;lessonPracticeStep=0;
-    lessonList();renderLesson();
+    lessonVisualStep=0;lessonScreenStep=0;
+    saveLearnProgress();lessonList();renderLesson();
   });
   $("#lesson-detail")?.addEventListener("input",event=>{
     if(event.target.id==="lesson-data-input")updateLessonData();
   });
   $("#lesson-detail")?.addEventListener("click",event=>{
-    if(event.target.closest("[data-visual-next]")&&lessonVisualStep<lessons.find(x=>x.id===selectedLesson).visual.steps.length-1){lessonVisualStep++;renderLesson();}
+    if(event.target.closest("[data-visual-next]")){lessonVisualStep++;renderLesson();}
     if(event.target.closest("[data-visual-reset]")){lessonVisualStep=0;renderLesson();}
-    if(event.target.closest("[data-practice-next]")&&lessonPracticeStep<lessons.find(x=>x.id===selectedLesson).manipulation.steps.length-1){lessonPracticeStep++;renderLesson();}
-    if(event.target.closest("[data-practice-reset]")){lessonPracticeStep=0;renderLesson();}
+    if(event.target.closest("[data-run-mini-program]"))updateLessonData();
+    if(event.target.closest("[data-lesson-prev]")&&lessonScreenStep>0){lessonScreenStep--;lessonVisualStep=0;renderLesson();}
+    if(event.target.closest("[data-lesson-next]")){
+      if(lessonScreenStep<4){lessonScreenStep++;lessonVisualStep=0;renderLesson();}
+      else{
+        completeLesson();
+        const index=lessons.findIndex(item=>item.id===selectedLesson);
+        if(index<lessons.length-1){selectedLesson=lessons[index+1].id;lessonScreenStep=0;lessonVisualStep=0;saveLearnProgress();lessonList();renderLesson();}
+      }
+    }
+    if(event.target.closest("[data-lesson-complete]"))completeLesson();
     const answer=event.target.closest("[data-check-option]");
     if(answer){
       const lesson=lessons.find(x=>x.id===selectedLesson);
@@ -336,6 +350,9 @@ function bindContentEvents(){
 }
 
 export function initContentViews(){
+  selectedLesson=learnProgress.current;lessonScreenStep=learnProgress.screen;
+  const count=$("#view-learn .lesson-catalog-panel h3");if(count)count.textContent="17 lecciones";
+  const mark=$("#view-learn .detail-empty-mark");if(mark)mark.textContent="17";
   lessonList();renderLesson();
   renderExerciseCards();renderExerciseDetail();
   bindContentEvents();
