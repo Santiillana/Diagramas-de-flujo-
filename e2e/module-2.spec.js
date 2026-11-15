@@ -16,14 +16,19 @@ test("Aprende presenta las diecisiete lecciones con explicación y comprobación
 
 test("el catálogo muestra 45 ejercicios, filtra los niveles y pagina el resultado", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(40);
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(12);
+  await expect(page.locator("#exercise-count")).toContainText("45 ejercicios");
   await page.locator("#exercise-level").selectOption("basic");
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(20);
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(12);
+  await page.locator("[data-page-next]").click();
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(8);
   await page.locator("#exercise-level").selectOption("intermediate");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(10);
   await page.locator("#exercise-level").selectOption("advanced");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(10);
-  await page.locator("#exercise-level").selectOption("expert");\n  await expect(page.locator("[data-select-exercise]")).toHaveCount(5);\n  await page.locator("#exercise-level").selectOption("all");
+  await page.locator("#exercise-level").selectOption("expert");
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(5);
+  await page.locator("#exercise-level").selectOption("all");
   await page.locator("#exercise-search").fill("Fibonacci");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(1);
 });
