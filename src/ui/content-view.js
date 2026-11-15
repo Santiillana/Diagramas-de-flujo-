@@ -370,6 +370,7 @@ function bindContentEvents(){
 export function initContentViews(){
   selectedLesson=learnProgress.current;lessonScreenStep=learnProgress.screen;
   const count=$("#view-learn .lesson-catalog-panel h3");if(count)count.textContent="17 lecciones";
+  const homeProgress=$("#home-learn-progress");if(homeProgress)homeProgress.textContent=learnProgress.completed.length+" completadas";
   const mark=$("#view-learn .detail-empty-mark");if(mark)mark.textContent="17";
   lessonList();renderLesson();
   renderExerciseCards();renderExerciseDetail();
