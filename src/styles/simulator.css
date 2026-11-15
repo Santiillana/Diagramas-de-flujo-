@@ -1047,7 +1047,6 @@ body[data-active-space="simulator"] .flow-token{fill:#ffd23f;stroke:#1f2b36;stro
 /* Modo Concentración: la Fullscreen API es opcional; el estado visual lo controla body.focus */
 body[data-active-space="simulator"].focus{overflow:hidden!important;background:var(--bg)!important}
 body[data-active-space="simulator"].focus #hd,
-body[data-active-space="simulator"].focus .page-shell,
 body[data-active-space="simulator"].focus .page-heading,
 body[data-active-space="simulator"].focus #PL,
 body[data-active-space="simulator"].focus #RC,
