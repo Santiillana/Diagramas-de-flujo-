@@ -573,6 +573,10 @@ function symbolExplanation(event){
     return {key:"decision",name:"Rombo · Mientras",text:"El rombo pregunta antes de entrar al cuerpo. Si la respuesta inicial es Falsa, el cuerpo puede ejecutarse cero veces."};
   }
   if(["loop-init","loop-update"].includes(event.type)&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"Esta es una de las tres partes del Para: primero se prepara el contador y después se avanza según el paso definido."};
+  if(event.type==="loop-enter"&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"La condición se cumplió y el flujo entra al cuerpo del Para. Al terminar sus instrucciones se realizará el avance."};
+  if(event.type==="loop-enter"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta verdadera",text:"La condición se cumplió. El flujo entra al cuerpo y ejecuta sus instrucciones antes de volver a comprobarla cuando corresponda."};
+  if(event.type==="loop-exit"&&loopType==="for")return {key:"loop",name:"Hexágono · Salida del Para",text:"La condición del Para resultó falsa. El flujo abandona el ciclo y continúa con la instrucción siguiente."};
+  if(event.type==="loop-exit"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta falsa",text:"La condición dejó de cumplirse. Se toma la salida del rombo y el algoritmo continúa después del ciclo."};
   if(event.type==="loop-enter")return {key:"connector",name:"Conector · Entrada al ciclo",text:"La flecha conduce al cuerpo de la repetición. El número de vuelta identifica cuántas veces se ha ejecutado."};
   if(event.type==="loop-exit")return {key:"connector",name:"Conector · Salida del ciclo",text:"La ruta abandona el cuerpo porque la condición dejó de cumplirse. La ejecución continúa después del ciclo."};
   if(event.type==="loop-init")return {key:"process",name:"Rectángulo · Inicialización",text:"La variable de control recibe su valor inicial antes de comprobar la condición."};
@@ -1466,6 +1470,7 @@ function bind(){
     if(!nav?.classList.contains("is-open")||event.target.closest("#simulator-exercise-nav,#simulator-exercise-nav-toggle"))return;
     nav.classList.remove("is-open");
     $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
   });
   $("#simulator-method-tabs")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-method-index]");
@@ -1590,7 +1595,7 @@ function bind(){
     const key=event.key;
     if(key==="Escape"&&!$("#simulator-challenge")?.hidden){event.preventDefault();hideChallengeGate(true);return;}
     if(key==="Escape"&&$("#simulator-exercise-nav")?.classList.contains("is-open")){
-      event.preventDefault();$("#simulator-exercise-nav").classList.remove("is-open");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");return;
+      event.preventDefault();$("#simulator-exercise-nav").classList.remove("is-open");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");return;
     }
     if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
