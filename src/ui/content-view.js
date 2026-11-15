@@ -366,6 +366,7 @@ function bindContentEvents(){
   $("#lesson-catalog")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-lesson-id]");
     if(!button)return;
+    stopLessonPlayback();
     selectedLesson=button.dataset.lessonId;
     lessonVisualStep=0;lessonScreenStep=0;
     saveLearnProgress();lessonList();renderLesson();
@@ -374,11 +375,28 @@ function bindContentEvents(){
     if(event.target.id==="lesson-data-input")updateLessonData();
   });
   $("#lesson-detail")?.addEventListener("click",event=>{
-    if(event.target.closest("[data-visual-next]")){lessonVisualStep++;renderLesson();}
-    if(event.target.closest("[data-visual-reset]")){lessonVisualStep=0;renderLesson();}
+    if(event.target.closest("[data-visual-next]")){
+      stopLessonPlayback();
+      const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
+      const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
+      lessonVisualStep=Math.min(Math.max(0,events.length-1),lessonVisualStep+1);renderLesson();
+    }
+    if(event.target.closest("[data-visual-prev]")){
+      stopLessonPlayback();lessonVisualStep=Math.max(0,lessonVisualStep-1);renderLesson();
+    }
+    if(event.target.closest("[data-visual-reset]")){
+      stopLessonPlayback();lessonVisualStep=0;renderLesson();
+    }
+    if(event.target.closest("[data-visual-play]")){
+      if(lessonPlaying){stopLessonPlayback();renderLesson();}
+      else startLessonPlayback();
+    }
     if(event.target.closest("[data-run-mini-program]"))updateLessonData();
-    if(event.target.closest("[data-lesson-prev]")&&lessonScreenStep>0){lessonScreenStep--;lessonVisualStep=0;renderLesson();}
+    if(event.target.closest("[data-lesson-prev]")&&lessonScreenStep>0){
+      stopLessonPlayback();lessonScreenStep--;lessonVisualStep=0;renderLesson();
+    }
     if(event.target.closest("[data-lesson-next]")){
+      stopLessonPlayback();
       if(lessonScreenStep<4){lessonScreenStep++;lessonVisualStep=0;renderLesson();}
       else{
         completeLesson();
@@ -389,12 +407,12 @@ function bindContentEvents(){
     if(event.target.closest("[data-lesson-complete]"))completeLesson();
     const answer=event.target.closest("[data-check-option]");
     if(answer){
-      const lesson=lessons.find(x=>x.id===selectedLesson);
+      const lesson=lessons.find(item=>item.id===selectedLesson);
       const chosen=Number(answer.dataset.checkOption);
       $$(".lesson-option",$("#lesson-detail")).forEach(button=>{
-        const n=Number(button.dataset.checkOption);
-        button.classList.toggle("is-correct",n===lesson.check.answer);
-        button.classList.toggle("is-wrong",n===chosen&&chosen!==lesson.check.answer);
+        const index=Number(button.dataset.checkOption);
+        button.classList.toggle("is-correct",index===lesson.check.answer);
+        button.classList.toggle("is-wrong",index===chosen&&chosen!==lesson.check.answer);
         button.disabled=true;
       });
       const feedback=$("#lesson-feedback");
@@ -406,40 +424,39 @@ function bindContentEvents(){
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});
-  $("#exercise-category")?.addEventListener("change",event=>{exerciseCategory=event.target.value;exercisePage=0;renderExerciseCards();});
-  $("#view-exercises")?.addEventListener("click",event=>{if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}});
+  $("#exercise-concepts")?.addEventListener("click",event=>{
+    const chip=event.target.closest("[data-concept-filter]");if(!chip)return;
+    const label=chip.dataset.conceptFilter;
+    selectedConcepts.has(label)?selectedConcepts.delete(label):selectedConcepts.add(label);
+    exercisePage=0;renderExerciseCards();
+  });
+  $("#view-exercises")?.addEventListener("click",event=>{
+    const mode=event.target.closest("[data-concept-mode]");
+    if(mode){conceptMatchMode=mode.dataset.conceptMode==="any"?"any":"all";exercisePage=0;renderExerciseCards();return;}
+    if(event.target.closest("#exercise-filters-clear")){
+      exerciseQuery="";exerciseLevel="all";exerciseClassOnly=false;selectedConcepts.clear();conceptMatchMode="all";exercisePage=0;
+      if($("#exercise-search"))$("#exercise-search").value="";
+      if($("#exercise-level"))$("#exercise-level").value="all";
+      if($("#exercise-class-only"))$("#exercise-class-only").checked=false;
+      renderExerciseCards();return;
+    }
+    if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}
+    if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}
+  });
   $("#exercise-grid")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-select-exercise]");
     if(card)selectExercise(card.dataset.selectExercise);
   });
   $("#exercise-detail")?.addEventListener("click",event=>{
-    if(event.target.closest("[data-save-attempt]")){
-      const answer={};
-      $$("[data-attempt-field]",$("#exercise-detail")).forEach(field=>answer[field.dataset.attemptField]=field.value);
-      try{localStorage.setItem("traza-exercise-attempt-"+selectedExercise.id,JSON.stringify(answer));}catch{}
-      const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
-      if(feedback)feedback.textContent="Tu análisis quedó guardado en este navegador.";
-      return;
-    }
-    if(event.target.closest("[data-exercise-hint]")){
-      const hint=exerciseHintStep===0
-        ?"Conceptos que se ponen en práctica: "+selectedExercise.concepts.slice(0,3).join(", ")+".":"Restricción que debes respetar: "+selectedExercise.constraints[0];
-      const feedback=$("[data-gate-feedback]",$("#exercise-detail"));
-      if(feedback)feedback.textContent=hint;
-      exerciseHintStep=Math.min(exerciseHintStep+1,1);
-      return;
-    }
-    if(event.target.closest("[data-reveal-solution]")){
-      exerciseRevealed=true;
-      renderExerciseDetail();
-      return;
-    }
-    const tab=event.target.closest("[data-method-index]");
-    if(tab){selectedMethod=Number(tab.dataset.methodIndex);renderExerciseDetail();return;}
-    if(event.target.closest("[data-open-simulator]")&&selectedExercise){
-      document.dispatchEvent(new CustomEvent("traza:request-simulation",{detail:{exerciseId:selectedExercise.id,methodIndex:selectedMethod}}));
-      document.querySelector('[data-space="simulator"]')?.click();
-    }
+    if(event.target.closest("[data-start-exercise]"))openExerciseTryModal();
+  });
+  $("#exercise-try-back")?.addEventListener("click",closeExerciseTryModal);
+  $("#exercise-try-confirm")?.addEventListener("click",confirmExerciseInSimulator);
+  $("#exercise-try-modal")?.addEventListener("click",event=>{
+    if(event.target.id==="exercise-try-modal")closeExerciseTryModal();
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!$("#exercise-try-modal")?.hidden)closeExerciseTryModal();
   });
 }
 
