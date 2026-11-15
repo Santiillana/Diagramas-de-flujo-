@@ -89,3 +89,14 @@ button:disabled { cursor:not-allowed; opacity:.46; } .diagram-stage { position:r
 .builder-empty strong { font-size:13px; } .builder-empty p { max-width:280px; color:var(--muted); font-size:13px; }
 .inspector-empty { display:flex; flex-direction:column; align-items:center; padding:50px 20px; text-align:center; } .inspector-empty>span { display:grid; place-items:center; width:54px; height:54px; margin-bottom:13px; border:1px solid var(--line); border-radius:15px; color:var(--accent); background:var(--accent-soft); font-size:22px; }
 .inspector-empty strong { font-size:13px; } .inspector-empty p { max-width:190px; color:var(--muted); font-size:13px; }
+
+/* Botones y controles de la identidad cuaderno/pizarra */
+.button{border-radius:8px;box-shadow:none}
+.button-primary{border:1px solid var(--accent-strong);color:#1b2928;background:var(--accent);box-shadow:none}
+.button-primary:hover{color:#142522;background:var(--accent-strong)}
+.button-secondary{border:1px solid var(--line-strong);color:var(--ink-soft);background:var(--surface-soft)}
+.button-secondary:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.text-link{color:var(--accent-strong)}
+.nav-button{border-radius:7px}
+.nav-button.is-active{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.panel{border-radius:10px;box-shadow:var(--shadow-sm)}
