@@ -498,6 +498,10 @@ export function initLab(){
   });
   addLabActivity("fill-gap","Completa el hueco","Escribe una expresión y comprueba la ejecución.","▤");
   addLabActivity("follow-arrow","Sigue la flecha","Predice la siguiente figura del recorrido.","➜");
+  const activityHeading=$("#lab-activity-list")?.closest(".activity-panel")?.querySelector(".panel-heading h3");
+  if(activityHeading)activityHeading.textContent="Ocho formas de pensar";
+  const countLabel=$("#view-lab .section-intro .phase-chip");
+  if(countLabel)countLabel.textContent="8 ACTIVIDADES · PRÁCTICA COMPARTIDA";
   addMixedPracticeButton();
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
   setActivity("predict");
