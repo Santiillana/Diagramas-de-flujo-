@@ -1399,3 +1399,20 @@ body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
   body[data-active-space="simulator"] .primary-nav{flex-basis:300px;max-width:300px}
   body[data-active-space="simulator"] .sim-exercise-strip{flex-basis:260px;width:260px;min-width:200px}
 }
+
+/* Evitar que los grupos desbordados se dibujen sobre el buscador. */
+@media(min-width:901px){
+  body[data-active-space="simulator"] .sim-toolbar-controls{
+    justify-content:flex-start!important;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
+  }
+}
+@media(max-width:1400px) and (min-width:901px){
+  body[data-active-space="simulator"] .brand{display:none}
+  body[data-active-space="simulator"] .primary-nav{
+    flex:0 1 300px;max-width:300px;min-width:0;overflow-x:auto;overflow-y:hidden
+  }
+  body[data-active-space="simulator"] .sim-exercise-strip{
+    flex:0 1 260px;width:260px;min-width:200px;max-width:260px
+  }
+  body[data-active-space="simulator"] .sim-tool-button{min-width:31px;padding-inline:3px;font-size:11px}
+}
