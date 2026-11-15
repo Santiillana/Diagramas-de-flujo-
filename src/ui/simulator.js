@@ -1444,10 +1444,28 @@ function bind(){
     if(event.target.id!=="sim-exercise-select")return;
     exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
   });
+  $("#simulator-exercise-nav-toggle")?.addEventListener("click",event=>{
+    const nav=$("#simulator-exercise-nav"),toggle=event.currentTarget;
+    if(!nav)return;
+    const open=!nav.classList.contains("is-open");
+    nav.classList.toggle("is-open",open);
+    toggle.setAttribute("aria-expanded",String(open));
+    toggle.setAttribute("aria-label",open?"Cerrar navegación numerada de ejercicios":"Abrir navegación numerada de ejercicios");
+    if(open)nav.querySelector('[data-exercise-shortcut="'+exerciseId+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
+  });
   $("#simulator-exercise-nav")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-exercise-shortcut]");
     if(!button)return;
+    $("#simulator-exercise-nav").classList.remove("is-open");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
     exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;prepare();showChallengeGate();
+  });
+  document.addEventListener("pointerdown",event=>{
+    const nav=$("#simulator-exercise-nav");
+    if(!nav?.classList.contains("is-open")||event.target.closest("#simulator-exercise-nav,#simulator-exercise-nav-toggle"))return;
+    nav.classList.remove("is-open");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
   });
   $("#simulator-method-tabs")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-method-index]");
@@ -1571,6 +1589,9 @@ function bind(){
     if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
     if(key==="Escape"&&!$("#simulator-challenge")?.hidden){event.preventDefault();hideChallengeGate(true);return;}
+    if(key==="Escape"&&$("#simulator-exercise-nav")?.classList.contains("is-open")){
+      event.preventDefault();$("#simulator-exercise-nav").classList.remove("is-open");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");return;
+    }
     if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
