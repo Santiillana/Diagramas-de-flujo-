@@ -60,7 +60,7 @@ test("el enlace de compartir identifica el método seleccionado",async({page})=>
  await page.locator("[data-reveal-solution]").click();
  await page.locator("[data-method-index='1']").click();
  await page.locator('[data-share-action="copy"]').click();
- await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/reto=4/);
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/ejercicio=4/);
  await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/metodo=1/);
  await expect(page.locator("[data-share-feedback]")).not.toBeEmpty();
 });
