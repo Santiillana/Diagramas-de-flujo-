@@ -76,7 +76,7 @@ function expressionDetails(event, previousVariables) {
   const expression = assignment ? assignment[2] : source;
   let substituted = expression;
   for (const [name,value] of Object.entries(previousVariables ?? {})) {
-    substituted = substituted.replace(new RegExp("\\b"+name+"\\b","g"), name+"="+format(value));
+    substituted = substituted.replace(new RegExp("\\b"+name+"\\b","g"), format(value));
   }
   let partials = [];
   try {
