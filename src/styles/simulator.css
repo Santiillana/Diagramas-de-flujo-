@@ -1185,3 +1185,117 @@ body[data-active-space="simulator"].focus .focus-ui.is-idle .focus-footer{opacit
   body[data-active-space="simulator"].focus .focus-footer,
   .sim-question-card{transition:none!important;animation:none!important}
 }
+
+
+/* V3 · ajustes finales de legibilidad en el layout real de las ventanas */
+html[data-theme="light"] body[data-active-space="simulator"]{
+  --bg:#eef2fb;--card:rgba(255,255,255,.82);--ink:#1b2440;--pen:#52607c;
+  --line:rgba(60,80,160,.17);--hl:#ffe27a;--ok:#16a34a;--no:#e11d48;--info:#2c6bdc;
+  background:radial-gradient(1100px 700px at 55% 20%,rgba(90,125,220,.12),transparent 65%),var(--bg);
+}
+html[data-theme="light"] body[data-active-space="simulator"] #wrap{
+  background-image:
+    linear-gradient(to right,rgba(60,80,160,.08) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(60,80,160,.08) 1px,transparent 1px),
+    linear-gradient(to right,rgba(60,80,160,.14) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(60,80,160,.14) 1px,transparent 1px);
+}
+body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{
+  top:64px;left:10px;bottom:calc(var(--dk) + 20px);width:calc(var(--fs)*21px);
+  height:auto;max-height:none;display:flex;flex-direction:column;gap:8px;padding:12px;
+  overflow:auto;overscroll-behavior:contain;pointer-events:auto;
+  border:1px solid var(--line);border-radius:14px;background:var(--card);
+  backdrop-filter:blur(14px) saturate(1.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),var(--traza-shadow)
+}
+body[data-active-space="simulator"] #PL>.sim-window{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  width:100%;height:auto!important;max-height:none!important;min-height:0;margin:0;
+  flex:0 0 auto;overflow:visible;border:0;border-radius:0;background:transparent;
+  box-shadow:none;backdrop-filter:none
+}
+body[data-active-space="simulator"] #sim-window-context{--window-identity:var(--traza-blue)}
+body[data-active-space="simulator"] #sim-window-data{--window-identity:#ffb020}
+body[data-active-space="simulator"] #sim-window-code{--window-identity:var(--traza-blue);flex:1 0 230px;min-height:230px}
+body[data-active-space="simulator"] #PL>.sim-window+.sim-window{border-top:1px solid var(--line);padding-top:8px}
+body[data-active-space="simulator"] #PL .sim-window .panel-heading{
+  min-height:40px;padding:6px 2px;border:0;border-left:3px solid var(--window-identity);background:transparent
+}
+body[data-active-space="simulator"] #PL .sim-window .panel-heading>div:first-child{min-width:0;flex:1 1 auto}
+body[data-active-space="simulator"] #PL .sim-window .panel-heading h3{white-space:normal;font-size:15px;line-height:1.25}
+body[data-active-space="simulator"] #PL .sim-window-body{padding:7px 4px 10px;overflow:visible}
+body[data-active-space="simulator"] #PL .simulator-problem-body{padding:7px 4px 10px;overflow:visible}
+body[data-active-space="simulator"] #PL .sim-context-notes{gap:6px}
+body[data-active-space="simulator"] #PL .sim-context-notes section{padding:7px 8px;border:0;border-left:2px solid var(--traza-violet);border-radius:0;background:transparent}
+body[data-active-space="simulator"] #PL .sim-context-notes h4{font-size:13px}
+body[data-active-space="simulator"] #PL .sim-context-notes p{font-size:14px;line-height:1.45}
+body[data-active-space="simulator"] #PL .simulator-statement{font-size:15px;line-height:1.5}
+body[data-active-space="simulator"] #PL .simulator-field>span{font-size:12px}
+body[data-active-space="simulator"] #PL .simulator-field input,
+body[data-active-space="simulator"] #PL .simulator-field select{min-height:40px;font-size:15px}
+body[data-active-space="simulator"] #PL .simulator-help{font-size:13px;line-height:1.4}
+body[data-active-space="simulator"] #PL .pseudocode-lines{max-height:none;height:auto;overflow:visible}
+body[data-active-space="simulator"] #PL .pseudocode-lines li{font-size:calc(var(--fs)*1px);padding:5px 8px}
+body[data-active-space="simulator"] #PL #sim-window-code .sim-window-body{overflow:auto;min-height:180px}
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  top:64px;right:10px;bottom:calc(var(--dk) + 20px);width:min(calc(var(--fs)*30px),34vw);
+  display:flex;flex-direction:column;gap:10px;overflow:hidden;pointer-events:auto
+}
+body[data-active-space="simulator"] #PV.scene-panel{
+  flex:0 0 calc(var(--fs)*20px);height:calc(var(--fs)*20px);min-height:280px;overflow:hidden;
+  background:var(--card);backdrop-filter:blur(14px) saturate(1.2)
+}
+body[data-active-space="simulator"] #PV #scene-content{
+  padding:12px 16px;overflow:auto;font-size:15px;line-height:1.5
+}
+body[data-active-space="simulator"] #PR.sim-right-content{
+  flex:1 1 auto;min-height:0;display:grid!important;
+  grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(145px,1.35fr) minmax(105px,.85fr) minmax(120px,1fr);
+  gap:0;padding:10px 14px;border:1px solid var(--line);border-radius:14px;
+  background:var(--card);backdrop-filter:blur(14px) saturate(1.2);box-shadow:var(--traza-shadow);
+  overflow:hidden
+}
+body[data-active-space="simulator"] #PR>.panel{
+  display:flex;flex-direction:column;min-height:0;width:100%;height:auto!important;
+  border:0;border-radius:0;border-top:1px solid var(--line);background:transparent;box-shadow:none;
+  backdrop-filter:none;overflow:hidden
+}
+body[data-active-space="simulator"] #PR>.variables-panel{grid-row:1;border-top:0}
+body[data-active-space="simulator"] #PR>.output-panel{grid-row:2}
+body[data-active-space="simulator"] #PR>.trace-panel{grid-row:3;min-height:0;flex:1 1 auto}
+body[data-active-space="simulator"] #PR>.panel .panel-heading{
+  flex:0 0 auto;min-height:35px;padding:4px 3px;border-left:0;border-bottom:1px solid var(--line)
+}
+body[data-active-space="simulator"] #PR .variables-content{flex:1 1 40px;min-height:40px;max-height:none;overflow:auto;padding:5px 4px}
+body[data-active-space="simulator"] #PR .variable-change{padding:4px;font-size:13px}
+body[data-active-space="simulator"] #PR .variable-history{flex:1 1 45px;min-height:45px;max-height:90px;overflow:auto;padding:4px}
+body[data-active-space="simulator"] #PR .simulator-output{flex:1 1 auto;max-height:none;overflow:auto;padding:6px 10px}
+body[data-active-space="simulator"] #PR .trace-history{flex:1 1 auto;min-height:0;overflow:auto;padding:5px}
+body[data-active-space="simulator"] #PR .trace-history li{min-height:38px}
+body[data-active-space="simulator"] #PR .empty-state-copy{font-size:13px}
+body[data-active-space="simulator"] .flow-active-trail{
+  fill:none;stroke:#ffc400;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.72;
+  stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 5px rgba(255,196,0,.5));
+  vector-effect:non-scaling-stroke;pointer-events:none
+}
+body[data-active-space="simulator"] .flow-token-ring{
+  fill:none;stroke:#ffc400;stroke-width:3;opacity:0;vector-effect:non-scaling-stroke;pointer-events:none
+}
+body[data-active-space="simulator"] .flow-token-ring.is-expanding{animation:sim-token-ring .42s ease-out}
+body[data-active-space="simulator"] .flow-token.is-bouncing{animation:sim-token-bounce .35s cubic-bezier(.2,.8,.3,1.35)}
+body[data-active-space="simulator"] .flow-token-label{
+  fill:var(--traza-text);font:800 12px ui-monospace,monospace;paint-order:stroke;
+  stroke:rgba(7,11,20,.9);stroke-width:4px;stroke-linejoin:round;pointer-events:none
+}
+@keyframes sim-token-ring{0%{r:9;opacity:.85}100%{r:28;opacity:0}}
+@keyframes sim-token-bounce{0%{transform:scale(1)}55%{transform:scale(1.35,.78)}100%{transform:scale(1)}}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{left:8px;right:8px;top:auto;bottom:calc(var(--dk) + 57px);width:auto;height:auto;max-height:min(48vh,390px)}
+  body[data-active-space="simulator"] #PL>.sim-window{display:flex;max-height:none!important}
+  body[data-active-space="simulator"] #PL #sim-window-code{flex:1 0 200px}
+  body[data-active-space="simulator"] #RC{top:auto;bottom:calc(var(--dk) + 57px);height:min(48vh,390px)}
+  body[data-active-space="simulator"] #PR.sim-right-content{grid-template-rows:minmax(0,1fr);overflow:auto}
+  body[data-active-space="simulator"] #PR>.panel{min-height:0}
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-tool-button{font-size:11px}
+}
