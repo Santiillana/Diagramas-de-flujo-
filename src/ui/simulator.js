@@ -97,7 +97,7 @@ function applyWindowState(){
     }
   }
   renderWindowRail();
-  requestAnimationFrame(()=>{if(diagramFitWidth){updateMinimap();if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");}});
+  requestAnimationFrame(()=>{if(diagramFitWidth&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");});
 }
 function minimizeWindow(id){
   if(!WINDOW_META.some(item=>item.id===id))return;
@@ -1140,14 +1140,6 @@ function bindDiagramPan(){
     applyCanvasTransform();
     stage.dataset.wheelPan=String((Number(stage.dataset.wheelPan)||0)+1);
   },{passive:false});
-  const minimap=$("#sim-minimap");
-  if(minimap){
-    let dragging=false;
-    minimap.addEventListener("pointerdown",event=>{dragging=true;try{minimap.setPointerCapture(event.pointerId);}catch{}jumpMinimap(event);});
-    minimap.addEventListener("pointermove",event=>{if(dragging)jumpMinimap(event);});
-    const end=()=>{dragging=false;};
-    minimap.addEventListener("pointerup",end);minimap.addEventListener("pointercancel",end);
-  }
 }function setMobilePanel(name){
   const valid=["problem","diagram","scene","variables","output","history"];
   if(!valid.includes(name))return;
@@ -1286,13 +1278,12 @@ function bind(){
   const freeAreaObserver=new ResizeObserver(()=>{
     requestAnimationFrame(()=>{
       if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-      updateMinimap();
     });
   });
   for(const selector of ["#hd","#PL","#RC","#dock","#simulator-mobile-tabs"]){
     const element=$(selector);if(element)freeAreaObserver.observe(element);
   }
-  window.addEventListener("resize",()=>requestAnimationFrame(()=>cameraAuto?fitDiagram():updateMinimap()));
+  window.addEventListener("resize",()=>requestAnimationFrame(()=>fitDiagram()));
   document.addEventListener("traza:request-simulation",event=>{
     exerciseId=Number(event.detail?.exerciseId)||1;
     methodIndex=Number(event.detail?.methodIndex)||0;
