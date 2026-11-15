@@ -195,14 +195,33 @@ function placeContextWindow(event){
     {left:workspace.right-width,top:workspace.bottom-height}
   ];
   const activeId=String(model?.id??"");
-  const inflated=element=>{
-    const r=element.getBoundingClientRect(),pad=element.matches("path")?9:3;
-    return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
+  const svgScreenBounds=(element,padding=9)=>{
+    try{
+      const box=element.getBBox(),matrix=element.getScreenCTM();
+      if(!matrix)return null;
+      const svg=element.ownerSVGElement;
+      const corners=[
+        [box.x,box.y],[box.x+box.width,box.y],
+        [box.x,box.y+box.height],[box.x+box.width,box.y+box.height]
+      ].map(([x,y])=>{
+        const point=svg.createSVGPoint();point.x=x;point.y=y;
+        return point.matrixTransform(matrix);
+      });
+      const xs=corners.map(point=>point.x),ys=corners.map(point=>point.y);
+      return {left:Math.min(...xs)-padding,top:Math.min(...ys)-padding,
+        right:Math.max(...xs)+padding,bottom:Math.max(...ys)+padding};
+    }catch{return null;}
   };
-  const obstacles=[
-    ...document.querySelectorAll("#flow-svg .flow-edges path,#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+activeId+")"),
+  const edgeObstacles=[...document.querySelectorAll("#flow-svg .diagram-edge")]
+    .map(element=>svgScreenBounds(element,10)).filter(Boolean);
+  const otherObstacles=[
+    ...document.querySelectorAll("#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+activeId+")"),
     ...document.querySelectorAll("#PL .sim-window,#RC #PV,#PR>.panel,#dock,#hd")
-  ].filter(el=>getComputedStyle(el).display!=="none").map(inflated);
+  ].filter(el=>getComputedStyle(el).display!=="none").map(el=>{
+    const r=el.getBoundingClientRect(),pad=3;
+    return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
+  });
+  const obstacles=[...edgeObstacles,...otherObstacles];
   const valid=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&
     !rectIntersects(rect,figure,8)&&!obstacles.some(other=>rectIntersects(rect,other,2));
   const chosen=candidates.find(valid);
