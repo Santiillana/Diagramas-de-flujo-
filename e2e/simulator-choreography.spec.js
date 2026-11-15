@@ -25,3 +25,39 @@ test("Imprimir vuela hacia Pantalla y una interrupción manual cancela los vuelo
   await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
   await expect(page.locator("#timeline-count")).toContainText("/");
 });
+
+
+test("cinco saltos rápidos cancelan chips, pulsos y contadores pendientes",async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-speed").selectOption("300");
+  await page.locator("#simulator-next").click();
+  await expect(page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="variables"]')).toBeAttached({timeout:5000});
+  const timeline=page.locator("#simulator-timeline");
+  for(const step of [2,3,4,5,1]){
+    await timeline.evaluate((input,value)=>{
+      input.value=String(value);
+      input.dispatchEvent(new Event("input",{bubbles:true}));
+    },step);
+  }
+  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
+  await expect(page.locator("[data-pulse]")).toHaveCount(0);
+  await expect(page.locator(".sim-pulse-count")).toHaveCount(0);
+});
+
+test("movimiento reducido conserva el resaltado instantáneo y omite vuelos y animaciones",async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-next").click();
+  await expect(page.locator('#PR > .variables-panel[data-pulse]')).toBeVisible();
+  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
+  const styles=await page.locator('#PR > .variables-panel').evaluate(el=>({
+    animation:getComputedStyle(el).animationName,
+    duration:getComputedStyle(el).animationDuration
+  }));
+  expect(styles.animation).toBe("none");
+  expect(styles.duration==="0s"||styles.duration==="1ms").toBe(true);
+});
