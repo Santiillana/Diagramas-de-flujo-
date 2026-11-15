@@ -258,6 +258,19 @@ function updateProjectorAfterFullscreen(){
     if(exit)exit.hidden=true;
   }
 }
+function runMethodComparison(){
+  if(!selectedExercise||selectedExercise.methods.length<2)return;
+  const raw=$("#exercise-detail [data-method-compare-input]")?.value??"";
+  const input=parseInputValues(raw);
+  const results=selectedExercise.methods.map(method=>({name:method.name,...safeExecuteMethod(method,input)}));
+  const first=results[0];
+  const same=results.every(result=>result.ok&&outputsMatch(result.outputs,first.outputs));
+  const host=$("#exercise-detail [data-method-comparison-result]");
+  if(!host)return;
+  host.innerHTML='<div class="method-live-comparison-grid">'+results.map(result=>
+    '<article class="'+(result.ok?"":"is-error")+'"><b>'+escapeHTML(result.name)+'</b><strong>'+(result.ok?escapeHTML(JSON.stringify(result.outputs)):"No se pudo ejecutar")+'</strong>'+(result.error?'<small>'+escapeHTML(result.error)+'</small>':'')+'</article>'
+  ).join("")+'</div><p class="'+(same?"is-correct":"is-wrong")+'">'+(same?"Los métodos producen la misma salida con estas entradas.":"Los métodos no coinciden: revisa sus pasos, condiciones y acumuladores.")+'</p>';
+}
 function runExerciseTestSuite(item){
   const results=[];
   for(const method of item.methods){
@@ -425,6 +438,12 @@ function renderExerciseDetail(){
             <div class="method-comparison-list">
               ${item.comparacionMetodos.map((alternative,index)=>`<article><b>${index+1}. ${escapeHTML(alternative.nombre)}</b><p>${escapeHTML(alternative.enfoque)}</p></article>`).join("")}
             </div>
+          </section>
+          <section class="method-live-comparison" aria-label="Comparación ejecutable con los mismos datos">
+            <p class="eyebrow">COMPARACIÓN EN VIVO · MISMAS ENTRADAS</p>
+            <label>Datos compartidos<input type="text" data-method-compare-input value="${escapeHTML(method.sample.join(", "))}" aria-label="Datos compartidos para comparar métodos"></label>
+            <button type="button" class="button button-secondary" data-run-method-comparison>Ejecutar ambos métodos</button>
+            <div data-method-comparison-result role="status"></div>
           </section>`: ""}
         <section class="exercise-reasoning" aria-label="Razonamiento del problema">
           <div class="exercise-section-heading"><div><p class="eyebrow">RAZONAMIENTO · ANTES Y DESPUÉS DE PROGRAMAR</p><h4>Cómo pensar la solución</h4></div></div>
@@ -556,6 +575,7 @@ function bindContentEvents(){
     if(event.target.closest("[data-projector-exit]")){setProjectorMode(false);return;}
     if(event.target.closest("[data-run-solution]")){runCustomExercisePrediction();return;}
     if(event.target.closest("[data-run-suite]")){runExerciseVerification();return;}
+    if(event.target.closest("[data-run-method-comparison]")){runMethodComparison();return;}
     if(event.target.closest("[data-reveal-solution]")){
       exerciseRevealed=true;
       renderExerciseDetail();

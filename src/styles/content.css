@@ -260,3 +260,14 @@ body.exercise-projector-mode .exercise-projector-exit{display:block}
 @media(prefers-reduced-motion:reduce){
  .exercise-progress-status,.exercise-card{transition:none!important}
 }
+
+.method-live-comparison{display:grid;gap:10px;margin:14px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft)}
+.method-live-comparison label{display:grid;gap:5px;color:var(--muted-strong);font-size:13px}
+.method-live-comparison input{min-height:38px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface)}
+.method-live-comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.method-live-comparison-grid article{display:grid;gap:7px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.method-live-comparison-grid article strong{overflow-wrap:anywhere;color:var(--positive)}
+.method-live-comparison-grid article.is-error strong{color:var(--danger)}
+.method-live-comparison-grid small{color:var(--danger)}
+.method-live-comparison-result p{margin:0}
+@media(max-width:560px){.method-live-comparison-grid{grid-template-columns:1fr}}

@@ -118,3 +118,14 @@ test("el enlace compartido conserva también las entradas y la predicción",asyn
  await expect(page.locator("[data-solution-input]")).toHaveValue("2,3");
  await expect(page.locator("[data-solution-prediction]")).toHaveValue("5");
 });
+
+test("dos métodos se ejecutan con las mismas entradas y comparan sus salidas",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="14"]').click();
+ await page.locator("[data-reveal-solution]").click();
+ await page.locator("[data-method-compare-input]").fill("4");
+ await page.locator("[data-run-method-comparison]").click();
+ await expect(page.locator("[data-method-comparison-result] .method-live-comparison-grid article")).toHaveCount(2);
+ await expect(page.locator("[data-method-comparison-result]")).toContainText("Los métodos producen la misma salida");
+});
