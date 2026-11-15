@@ -142,3 +142,16 @@ test("el recorrido guiado de 30 segundos completa y guarda el onboarding",async(
  await expect.poll(()=>page.evaluate(()=>localStorage.getItem("traza-onboarding-complete"))).toBe("true");
  await expect(page.locator("[data-start-onboarding]")).toContainText("Repetir recorrido");
 });
+
+test("la línea de tiempo permite colapsar y desplegar cada vuelta del ciclo",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="simulator"]').click();
+ await page.locator('[data-simulator-exercise="10"]').click();
+ await page.locator("#simulator-run").click();
+ const group=page.locator("#trace-history details.trace-loop-group").first();
+ await expect(group).toBeVisible();
+ await expect(group.locator("summary")).toContainText("Vuelta 1");
+ await group.locator("summary").click();
+ await expect(group).toHaveAttribute("open","");
+ await expect(group.locator("li[data-history-step]").first()).toBeVisible();
+});

@@ -123,8 +123,29 @@ function brief(e){
   if(e.type==="program-end")return "El algoritmo finalizó";
   return e.message||typeName(e.type);
 }
+function historyItem(e){
+  return '<li data-history-step="'+e.step+'" role="button" tabindex="0" class="'+(e.step===timeline.index?"is-active":"")+'"><span>PASO '+String(e.step+1).padStart(2,"0")+' · '+typeName(e.type)+'</span><strong>'+esc(brief(e))+'</strong></li>';
+}
+function historyRange(events){
+  let markup="";
+  for(let i=0;i<events.length;i++){
+    const event=events[i];
+    if(event.type==="loop-enter"){
+      let end=i;
+      for(let j=i+1;j<events.length;j++){
+        const candidate=events[j];
+        if(candidate.type==="loop-enter"&&candidate.nodeId===event.nodeId&&candidate.iteration>event.iteration){end=j-1;break;}
+        if(candidate.type==="loop-exit"&&candidate.nodeId===event.nodeId){end=j;break;}
+      }
+      const group=events.slice(i,end+1);
+      markup+='<li class="trace-loop-item"><details class="trace-loop-group"><summary>Vuelta '+event.iteration+' · '+group.length+' pasos · '+esc(typeName(event.type))+'</summary><ol>'+historyRange(group)+'</ol></details></li>';
+      i=end;
+    }else markup+=historyItem(event);
+  }
+  return markup;
+}
 function history(){
-  $("#trace-history").innerHTML=execution.events.map(e=>'<li data-history-step="'+e.step+'" role="button" tabindex="0" class="'+(e.step===timeline.index?"is-active":"")+'"><span>PASO '+String(e.step+1).padStart(2,"0")+' · '+typeName(e.type)+'</span><strong>'+esc(brief(e))+'</strong></li>').join("");
+  $("#trace-history").innerHTML=historyRange(execution.events);
   $("#trace-count").textContent=String(execution.events.length);
 }
 function sceneSymbol(type){
