@@ -190,19 +190,24 @@ function safeExecuteMethod(method,inputs){
     return {ok:false,outputs:[],error:error.message};
   }
 }
-function buildExerciseShareUrl(item,methodIndex){
+function buildExerciseShareUrl(item,methodIndex,data=sharedExerciseData?.id===item.id?sharedExerciseData:{}){
   const url=new URL(window.location.href);
   url.search="";
   url.hash="";
   url.searchParams.set("reto",String(item.id));
   url.searchParams.set("metodo",String(methodIndex));
+  if(String(data?.inputs??"").trim())url.searchParams.set("datos",String(data.inputs).trim());
+  if(String(data?.prediction??"").trim())url.searchParams.set("prediccion",String(data.prediction).trim());
   return url.toString();
 }
 async function handleExerciseShare(action){
   if(!selectedExercise)return;
   const field=$("#exercise-detail [data-exercise-share-url]");
   const feedback=$("#exercise-detail [data-share-feedback]");
-  const url=buildExerciseShareUrl(selectedExercise,selectedMethod);
+  const url=buildExerciseShareUrl(selectedExercise,selectedMethod,{
+    inputs:$("#exercise-detail [data-solution-input]")?.value??"",
+    prediction:$("#exercise-detail [data-solution-prediction]")?.value??""
+  });
   if(field){field.value=url;field.hidden=false;}
   const title="Reto "+selectedExercise.id+": "+selectedExercise.title;
   if(action==="share"&&typeof navigator.share==="function"){
@@ -335,6 +340,11 @@ function restoreSharedExercise(){
   const item=exercises.find(candidate=>candidate.id===id);
   if(!item)return false;
   selectedExercise=item;
+  sharedExerciseData={
+    id:item.id,
+    inputs:params.get("datos")??"",
+    prediction:params.get("prediccion")??""
+  };
   const requestedMethod=Number(params.get("metodo"));
   selectedMethod=Number.isInteger(requestedMethod)&&requestedMethod>=0&&requestedMethod<item.methods.length?requestedMethod:0;
   exerciseRevealed=false;
@@ -432,8 +442,8 @@ function renderExerciseDetail(){
           <div class="exercise-section-heading"><div><p class="eyebrow">PRUEBA DE SOLUCIÓN</p><h4>Ejecuta con tus propios datos</h4></div><span class="panel-index">TEST</span></div>
           <p>El pseudocódigo se ejecuta con el intérprete de Traza. Puedes contrastar una predicción o correr todos los casos definidos para todos los métodos.</p>
           <div class="exercise-test-inputs">
-            <label>Entradas de prueba<input type="text" data-solution-input value="${escapeHTML(method.sample.join(", "))}" aria-label="Entradas para probar la solución"></label>
-            <label>Tu predicción de salida<input type="text" data-solution-prediction placeholder="Ej. 13 o 13, 14" aria-label="Predicción de salida"></label>
+            <label>Entradas de prueba<input type="text" data-solution-input value="${escapeHTML(sharedExerciseData?.id===item.id&&sharedExerciseData.inputs?sharedExerciseData.inputs:method.sample.join(", "))}" aria-label="Entradas para probar la solución"></label>
+            <label>Tu predicción de salida<input type="text" data-solution-prediction value="${escapeHTML(sharedExerciseData?.id===item.id?sharedExerciseData.prediction??"": "")}" placeholder="Ej. 13 o 13, 14" aria-label="Predicción de salida"></label>
           </div>
           <button type="button" class="button button-primary" data-run-solution>Ejecutar y diagnosticar predicción</button>
           <p class="exercise-solution-feedback" data-solution-feedback role="status">Escribe primero lo que esperas obtener. Después, compara tu predicción con la ejecución.</p>
@@ -465,6 +475,7 @@ function applyChallengeGate(){
 }
 function selectExercise(id){
   selectedExercise=exercises.find(item=>item.id===Number(id))??null;
+  sharedExerciseData=null;
   selectedMethod=0;
   exerciseRevealed=false;
   exerciseHintStep=0;

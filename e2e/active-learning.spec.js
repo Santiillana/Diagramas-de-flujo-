@@ -102,3 +102,19 @@ test("el progreso conserva pistas usadas y diagnostica errores frecuentes",async
  await expect(page.locator("#exercise-progress-summary")).toContainText("1 pistas usadas");
  await expect(page.locator("#exercise-progress-summary")).toContainText("1 errores por revisar");
 });
+
+test("el enlace compartido conserva también las entradas y la predicción",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator('[data-select-exercise="1"]').click();
+ await page.locator("[data-reveal-solution]").click();
+ await page.locator("[data-solution-input]").fill("2,3");
+ await page.locator("[data-solution-prediction]").fill("5");
+ await page.locator('[data-share-action="copy"]').click();
+ const url=await page.locator("[data-exercise-share-url]").inputValue();
+ expect(url).toContain("datos=2%2C3");
+ expect(url).toContain("prediccion=5");
+ await page.goto(url);
+ await expect(page.locator("[data-solution-input]")).toHaveValue("2,3");
+ await expect(page.locator("[data-solution-prediction]")).toHaveValue("5");
+});
