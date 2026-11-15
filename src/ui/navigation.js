@@ -39,15 +39,10 @@ export function initNavigation() {
     }
   }
 
-  document.addEventListener("click", (event) => {
-    const target = event.target instanceof Element ? event.target : null;
-    const button = target?.closest("[data-space]");
-    if (button) console.log("TRAZA_NAV_CLICK", button.dataset.space, nav.contains(button));
-    if (button && nav.contains(button)) {
-      activate(button.dataset.space);
-      console.log("TRAZA_NAV_ACTIVE", document.body.dataset.activeSpace, views.map(view => [view.dataset.view, view.hidden]));
-    }
-  }, true);
+  for (const button of buttons) {
+    button.addEventListener("pointerdown", () => activate(button.dataset.space));
+    button.addEventListener("click", () => activate(button.dataset.space));
+  }
   nav.addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
     const current = buttons.indexOf(document.activeElement);

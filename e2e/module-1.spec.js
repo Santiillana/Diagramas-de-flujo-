@@ -7,6 +7,12 @@ test("la navegación activa cada uno de los cinco espacios", async ({ page }) =>
   const spaces = ["learn", "exercises", "simulator", "lab", "builder"];
   for (const space of spaces) {
     await page.locator(`[data-space="${space}"]`).click();
+    const state = await page.evaluate(() => ({
+      active: document.body.dataset.activeSpace,
+      views: [...document.querySelectorAll("[data-view]")].map(view => ({name:view.dataset.view,hidden:view.hidden,display:getComputedStyle(view).display}))
+    }));
+    console.log("NAV_ACCEPTANCE "+space+" "+JSON.stringify(state));
+    expect(state.active).toBe(space);
     await expect(page.locator(`[data-view="${space}"]`)).toBeVisible();
     await expect(page.locator(`[data-space="${space}"]`)).toHaveAttribute("aria-current", "page");
     await expect(page.locator("body")).toHaveAttribute("data-active-space", space);
