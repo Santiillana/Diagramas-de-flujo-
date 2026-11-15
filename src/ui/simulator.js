@@ -672,12 +672,39 @@ function svgPathVertices(path){
   }
   return points;
 }
+function routeBetweenNodes(fromId,toId){
+  const route=shortestRoute(fromId,toId);
+  if(route.length)return route;
+  const from=String(fromId),to=String(toId);
+  const direct=diagram?.edges.find(edge=>edge.from===from&&edge.to===to);
+  if(direct)return [{edgeId:direct.id,forward:true}];
+  const reverse=diagram?.edges.find(edge=>edge.from===to&&edge.to===from);
+  return reverse?[{edgeId:reverse.id,forward:false}]:[];
+}
+function fallbackEdgeVertices(edge){
+  if(!edge||!diagram)return [];
+  const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
+  if(!from||!to)return [];
+  const fx=from.x,fy=from.y+from.height/2,tx=to.x,ty=to.y+to.height/2;
+  if(edge.kind==="false"){
+    const y=from.y+from.height/2;
+    return [{x:from.x+from.width/2,y},{x:tx,y},{x:tx,y:to.y}];
+  }
+  if(edge.kind==="back"){
+    const bendX=Math.min(fx,tx)-95;
+    return [{x:fx,y:fy},{x:bendX,y:fy},{x:bendX,y:ty},{x:tx,y:ty}];
+  }
+  if(Math.abs(fx-tx)<4)return [{x:fx,y:from.y+from.height},{x:tx,y:to.y}];
+  const mid=(fy+ty)/2;
+  return [{x:fx,y:from.y+from.height},{x:fx,y:mid},{x:tx,y:mid},{x:tx,y:to.y}];
+}
 function routeCoordinates(route){
   const points=[];
   for(const step of route){
     const info=routeWeights.get(step.edgeId),path=info?.path;
-    if(!path)continue;
+    const edge=diagram?.edges.find(item=>item.id===step.edgeId);
     let vertices=svgPathVertices(path);
+    if(vertices.length<2)vertices=fallbackEdgeVertices(edge);
     if(!step.forward)vertices=vertices.reverse();
     if(vertices.length<2)continue;
     for(let segment=1;segment<vertices.length;segment++){
@@ -702,13 +729,19 @@ function drawExecutionTrail(events){
   for(const event of events){
     if(event.nodeId===null||event.nodeId===undefined)continue;
     if(previous!==null&&String(previous)!==String(event.nodeId)){
-      const segment=routeCoordinates(shortestRoute(previous,event.nodeId));
+      const segment=routeCoordinates(routeBetweenNodes(previous,event.nodeId));
       if(points.length&&segment.length&&Math.hypot(points[points.length-1].x-segment[0].x,points[points.length-1].y-segment[0].y)<2)segment.shift();
       points.push(...segment);
     }
     previous=event.nodeId;
   }
-  $("#flow-trail")?.setAttribute("points",points.slice(-1200).map(point=>point.x+","+point.y).join(" "));
+  const polyline=points.slice(-1200).map(point=>point.x+","+point.y).join(" ");
+  $("#flow-trail")?.setAttribute("points",polyline);
+  const stage=$("#diagram-stage");
+  if(stage){
+    stage.dataset.trailPointCount=String(points.length);
+    stage.dataset.trailNodeCount=String(events.filter(event=>event.nodeId!==null&&event.nodeId!==undefined).length);
+  }
 }
 function animateTokenRoute(route,event){
   const token=$("#flow-diagram-container .flow-token");
@@ -850,7 +883,7 @@ function render(){
   if(diagram){
     const routeEvent=[...seen].reverse().find(item=>item.route&&(item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
     const previousSource=[...seen.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
-    const walked=previousSource!==null&&e.nodeId!==null&&e.nodeId!==undefined?shortestRoute(previousSource,e.nodeId):[];
+    const walked=previousSource!==null&&e.nodeId!==null&&e.nodeId!==undefined?routeBetweenNodes(previousSource,e.nodeId):[];
     highlightDiagram($("#flow-diagram-container"),diagram,{
       activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
       route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null,
