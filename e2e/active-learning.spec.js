@@ -193,3 +193,25 @@ test("el Constructor contrasta el diagrama del estudiante con los casos del orá
  await page.locator("#builder-oracle-run").click();
  await expect(page.locator("#builder-oracle-results")).toContainText("6 de 6 casos superados");
 });
+
+test("el Constructor revela el primer contraejemplo y su traza cuando la solución falla",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="builder"]').click();
+ await page.locator("[data-builder-preset='sequence']").click();
+ const nodes=page.locator("#builder-canvas-list [data-select-node]");
+ await nodes.nth(0).click();
+ await page.locator("[data-inspector-field='variables']").fill("a,b");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await nodes.nth(1).click();
+ await page.locator("[data-inspector-field='variable']").fill("s");
+ await page.locator("[data-inspector-field='expression']").fill("a-b");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await nodes.nth(2).click();
+ await page.locator("[data-inspector-field='expression']").fill("s");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await page.locator("#builder-oracle-exercise").selectOption("1");
+ await page.locator("#builder-oracle-run").click();
+ await expect(page.locator("#builder-oracle-results")).toContainText("Primer caso no superado");
+ await expect(page.locator("#builder-oracle-results .builder-oracle-counterexample")).toBeVisible();
+ await expect(page.locator("#builder-oracle-results .builder-oracle-counterexample")).toContainText("Paso 1");
+});
