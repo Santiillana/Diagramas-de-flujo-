@@ -7,7 +7,7 @@ test("pulido global mantiene cuerpo legible y pseudocódigo a 14 px",async({page
   const px=selector=>Number.parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
   return {
    body:px("body"),
-   lesson:px("#lesson-detail .lesson-explanation p"),
+   lesson:px("#simulator-exercise-statement"),
    pseudocode:px(".pseudocode-lines li"),
    dock:px(".simulator-dock #dock-step-title")
   };

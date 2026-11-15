@@ -31,6 +31,7 @@
   font-size:14px!important;
   line-height:1.65;
 }
+:where(.app-shell) .pseudocode-lines li {font-size:var(--pseudocode-font-size,14px)!important}
 :where(.app-shell) :where(.simulator-dock,.simulator-dock *) {
   font-size:max(16px,1em)!important;
 }
@@ -55,9 +56,6 @@
 :where(.app-shell) :where(button,a,input,select,textarea,[tabindex]):focus-visible {
   outline:3px solid var(--accent);
   outline-offset:3px;
-}
-@media(max-width:760px) {
-  :where(.app-shell) :where(button,input,select,textarea) {min-height:40px}
 }
 @media(prefers-reduced-motion:reduce) {
   :where(.app-shell) *, :where(.app-shell) *::before, :where(.app-shell) *::after {
