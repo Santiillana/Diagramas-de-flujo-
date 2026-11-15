@@ -11,14 +11,14 @@ const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
 const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
-let cameraAuto=true, panState=null, pseudocodeSize=10, selectedVariable=null, defaultInputSample=[];
+let cameraAuto=true, panState=null, pseudocodeSize=16, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
 
 function readPseudocodeSize(){
   try{
-    const value=Number(window.localStorage.getItem("traza-pseudocode-size"));
-    return Number.isFinite(value)&&value>=8&&value<=18?value:10;
-  }catch{return 10;}
+    const value=Number(window.localStorage.getItem("traza:v2:pseudocode-size")??window.localStorage.getItem("traza-pseudocode-size"));
+    return Number.isFinite(value)&&value>=13&&value<=26?value:16;
+  }catch{return 16;}
 }
 
 
@@ -374,11 +374,11 @@ function zoomDiagram(change){
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
 function setPseudocodeSize(size){
-  pseudocodeSize=Math.max(8,Math.min(18,size));
+  pseudocodeSize=Math.max(13,Math.min(26,size));
   document.documentElement.style.setProperty("--pseudocode-font-size",pseudocodeSize+"px");
-  $("#simulator-text-smaller").disabled=pseudocodeSize<=8;
-  $("#simulator-text-larger").disabled=pseudocodeSize>=18;
-  try{window.localStorage.setItem("traza-pseudocode-size",String(pseudocodeSize));}catch{}
+  $("#simulator-text-smaller").disabled=pseudocodeSize<=13;
+  $("#simulator-text-larger").disabled=pseudocodeSize>=26;
+  try{window.localStorage.setItem("traza:v2:pseudocode-size",String(pseudocodeSize));}catch{}
 }
 function fitDiagram(){
   const stage=$("#diagram-stage"),svg=$("#flow-svg");
@@ -497,7 +497,7 @@ function bind(){
   });
   $("#simulator-text-smaller").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize-1));
   $("#simulator-text-larger").addEventListener("click",()=>setPseudocodeSize(pseudocodeSize+1));
-  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(10));
+  $("#simulator-text-reset").addEventListener("click",()=>setPseudocodeSize(16));
   $("#diagram-camera-toggle").addEventListener("click",()=>{
     cameraAuto=!cameraAuto;updateCameraButton();
     if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
