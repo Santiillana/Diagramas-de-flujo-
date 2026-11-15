@@ -36,7 +36,7 @@ test("el enlace directo restaura ejercicio y método sin revelar la solución",a
  await expect(page.locator("#exercise-detail [data-method-index='1']")).toHaveAttribute("aria-selected","true");
  await expect(page.locator(".exercise-gate")).toBeVisible();
  await expect(page.locator("#exercise-detail .exercise-methods")).toBeHidden();
- await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/reto=4/);
+ await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/#ejercicio=4&metodo=1/);
  await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/metodo=1/);
 });
 
@@ -112,7 +112,7 @@ test("el enlace compartido conserva también las entradas y la predicción",asyn
  await page.locator("[data-solution-prediction]").fill("5");
  await page.locator('[data-share-action="copy"]').click();
  const url=await page.locator("[data-exercise-share-url]").inputValue();
- expect(url).toContain("datos=2%2C3");
+ expect(url).toContain("#ejercicio=1&metodo=0&datos=2%2C3");
  expect(url).toContain("prediccion=5");
  await page.goto(url);
  await expect(page.locator("[data-solution-input]")).toHaveValue("2,3");

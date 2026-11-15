@@ -202,11 +202,12 @@ function safeExecuteMethod(method,inputs){
 function buildExerciseShareUrl(item,methodIndex,data=sharedExerciseData?.id===item.id?sharedExerciseData:{}){
   const url=new URL(window.location.href);
   url.search="";
-  url.hash="";
-  url.searchParams.set("reto",String(item.id));
-  url.searchParams.set("metodo",String(methodIndex));
-  if(String(data?.inputs??"").trim())url.searchParams.set("datos",String(data.inputs).trim());
-  if(String(data?.prediction??"").trim())url.searchParams.set("prediccion",String(data.prediction).trim());
+  const params=new URLSearchParams();
+  params.set("ejercicio",String(item.id));
+  params.set("metodo",String(methodIndex));
+  if(String(data?.inputs??"").trim())params.set("datos",String(data.inputs).trim());
+  if(String(data?.prediction??"").trim())params.set("prediccion",String(data.prediction).trim());
+  url.hash=params.toString();
   return url.toString();
 }
 async function handleExerciseShare(action){
@@ -357,8 +358,9 @@ function runExerciseVerification(){
 }
 function restoreSharedExercise(){
   if(typeof window==="undefined")return false;
-  const params=new URLSearchParams(window.location.search);
-  const id=Number(params.get("reto"));
+  const hash=window.location.hash.startsWith("#")?window.location.hash.slice(1):"";
+  const params=new URLSearchParams(hash||window.location.search);
+  const id=Number(params.get("ejercicio")??params.get("reto"));
   const item=exercises.find(candidate=>candidate.id===id);
   if(!item)return false;
   selectedExercise=item;
