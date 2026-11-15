@@ -4,6 +4,7 @@ import { executePseudocode, createTimeline } from "../core/interpreter.js";
 import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
+import { renderScene } from "./scenes/index.js";
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -201,6 +202,7 @@ function render(){
   }
   centerActiveNode(e);
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
+  const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
   $("#scene-content").dataset.eventType=e.type;
   const loopStack=e.loopStack??[];
   const loopExplanation=loopStack.length?'<div class="scene-loop-stack"><span>CONTEXTO DE REPETICIÓN</span>'+
@@ -211,7 +213,7 @@ function render(){
     '<strong class="scene-value-new">'+esc(fmt(e.change.value))+'</strong></div>':
     e.type==="output"?'<div class="scene-value-transfer"><span class="scene-transfer-name">SALIDA</span><strong class="scene-value-new">'+esc(fmt(e.value))+'</strong></div>':
     e.condition?'<div class="scene-value-transfer '+(e.result?"is-true":"is-false")+'"><span class="scene-transfer-name">RUTA ELEGIDA</span><strong class="scene-route-chip">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"";
-  $("#scene-content").innerHTML='<div class="scene-event-visual" aria-hidden="true">'+sceneSymbol(e.type)+'</div>'+
+  $("#scene-content").innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
     '<p class="scene-event-body">'+esc(scene.body)+'</p>'+transfer+
     '<div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
@@ -253,7 +255,7 @@ function run(){
     timeline=createTimeline(execution);
     selectedVariable=null;
     history();render();
-    $("#simulator-status").textContent=execution.ok?"TRAZA GENERADA · "+execution.events.length+" PASOS":"EJECUCIÓN DETENIDA";
+    $("#simulator-status").textContent=execution.ok?"Simulación lista · "+execution.events.length+" pasos":"Ejecución detenida";
     $("#simulator-status").classList.toggle("simulator-status-error",!execution.ok);
   }catch(error){
     execution=null;timeline=null;
