@@ -7,6 +7,8 @@ test("la navegación rápida muestra los 45 ejercicios reales del repositorio",a
   await expect(quick).toHaveCount(45);
   await expect(page.locator("#sim-exercise-select option")).toHaveCount(45);
   await expect(page.locator("#sim-exercise-level-filter option[value='expert']")).toHaveCount(1);
+  await page.locator("#simulator-exercise-nav-toggle").click();
+  await expect(page.locator("#simulator-exercise-nav")).toHaveClass(/is-open/);
   await expect(quick.filter({hasText:"45"})).toHaveCount(1);
 
   await page.locator('#simulator-exercise-nav [data-exercise-shortcut="5"]').click();
@@ -25,6 +27,7 @@ test("el reto previo se puede reabrir y el modo demostración se conserva",async
   await expect(page.locator("#simulator-challenge")).toBeVisible();
   await page.locator("#simulator-challenge-skip").check();
   await page.locator("#simulator-challenge-reveal").click();
+  await page.locator("#simulator-exercise-nav-toggle").click();
   await page.locator('#simulator-exercise-nav [data-exercise-shortcut="6"]').click();
   await expect(page.locator("#simulator-challenge")).toBeHidden();
   await page.locator("#simulator-challenge-reopen").click();
