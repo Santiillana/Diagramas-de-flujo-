@@ -67,3 +67,10 @@ export function buildArrowChallenge(events,index,exerciseId,attempt=0) {
   }));
   return {seed,current,next,correct,options};
 }
+
+
+export function mixedModeOrder(exerciseId,attempt=0,modes=[]) {
+  const available=[...new Set(modes)].filter(Boolean);
+  if(!available.length)return [];
+  return shuffled(available,hashSeed([exerciseId,attempt,"mixed-modes"]));
+}
