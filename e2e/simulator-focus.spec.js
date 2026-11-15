@@ -32,7 +32,7 @@ test("Concentración ocupa el viewport, mantiene el lienzo y permite pasos exact
   await expect(progress).toHaveValue(String(start));
   for(let i=0;i<5;i++)await page.keyboard.press("ArrowRight");
   await expect(progress).toHaveValue(String(start+5));
-  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
+  await expect(page.locator(".sim-flight-chip")).toHaveCount(0);
   await expect(page.locator("#simulator-question")).toBeHidden();
   await page.keyboard.press("Escape");
   await expect(page.locator("body")).not.toHaveClass(/focus/);
