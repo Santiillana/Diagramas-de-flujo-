@@ -654,7 +654,7 @@ function shortestRoute(fromId,toId){
 }
 function svgPathVertices(path){
   const d=path?.getAttribute("d")??"";
-  const tokens=d.match(/[MLHV]|-?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?/gi)??[];
+  const tokens=d.match(/[MLHV]|-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi)??[];
   const points=[];let command=null,x=0,y=0,index=0;
   while(index<tokens.length){
     if(/^[MLHV]$/i.test(tokens[index]))command=tokens[index++];
