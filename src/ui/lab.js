@@ -491,38 +491,61 @@ function renderError(){
 function renderWhatIf(){
   if(!requireTrace())return;
   $("#lab-task-content").innerHTML=
-    '<div class="lab-question"><p class="eyebrow">EXPERIMENTO CONTROLADO · COPIA INDEPENDIENTE</p><h4>Cambia una condición, una instrucción o los datos y observa qué consecuencia produce.</h4>'+
+    '<div class="lab-question"><p class="eyebrow">EXPERIMENTO CONTROLADO · DOS RECORRIDOS</p><h4>Modifica una línea o un dato y compara qué ocurre paso a paso.</h4>'+
     '<label class="lab-editor-field"><span>PSEUDOCÓDIGO MODIFICABLE</span><textarea id="lab-whatif-code" rows="6">'+esc(trace.source.split("|").join("\n"))+'</textarea></label>'+
-    '<label class="lab-editor-field"><span>DATOS DE ENTRADA (SEPARADOS POR COMAS)</span><input id="lab-whatif-inputs" value="'+esc((trace.method.sample??[]).join(", "))+'"></label>'+
-    '<div class="lab-task-actions"><button type="button" class="button button-primary" id="lab-whatif-run">Ejecutar cambio</button></div>'+
-    '<div id="lab-whatif-result" class="lab-comparison" role="status"></div></div>';
+    '<label class="lab-editor-field"><span>DATOS DE ENTRADA (COMAS O ESPACIOS)</span><input id="lab-whatif-inputs" value="'+esc((trace.method.sample??[]).join(", "))+'"></label>'+
+    '<div class="lab-task-actions"><button type="button" class="button button-primary" id="lab-whatif-run">Ejecutar y comparar</button></div>'+
+    '<div id="lab-whatif-result" class="lab-comparison lab-comparison-traces" role="status"></div></div>';
   $("#lab-whatif-run").addEventListener("click",()=>{
     const source=$("#lab-whatif-code").value.split("\n").map(x=>x.trim()).filter(Boolean).join("|");
-    const inputs=$("#lab-whatif-inputs").value.trim()?$("#lab-whatif-inputs").value.split(/[;,]/).map(x=>x.trim()):[];
+    const inputs=$("#lab-whatif-inputs").value.trim()?$("#lab-whatif-inputs").value.split(/[\s,;]+/).filter(Boolean):[];
     let changed;
     try{changed=executePseudocode(source,inputs);}
     catch(error){changed={ok:false,error:{message:error.message},outputs:[],variables:{},events:[]};}
-    const before=trace.execution;
-    const beforeValue=JSON.stringify(before.outputs);
-    const afterValue=JSON.stringify(changed.outputs);
+    const before=trace.execution,beforeEvents=before.events??[],afterEvents=changed.events??[];
+    const signature=event=>[
+      event.type,event.sourceLine,event.sourceText,event.route??(typeof event.result==="boolean"?(event.result?"V":"F"):""),
+      event.change?.name??"",event.change?.value??event.value??""
+    ].join("|");
+    const max=Math.max(beforeEvents.length,afterEvents.length);
+    let divergence=-1;
+    for(let index=0;index<max;index++){
+      if(!beforeEvents[index]||!afterEvents[index]||signature(beforeEvents[index])!==signature(afterEvents[index])){divergence=index;break;}
+    }
+    const label=event=>event?(event.scene?.title??event.sourceText??event.type??"Paso"):"La ejecución terminó";
+    const track=(events,kind)=>{
+      const visible=events.slice(0,Math.min(events.length,10));
+      if(!visible.length)return '<p class="lab-route-empty">No se generaron pasos.</p>';
+      return '<ol class="lab-route-track '+kind+'">'+visible.map((event,index)=>
+        '<li class="'+(index===divergence?"is-divergent":"")+'"><span>'+String(index+1).padStart(2,"0")+'</span><strong>'+esc(typeNameForLab(event.type))+'</strong><small>'+esc(label(event))+'</small>'+
+        (event.route||typeof event.result==="boolean"?'<b class="lab-route-flag '+((event.route??(event.result?"V":"F"))==="V"?"is-true":"is-false")+'">'+(event.route??(event.result?"V":"F"))+'</b>':"")+'</li>'
+      ).join("")+'</ol>'+(events.length>visible.length?'<small class="lab-route-more">+'+(events.length-visible.length)+' pasos más</small>':"");
+    };
     const names=[...new Set([...Object.keys(before.variables??{}),...Object.keys(changed.variables??{})])];
     const differences=names.filter(name=>JSON.stringify(before.variables?.[name])!==JSON.stringify(changed.variables?.[name]));
     const variableExplanation=differences.length?
       differences.map(name=>name+": "+(Object.hasOwn(before.variables??{},name)?fmt(before.variables[name]):"(sin valor)")+" → "+(Object.hasOwn(changed.variables??{},name)?fmt(changed.variables[name]):"(sin valor)")).join("; "):
       "Las variables finales no cambiaron.";
-    const originalBranches=before.events.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
-    const changedBranches=changed.events.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
+    const beforeOutput=JSON.stringify(before.outputs??[]),afterOutput=JSON.stringify(changed.outputs??[]);
+    const originalBranches=beforeEvents.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
+    const changedBranches=afterEvents.filter(event=>event.type==="decision"||event.type==="loop-condition").map(event=>event.route??(event.result?"V":"F"));
     const status=changed.ok?"Ejecución terminada":"Ejecución detenida por error";
-    const explanation=beforeValue===afterValue&&changed.ok?
-      "Con estas entradas, el cambio mantiene la misma salida; revisa también el recorrido y los valores intermedios.":
-      "La modificación alteró el resultado o la terminación. La causa se observa en los valores y decisiones que cambiaron.";
+    const firstBefore=divergence>=0?label(beforeEvents[divergence]):"No se separaron";
+    const firstAfter=divergence>=0?label(afterEvents[divergence]):"Mismo recorrido";
+    const explanation=divergence<0?"Con estos datos, ambos algoritmos recorren los mismos pasos.":
+      "El primer cambio aparece en el paso "+(divergence+1)+". Desde ese punto las rutas pueden tomar decisiones distintas.";
     $("#lab-whatif-result").innerHTML=
-      '<div><span class="eyebrow">RESULTADO ORIGINAL · FINAL</span><code>'+esc(beforeValue)+'</code><small>Variables: '+esc(JSON.stringify(before.variables??{}))+'</small></div>'+
-      '<div><span class="eyebrow">RESULTADO MODIFICADO · FINAL</span><code>'+esc(afterValue)+'</code><small>'+esc(status+(changed.error?": "+changed.error.message:""))+'</small></div>'+
-      '<div><span class="eyebrow">CAMBIOS EN VARIABLES</span><code>'+esc(variableExplanation)+'</code><small>Pasos: '+before.events.length+" → "+changed.events.length+'</small></div>'+
-      '<div><span class="eyebrow">RUTAS EVALUADAS</span><code>'+esc(originalBranches.join(" · ")||"Sin decisiones")+' → '+esc(changedBranches.join(" · ")||"Sin decisiones")+'</code></div>'+
-      '<p>'+esc(explanation)+'</p>';
+      '<div class="lab-trace-compare-title"><span class="eyebrow">RECORRIDOS COMPARADOS</span><strong>La diferencia aparece donde las rutas dejan de coincidir.</strong></div>'+
+      '<section class="lab-route-lane is-original"><header><span class="lab-route-dot"></span><strong>ORIGINAL · AZUL</strong><code>'+esc(beforeOutput)+'</code></header>'+track(beforeEvents,"is-original")+'</section>'+
+      '<section class="lab-route-lane is-modified"><header><span class="lab-route-dot"></span><strong>MODIFICADO · ÁMBAR</strong><code>'+esc(afterOutput)+'</code></header>'+track(afterEvents,"is-modified")+'</section>'+
+      '<div class="lab-first-divergence"><span class="eyebrow">'+(divergence<0?"SIN DIVERGENCIA":"PRIMER PUNTO DE DIVERGENCIA")+'</span><strong>Paso '+(divergence<0?"—":divergence+1)+'</strong><p>Original: '+esc(firstBefore)+'</p><p>Modificado: '+esc(firstAfter)+'</p><small>'+esc(explanation)+'</small></div>'+
+      '<div class="lab-debug-summary"><div><span class="eyebrow">VARIABLES QUE CAMBIARON</span><code>'+esc(variableExplanation)+'</code></div>'+
+      '<div><span class="eyebrow">RUTAS V / F</span><code>'+esc(originalBranches.join(" · ")||"Sin decisiones")+' → '+esc(changedBranches.join(" · ")||"Sin decisiones")+'</code></div>'+
+      '<div><span class="eyebrow">ESTADO MODIFICADO</span><code>'+esc(status+(changed.error?": "+changed.error.message:""))+'</code></div></div>';
   });
+}
+function typeNameForLab(type){
+  return ({input:"Entrada",assignment:"Proceso",output:"Salida",decision:"Decisión",branch:"Ruta","loop-init":"Inicio de ciclo","loop-condition":"Condición","loop-enter":"Vuelta","loop-update":"Avance","loop-exit":"Salida de ciclo","program-start":"Inicio","program-end":"Fin",error:"Error"})[type]??String(type??"Paso");
 }
 
 function actualInputValues(){
