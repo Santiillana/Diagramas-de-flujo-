@@ -24,10 +24,12 @@ test("el filtro por concepto y el filtro De clase reducen el catálogo", async (
 
 test("el constructor permite deshacer y rehacer una instrucción", async ({ page }) => {
   await page.locator('[data-space="builder"]').click();
+  const cards=page.locator("#builder-canvas-list .builder-node-card");
+  const initialCount=await cards.count();
   await page.locator('[data-add-node="process"]').click();
-  await expect(page.locator("#builder-canvas-list .builder-node-card")).toHaveCount(1);
+  await expect(cards).toHaveCount(initialCount+1);
   await page.locator("#builder-undo").click();
-  await expect(page.locator("#builder-canvas-list .builder-node-card")).toHaveCount(0);
+  await expect(cards).toHaveCount(initialCount);
   await page.locator("#builder-redo").click();
-  await expect(page.locator("#builder-canvas-list .builder-node-card")).toHaveCount(1);
+  await expect(cards).toHaveCount(initialCount+1);
 });
