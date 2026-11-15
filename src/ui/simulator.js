@@ -132,82 +132,42 @@ function hideContextWire(){
 function placeContextWindow(event){
   const box=$("#vf"),model=diagramNodeForEvent(event);
   const node=model?document.getElementById("flow-node-"+model.id):null;
-  if(!box||box.hidden)return;
-  document.querySelectorAll("#flow-svg .diagram-node.has-context-fallback").forEach(el=>el.classList.remove("has-context-fallback"));
+  const stage=$("#diagram-stage");
+  if(!box||!stage)return;
   const nodeRect=node?.getBoundingClientRect();
-  const width=box.offsetWidth||278,height=box.offsetHeight||132,margin=12;
-  const free=freeCanvasRect();
-  if(["decision","branch","loop-condition"].includes(event.type)){
-    box.hidden=true;
-    box.dataset.cable="fallback-scene";
-    box.dataset.anchorNode=String(model?.id??"");
-    box.dataset.anchorSourceLine=String(event.sourceLine??"");
-    if(node)node.classList.add("has-context-fallback");
-    drawContextWire(nodeRect,$("#PV")?.getBoundingClientRect());
-    return;
-  }
-  const workspace={left:Math.max(8,free.left+8),top:Math.max(54,free.top+8),right:Math.min(innerWidth-8,free.right-8),bottom:Math.min(innerHeight-8,free.bottom-8)};
-  const figure=nodeRect??{left:innerWidth/2-30,top:innerHeight/2-20,right:innerWidth/2+30,bottom:innerHeight/2+20,width:60,height:40};
-  const midY=figure.top+figure.height/2,midX=figure.left+figure.width/2;
-  const candidates=[
-    {left:figure.right+margin,top:midY-height/2},
-    {left:figure.left-width-margin,top:midY-height/2},
-    {left:midX-width/2,top:figure.top-height-margin},
-    {left:midX-width/2,top:figure.bottom+margin},
-    {left:workspace.left,top:workspace.top},
-    {left:workspace.right-width,top:workspace.top},
-    {left:workspace.left,top:workspace.bottom-height},
-    {left:workspace.right-width,top:workspace.bottom-height}
-  ];
-  const activeId=String(model?.id??"");
-  const svgScreenBounds=(element,padding=9)=>{
-    try{
-      const box=element.getBBox(),matrix=element.getScreenCTM();
-      if(!matrix)return null;
-      const svg=element.ownerSVGElement;
-      const corners=[
-        [box.x,box.y],[box.x+box.width,box.y],
-        [box.x,box.y+box.height],[box.x+box.width,box.y+box.height]
-      ].map(([x,y])=>{
-        const point=svg.createSVGPoint();point.x=x;point.y=y;
-        return point.matrixTransform(matrix);
-      });
-      const xs=corners.map(point=>point.x),ys=corners.map(point=>point.y);
-      return {left:Math.min(...xs)-padding,top:Math.min(...ys)-padding,
-        right:Math.max(...xs)+padding,bottom:Math.max(...ys)+padding};
-    }catch{return null;}
+  const stageRect=stage.getBoundingClientRect();
+  const width=box.offsetWidth||286,height=box.offsetHeight||130,gap=16,margin=12;
+  const workspace={
+    left:Math.max(stageRect.left+margin,margin),
+    top:Math.max(stageRect.top+margin,margin),
+    right:Math.min(stageRect.right-margin,innerWidth-margin),
+    bottom:Math.min(stageRect.bottom-margin,innerHeight-margin)
   };
-  const edgeObstacles=[...document.querySelectorAll("#flow-svg .diagram-edge")]
-    .map(element=>svgScreenBounds(element,10)).filter(Boolean);
-  const otherObstacles=[
-    ...document.querySelectorAll("#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+activeId+")"),
-    ...document.querySelectorAll("#PL .sim-window,#RC #PV,#PR>.panel,#dock,#hd")
-  ].filter(el=>getComputedStyle(el).display!=="none").map(el=>{
-    const r=el.getBoundingClientRect(),pad=3;
-    return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
-  });
-  const obstacles=[...edgeObstacles,...otherObstacles];
-  const valid=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&
-    !rectIntersects(rect,figure,8)&&!obstacles.some(other=>rectIntersects(rect,other,2));
-  const chosen=candidates.find(valid);
+  const figure=nodeRect??{left:stageRect.left+stageRect.width/2-30,top:stageRect.top+stageRect.height/2-20,right:stageRect.left+stageRect.width/2+30,bottom:stageRect.top+stageRect.height/2+20,width:60,height:40};
+  const midX=figure.left+figure.width/2,midY=figure.top+figure.height/2;
+  const candidates=[
+    {left:figure.right+gap,top:midY-height/2},
+    {left:figure.left-width-gap,top:midY-height/2},
+    {left:midX-width/2,top:figure.bottom+gap},
+    {left:midX-width/2,top:figure.top-height-gap},
+    {left:workspace.left,top:workspace.bottom-height},
+    {left:workspace.right-width,top:workspace.bottom-height},
+    {left:workspace.left,top:workspace.top},
+    {left:workspace.right-width,top:workspace.top}
+  ];
+  const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&!rectIntersects(rect,figure,10);
+  const chosen=candidates.find(fits)??{
+    left:Math.max(workspace.left,Math.min(workspace.right-width,midX-width/2)),
+    top:Math.max(workspace.top,Math.min(workspace.bottom-height,figure.bottom+gap))
+  };
   box.dataset.anchorNode=String(model?.id??"");
   box.dataset.anchorSourceLine=String(event.sourceLine??"");
-  if(!chosen){
-    box.hidden=true;
-    box.dataset.cable="fallback-scene";
-    if(node)node.classList.add("has-context-fallback");
-    const scene=$("#PV")?.getBoundingClientRect();
-    drawContextWire(nodeRect,scene);
-    return;
-  }
-  box.hidden=false;
-  box.style.left=chosen.left+"px";box.style.top=chosen.top+"px";
-  const distance=Math.hypot(Math.max(0,chosen.left-figure.right,figure.left-(chosen.left+width)),Math.max(0,chosen.top-figure.bottom,figure.top-(chosen.top+height)));
-  const cable=distance>300;
-  box.dataset.cable=String(cable);
-  if(cable)drawContextWire(nodeRect,box.getBoundingClientRect());
-  else hideContextWire();
+  box.dataset.cable="false";
+  box.style.left=Math.round(chosen.left)+"px";
+  box.style.top=Math.round(chosen.top)+"px";
+  hideContextWire();
 }
+
 function showContextWindow(event){
   const box=$("#vf");
   if(!box||!event||timeline?.index===dismissedVfStep)return;
@@ -216,14 +176,19 @@ function showContextWindow(event){
   $("#vf-content").innerHTML=view.body;
   box.hidden=false;
   if(vfRaf)cancelAnimationFrame(vfRaf);
-  const started=performance.now();
-  const track=now=>{
-    placeContextWindow(event);
-    if(now-started<620)vfRaf=requestAnimationFrame(track);
-    else vfRaf=0;
-  };
-  vfRaf=requestAnimationFrame(track);
+  clearTimeout(contextTimer);
+  const wait=reducedMotion()?0:Math.min(900,540/Math.sqrt(currentSpeedFactor()));
+  contextTimer=window.setTimeout(()=>{
+    vfRaf=requestAnimationFrame(()=>{
+      placeContextWindow(event);
+      box.classList.remove("is-arriving");
+      void box.getBoundingClientRect();
+      box.classList.add("is-arriving");
+      vfRaf=0;
+    });
+  },wait);
 }
+
 function closeContextWindow(){
   dismissedVfStep=timeline?.index??-1;
   const box=$("#vf");if(box)box.hidden=true;
