@@ -125,7 +125,7 @@ function renderExerciseProgressSummary(){
   const totalHints=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.hintsUsed??0),0);
   const totalErrors=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.wrongPredictions??0),0);
   host.innerHTML=`
-    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span><button type="button" class="button button-secondary exercise-onboarding-start" data-start-onboarding>${localStorage.getItem("traza-onboarding-complete")==="true"?"Repetir recorrido":"Recorrido guiado · 30 s"}</button></div>
+    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span><button type="button" class="button button-secondary exercise-onboarding-start" data-start-onboarding>${hasCompletedOnboarding()?"Repetir recorrido":"Recorrido guiado · 30 s"}</button></div>
     <div class="exercise-progress-levels">${levels.map(level=>{
       const group=exercises.filter(item=>item.level===level);
       const verified=group.filter(item=>exerciseProgressStatus(item.id)==="verified").length;
@@ -389,9 +389,8 @@ function advanceExerciseOnboarding(){
 }
 function skipExerciseOnboarding(){
   onboardingStep=-1;
-  try{localStorage.setItem("traza-onboarding-complete","true");}catch{}
+  try{localStorage.setItem("traza-onboarding-dismissed","true");}catch{}
   renderExerciseOnboarding();
-  renderExerciseProgressSummary();
 }
 function renderExerciseCards(){
   const host=$("#exercise-grid");
