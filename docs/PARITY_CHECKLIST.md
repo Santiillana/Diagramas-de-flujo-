@@ -58,8 +58,8 @@
 | Animaciones y visualizaciones por evento | `e2e/scene-visuals.spec.js`, `e2e/module-5.spec.js` | Cubierto por pruebas existentes |
 | Aprende ejecuta los programas de las 14 lecciones en el intérprete | `tests/lesson-live.test.js`, `e2e/lesson-live.spec.js` | Cubierto por pruebas existentes |
 | Guía de figuras y conceptos | `tests/symbol-guide.test.js`, `e2e/symbol-guide.spec.js` | Cubierto por pruebas existentes |
-| Seis actividades del Laboratorio disponibles sin ejecución previa | `e2e/lab-live.spec.js` | Cubierto por pruebas existentes |
-| Razonamiento y pistas progresivas en los 40 ejercicios | `tests/exercise-reasoning.test.js`, `e2e/exercise-reasoning.spec.js` | Cubierto por pruebas existentes |
+| Seis actividades del Laboratorio disponibles sin ejecución previa | `e2e/lab-independent.spec.js`, `tests/lab-independent.test.js` | Cubierto por pruebas existentes |
+| Razonamiento y pistas progresivas en los 40 ejercicios | `tests/reasoning.test.js`, `e2e/reasoning.spec.js` | Cubierto por pruebas existentes |
 | Prueba de solución contra el oráculo completo desde el Constructor | Debe existir flujo de validación de solución del alumno contra el oráculo de 170 escenarios | **Pendiente de implementación y prueba e2e** |
 | Predicción con diagnóstico basado en errores frecuentes del ejercicio | `src/ui/content-view.js` compara predicción, intérprete y caso de referencia; debe comprobarse que use los errores frecuentes de cada ficha | **Parcial** |
 | Avanzar a la siguiente vuelta y salir del ciclo | `src/ui/simulator.js`; `e2e/active-learning.spec.js` | Implementado; CI final de la rama pendiente |
