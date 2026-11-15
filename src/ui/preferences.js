@@ -1,7 +1,7 @@
-const STORAGE_KEYS = { theme: "traza-theme", motion: "traza-motion" };
+const STORAGE_KEYS = { theme: "traza:v2:theme", motion: "traza:v2:motion" };
 
-function readPreference(key, fallback) {
-  try { return window.localStorage.getItem(key) || fallback; } catch { return fallback; }
+function readPreference(key, fallback, legacyKey) {
+  try { return window.localStorage.getItem(key) || (legacyKey ? window.localStorage.getItem(legacyKey) : null) || fallback; } catch { return fallback; }
 }
 function savePreference(key, value) {
   try { window.localStorage.setItem(key, value); } catch { /* Storage puede estar bloqueado. */ }
@@ -35,6 +35,6 @@ export function initPreferences() {
   }
   themeButton?.addEventListener("click", () => applyTheme(root.dataset.theme === "dark" ? "light" : "dark"));
   motionButton?.addEventListener("click", () => applyMotion(root.dataset.motion === "reduced" ? "full" : "reduced"));
-  applyTheme(readPreference(STORAGE_KEYS.theme, "light") === "dark" ? "dark" : "light");
-  applyMotion(readPreference(STORAGE_KEYS.motion, prefersReduced ? "reduced" : "full") === "reduced" ? "reduced" : "full");
+  applyTheme(readPreference(STORAGE_KEYS.theme, "dark", "traza-theme") === "dark" ? "dark" : "light");
+  applyMotion(readPreference(STORAGE_KEYS.motion, prefersReduced ? "reduced" : "full", "traza-motion") === "reduced" ? "reduced" : "full");
 }
