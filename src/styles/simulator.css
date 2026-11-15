@@ -577,3 +577,13 @@ body[data-active-space="simulator"] #PR>.panel{position:relative;z-index:2;point
 body[data-active-space="simulator"] #PR .trace-panel,
 body[data-active-space="simulator"] #PR .trace-history,
 body[data-active-space="simulator"] #PR .trace-history li{position:relative;z-index:3;pointer-events:auto}
+
+/* Las ventanas laterales se sitúan por encima de la capa interactiva del lienzo. */
+body[data-active-space="simulator"] #PL,
+body[data-active-space="simulator"] #RC{z-index:60;pointer-events:auto}
+body[data-active-space="simulator"] #PR,
+body[data-active-space="simulator"] #PR>.panel,
+body[data-active-space="simulator"] #PR .trace-history,
+body[data-active-space="simulator"] #PR .trace-history li{pointer-events:auto}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:0}
+body[data-active-space="simulator"] #dock{z-index:65}

@@ -40,6 +40,7 @@ test("paridad geométrica con el prototipo original en el ejercicio 14, paso 7",
       height:Math.abs(refBox.height-appBox.height)
     };
     measurements.push({label,delta});
+    console.log("PARITY_GEOMETRY "+JSON.stringify({label,reference:refBox,app:appBox,delta}));
     for(const [dimension,pixels] of Object.entries(delta)){
       expect(pixels, label+": diferencia de "+dimension+" "+pixels.toFixed(2)+" px").toBeLessThanOrEqual(6);
     }
