@@ -8,6 +8,8 @@ const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;
 const fmt=value=>typeof value==="number"?String(Number(value.toFixed(6))):String(value);
 const typeLabel={input:"Entrada",process:"Proceso",output:"Salida",decision:"Decisión",for:"Ciclo Para",while:"Ciclo Mientras",doWhile:"Hacer–Mientras",start:"Inicio",end:"Fin"};
 let model=createFlowPreset("sequence");
+let modelHistory=[JSON.stringify(model)];
+let historyIndex=0;
 let scopeStack=[];
 let selectedId=null;
 let runtime=null;
@@ -57,7 +59,31 @@ function updateTimelineControls(){
     $("#builder-timeline-label").textContent="Paso — / —";
   }
 }
-function markDirty(message="Cambios sin validar"){
+function updateHistoryControls(){
+  const undo=$("#builder-undo"),redo=$("#builder-redo");
+  if(undo)undo.disabled=historyIndex<=0;
+  if(redo)redo.disabled=historyIndex>=modelHistory.length-1;
+}
+function recordHistory(){
+  const snapshot=JSON.stringify(model);
+  if(modelHistory[historyIndex]===snapshot){updateHistoryControls();return;}
+  modelHistory=modelHistory.slice(0,historyIndex+1);
+  modelHistory.push(snapshot);
+  if(modelHistory.length>60)modelHistory.shift();
+  historyIndex=modelHistory.length-1;
+  updateHistoryControls();
+}
+function restoreHistory(index){
+  if(index<0||index>=modelHistory.length)return;
+  historyIndex=index;
+  model=JSON.parse(modelHistory[historyIndex]);
+  scopeStack=[];selectedId=null;
+  markDirty("Historial restaurado",false);
+  renderEditor();updateHistoryControls();
+}
+function undoBuilder(){restoreHistory(historyIndex-1);}
+function redoBuilder(){restoreHistory(historyIndex+1);}
+function markDirty(message="Cambios sin validar",record=true){
   runtime=null;runtimeTimeline=null;runtimeDiagram=null;
   $("#builder-status").textContent=message.toUpperCase();
   $("#builder-runtime-message").textContent="El flujo cambió. Vuelve a validar y ejecutar para generar una nueva traza.";
@@ -67,6 +93,7 @@ function markDirty(message="Cambios sin validar"){
   $("#builder-variables").innerHTML="<p>Sin variables.</p>";
   $("#builder-output").innerHTML="<li>Sin salida.</li>";
   updateTimelineControls();
+  if(record)recordHistory();else updateHistoryControls();
 }
 function scopeTitle(){
   const last=scopeStack.at(-1);
@@ -336,6 +363,13 @@ function bindBuilder(){
     model=preset==="empty"?{version:1,nodes:[makeNode("start",{id:"start"}),makeNode("end",{id:"end"})]}:createFlowPreset(preset);
     scopeStack=[];selectedId=null;markDirty("Plantilla cargada");renderEditor();
   }));
+  $("#builder-undo")?.addEventListener("click",undoBuilder);
+  $("#builder-redo")?.addEventListener("click",redoBuilder);
+  $("#view-builder")?.addEventListener("keydown",event=>{
+    if(!(event.ctrlKey||event.metaKey)||event.target.matches("input,textarea"))return;
+    if(event.key.toLowerCase()==="z"){event.preventDefault();event.shiftKey?redoBuilder():undoBuilder();}
+    else if(event.key.toLowerCase()==="y"){event.preventDefault();redoBuilder();}
+  });
   $("#builder-validate").addEventListener("click",validate);
   $("#builder-run").addEventListener("click",runBuilder);
   $("#builder-timeline").addEventListener("input",event=>{
@@ -351,5 +385,6 @@ export function initBuilder(){
   if(!$("#builder-canvas-list"))return;
   bindBuilder();
   renderEditor();
+  updateHistoryControls();
   validate();
 }
