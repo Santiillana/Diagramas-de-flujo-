@@ -631,10 +631,6 @@ function bindDiagramPan(){
   hit.addEventListener("wheel",event=>{
     event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
   },{passive:false});
-  stage.addEventListener("wheel",event=>{
-    if(event.target.closest("#sim-minimap"))return;
-    event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
-  },{passive:false});
   const minimap=$("#sim-minimap");
   if(minimap){
     let dragging=false;
