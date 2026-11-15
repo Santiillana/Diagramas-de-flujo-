@@ -64,3 +64,71 @@
     scroll-behavior:auto!important;
   }
 }
+
+
+/* Traza V2 · mínimos de legibilidad y lenguaje visual del cuaderno técnico. */
+:root { --fs-body: calc(16px * var(--text-scale, 1)); }
+body { font-family:var(--font-ui);font-size:var(--fs-body);line-height:1.5;background-color:var(--bg); }
+.page-heading h1,.section-intro h2,.lesson-detail-heading h3 { font-family:var(--font-display);font-weight:700; }
+:where(.app-shell) :where(p:not(.eyebrow),li,dd,dt,th,td,input,select,textarea,button,a,summary,small,label) {
+  font-size:max(15px,1em)!important;line-height:1.5;
+}
+:where(.app-shell) :where(.page-heading h1,.section-intro h2) { font-size:clamp(24px,2.2vw,32px)!important; }
+:where(.app-shell) :where(.panel-heading h3,.panel-heading h2) { font-size:clamp(17px,1.2vw,20px)!important; }
+:where(.app-shell) :where(.eyebrow,.phase-chip,.panel-index,.nav-index) { font-size:12px!important;letter-spacing:.06em; }
+:where(.app-shell) .pseudocode-lines li { font-size:var(--pseudocode-font-size,16px)!important;line-height:1.5; }
+:where(.app-shell) .diagram-node text { font:600 18px var(--font-mono); }
+:where(.app-shell) .diagram-edge-label { font:700 18px var(--font-mono); }
+.diagram-node .for-parts tspan { font:700 15px var(--font-mono); }
+.diagram-node .for-parts tspan.is-current { text-decoration:underline;font-weight:800; }
+.flow-token { fill:var(--hl);stroke:var(--ink);stroke-width:2;filter:drop-shadow(0 0 7px var(--glow));animation:token-pulse 1.1s ease-in-out infinite; }
+.flow-trail { fill:none;stroke:var(--glow);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.7;pointer-events:none; }
+@keyframes token-pulse { 0%,100% { r:9px; } 50% { r:11px; } }
+.diagram-node.is-visited rect,.diagram-node.is-visited polygon,.diagram-node.is-visited path,.diagram-node.is-visited circle {
+ fill:color-mix(in srgb,var(--v) 16%,var(--card));
+}
+.diagram-node.is-active rect,.diagram-node.is-active polygon,.diagram-node.is-active path,.diagram-node.is-active circle {
+ fill:#ffe27a;stroke:var(--ink);stroke-width:2.5;filter:drop-shadow(0 0 9px var(--glow));
+}
+.diagram-node.is-active text { fill:#1f2b36; }
+:root[data-theme="light"] .diagram-node.is-active.is-active-true rect,
+:root[data-theme="light"] .diagram-node.is-active.is-active-true polygon { fill:#b9efd3; }
+:root[data-theme="light"] .diagram-node.is-active.is-active-false rect,
+:root[data-theme="light"] .diagram-node.is-active.is-active-false polygon { fill:#ffc6d1; }
+:root[data-theme="dark"] .diagram-node.is-active.is-active-true rect,
+:root[data-theme="dark"] .diagram-node.is-active.is-active-true polygon { fill:color-mix(in srgb,var(--v) 35%,var(--card)); }
+:root[data-theme="dark"] .diagram-node.is-active.is-active-false rect,
+:root[data-theme="dark"] .diagram-node.is-active.is-active-false polygon { fill:color-mix(in srgb,var(--f) 35%,var(--card)); }
+.diagram-edge.is-token-path path { stroke:var(--hl);stroke-width:3; }
+.diagram-edge.is-route-true path,.diagram-edge.is-route-false path { stroke-dasharray:8 6;animation:route-dash 1s linear infinite; }
+.diagram-edge.is-route-true path { stroke:var(--v); }
+.diagram-edge.is-route-false path { stroke:var(--f); }
+.diagram-edge.is-route-unchosen { opacity:.3; }
+@keyframes route-dash { to { stroke-dashoffset:-28; } }
+.lab-space-tabs { display:flex;gap:8px;margin:0 0 20px;border-bottom:1px solid var(--line); }
+.lab-space-tabs button { padding:10px 14px;border:0;border-bottom:3px solid transparent;color:var(--pen);background:transparent;font-weight:750;cursor:pointer; }
+.lab-space-tabs button[aria-selected="true"] { color:var(--ink);border-bottom-color:var(--hl); }
+.lab-space-tabs button:focus-visible { outline:3px solid var(--bl);outline-offset:2px; }
+.lab-activities-panel[hidden],.builder-view[hidden] { display:none!important; }
+.topbar { height:56px;min-height:56px;padding:0 clamp(12px,2.2vw,28px);display:flex;gap:14px; }
+.topbar-status,.brand-copy small { display:none!important; }
+.primary-nav { margin-left:auto;min-width:0;flex:1;justify-content:flex-end;overflow-x:auto;scrollbar-width:thin; }
+.nav-button { min-height:38px;padding:0 12px;font-size:13px;white-space:nowrap; }
+.nav-index { font-size:12px; }
+.brand-mark { width:34px;height:34px;border-radius:10px; }
+.topbar-actions { gap:4px;flex:0 0 auto; }
+.text-size-control { width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--surface);font-weight:800;cursor:pointer; }
+.page-shell { padding-top:22px; }
+@media(max-width:760px) {
+ .topbar { gap:6px;padding-inline:8px; }
+ .brand-mark { width:29px;height:29px; }
+ .brand-copy strong { font-size:18px; }
+ .nav-button { min-height:34px;gap:4px;padding-inline:7px;font-size:12px; }
+ .nav-index { display:none; }
+ .text-size-control { width:27px;height:28px; }
+ .topbar-actions { gap:2px; }
+ .page-shell { width:min(100% - 20px,var(--content-width)); }
+}
+@media(prefers-reduced-motion:reduce) {
+ .flow-token,.diagram-edge.is-route-true path,.diagram-edge.is-route-false path { animation:none!important; }
+}

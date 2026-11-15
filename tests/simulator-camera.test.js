@@ -1,43 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-const read=path=>readFile(new URL(path,import.meta.url),"utf8");
+import { freeRect, targetFor, step } from "../src/ui/simulator/camera.js";
 
-test("la cámara automática interpola su desplazamiento con amortiguación exponencial",async()=>{
- const simulator=await read("../src/ui/simulator.js");
- assert.match(simulator,/function cameraAnimationTick/);
- assert.match(simulator,/1-Math\.exp\(-elapsed\/105\)/);
- assert.match(simulator,/requestAnimationFrame\(cameraAnimationTick\)/);
- assert.match(simulator,/function moveCameraTo/);
- assert.match(simulator,/cameraTarget/);
-});
-test("la cámara deja de seguir al usuario durante zoom manual o pan",async()=>{
- const simulator=await read("../src/ui/simulator.js");
- assert.match(simulator,/cameraAuto=false;updateCameraButton\(\);stopCameraAnimation\(\)/);
- assert.match(simulator,/originX:panOffset\.x,originY:panOffset\.y/);
- assert.match(simulator,/applyCanvasOffset\(\)/);
-});
-test("zoom conserva el punto bajo el cursor y limita la escala",async()=>{
- const simulator=await read("../src/ui/simulator.js");
- assert.match(simulator,/function setDiagramZoomAt/);
- assert.match(simulator,/Math\.max\(\.45,Math\.min\(3\.5,nextZoom\)\)/);
- assert.match(simulator,/focus\.x-projectedX/);
- assert.match(simulator,/focus\.y-projectedY/);
-});
-test("gesto de pellizco usa dos punteros y ajusta zoom respecto a su centro",async()=>{
- const simulator=await read("../src/ui/simulator.js");
- assert.match(simulator,/const activePointers=new Map\(\)/);
- assert.match(simulator,/startDistance/);
- assert.match(simulator,/pinchState\.startZoom\*distance\(a,b\)\/pinchState\.startDistance/);
- assert.match(simulator,/stage\.classList\.add\("is-pinching"\)/);
-});
-test("pantalla completa usa el rectángulo de viewport y restablece el ajuste",async()=>{
- const [simulator,css,stageCss]=await Promise.all([
-  read("../src/ui/simulator.js"),read("../src/styles/simulator.css"),read("../src/styles/simulator-stage.css")
+test("freeRect reserva espacio de los paneles flotantes y el dock", () => {
+ const stage={left:0,top:0,right:1200,bottom:800,width:1200,height:800};
+ const result=freeRect(stage,[
+  {left:0,top:80,right:300,bottom:650},
+  {left:850,top:80,right:1200,bottom:650},
+  {left:180,top:700,right:1020,bottom:730}
  ]);
- assert.match(simulator,/document\.fullscreenElement===stage/);
- assert.match(simulator,/stage\.dataset\.fullscreen=String\(active\)/);
- assert.match(simulator,/requestFullscreen\(\{navigationUI:"hide"\}\)/);
- assert.match(css,/:fullscreen \.flow-svg/);
- assert.match(stageCss,/:fullscreen \.flow-diagram-container/);
+ assert.deepEqual(result,{left:300,top:0,right:850,bottom:700,width:550,height:700});
+});
+
+test("targetFor centra un nodo en el rectángulo libre teniendo en cuenta el zoom", () => {
+ assert.deepEqual(targetFor({x:200,y:100},{left:100,top:50,width:600,height:400},2),{x:200,y:150});
+});
+
+test("step aplica interpolación exponencial con constante de 110 ms y velocidad", () => {
+ const current={x:0,y:0},target={x:100,y:-50},next=step(current,target,110,1);
+ const factor=1-Math.exp(-1);
+ assert.ok(Math.abs(next.x-100*factor)<1e-10);
+ assert.ok(Math.abs(next.y+50*factor)<1e-10);
+ assert.deepEqual(step(current,target,0,1),current);
+ assert.ok(step(current,target,16,.25).x>0);
 });

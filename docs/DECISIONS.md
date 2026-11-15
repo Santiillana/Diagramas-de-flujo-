@@ -82,3 +82,16 @@ Las seis actividades pueden iniciarse sin una ejecución manual previa. El estad
 
 ## D-026 · Razonamiento por capas y pistas progresivas
 Cada ficha de ejercicio expone un campo `razonamiento` con comprensión, datos, estrategia y comprobación. También ofrece tres pistas escalonadas: orientación, estrategia y verificación. La puerta de reto conserva las respuestas de entradas/proceso/salidas y no muestra métodos ni razonamiento completo antes de revelar. Cuando hay métodos alternativos, cada uno describe su enfoque y la ficha compara las alternativas sin inventar segundos métodos.
+
+
+## D-027 · Geometría del diagrama alineada con Traza V2
+Los nodos de proceso, entrada y salida usan 240×56 px; decisión 84 px; Para 64 px; separación vertical 40 px (paso de 96 px) y separación horizontal entre ramas 260 px. El lienzo se calcula con los límites de los nodos y un margen de 40 px. Los tres tramos del Para proceden del AST y se resaltan según el evento activo.
+
+## D-028 · Cámara pura y área libre calculada desde el escenario
+La cámara se apoya en las funciones puras freeRect, targetFor y step. El escenario entrega los rectángulos reales de los paneles y el dock; el desplazamiento de la cámara se aplica a una única capa SVG #cam, que agrupa aristas, nodos, ficha y estela.
+
+## D-029 · La ficha enseña la causa del recorrido
+La animación utiliza los dos eventos adyacentes del intérprete y recorre el path SVG exacto. La duración deriva de la longitud del conector y de la velocidad seleccionada. Los eventos consecutivos del mismo nodo (preparación, condición y avance del Para) producen un salto breve. highlightDiagram queda reservado a los estados semánticos.
+
+## D-030 · Tokens Traza y legibilidad global
+El tema oscuro es el inicial; el claro conserva la misma semántica de colores. Los alias anteriores permanecen durante la migración para no romper módulos que aún usan tokens V2. El cuerpo funcional mantiene 16 px como mínimo.

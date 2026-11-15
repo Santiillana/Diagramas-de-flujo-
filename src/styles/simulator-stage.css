@@ -196,3 +196,17 @@ body[data-active-space="simulator"] .simulator-diagram-stage:fullscreen .flow-sv
 body[data-active-space="simulator"] .simulator-diagram-stage.is-panning{cursor:grabbing}
 body[data-active-space="simulator"] .simulator-diagram-stage.is-pinching{cursor:zoom-in}
 body.diagram-fullscreen-active .simulator-view>.simulator-floating-toolbar{display:none!important}
+
+/* Ajustes de ancho y superficies según Traza V2. */
+body[data-active-space="simulator"] .simulator-view { inset:var(--simulator-topbar-height,56px) 0 0; }
+.simulator-grid>.problem-panel { width:clamp(300px,22vw,360px); }
+.simulator-grid>.simulator-inspector { width:clamp(340px,26vw,440px); }
+.simulator-grid [data-floating-panel] { background:color-mix(in srgb,var(--card) 90%,transparent);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 8px 28px #0003;backdrop-filter:blur(8px); }
+.simulator-grid>.simulator-dock { width:min(920px,calc(100vw - 20px));bottom:10px; }
+.simulator-exercise-dot.level-basic { border-color:var(--lvl-1); }
+.simulator-exercise-dot.level-intermediate { border-color:var(--lvl-2); }
+.simulator-exercise-dot.level-advanced { border-color:var(--lvl-3); }
+.flow-svg { min-width:0;overflow:visible; }
+@media(max-width:760px) {
+ .simulator-grid>.problem-panel,.simulator-grid>.simulator-inspector { width:auto; }
+}

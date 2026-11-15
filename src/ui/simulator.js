@@ -6,6 +6,7 @@ import { executePseudocode, createTimeline } from "../core/interpreter.js";
 import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram, animateDiagramTransition } from "../diagram/renderer.js";
+import { freeRect, targetFor, step as cameraStep } from "./simulator/camera.js";
 
 const $ = s => document.querySelector(s);
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
@@ -13,7 +14,7 @@ const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pinchState=null, pseudocodeSize=14, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, zoom=1, panOffset={x:0,y:0};
-let cameraFrame=null, cameraTarget=null, cameraLastFrame=0;
+let cameraFrame=null, cameraTarget=null, cameraLastFrame=0, lastAnimationDuration=0, inputDebounceTimer=null;
 const activePointers=new Map();
 let lastRenderedStep=null;
 let exerciseSearch="",predictionMode=false;
@@ -28,7 +29,7 @@ function readPseudocodeSize(){
 
 
 function stop(){
-  if(timer!==null){clearInterval(timer);timer=null;}
+  if(timer!==null){clearTimeout(timer);timer=null;}
   const b=$("#simulator-play");
   if(b){b.textContent="▶";b.title="Reproducir";b.setAttribute("aria-label","Reproducir");}
 }
@@ -187,38 +188,28 @@ function updateCameraButton(){
   button.classList.toggle("is-active",cameraAuto);
 }
 function getAvailableDiagramRect(stage){
-  const bounds=stage.getBoundingClientRect();
-  if(document.fullscreenElement===stage){
-    const result={left:bounds.left+24,top:bounds.top+24,right:bounds.right-24,bottom:bounds.bottom-24,
-      width:Math.max(160,bounds.width-48),height:Math.max(140,bounds.height-48)};
-    stage.dataset.availableWidth=String(Math.round(result.width));
-    stage.dataset.availableHeight=String(Math.round(result.height));
-    stage.dataset.availableRatio=String(Math.round(result.width/window.innerWidth*100));
-    return result;
+  const bounds=stage.getBoundingClientRect(),grid=$("#simulator-grid");
+  const mobile=window.matchMedia("(max-width:760px)").matches,hidden=grid?.classList.contains("panels-hidden");
+  const visible=panel=>panel&&!panel.hidden&&!hidden&&!panel.classList.contains("is-panel-collapsed")&&!panel.classList.contains("is-auto-collapsed");
+  const blockers=[];
+  if(document.fullscreenElement!==stage){
+    if(!mobile){
+      const problem=grid?.querySelector('[data-floating-panel="problem"]');
+      const inspector=grid?.querySelector(".simulator-inspector");
+      const history=grid?.querySelector('[data-floating-panel="history"]');
+      if(visible(problem))blockers.push(problem.getBoundingClientRect());
+      if(inspector&&[...inspector.querySelectorAll("[data-floating-panel]")].some(visible))blockers.push(inspector.getBoundingClientRect());
+      if(visible(history))blockers.push(history.getBoundingClientRect());
+    }else{
+      const tabs=$("#simulator-mobile-tabs");
+      if(tabs)blockers.push({left:bounds.left,top:tabs.getBoundingClientRect().top,right:bounds.right,bottom:bounds.bottom});
+    }
+    const dock=grid?.querySelector(".simulator-dock");
+    if(dock&&getComputedStyle(dock).display!=="none")blockers.push(dock.getBoundingClientRect());
   }
-  const grid=$("#simulator-grid");
-  const mobile=window.matchMedia("(max-width:760px)").matches;
-  const gridHidden=grid?.classList.contains("panels-hidden");
-  const visible=panel=>panel&&!panel.hidden&&!gridHidden&&
-    !panel.classList.contains("is-panel-collapsed")&&!panel.classList.contains("is-auto-collapsed");
-  let left=bounds.left+18,right=bounds.right-18,top=bounds.top+154,bottom=bounds.bottom-150;
-  if(mobile){
-    const tabs=$("#simulator-mobile-tabs");
-    if(tabs)bottom=Math.min(bottom,tabs.getBoundingClientRect().top-10);
-  }else{
-    const problem=grid?.querySelector('[data-floating-panel="problem"]');
-    const inspector=grid?.querySelector(".simulator-inspector");
-    const history=grid?.querySelector('[data-floating-panel="history"]');
-    if(visible(problem))left=Math.max(left,problem.getBoundingClientRect().right+14);
-    const inspectorVisible=inspector&&[...inspector.querySelectorAll("[data-floating-panel]")].some(visible);
-    if(inspectorVisible)right=Math.min(right,inspector.getBoundingClientRect().left-14);
-    if(visible(history))bottom=Math.min(bottom,history.getBoundingClientRect().top-10);
-  }
-  const dock=grid?.querySelector(".simulator-dock");
-  if(dock&&getComputedStyle(dock).display!=="none")bottom=Math.min(bottom,dock.getBoundingClientRect().top-12);
-  if(right-left<160){left=bounds.left+18;right=bounds.right-18;}
-  if(bottom-top<140){top=bounds.top+50;bottom=bounds.bottom-100;}
-  const result={left,top,right,bottom,width:Math.max(160,right-left),height:Math.max(140,bottom-top)};
+  const result=freeRect(bounds,blockers);
+  result.left+=18;result.right-=18;result.top+=18;result.bottom-=18;
+  result.width=Math.max(160,result.right-result.left);result.height=Math.max(140,result.bottom-result.top);
   stage.dataset.availableWidth=String(Math.round(result.width));
   stage.dataset.availableHeight=String(Math.round(result.height));
   stage.dataset.availableRatio=String(Math.round(result.width/window.innerWidth*100));
@@ -230,10 +221,13 @@ function stopCameraAnimation(){
   const stage=$("#diagram-stage");if(stage)stage.dataset.cameraAnimating="false";
 }
 function applyCanvasOffset(){
-  const canvas=$("#flow-diagram-container");
-  if(!canvas)return;
-  canvas.style.transition="none";
-  canvas.style.transform="translate3d("+panOffset.x+"px,"+panOffset.y+"px,0)";
+  const camera=$("#cam"),svg=$("#flow-svg");
+  if(!svg)return;
+  const viewBox=svg.viewBox?.baseVal;
+  const scaleX=viewBox?.width?diagramFitWidth/viewBox.width:1;
+  const scaleY=viewBox?.height?diagramFitHeight/viewBox.height:1;
+  const tx=panOffset.x/Math.max(.0001,scaleX*zoom),ty=panOffset.y/Math.max(.0001,scaleY*zoom);
+  camera?.setAttribute("transform","translate("+tx+" "+ty+") scale("+zoom+")");
   const stage=$("#diagram-stage");
   if(stage)stage.dataset.panOffset=panOffset.x+","+panOffset.y;
 }
@@ -241,9 +235,9 @@ function cameraAnimationTick(now){
   if(!cameraTarget){stopCameraAnimation();return;}
   const elapsed=cameraLastFrame?Math.min(64,now-cameraLastFrame):16;
   cameraLastFrame=now;
-  const factor=1-Math.exp(-elapsed/105);
-  panOffset.x+=(cameraTarget.x-panOffset.x)*factor;
-  panOffset.y+=(cameraTarget.y-panOffset.y)*factor;
+  const next=cameraStep(panOffset,cameraTarget,elapsed,speedFactor());
+  panOffset.x=next.x;
+  panOffset.y=next.y;
   if(Math.abs(cameraTarget.x-panOffset.x)<.45&&Math.abs(cameraTarget.y-panOffset.y)<.45){
     panOffset={x:cameraTarget.x,y:cameraTarget.y};
     applyCanvasOffset();
@@ -267,16 +261,21 @@ function moveCameraTo(next,instant=false){
   const stage=$("#diagram-stage");if(stage)stage.dataset.cameraAnimating="true";
   if(cameraFrame===null)cameraFrame=requestAnimationFrame(cameraAnimationTick);
 }
+function centerDiagramPoint(point,behavior){
+  if(!cameraAuto||!point)return;
+  const stage=$("#diagram-stage"),svg=$("#flow-svg"),viewBox=svg?.viewBox?.baseVal;
+  if(!stage||!viewBox?.width||!viewBox?.height||!diagramFitWidth||!diagramFitHeight)return;
+  const bounds=stage.getBoundingClientRect(),available=getAvailableDiagramRect(stage);
+  const free={left:available.left-bounds.left,top:available.top-bounds.top,width:available.width,height:available.height};
+  const nodeCenter={x:point.x*(diagramFitWidth/viewBox.width),y:point.y*(diagramFitHeight/viewBox.height)};
+  moveCameraTo(targetFor(nodeCenter,free,zoom),behavior==="auto");
+}
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
-  const stage=$("#diagram-stage"),canvas=$("#flow-diagram-container");
-  const node=document.getElementById("flow-node-"+event.nodeId);
-  if(!stage||!canvas||!node)return;
-  const available=getAvailableDiagramRect(stage),target=node.getBoundingClientRect();
-  const dx=available.left+available.width/2-(target.left+target.width/2);
-  const dy=available.top+available.height/2-(target.top+target.height/2);
-  moveCameraTo({x:panOffset.x+dx,y:panOffset.y+dy},behavior==="auto");
-  stage.dataset.cameraTarget=String(event.nodeId);
+  const node=diagram?.nodes.find(item=>String(item.sourceId)===String(event.nodeId));
+  if(!node)return;
+  centerDiagramPoint({x:node.x,y:Math.max(10,node.y-12)},behavior);
+  const stage=$("#diagram-stage");if(stage)stage.dataset.cameraTarget=String(event.nodeId);
 }
 function renderOperationBreakdown(event){
   let expression=null;
@@ -325,13 +324,14 @@ function render(){
     const previousSource=[...seen.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
     highlightDiagram($("#flow-diagram-container"),diagram,{
       activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
-      route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null
+      route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null,result:e.result,forPhase:e.type
     });
-    animateDiagramTransition($("#flow-diagram-container"),diagram,{
+    lastAnimationDuration=animateDiagramTransition($("#flow-diagram-container"),diagram,{
       previousNodeId:priorEvent?.nodeId??null,
       activeNodeId:e.nodeId,
-      durationMs:Math.max(90,Math.min(4000,Math.round(850/speedFactor()))),
-      motionMode:document.documentElement.dataset.motion??"full"
+      speed:speedFactor(),
+      motionMode:document.documentElement.dataset.motion??"full",
+      onFrame:point=>centerDiagramPoint(point)
     });
   }
   lastRenderedStep=timeline.index;
@@ -436,12 +436,16 @@ function exitCurrentLoop(){
   if(index>=0)seek(index);
 }
 
-function speedFactor(){return Number($("#simulator-speed")?.value)||1;}
+function readSavedSpeed(){
+  try{const value=Number(localStorage.getItem("traza-simulator-speed"));return SPEEDS.includes(value)?value:1;}catch{return 1;}
+}
+function speedFactor(){return Number($("#simulator-speed-fine")?.value)||Number($("#simulator-speed")?.value)||1;}
 function setSpeedFactor(value){
   const selected=SPEEDS.reduce((best,item)=>Math.abs(item-value)<Math.abs(best-value)?item:best,SPEEDS[0]);
   $("#simulator-speed").value=String(selected);
   $("#simulator-speed-fine").value=String(selected);
   $("#simulator-speed-label").textContent=String(selected).replace(".",",")+"×";
+  try{localStorage.setItem("traza-simulator-speed",String(selected));}catch{}
   if(timer!==null){stop();play();}
 }
 function cycleExercise(delta){
@@ -498,10 +502,13 @@ function play(){
   if(timer!==null){stop();return;}
   if(timeline.index>=timeline.length-1)timeline.first();
   const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
-  timer=window.setInterval(()=>{
+  const advance=()=>{
+    if(!timeline)return;
     timeline.next();render();
-    if(timeline.index>=timeline.length-1)stop();
-  },Math.max(60,Math.round(650/speedFactor())));
+    if(timeline.index>=timeline.length-1){stop();return;}
+    timer=window.setTimeout(advance,Math.max(150,lastAnimationDuration||150));
+  };
+  timer=window.setTimeout(advance,150);
 }
 function applyDiagramZoom(){
   const svg=$("#flow-svg");
@@ -510,6 +517,7 @@ function applyDiagramZoom(){
   svg.style.maxWidth="none";
   svg.style.width=(diagramFitWidth*zoom)+"px";
   svg.style.height=(diagramFitHeight*zoom)+"px";
+  applyCanvasOffset();
   const stage=$("#diagram-stage");
   if(stage){stage.dataset.zoomCount=String(Number(stage.dataset.zoomCount||0));stage.dataset.zoom=zoom.toFixed(3);}
 }
@@ -517,7 +525,7 @@ function setDiagramZoomAt(nextZoom,anchor,manual=false){
   const svg=$("#flow-svg"),stage=$("#diagram-stage");
   if(!svg||!stage)return;
   if(!diagramFitWidth||!diagramFitHeight)fitDiagram();
-  const next=Math.max(.45,Math.min(3.5,nextZoom));
+  const next=Math.max(.65,Math.min(3,nextZoom));
   if(Math.abs(next-zoom)<.0005)return;
   const rectBefore=svg.getBoundingClientRect();
   const focus=anchor??{x:rectBefore.left+rectBefore.width/2,y:rectBefore.top+rectBefore.height/2};
@@ -551,14 +559,14 @@ function fitDiagram(){
   const available=getAvailableDiagramRect(stage);
   const availableWidth=Math.max(180,available.width-30);
   const availableHeight=Math.max(180,available.height-30);
-  const scale=Math.max(.45,Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height));
+  const desktop=window.matchMedia("(min-width:761px)").matches;
+  const targetWidth=Math.max(desktop?520:0,Math.min(availableWidth*.60,availableWidth));
+  const scale=targetWidth/viewBox.width;
   diagramFitWidth=viewBox.width*scale;
   diagramFitHeight=viewBox.height*scale;
   stopCameraAnimation();
   zoom=1;
   panOffset={x:0,y:0};
-  const canvas=$("#flow-diagram-container");
-  if(canvas)canvas.style.transform="translate3d(0,0,0)";
   stage.dataset.zoom="1.000";
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   applyDiagramZoom();
@@ -669,7 +677,6 @@ function bind(){
     const tab=event.target.closest("[data-mobile-panel]");
     if(tab)setMobilePanel(tab.dataset.mobilePanel);
   });
-  $("#simulator-run").addEventListener("click",run);
   $("#simulator-restore-inputs").addEventListener("click",()=>{
     $("#simulator-inputs").value=defaultInputSample.join(", ");
     run();
@@ -697,8 +704,12 @@ function bind(){
     methodIndex=Number(event.target.value)||0;
     prepare();
   });
+  $("#simulator-inputs").addEventListener("input",()=>{
+    if(inputDebounceTimer!==null)clearTimeout(inputDebounceTimer);
+    inputDebounceTimer=window.setTimeout(()=>{inputDebounceTimer=null;run();},250);
+  });
   $("#simulator-inputs").addEventListener("keydown",event=>{
-    if(event.key==="Enter"){event.preventDefault();run();}
+    if(event.key==="Enter"){event.preventDefault();if(inputDebounceTimer!==null)clearTimeout(inputDebounceTimer);inputDebounceTimer=null;run();}
   });
   $("#simulator-first").addEventListener("click",()=>seek(0));
   $("#simulator-previous").addEventListener("click",()=>move(-1));
@@ -750,11 +761,11 @@ function bind(){
   document.addEventListener("traza:lab-sync-request",publishTrace);
 }
 export function initSimulator(){
-  if(!$("#simulator-run"))return;
+  if(!$("#simulator-inputs")||!$("#simulator-grid"))return;
   setPseudocodeSize(readPseudocodeSize());
   setMobilePanel("diagram");
   updateCameraButton();
   bind();prepare();
   renderExercisePicker();
-  setSpeedFactor(1);
+  setSpeedFactor(readSavedSpeed());
 }
