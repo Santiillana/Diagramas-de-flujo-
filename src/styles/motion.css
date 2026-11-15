@@ -3,3 +3,9 @@ button,a,.panel,.learning-card,.activity-card,.palette-item,.diagram-empty-icon 
 button:focus-visible,a:focus-visible,summary:focus-visible { outline:none; box-shadow:var(--focus-ring); }
 :root[data-motion="reduced"] *,:root[data-motion="reduced"] *::before,:root[data-motion="reduced"] *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+
+.scene-figure-host,.scene-memory-value,.scene-tape-item,.scene-path,.scene-loop-cell{transition:opacity var(--dur-fast) ease-out,transform var(--dur) ease-out}
+.scene-figure-host{animation:scene-appear var(--dur) ease-out both}
+@keyframes scene-appear{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.scene-figure-host,.scene-memory-value,.scene-tape-item,.scene-path,.scene-loop-cell{animation:none!important;transition:none!important}}
+:root[data-motion="reduced"] .scene-figure-host{animation:none}

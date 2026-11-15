@@ -59,3 +59,37 @@ El desglose de cada operación utiliza el mismo evaluador de expresiones y el sn
 
 ## D-020 · El límite de Pages se declara, no se presume
 El proyecto estático es compatible con GitHub Pages, pero un merge no demuestra por sí mismo que Pages esté activado. La URL pública y la configuración de despliegue deben comprobarse tras configurar Settings → Pages.
+
+
+## D-021 · La referencia original es la autoridad visual del Simulador
+Para la vista Simulador, la composición de tarjetas y el dock en una fila del grid quedan sustituidos por la composición inmersiva de la referencia original: barra de 54 px, lienzo de viewport, paneles de vidrio laterales y dock flotante. La navegación global 01–05 y el resto de espacios se conservan. Esta decisión prevalece sobre D-005 para el Simulador porque la solicitud de rediseño especifica esa paridad visual; el dock debe permanecer por encima del escenario y no consumir una fila del layout.
+
+## D-022 · Motor y SVG de una sola construcción
+El intérprete y `src/core/*` no se modifican. El SVG sigue construyéndose al preparar un ejercicio; el avance actualiza clases y snapshots mediante `highlightDiagram()`. Las nuevas capas de cámara, rutas, paneles y animación consumen los mismos eventos y no vuelven a ejecutar el pseudocódigo.
+
+## D-023 · Tokens del Simulador aislados y alineados con la referencia
+El Simulador utiliza los valores cromáticos de la referencia y el tamaño base de 17 px en escritorio / 15 px en móvil, con rango de 13–26 px. Los nuevos alias quedan limitados al contexto del Simulador para no cambiar Aprende, Ejercicios, Laboratorio ni Constructor. Tema oscuro como valor inicial; el interruptor existente sigue controlando el tema.
+
+## D-024 · La geometría de referencia se mide, no se codifica en la prueba
+La aceptación compara bounding boxes del HTML original y del Simulador a 1920×1080. Las medidas de referencia se leen durante la ejecución de Playwright; no se duplican como fixtures fijos. Criterio máximo de diferencia: 6 px por elemento.
+
+## D-025 · Despliegue separado de revisión
+Los cambios se publican únicamente en `mejoras/traza-v2` y se mantienen en la PR #7. No se actualiza `main` ni se fusiona la PR. La disponibilidad del preview de Cloudflare se configura externamente y no se presume desde GitHub.
+
+## D-026 · Cámara como transformación única del mundo
+El SVG mantiene sus dimensiones base tras prepararse el ejercicio. Desplazamiento y zoom se aplican juntos en una única transformación de #flow-diagram-container; no se utiliza scroll para navegar el diagrama. El zoom conserva el punto bajo el cursor y los gestos de puntero usan captura para evitar saltos al salir del área.
+## D-027 · Encuadre según el espacio disponible
+La cámara automática calcula el rectángulo libre entre barra superior, paneles visibles y dock. El minimapa refleja la zona visible y permite desplazar la cámara con clic o arrastre. Una manipulación manual pausa el seguimiento y muestra el control «Seguir el proceso».
+
+## D-028 · Ventanas satélite con estado independiente
+Problema, Tus datos, Pseudocódigo, En escena, Variables, Pantalla e Historial son ventanas separadas con identidad cromática, controles para minimizar y fijar, y un rail para restaurarlas. El estado minimizado/fijado se guarda de forma tolerante a fallos en localStorage; en tablet se minimizan automáticamente las ventanas izquierdas que no estén fijadas.
+## D-029 · Ventana contextual ligada a la figura
+La explicación breve de cada evento se ancla al nodo activo y prueba cuatro posiciones (derecha, izquierda, arriba y abajo). Se rechazan ubicaciones que se crucen con la figura, flechas, etiquetas de rama, paneles o dock; cuando no existe una posición limpia se usa una conexión de apoyo.
+
+## D-030 · Rutas y rastro derivados de conectores del SVG
+El grafo de navegación se construye a partir de las aristas generadas por layoutFlow y sus paths SVG. Dijkstra selecciona la ruta de coste geométrico mínimo; los vértices del rastro se muestrean desde el atributo d real del conector. Si el navegador no ofrece métricas SVG, el fallback reproduce la misma geometría del renderer (secuencia, rama V/F o retorno), sin inventar una trayectoria ni modificar el intérprete.
+## D-031 · Coreografía cancelable sobre snapshots
+Los pasos manuales y la reproducción automática adaptan el evento de snapshot ya existente. Leer y las asignaciones vuelan hacia la variable afectada; Imprimir vuela hacia la nueva salida. Cada movimiento cancela RAF y temporizadores anteriores antes de iniciar otro. La preferencia de movimiento reducido elimina vuelos y pulsos animados, manteniendo el resaltado del destino.
+
+## D-032 · No cubrir la decisión ni las ramas V/F
+En los eventos de decisión, rama y condición de ciclo, la explicación permanece en el panel persistente En escena. La ventana flotante se oculta y el cable guía conecta el rombo con ese panel; las burbujas flotantes se reservan a los eventos secuenciales cuando existe un rectángulo libre. Esto prioriza la visibilidad de las ramas y sus etiquetas en los momentos de mayor densidad gráfica.

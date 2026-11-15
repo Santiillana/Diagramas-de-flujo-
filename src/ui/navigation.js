@@ -1,9 +1,9 @@
 const SPACE_META = {
-  learn: { kicker: "ESPACIO 01 / 05 · CONOCIMIENTO", title: "Entiende la lógica que sostiene cada diagrama.", description: "Lecciones breves y visuales, organizadas para avanzar desde los fundamentos hasta las estructuras de repetición." },
-  exercises: { kicker: "ESPACIO 02 / 05 · PRÁCTICA GUIADA", title: "Piensa el problema. Después, dibuja el camino.", description: "Un entorno para entender cómo se transforma una idea en instrucciones claras y verificables." },
-  simulator: { kicker: "ESPACIO 03 / 05 · EJECUCIÓN VISUAL", title: "Observa cómo avanza cada instrucción.", description: "Diagrama, explicación y variables compartirán el mismo estado de ejecución." },
-  lab: { kicker: "ESPACIO 04 / 05 · EXPERIMENTACIÓN", title: "Pon a prueba tu razonamiento.", description: "Predice, compara, ordena y encuentra errores con el contexto del algoritmo siempre a la vista." },
-  builder: { kicker: "ESPACIO 05 / 05 · CONSTRUCCIÓN", title: "Representa una solución con tus propias conexiones.", description: "Un lienzo para crear diagramas completos con símbolos, rutas y validación estructural." }
+  learn: { kicker: "APRENDER", title: "Aprende a leer y construir diagramas de flujo.", description: "Avanza desde las primeras figuras hasta las decisiones y los ciclos, con ejemplos guiados." },
+  exercises: { kicker: "RESOLVER", title: "Piensa el problema y encuentra una solución.", description: "Analiza los datos, organiza las instrucciones y comprueba el resultado." },
+  simulator: { kicker: "OBSERVAR", title: "Mira cómo se ejecuta cada instrucción.", description: "Sigue el recorrido, observa los valores y entiende por qué cambia cada variable." },
+  lab: { kicker: "PRACTICAR", title: "Practica, prueba y corrige tus ideas.", description: "Resuelve retos breves y compara tus respuestas con la ejecución real." },
+  builder: { kicker: "CONSTRUIR", title: "Construye un diagrama paso a paso.", description: "Elige figuras, organiza el flujo y comprueba que tu algoritmo pueda ejecutarse." }
 };
 
 export function initNavigation() {
@@ -31,7 +31,7 @@ export function initNavigation() {
     document.body.dataset.activeSpace = space;
     document.title = meta.title + " · Traza";
     if (options.focus) {
-      const targetHeading = target.querySelector("h2");
+      const targetHeading = document.querySelector("#space-heading");
       if (targetHeading) {
         targetHeading.setAttribute("tabindex", "-1");
         targetHeading.focus({ preventScroll: true });
@@ -39,10 +39,10 @@ export function initNavigation() {
     }
   }
 
-  nav.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-space]");
-    if (button && nav.contains(button)) activate(button.dataset.space);
-  });
+  for (const button of buttons) {
+    button.addEventListener("pointerdown", () => activate(button.dataset.space));
+    button.addEventListener("click", () => activate(button.dataset.space));
+  }
   nav.addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
     const current = buttons.indexOf(document.activeElement);

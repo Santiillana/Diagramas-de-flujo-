@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { exercises } from "../src/content/exercises.js";
+import { buildGapChallenge } from "../src/ui/lab/generators.js";
 
 test("Laboratorio conserva la traza y permite predecir el siguiente paso", async ({ page }) => {
   await page.goto("/");
@@ -50,6 +52,35 @@ test("¿Y si…? compara el resultado original con un pseudocódigo modificado s
   await expect(page.locator("#lab-whatif-result")).toContainText("[13]");
   await expect(page.locator("#lab-whatif-result")).toContainText("[3]");
   await expect(page.locator("#lab-context-title")).toContainText("Suma de dos números");
+});
+
+test("Completa el hueco valida la expresión con la ejecución real", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator('[data-space="lab"]').click();
+  await page.locator('[data-lab-activity="fill-gap"]').click();
+  await expect(page.locator("#lab-task-title")).toHaveText("Completa el hueco");
+
+  const method=exercises.find(item=>item.id===1).methods[0];
+  const challenge=buildGapChallenge(1,0,method.pseudocode,0);
+  expect(challenge).not.toBeNull();
+  await page.locator("#lab-gap-answer").fill(challenge.answer);
+  await page.locator("#lab-gap-check").click();
+  await expect(page.locator("#lab-gap-feedback")).toContainText("La ejecución conserva las mismas salidas y variables");
+});
+
+test("Sigue la flecha muestra opciones y permite inspeccionar el siguiente paso real", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator('[data-space="lab"]').click();
+  await page.locator('[data-lab-activity="follow-arrow"]').click();
+  await expect(page.locator("#lab-task-title")).toHaveText("Sigue la flecha");
+  const choices=page.locator("#lab-task-content [data-arrow-node]");
+  await expect(choices.first()).toBeVisible();
+  await choices.first().click();
+  await expect(page.locator("#lab-arrow-feedback")).toContainText("La siguiente instrucción real es:");
+  await page.locator("#lab-arrow-inspect").click();
+  await expect(page.locator("#dock-step-title")).not.toBeEmpty();
 });
 
 test("Constructor ejecuta los presets de secuencia y decisión en el motor común", async ({ page }) => {

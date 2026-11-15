@@ -4,19 +4,19 @@
 .simulator-problem-body{padding:0 16px 16px;overflow:auto}
 .simulator-exercise-kicker{display:flex;align-items:center;gap:8px;margin:5px 0 10px}
 .simulator-exercise-title,.simulator-problem-body h4{margin:7px 0;font-size:16px;line-height:1.3;letter-spacing:-.35px}
-.simulator-statement{color:var(--muted-strong);font-size:10px;line-height:1.65}
-.simulator-details{margin:10px 0;padding:9px 0;border-block:1px solid var(--line);color:var(--ink-soft);font-size:9px}
+.simulator-statement{color:var(--muted-strong);font-size:13px;line-height:1.65}
+.simulator-details{margin:10px 0;padding:9px 0;border-block:1px solid var(--line);color:var(--ink-soft);font-size:13px}
 .simulator-details summary{cursor:pointer;font-weight:750}
 .simulator-details ul{padding-left:17px;color:var(--muted-strong);line-height:1.6}
 .simulator-field{display:grid;gap:5px;margin:12px 0}
-.simulator-field>span{color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.8px}
-.simulator-field input,.simulator-field select{width:100%;min-height:36px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface);font-size:10px}
-.simulator-help{margin:-5px 0 10px;color:var(--muted);font-size:8px;line-height:1.5}
+.simulator-field>span{color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.8px}
+.simulator-field input,.simulator-field select{width:100%;min-height:36px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);background:var(--surface);font-size:13px}
+.simulator-help{margin:-5px 0 10px;color:var(--muted);font-size:13px;line-height:1.5}
 .simulator-run{width:100%;min-height:39px}
 .pseudocode-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:16px 0 7px}
-.pseudocode-heading>span{color:var(--muted);font:8px ui-monospace,monospace}
+.pseudocode-heading>span{color:var(--muted);font:13px ui-monospace,monospace}
 .pseudocode-lines{display:grid;gap:2px;margin:0;padding:7px 0;list-style:none;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);overflow:auto;max-height:320px}
-.pseudocode-lines li{display:grid;grid-template-columns:25px 1fr;gap:7px;padding:4px 8px;color:var(--muted-strong);font:9px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.pseudocode-lines li{display:grid;grid-template-columns:25px 1fr;gap:7px;padding:4px 8px;color:var(--muted-strong);font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
 .pseudocode-lines li span:first-child{color:var(--muted);text-align:right}
 .pseudocode-lines li.is-active{color:var(--ink);background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent);font-weight:800}
 .pseudocode-lines li.is-visited:not(.is-active){color:var(--positive)}
@@ -26,7 +26,7 @@
 .flow-svg{display:block;width:100%;height:auto;min-width:620px;max-width:none;overflow:visible;color:var(--muted-strong)}
 .diagram-node{color:var(--ink-soft)}
 .diagram-node rect,.diagram-node polygon,.diagram-node path,.diagram-node circle{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.65;vector-effect:non-scaling-stroke}
-.diagram-node text{fill:var(--ink);font:10px ui-sans-serif,system-ui,sans-serif;text-anchor:middle;pointer-events:none}
+.diagram-node text{fill:var(--ink);font:13px ui-sans-serif,system-ui,sans-serif;text-anchor:middle;pointer-events:none}
 .diagram-node.node-terminal rect{fill:var(--positive-soft);stroke:var(--positive)}
 .diagram-node.node-input polygon{fill:var(--accent-soft);stroke:var(--accent)}
 .diagram-node.node-output path{fill:var(--teal-soft);stroke:var(--teal)}
@@ -40,36 +40,36 @@
 .diagram-edge path{fill:none;stroke:var(--line-strong);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .diagram-edge.is-back path{stroke:var(--teal);stroke-dasharray:5 4}
 .diagram-edge.is-near-active path{stroke:var(--accent);stroke-width:2.25}
-.diagram-edge-label{font:10px ui-monospace,monospace;font-weight:850;fill:var(--muted-strong);text-anchor:middle}
+.diagram-edge-label{font:13px ui-monospace,monospace;font-weight:850;fill:var(--muted-strong);text-anchor:middle}
 .diagram-tools .small-icon-button{width:27px;height:27px;min-width:27px}
 .simulator-inspector{grid-template-rows:minmax(200px,auto) minmax(190px,auto) minmax(135px,auto);align-items:stretch}
 .scene-content{display:flex;flex-direction:column;gap:8px;padding:10px 16px 16px}
-.scene-event-type{color:var(--accent);font-size:8px;font-weight:850;letter-spacing:.8px}
+.scene-event-type{color:var(--accent);font-size:13px;font-weight:850;letter-spacing:.8px}
 .scene-event-title{margin:0;font-size:13px;line-height:1.3}
-.scene-event-body{margin:0;color:var(--muted-strong);font-size:10px;line-height:1.65}
-.scene-event-technical{padding:9px;border:1px solid var(--line);border-radius:8px;color:var(--ink-soft);background:var(--surface-soft);font:9px/1.5 ui-monospace,monospace}
+.scene-event-body{margin:0;color:var(--muted-strong);font-size:13px;line-height:1.65}
+.scene-event-technical{padding:9px;border:1px solid var(--line);border-radius:8px;color:var(--ink-soft);background:var(--surface-soft);font:13px/1.5 ui-monospace,monospace}
 .variables-content{padding:6px 14px 12px;overflow:auto}
-.variables-table{width:100%;border-collapse:collapse;font:9px ui-monospace,monospace}
-.variables-table th{padding:6px 4px;color:var(--muted);text-align:left;font-size:8px;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+.variables-table{width:100%;border-collapse:collapse;font:13px ui-monospace,monospace}
+.variables-table th{padding:6px 4px;color:var(--muted);text-align:left;font-size:13px;letter-spacing:.5px;border-bottom:1px solid var(--line)}
 .variables-table td{padding:7px 4px;color:var(--ink-soft);border-bottom:1px solid var(--line)}
 .variables-table tr.is-changed td{color:var(--accent-strong);font-weight:800;background:var(--accent-soft)}
-.variable-change{padding:8px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:8px;line-height:1.5}
+.variable-change{padding:8px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.5}
 .output-panel{padding-bottom:8px}
-.simulator-output{display:grid;gap:5px;margin:0;padding:0 17px 10px 34px;color:var(--ink-soft);font:9px/1.5 ui-monospace,monospace;max-height:125px;overflow:auto}
-.empty-state-copy{padding:6px 2px;color:var(--muted);font-size:9px}
+.simulator-output{display:grid;gap:5px;margin:0;padding:0 17px 10px 34px;color:var(--ink-soft);font:13px/1.5 ui-monospace,monospace;max-height:125px;overflow:auto}
+.empty-state-copy{padding:6px 2px;color:var(--muted);font-size:13px}
 .trace-panel{grid-area:trace;overflow:hidden}
 .trace-history{display:flex;gap:6px;margin:0;padding:0 14px 14px;list-style:none;overflow-x:auto}
 .trace-history li{flex:0 0 170px;min-height:66px;padding:8px;border:1px solid var(--line);border-radius:9px;color:var(--muted-strong);background:var(--surface-soft);text-align:left;cursor:pointer}
 .trace-history li.is-active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 15%,transparent)}
-.trace-history li span{display:block;color:var(--muted);font:8px ui-monospace,monospace}
-.trace-history li strong{display:block;margin-top:5px;color:var(--ink);font-size:9px;line-height:1.3}
+.trace-history li span{display:block;color:var(--muted);font:13px ui-monospace,monospace}
+.trace-history li strong{display:block;margin-top:5px;color:var(--ink);font-size:13px;line-height:1.3}
 .simulator-dock{grid-area:dock;position:relative}
 .timeline-range{width:100%;accent-color:var(--accent);cursor:pointer}
-.dock-speed{display:grid;gap:4px;color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.6px;white-space:nowrap}
-.dock-speed select{padding:4px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);font-size:9px}
+.dock-speed{display:grid;gap:4px;color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.6px;white-space:nowrap}
+.dock-speed select{padding:4px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);font-size:13px}
 .simulator-dock .transport-button:disabled{opacity:.35}
 .simulator-status-error{color:var(--danger)!important}
-.simulator-error{margin-top:8px;padding:9px;border:1px solid var(--danger);border-radius:8px;color:var(--danger);background:var(--danger-soft);font-size:9px;line-height:1.5}
+.simulator-error{margin-top:8px;padding:9px;border:1px solid var(--danger);border-radius:8px;color:var(--danger);background:var(--danger-soft);font-size:13px;line-height:1.5}
 .simulator-dock .dock-controls{gap:6px}
 .simulator-dock .transport-button{width:34px;height:34px}
 .simulator-dock .transport-play{width:38px;height:38px;border-radius:11px}
@@ -111,14 +111,14 @@
 /* Módulo 5: inspección ampliada y accesibilidad del simulador */
 .diagram-tools .small-icon-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
 .diagram-tools .small-icon-button[aria-pressed="false"]{color:var(--muted)}
-.simulator-restore{display:inline-flex;align-self:flex-start;margin:-5px 0 4px;padding:3px 0;border:0;color:var(--accent);background:none;font-size:9px;font-weight:750;cursor:pointer}
+.simulator-restore{display:inline-flex;align-self:flex-start;margin:-5px 0 4px;padding:3px 0;border:0;color:var(--accent);background:none;font-size:13px;font-weight:750;cursor:pointer}
 .simulator-restore:hover{text-decoration:underline}
 .pseudocode-heading{flex-wrap:wrap}
 .pseudocode-size-controls{display:inline-flex;align-items:center;gap:3px}
-.pseudocode-size-controls button{min-width:25px;height:25px;border:1px solid var(--line);border-radius:6px;color:var(--muted-strong);background:var(--surface);font-size:9px;font-weight:800;cursor:pointer}
+.pseudocode-size-controls button{min-width:25px;height:25px;border:1px solid var(--line);border-radius:6px;color:var(--muted-strong);background:var(--surface);font-size:13px;font-weight:800;cursor:pointer}
 .pseudocode-size-controls button:hover{border-color:var(--accent);color:var(--accent)}
 .pseudocode-size-controls button:disabled{opacity:.35;cursor:default}
-.pseudocode-lines li{font-size:var(--pseudocode-font-size,10px)}
+.pseudocode-lines li{font-size:max(13px,var(--pseudocode-font-size,16px))}
 .simulator-diagram-stage{cursor:grab;touch-action:pan-x pan-y}
 .simulator-diagram-stage.is-panning{cursor:grabbing;user-select:none}
 .simulator-diagram-stage:fullscreen{width:100vw;height:100vh;max-height:none;padding:clamp(16px,4vw,56px);background:var(--canvas);border:0;border-radius:0}
@@ -128,23 +128,23 @@
 #scene-content[data-event-type="decision"] .scene-event-visual,#scene-content[data-event-type="loop-condition"] .scene-event-visual{border-color:var(--warning);color:var(--warning);background:var(--warning-soft)}
 #scene-content[data-event-type="error"] .scene-event-visual{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
 .scene-condition-result{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
-.scene-condition-result span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
-.scene-condition-result code{font:9px ui-monospace,monospace;color:var(--ink-soft)}
-.scene-condition-result strong{margin-left:auto;font-size:8px}
+.scene-condition-result span{color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.7px}
+.scene-condition-result code{font:13px ui-monospace,monospace;color:var(--ink-soft)}
+.scene-condition-result strong{margin-left:auto;font-size:13px}
 .scene-condition-result strong.is-true{color:var(--positive)}
 .scene-condition-result strong.is-false{color:var(--danger)}
 .variable-history{padding:7px 12px 12px;border-top:1px solid var(--line)}
 .variable-history-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
-.variable-history-heading strong{font-size:9px}
-.variable-history-heading .text-link{border:0;background:none;color:var(--accent);font-size:8px;cursor:pointer}
+.variable-history-heading strong{font-size:13px}
+.variable-history-heading .text-link{border:0;background:none;color:var(--accent);font-size:13px;cursor:pointer}
 .variable-history-trigger{padding:0;border:0;color:var(--accent-strong);background:none;font:inherit;font-weight:800;cursor:pointer}
 .variable-history-trigger[aria-pressed="true"]{text-decoration:underline;text-underline-offset:3px}
 .variable-history-list{display:grid;gap:4px;margin:0;padding:0;list-style:none;max-height:180px;overflow:auto}
 .variable-history-list button{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;padding:6px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);text-align:left;cursor:pointer}
 .variable-history-list button:hover{border-color:var(--accent);background:var(--accent-soft)}
-.variable-history-list span{grid-column:1;color:var(--muted);font-size:7px;font-weight:800}
-.variable-history-list strong{grid-column:2;grid-row:1/3;align-self:center;color:var(--ink-soft);font:9px ui-monospace,monospace}
-.variable-history-list small{grid-column:1;overflow:hidden;color:var(--muted-strong);font-size:7px;text-overflow:ellipsis;white-space:nowrap}
+.variable-history-list span{grid-column:1;color:var(--muted);font-size:13px;font-weight:800}
+.variable-history-list strong{grid-column:2;grid-row:1/3;align-self:center;color:var(--ink-soft);font:13px ui-monospace,monospace}
+.variable-history-list small{grid-column:1;overflow:hidden;color:var(--muted-strong);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:760px){
   .diagram-tools .canvas-status{display:none}
   .simulator-diagram-stage.is-panning{touch-action:none}
@@ -158,10 +158,10 @@
 
 .flow-token{transition:cx 320ms cubic-bezier(.2,.8,.2,1),cy 320ms cubic-bezier(.2,.8,.2,1)}
 .scene-loop-stack{display:grid;gap:5px;margin-top:9px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
-.scene-loop-stack>span{color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.7px}
-.scene-loop-stack>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px}
+.scene-loop-stack>span{color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.7px}
+.scene-loop-stack>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
 .scene-loop-stack>div b{color:var(--muted-strong);font-weight:700}
-.scene-loop-stack>div strong{color:var(--accent-strong);font:800 9px ui-monospace,monospace}
+.scene-loop-stack>div strong{color:var(--accent-strong);font:800 13px ui-monospace,monospace}
 @media(prefers-reduced-motion:reduce){
   .flow-token{transition:none}
 }
@@ -169,11 +169,11 @@
 
 /* Movimiento didáctico: valor que entra, cambia o sale en la escena */
 .scene-value-transfer{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:9px 0;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft);animation:scene-transfer-in 260ms cubic-bezier(.2,.8,.2,1) both}
-.scene-transfer-name{margin-right:auto;color:var(--muted);font-size:7px;font-weight:850;letter-spacing:.8px}
-.scene-value-old{padding:4px 8px;border:1px solid var(--line-strong);border-radius:7px;color:var(--muted-strong);background:var(--surface);font:10px ui-monospace,monospace;text-decoration:line-through;animation:scene-value-away 360ms ease both}
+.scene-transfer-name{margin-right:auto;color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.8px}
+.scene-value-old{padding:4px 8px;border:1px solid var(--line-strong);border-radius:7px;color:var(--muted-strong);background:var(--surface);font:13px ui-monospace,monospace;text-decoration:line-through;animation:scene-value-away 360ms ease both}
 .scene-transfer-arrow{color:var(--muted);font-size:14px}
 .scene-value-new{padding:5px 10px;border:1px solid var(--positive);border-radius:8px;color:var(--positive);background:var(--positive-soft);font:800 13px ui-monospace,monospace;animation:scene-value-land 440ms cubic-bezier(.2,.8,.2,1) both}
-.scene-route-chip{padding:5px 10px;border-radius:8px;color:var(--positive);background:var(--positive-soft);font-size:10px}
+.scene-route-chip{padding:5px 10px;border-radius:8px;color:var(--positive);background:var(--positive-soft);font-size:13px}
 .scene-value-transfer.is-false .scene-route-chip{color:var(--danger);background:var(--danger-soft)}
 .scene-event-visual{animation:scene-symbol-in 250ms cubic-bezier(.2,.8,.2,1) both}
 .diagram-edge.is-route-active path{stroke:var(--positive);stroke-width:3.2;stroke-dasharray:7 4;animation:route-dash 650ms linear infinite}
@@ -193,7 +193,7 @@
 :root[data-motion="reduced"] .scene-event-visual{animation:none}
 :root[data-motion="reduced"] .diagram-edge.is-route-active path{animation:none}
 
-.diagram-fullscreen-exit{position:absolute;top:12px;right:14px;z-index:100;display:flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink);background:var(--surface);box-shadow:var(--shadow-md);font-size:10px;font-weight:800;cursor:pointer}
+.diagram-fullscreen-exit{position:absolute;top:12px;right:14px;z-index:100;display:flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink);background:var(--surface);box-shadow:var(--shadow-md);font-size:13px;font-weight:800;cursor:pointer}
 .diagram-fullscreen-exit:hover{border-color:var(--accent);color:var(--accent-strong)}
 .diagram-fullscreen-exit[hidden]{display:none!important}
 .simulator-diagram-stage:fullscreen .diagram-fullscreen-exit{display:flex}
@@ -224,7 +224,7 @@
 .simulator-mobile-tabs{display:none}
 @media(max-width:760px){
   .simulator-mobile-tabs{display:flex;gap:6px;margin:0 0 10px;padding:3px;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);border-radius:11px;background:var(--surface-soft)}
-  .simulator-mobile-tabs button{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid transparent;border-radius:8px;color:var(--muted-strong);background:transparent;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
+  .simulator-mobile-tabs button{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid transparent;border-radius:8px;color:var(--muted-strong);background:transparent;font-size:13px;font-weight:800;white-space:nowrap;cursor:pointer}
   .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
   .simulator-grid{display:flex;flex-direction:column;gap:10px}
   .simulator-grid>.problem-panel,.simulator-grid>.diagram-panel,
@@ -267,3 +267,648 @@
 .diagram-panel>.simulator-diagram-stage{width:100%;max-width:100%;min-width:0;overflow:hidden}
 .diagram-panel #flow-diagram-container{width:100%;max-width:100%;min-width:0}
 .diagram-panel .diagram-legend{width:100%;max-width:100%;min-width:0;flex-wrap:wrap}
+
+/* Legibilidad de las etiquetas del diagrama. */
+.flow-svg text{font-size:16px}
+
+/* Escenas didácticas compartidas. */
+.scene-figure-host{display:grid;place-items:center;min-height:122px;margin:10px 0 14px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--surface-soft);overflow:hidden}
+.scene-figure{display:grid;gap:10px;width:100%;max-width:520px;color:var(--ink-soft);font-size:13px}
+.scene-caption{display:block;color:var(--muted);font-size:13px;font-weight:800;letter-spacing:.04em}
+.scene-memory-box,.scene-variable-box,.scene-process-input,.scene-process-bubble,.scene-process-result,.scene-question-card,.scene-loop-question,.scene-loop-body,.scene-output-paper,.scene-output-source{display:grid;gap:6px;padding:10px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface)}
+.scene-memory-values{display:flex;flex-wrap:wrap;gap:8px}
+.scene-memory-value{display:inline-flex;gap:7px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
+.scene-memory-value strong,.scene-variable-box>strong,.scene-process-result>strong,.scene-output-paper>strong{font-size:16px;color:var(--ink)}
+.scene-terminal-shape{justify-self:center;min-width:100px;padding:8px 22px;border:2px solid var(--fig-terminal);border-radius:999px;text-align:center;background:color-mix(in srgb,var(--fig-terminal) 16%,var(--surface))}
+.scene-input .scene-data-tape{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px;border:1px solid var(--fig-input);border-radius:10px;background:color-mix(in srgb,var(--fig-input) 10%,var(--surface))}
+.scene-tape-item{padding:7px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:15px}
+.scene-tape-item.is-current{border-color:var(--fig-input);background:color-mix(in srgb,var(--fig-input) 18%,var(--surface));opacity:1}
+.scene-tape-item.is-used{opacity:.5}
+.scene-transfer-lane,.scene-arrow{text-align:center;color:var(--accent);font-size:18px}
+.scene-variable-box{justify-self:center;min-width:120px;border-color:var(--fig-input);text-align:center}
+.scene-old-value,.scene-process-result del{color:var(--muted);text-decoration:line-through}
+.scene-process{grid-template-columns:1fr auto 1fr;align-items:center}
+.scene-process-input,.scene-process-result{min-width:0;min-height:72px}
+.scene-process-bubble{border:1px solid var(--fig-process);background:color-mix(in srgb,var(--fig-process) 12%,var(--surface));text-align:center}
+.scene-role{font-size:13px;color:var(--accent-strong)}
+.scene-partials{grid-column:1/-1;margin:0;padding-left:22px;font-size:13px}
+.scene-output-paper{justify-self:center;min-width:155px;text-align:center;border-color:var(--fig-output);background:color-mix(in srgb,var(--fig-output) 12%,var(--surface))}
+.scene-paper-edge{height:9px;background:linear-gradient(135deg,transparent 25%,var(--fig-output) 25% 50%,transparent 50% 75%,var(--fig-output) 75%) 0 0/16px 9px}
+.scene-decision{gap:9px}
+.scene-question-card{justify-self:center;max-width:100%;border-color:var(--fig-decision);background:color-mix(in srgb,var(--fig-decision) 12%,var(--surface));text-align:center}
+.scene-question-card strong{font-size:16px;overflow-wrap:anywhere}
+.scene-condition-parts{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+.scene-condition-parts span,.scene-whole-result,.scene-path,.scene-loop-round,.scene-loop-answer{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.scene-condition-parts b{margin-left:6px;color:var(--positive)}
+.scene-decision-paths{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scene-path{text-align:center;opacity:.55}.scene-path.is-active{opacity:1;border-color:var(--fig-decision);background:color-mix(in srgb,var(--fig-decision) 15%,var(--surface))}
+.scene-whole-result{text-align:center}
+.scene-loop{border:1px solid var(--fig-loop);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--fig-loop) 8%,var(--surface))}
+.scene-loop-round,.scene-loop-order{justify-self:center;color:var(--fig-loop);font-weight:800}
+.scene-loop-cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.scene-loop-cell{display:grid;gap:5px;padding:8px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-align:center}
+.scene-loop-cell>span{color:var(--fig-loop);font-weight:800}
+.scene-loop-cell strong{font-size:13px;overflow-wrap:anywhere}
+.scene-loop-note{text-align:center;margin:0;font-size:13px}
+.scene-loop-question{justify-self:center;min-width:min(100%,220px);border-color:var(--fig-loop);text-align:center}
+.scene-loop-answer{text-align:center;font-weight:800}
+.scene-loop-answer.is-true{color:var(--positive);border-color:var(--positive)}
+.scene-loop-answer.is-false{color:var(--danger);border-color:var(--danger)}
+.scene-loop-body{border-color:var(--fig-loop);text-align:center}
+.scene-empty-memory{padding:6px 9px;border:1px dashed var(--line-strong);border-radius:8px;color:var(--muted)}
+@media(max-width:520px){.scene-process{grid-template-columns:1fr}.scene-process-bubble{order:2}.scene-process-result{order:3}.scene-loop-cells{gap:4px}.scene-loop-cell{padding:7px 3px}}
+
+.dock-loop-round{display:inline-flex;width:max-content;margin:3px 0 0;padding:4px 9px;border:1px solid var(--fig-loop);border-radius:999px;color:var(--ink);background:color-mix(in srgb,var(--fig-loop) 16%,var(--surface));font-size:13px;font-weight:800}
+.dock-loop-round[hidden]{display:none}
+
+/* TRAZA: compositor inmersivo derivado de los bloques v1-v5 de la referencia original */
+body[data-active-space="simulator"]{
+  --bg:#111b24;--grid:#1b2b37;--card:#1a2733;--ink:#e8eff4;--pen:#9fb0bc;--line:#34495a;
+  --hl:#ffd23f;--ok:#3ccf8e;--no:#ff6b85;--info:#7aa8ff;--fs:17;--dk:150px;--k:1;
+  overflow:hidden;background:var(--bg);color:var(--ink)
+}
+html[data-theme="light"] body[data-active-space="simulator"]{
+  --bg:#f4f7f2;--grid:#d6e4ea;--card:#fff;--ink:#1f2b36;--pen:#55656f;--line:#c9d3da;
+  --hl:#ffd23f;--ok:#1d9a62;--no:#d23c57;--info:#2c6bdc
+}
+body[data-active-space="simulator"] .topbar#hd{
+  position:fixed;z-index:70;inset:0 0 auto;height:54px;min-height:54px;width:100%;max-width:none;margin:0;
+  display:flex;align-items:center;gap:10px;padding:0 12px;border:0;border-bottom:1px solid var(--line);
+  color:var(--ink);background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px)
+}
+body[data-active-space="simulator"] .brand{flex:0 0 auto;gap:7px}
+body[data-active-space="simulator"] .brand-mark{width:30px;height:30px;border-radius:9px}
+body[data-active-space="simulator"] .brand-mark svg{width:22px;height:22px}
+body[data-active-space="simulator"] .brand-copy strong{font-size:18px;letter-spacing:-.7px}
+body[data-active-space="simulator"] .brand-copy small{display:none}
+body[data-active-space="simulator"] .primary-nav{display:flex;flex:0 0 auto;gap:2px;min-width:0;overflow:visible}
+body[data-active-space="simulator"] .primary-nav .nav-button{min-height:34px;padding:0 7px;border-radius:8px;font-size:13px;white-space:nowrap}
+body[data-active-space="simulator"] .primary-nav .nav-index{display:none}
+.simulator-toolbar{display:none}
+body[data-active-space="simulator"] .simulator-toolbar{display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:0}
+.sim-exercise-strip{display:flex;align-items:center;gap:4px;flex:1 1 250px;min-width:90px;max-width:440px;overflow-x:auto;overflow-y:hidden;padding:4px 1px;scrollbar-width:thin}
+.sim-exercise-chip{flex:0 0 27px;width:27px;height:27px;padding:0;border:2px solid var(--sim-level);border-radius:50%;color:var(--ink);background:var(--card);font:750 10px/1 ui-monospace,monospace;cursor:pointer}
+.sim-exercise-chip.level-basic{--sim-level:#1d9a62}
+.sim-exercise-chip.level-intermediate{--sim-level:#2c6bdc}
+.sim-exercise-chip.level-advanced{--sim-level:#c2338f}
+.sim-exercise-chip.is-selected{color:#111b24;background:var(--sim-level);box-shadow:0 0 0 2px color-mix(in srgb,var(--sim-level) 25%,transparent)}
+.sim-toolbar-controls{display:flex;align-items:center;gap:3px;flex:0 0 auto}
+.sim-tool-button{display:grid;place-items:center;min-width:32px;height:34px;padding:0 6px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:color-mix(in srgb,var(--card) 88%,transparent);font-size:14px;font-weight:750;cursor:pointer}
+.sim-tool-button:hover{border-color:var(--info);color:var(--info)}
+.sim-tool-button[aria-pressed="true"]{color:var(--hl);border-color:var(--hl);background:color-mix(in srgb,var(--hl) 10%,var(--card))}
+body[data-active-space="simulator"] .topbar-actions{display:flex;flex:0 0 auto;gap:3px}
+body[data-active-space="simulator"] .topbar-actions .icon-button{width:32px;height:32px}
+body[data-active-space="simulator"] #main-content.page-shell{width:100%;max-width:none;margin:0;padding:0}
+body[data-active-space="simulator"] #main-content>.page-heading,
+body[data-active-space="simulator"] .simulator-intro{display:none}
+body[data-active-space="simulator"] .simulator-view{display:block;position:static;width:100%;min-height:0;margin:0;padding:0}
+body[data-active-space="simulator"] .simulator-mobile-tabs{display:none}
+body[data-active-space="simulator"] .simulator-grid{
+  display:block!important;position:fixed;z-index:1;inset:54px 0 0;width:100vw;height:auto;margin:0;padding:0;
+  grid-template-columns:none;grid-template-areas:none;overflow:visible;pointer-events:none
+}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+  position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:hidden;border:0;border-radius:0;background:transparent;box-shadow:none;pointer-events:none
+}
+body[data-active-space="simulator"] .diagram-heading,
+body[data-active-space="simulator"] .diagram-legend{display:none!important}
+body[data-active-space="simulator"] #wrap.sim-wrap{
+  position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;overflow:hidden;
+  border:0;border-radius:0;background-color:var(--bg);
+  background-image:linear-gradient(to right,var(--grid) 1px,transparent 1px),linear-gradient(to bottom,var(--grid) 1px,transparent 1px);
+  background-size:20px 20px;pointer-events:none
+}
+body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+  position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:hidden;overscroll-behavior:none;border:0;border-radius:0;background:transparent;touch-action:none;cursor:default;pointer-events:none
+}
+body[data-active-space="simulator"] #diagram-stage.is-panning{cursor:grabbing}
+body[data-active-space="simulator"] #flow-diagram-container{
+  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;margin:0;padding:0;overflow:visible;transform-origin:0 0;will-change:transform;pointer-events:none;z-index:2
+}
+body[data-active-space="simulator"] #flow-diagram-container .flow-svg{display:block;width:auto;height:auto;min-width:0;max-width:none;overflow:visible;color:var(--pen)}
+body[data-active-space="simulator"] .diagram-empty{position:absolute;inset:45% 10px auto;text-align:center;pointer-events:none}
+body[data-active-space="simulator"] .canvas-coordinate{display:none}
+body[data-active-space="simulator"] .problem-panel#PL{
+  position:fixed;z-index:20;top:64px;left:10px;bottom:auto;width:calc(var(--fs)*21px);max-width:calc(100vw - 20px);
+  height:auto;max-height:calc(100vh - var(--dk) - 86px);display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);
+  box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] .problem-panel#PL>.panel-heading{flex:0 0 auto;padding:12px 14px;border-bottom:1px solid var(--line)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-problem-body{flex:1 1 auto;min-height:0;padding:8px 14px 14px;overflow:auto;overscroll-behavior:contain}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-exercise-title{font-size:1.18em;color:var(--ink)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-statement{font-size:.9em;line-height:1.45;color:var(--pen)}
+body[data-active-space="simulator"] .sim-context-notes{display:grid;gap:8px;margin:8px 0 12px}
+body[data-active-space="simulator"] .sim-context-notes section{padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--card) 68%,transparent)}
+body[data-active-space="simulator"] .sim-context-notes h4{margin:0 0 3px;color:var(--info);font-size:.78em}
+body[data-active-space="simulator"] .sim-context-notes p{margin:0;color:var(--pen);font-size:.78em;line-height:1.4}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field{margin:8px 0}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field>span{color:var(--pen)}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field input,
+body[data-active-space="simulator"] .problem-panel#PL .simulator-field select{
+  min-height:40px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card);font-size:.9em
+}
+body[data-active-space="simulator"] .problem-panel#PL .simulator-help{font-size:.76em;color:var(--pen)}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-heading{margin:12px 0 6px}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines{
+  max-height:270px;overflow:auto;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--card) 78%,transparent)
+}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines li{
+  grid-template-columns:28px 1fr;padding:4px 8px;color:var(--pen);font:calc(var(--fs)*1px)/1.45 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .problem-panel#PL .pseudocode-lines li.is-active{color:#1f2b36;background:#ffe27a;box-shadow:inset 3px 0 #ffd23f}
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  position:fixed;z-index:35;top:64px;right:10px;bottom:calc(var(--dk) + 22px);width:min(calc(var(--fs)*30px),34vw);
+  display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0;min-height:0;margin:0;padding:0;
+  overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;pointer-events:none
+}
+body[data-active-space="simulator"] #PV.scene-panel{
+  position:relative;flex:0 0 calc(var(--fs)*20px);height:calc(var(--fs)*20px);min-height:0;display:flex;flex-direction:column;
+  overflow:hidden;padding:0;border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] #PV>.panel-heading{flex:0 0 auto;padding:10px 14px;border-bottom:1px solid var(--line)}
+body[data-active-space="simulator"] #PV #scene-content{flex:1 1 auto;min-height:0;overflow:auto;padding:9px 14px 12px}
+body[data-active-space="simulator"] #PR.sim-right-content{
+  position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(155px,auto) minmax(115px,auto) minmax(120px,1fr);gap:10px;
+  flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;pointer-events:auto
+}
+body[data-active-space="simulator"] #PR>.panel{
+  min-width:0;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;
+  color:var(--ink);background:color-mix(in srgb,var(--card) 90%,transparent);
+  backdrop-filter:blur(8px);box-shadow:0 8px 28px rgba(0,0,0,.2)
+}
+body[data-active-space="simulator"] #PR>.variables-panel{display:flex;flex-direction:column}
+body[data-active-space="simulator"] #PR .variables-content{flex:0 1 auto;min-height:50px;max-height:120px;overflow:auto;padding:4px 12px}
+body[data-active-space="simulator"] #PR .variables-table{font-size:.82em}
+body[data-active-space="simulator"] #PR .variable-change{padding:6px 12px;font-size:.78em;color:var(--pen)}
+body[data-active-space="simulator"] #PR .variable-history{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 12px 10px}
+body[data-active-space="simulator"] #PR>.output-panel{display:flex;flex-direction:column}
+body[data-active-space="simulator"] #PR .simulator-output{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;color:var(--ok);background:#07120f;font-size:.82em}
+body[data-active-space="simulator"] #PR>.trace-panel{display:flex;flex-direction:column;min-height:0}
+body[data-active-space="simulator"] #PR .trace-history{flex-direction:column;overflow:auto;min-height:0;padding:4px 12px 10px}
+body[data-active-space="simulator"] #PR .trace-history li{flex:0 0 auto;width:100%;min-height:48px}
+body[data-active-space="simulator"] #dock.simulator-dock{
+  position:fixed;z-index:45;left:50%;right:auto;bottom:10px;transform:translateX(-50%);
+  display:grid;grid-template-columns:minmax(190px,1fr) auto minmax(160px,1.2fr) auto;align-items:center;
+  gap:10px;width:min(920px,calc(100vw - 20px));min-width:0;min-height:143px;margin:0;padding:9px 14px;
+  border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 8px 28px rgba(0,0,0,.22);
+  pointer-events:auto
+}
+body[data-active-space="simulator"] #dock .dock-description{min-width:0;gap:9px}
+body[data-active-space="simulator"] #dock .dock-description strong{display:block;color:var(--ink);font-size:.98em;line-height:1.25}
+body[data-active-space="simulator"] #dock .dock-description small{display:block;color:var(--pen);font-size:.77em;line-height:1.3}
+body[data-active-space="simulator"] #dock .dock-controls{display:flex;align-items:center;gap:4px}
+body[data-active-space="simulator"] #dock .transport-button{width:40px;height:40px;min-width:40px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--card)}
+body[data-active-space="simulator"] #dock .transport-play{width:44px;height:44px;border-radius:50%;color:#17212a;background:var(--hl);border-color:var(--hl)}
+body[data-active-space="simulator"] #dock .timeline-block{min-width:100px}
+body[data-active-space="simulator"] #dock .timeline-label{display:flex;justify-content:space-between;gap:8px;color:var(--pen);font-size:.72em}
+body[data-active-space="simulator"] #dock .timeline-range{width:100%;accent-color:var(--hl)}
+body[data-active-space="simulator"] #dock .dock-speed{display:grid;gap:3px;color:var(--pen);font-size:.7em}
+body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card);font-size:1em}
+body[data-active-space="simulator"] .diagram-node rect,
+body[data-active-space="simulator"] .diagram-node polygon,
+body[data-active-space="simulator"] .diagram-node path,
+body[data-active-space="simulator"] .diagram-node circle{fill:var(--card);stroke:var(--line);stroke-width:1.8;vector-effect:non-scaling-stroke}
+body[data-active-space="simulator"] .diagram-node.is-visited rect,
+body[data-active-space="simulator"] .diagram-node.is-visited polygon,
+body[data-active-space="simulator"] .diagram-node.is-visited path{fill:color-mix(in srgb,var(--ok) 16%,var(--card));stroke:var(--ok)}
+body[data-active-space="simulator"] .diagram-node.is-active rect,
+body[data-active-space="simulator"] .diagram-node.is-active polygon,
+body[data-active-space="simulator"] .diagram-node.is-active path{fill:#ffe27a;stroke:#ffd23f;stroke-width:3}
+body[data-active-space="simulator"] .diagram-node.is-active text{fill:#1f2b36;font-weight:800}
+body[data-active-space="simulator"] .diagram-node text{fill:var(--ink);font:calc(var(--fs)*.85px) system-ui,sans-serif;text-anchor:middle}
+body[data-active-space="simulator"] .diagram-edge path{fill:none;stroke:var(--pen);stroke-width:1.8}
+body[data-active-space="simulator"] .diagram-edge.is-route-active path{stroke:var(--ok);stroke-width:3}
+body[data-active-space="simulator"] .diagram-edge-label{fill:var(--pen);font:700 15px ui-monospace,monospace}
+body[data-active-space="simulator"] .scene-event-title{font-size:1em;color:var(--ink)}
+body[data-active-space="simulator"] .scene-event-body,
+body[data-active-space="simulator"] .scene-event-technical{font-size:.82em;color:var(--pen)}
+body[data-active-space="simulator"] .scene-event-technical{border-color:var(--line);background:color-mix(in srgb,var(--card) 72%,transparent)}
+body[data-active-space="simulator"] .panel-heading h3{font-size:1.02em;color:var(--ink)}
+body[data-active-space="simulator"] .panel-heading .eyebrow{color:var(--pen)}
+body[data-active-space="simulator"] .panel-index{color:var(--info);border-color:var(--line)}
+body[data-active-space="simulator"] .sim-glass{isolation:isolate}
+body[data-active-space="simulator"] [data-sim-hidden="true"]{display:none!important}
+body[data-active-space="simulator"][data-simulator-panels="hidden"] #PL,
+body[data-active-space="simulator"][data-simulator-panels="hidden"] #RC{display:none!important}
+body[data-active-space="simulator"] .problem-panel#PL,
+body[data-active-space="simulator"] #RC{font-size:calc(var(--fs)*1px)}
+@media(max-width:1250px) and (min-width:901px){
+  body[data-active-space="simulator"] .brand{display:none}
+  body[data-active-space="simulator"] .primary-nav .nav-button{padding-inline:5px;font-size:12px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:280px}
+  body[data-active-space="simulator"] .sim-tool-button{min-width:29px;padding-inline:4px}
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .topbar#hd{
+    height:94px;min-height:94px;padding:4px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:39px 43px;gap:2px 6px
+  }
+  body[data-active-space="simulator"] .brand{display:none}
+  body[data-active-space="simulator"] .primary-nav{grid-column:1/-1;grid-row:1;width:100%;padding-right:72px;overflow-x:auto;justify-content:flex-start}
+  body[data-active-space="simulator"] .primary-nav .nav-button{flex:0 0 auto;min-height:36px;padding-inline:8px;font-size:12px}
+  body[data-active-space="simulator"] .topbar-actions{position:absolute;right:7px;top:7px;z-index:3}
+  body[data-active-space="simulator"] .simulator-toolbar{grid-column:1/-1;grid-row:2;width:100%;min-width:0;gap:5px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:150px;flex:1 1 95px}
+  body[data-active-space="simulator"] .sim-exercise-chip{flex-basis:25px;width:25px;height:25px}
+  body[data-active-space="simulator"] .sim-toolbar-controls{gap:2px;min-width:0;flex:1 1 auto;justify-content:flex-end;overflow-x:auto}
+  body[data-active-space="simulator"] .sim-tool-button{flex:0 0 36px;min-width:36px;height:40px}
+  body[data-active-space="simulator"] .simulator-grid{top:94px}
+  body[data-active-space="simulator"] .problem-panel#PL{
+    display:none;top:auto;left:8px;right:8px;bottom:calc(var(--dk) + 57px);width:auto;max-height:min(48vh,390px);max-width:none
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] .problem-panel#PL{display:flex}
+  body[data-active-space="simulator"] #RC{
+    display:none;top:auto;left:8px;right:8px;bottom:calc(var(--dk) + 57px);width:auto;height:min(48vh,390px);max-height:none;gap:0
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #RC{display:flex}
+  body[data-active-space="simulator"] #PV{display:none}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV{display:flex}
+  body[data-active-space="simulator"] #PR{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #PR,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #PR{display:grid!important;grid-template-rows:1fr}
+  body[data-active-space="simulator"] #PR>.panel{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR>.variables-panel,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="output"] #PR>.output-panel,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="history"] #PR>.trace-panel{display:flex!important}
+  body[data-active-space="simulator"] .simulator-mobile-tabs{
+    position:fixed;z-index:42;left:8px;right:8px;bottom:calc(var(--dk) + 15px);display:flex;gap:4px;
+    margin:0;padding:4px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--line);border-radius:11px;
+    background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(8px);pointer-events:auto
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs button{
+    flex:1 0 auto;min-width:40px;min-height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;
+    color:var(--pen);background:transparent;font-size:12px;font-weight:800;white-space:nowrap
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs button[aria-selected="true"]{border-color:var(--info);color:var(--ink);background:color-mix(in srgb,var(--info) 16%,var(--card))}
+  body[data-active-space="simulator"] #dock.simulator-dock{
+    left:8px;right:8px;bottom:8px;transform:none;width:auto;min-height:0;grid-template-columns:1fr auto;gap:6px 8px;padding:7px 9px
+  }
+  body[data-active-space="simulator"] #dock .dock-description{grid-column:1;grid-row:1}
+  body[data-active-space="simulator"] #dock .dock-controls{grid-column:2;grid-row:1;gap:2px}
+  body[data-active-space="simulator"] #dock .transport-button{width:36px;height:36px;min-width:36px}
+  body[data-active-space="simulator"] #dock .transport-play{width:40px;height:40px}
+  body[data-active-space="simulator"] #dock .timeline-block{grid-column:1/-1;grid-row:2}
+  body[data-active-space="simulator"] #dock .dock-speed{grid-column:1/-1;grid-row:3;display:flex;align-items:center;justify-content:space-between}
+  body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px}
+  body[data-active-space="simulator"] #PR .variables-content{max-height:160px}
+}
+@media(max-width:430px){
+  body[data-active-space="simulator"] .sim-tool-button{flex-basis:34px;min-width:34px;height:38px;padding:0 3px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:115px}
+  body[data-active-space="simulator"] #dock .dock-description small{max-width:160px}
+  body[data-active-space="simulator"] #dock .transport-button{width:32px;height:34px;min-width:32px}
+  body[data-active-space="simulator"] #dock .transport-play{width:36px;height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}
+}
+
+body[data-active-space="simulator"] #PR>.panel{position:relative;z-index:2;pointer-events:auto}
+body[data-active-space="simulator"] #PR .trace-panel,
+body[data-active-space="simulator"] #PR .trace-history,
+body[data-active-space="simulator"] #PR .trace-history li{position:relative;z-index:3;pointer-events:auto}
+
+/* Las ventanas laterales se sitúan por encima de la capa interactiva del lienzo. */
+body[data-active-space="simulator"] #PL,
+body[data-active-space="simulator"] #RC{z-index:60;pointer-events:auto}
+body[data-active-space="simulator"] #PR,
+body[data-active-space="simulator"] #PR>.panel,
+body[data-active-space="simulator"] #PR .trace-history,
+body[data-active-space="simulator"] #PR .trace-history li{pointer-events:auto}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:0}
+body[data-active-space="simulator"] #dock{z-index:65}
+
+/* Solo el área libre del escenario recibe gestos; los paneles son controles prioritarios. */
+body[data-active-space="simulator"] #diagram-pan-hit{
+  position:absolute;z-index:1;inset:0 520px 160px 370px;min-width:0;min-height:0;
+  pointer-events:auto;touch-action:none;cursor:grab;background:transparent
+}
+body[data-active-space="simulator"] #diagram-pan-hit:active{cursor:grabbing}
+body[data-active-space="simulator"] #diagram-stage{pointer-events:none}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #diagram-pan-hit{inset:0 0 190px 0}
+}
+
+/* Capa de interacción independiente: solo el centro del lienzo recibe arrastre. */
+body[data-active-space="simulator"] .topbar#hd{z-index:100}
+body[data-active-space="simulator"] .problem-panel#PL,
+body[data-active-space="simulator"] #RC{z-index:80;pointer-events:auto}
+body[data-active-space="simulator"] #dock{z-index:90}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:0;pointer-events:none}
+body[data-active-space="simulator"] #wrap,
+body[data-active-space="simulator"] #diagram-stage,
+body[data-active-space="simulator"] #flow-diagram-container{pointer-events:none!important}
+body[data-active-space="simulator"] #diagram-pan-hit{
+  position:fixed;z-index:20;inset:64px 520px 170px 370px;min-width:0;min-height:0;
+  pointer-events:auto;touch-action:none;cursor:grab;background:transparent
+}
+body[data-active-space="simulator"] #diagram-pan-hit:active{cursor:grabbing}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #diagram-pan-hit{inset:94px 0 205px 0}
+}
+
+/* La vista conserva una caja de layout medible aunque el lienzo y los paneles sean fixed. */
+body[data-active-space="simulator"] .simulator-view{
+  display:block;position:relative;width:100%;height:calc(100vh - 54px);min-height:0;margin:0;padding:0
+}
+body[data-active-space="simulator"] .simulator-grid{position:fixed;inset:54px 0 0}
+body[data-active-space="simulator"] #RC{z-index:120;pointer-events:auto}
+body[data-active-space="simulator"] #PR,
+body[data-active-space="simulator"] #PR>.panel{pointer-events:auto}
+body[data-active-space="simulator"] #PR .trace-history,
+body[data-active-space="simulator"] #PR .trace-history li{position:relative;z-index:5;pointer-events:auto}
+body[data-active-space="simulator"] #PL{z-index:120}
+body[data-active-space="simulator"] #dock{z-index:130}
+
+/* Composición estable de la columna derecha: escena + tres ventanas apiladas. */
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  pointer-events:auto!important;z-index:80
+}
+body[data-active-space="simulator"] #PR.sim-right-content{
+  display:flex!important;flex:1 1 0;flex-direction:column;align-items:stretch;gap:10px;
+  width:100%;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;
+  pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR>.panel{
+  position:relative;display:flex;flex:0 0 auto;flex-direction:column;align-self:stretch;
+  width:100%;min-width:0;max-width:none;overflow:hidden;pointer-events:auto!important;z-index:5
+}
+body[data-active-space="simulator"] #PR>.variables-panel{height:155px;min-height:135px}
+body[data-active-space="simulator"] #PR>.output-panel{height:115px;min-height:105px}
+body[data-active-space="simulator"] #PR>.trace-panel{flex:1 0 145px;min-height:145px}
+body[data-active-space="simulator"] #PR .variables-content{
+  position:relative;z-index:8;flex:1 1 auto;width:100%;min-width:0;min-height:45px;
+  max-height:none;overflow:auto;pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR .variables-table{width:100%;table-layout:fixed}
+body[data-active-space="simulator"] #PR .variable-history,
+body[data-active-space="simulator"] #PR .variable-change{position:relative;z-index:8;flex:0 0 auto;width:100%;pointer-events:auto!important}
+body[data-active-space="simulator"] #PR .variable-history-trigger{
+  position:relative;z-index:30;display:inline-flex;align-items:center;justify-content:center;
+  min-width:40px;min-height:36px;padding:6px 10px;pointer-events:auto!important;touch-action:manipulation
+}
+body[data-active-space="simulator"] #PR .trace-history{
+  position:relative;z-index:20;display:flex;flex:1 1 auto;flex-direction:column;
+  width:100%;min-width:0;min-height:0;overflow:auto;pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR .trace-history li{
+  position:relative;z-index:30;display:flex;flex:0 0 auto;flex-direction:column;
+  width:100%;min-width:0;min-height:48px;pointer-events:auto!important;touch-action:manipulation
+}
+body[data-active-space="simulator"] #PR .trace-history li *{pointer-events:none}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #PR>.variables-panel,
+  body[data-active-space="simulator"] #PR>.output-panel,
+  body[data-active-space="simulator"] #PR>.trace-panel{height:auto;min-height:0;flex:1 1 auto}
+  body[data-active-space="simulator"] #PR .trace-history li{width:100%}
+}
+
+/* Etapa 2 · una cámara, cuadrícula transformada, gestos capturados y minimapa */
+body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}
+body[data-active-space="simulator"] #diagram-pan-hit{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+body[data-active-space="simulator"] #diagram-pan-hit:active{cursor:grabbing}
+body[data-active-space="simulator"] #wrap{
+  background-image:
+    linear-gradient(to right,var(--grid) 1px,transparent 1px),
+    linear-gradient(to bottom,var(--grid) 1px,transparent 1px),
+    linear-gradient(to right,color-mix(in srgb,var(--grid) 65%,var(--pen)) 1px,transparent 1px),
+    linear-gradient(to bottom,color-mix(in srgb,var(--grid) 65%,var(--pen)) 1px,transparent 1px)
+}
+body[data-active-space="simulator"] .sim-minimap{
+  position:fixed;z-index:75;left:50%;bottom:calc(var(--dk) + 20px);transform:translateX(-50%);
+  display:grid;gap:3px;width:196px;padding:7px 8px 8px;border:1px solid var(--line);border-radius:11px;
+  color:var(--pen);background:color-mix(in srgb,var(--card) 92%,transparent);
+  backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] .sim-minimap>span{font:700 9px/1 ui-monospace,monospace;letter-spacing:.08em}
+body[data-active-space="simulator"] #sim-minimap-svg{display:block;width:100%;height:auto;max-height:104px;overflow:visible;touch-action:none;cursor:crosshair}
+body[data-active-space="simulator"] .minimap-edges path{fill:none;stroke:var(--pen);stroke-width:1.2;opacity:.7}
+body[data-active-space="simulator"] .minimap-nodes rect{fill:var(--card);stroke:var(--info);stroke-width:1}
+body[data-active-space="simulator"] .minimap-viewport{fill:color-mix(in srgb,var(--hl) 18%,transparent);stroke:var(--hl);stroke-width:1.4;vector-effect:non-scaling-stroke}
+body[data-active-space="simulator"] .sim-camera-follow{
+  position:fixed;z-index:72;left:50%;top:66px;transform:translateX(-50%);min-height:38px;padding:7px 14px;
+  border:1px solid var(--hl);border-radius:999px;color:#1f2b36;background:var(--hl);
+  box-shadow:0 6px 20px rgba(0,0,0,.2);font-weight:800;cursor:pointer;pointer-events:auto
+}
+body[data-active-space="simulator"] .simulator-shortcuts{
+  position:fixed;z-index:140;left:50%;top:64px;transform:translateX(-50%);display:grid;gap:8px;
+  width:min(380px,calc(100vw - 24px));padding:15px;border:1px solid var(--line);border-radius:12px;
+  color:var(--ink);background:var(--card);box-shadow:0 12px 35px rgba(0,0,0,.3);font-size:13px
+}
+body[data-active-space="simulator"] .simulator-shortcuts[hidden],
+body[data-active-space="simulator"] .sim-camera-follow[hidden]{display:none!important}
+body[data-active-space="simulator"] .simulator-shortcuts button{min-height:38px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink)}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-minimap{left:auto;right:8px;bottom:calc(var(--dk) + 65px);width:145px}
+  body[data-active-space="simulator"] #sim-minimap-svg{max-height:82px}
+  body[data-active-space="simulator"] .sim-camera-follow{top:102px}
+}
+@media(max-width:600px){
+  body[data-active-space="simulator"] .sim-minimap{opacity:.92;width:118px;padding:5px}
+  body[data-active-space="simulator"] .sim-minimap>span{font-size:8px}
+}
+
+/* Etapa 3 · ventanas satélite independientes, identidad y restauración */
+body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{
+ position:fixed;z-index:120;top:64px;left:10px;right:auto;bottom:auto;
+ width:calc(var(--fs)*21px);height:calc(100vh - var(--dk) - 86px);max-height:none;
+ display:block;overflow:visible;padding:0;border:0;border-radius:0;background:transparent;
+ box-shadow:none;pointer-events:none
+}
+body[data-active-space="simulator"] #PL>.sim-window{
+ position:absolute;left:0;right:0;display:flex;flex-direction:column;min-width:0;min-height:0;
+ overflow:hidden;border:1px solid var(--line);border-radius:14px;color:var(--ink);
+ background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);
+ box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] #sim-window-context{top:0;height:260px;--window-identity:#2c6bdc}
+body[data-active-space="simulator"] #sim-window-data{top:270px;height:190px;--window-identity:#e3a72f}
+body[data-active-space="simulator"] #sim-window-code{top:470px;bottom:0;--window-identity:#2c6bdc}
+body[data-active-space="simulator"] .sim-window[data-window-id="scene"]{--window-identity:#9a78ed}
+body[data-active-space="simulator"] .sim-window[data-window-id="variables"]{--window-identity:#3ccf8e}
+body[data-active-space="simulator"] .sim-window[data-window-id="history"]{--window-identity:#25b7ae}
+body[data-active-space="simulator"] .sim-window[data-window-id="output"]{--window-identity:#3ccf8e}
+body[data-active-space="simulator"] .sim-window .panel-heading,
+body[data-active-space="simulator"] #PV>.panel-heading,
+body[data-active-space="simulator"] #PR>.panel-heading{
+ flex:0 0 auto;min-height:42px;border-left:3px solid var(--window-identity,var(--info));padding:8px 10px 8px 12px
+}
+body[data-active-space="simulator"] .sim-window .panel-heading h3{font-size:.9em}
+body[data-active-space="simulator"] .sim-window-body{
+ flex:1 1 auto;min-height:0;overflow:auto;padding:8px 12px 12px;overscroll-behavior:contain
+}
+body[data-active-space="simulator"] #sim-window-context .sim-window-body{padding-top:5px}
+body[data-active-space="simulator"] #sim-window-data .sim-window-body{display:grid;gap:4px}
+body[data-active-space="simulator"] #sim-window-data .simulator-field{gap:3px;margin:3px 0}
+body[data-active-space="simulator"] #sim-window-data .simulator-field>span{font-size:10px}
+body[data-active-space="simulator"] #sim-window-data .simulator-field input,
+body[data-active-space="simulator"] #sim-window-data .simulator-field select{min-height:34px;font-size:13px}
+body[data-active-space="simulator"] #sim-window-data .simulator-help{margin:0;font-size:11px;line-height:1.25}
+body[data-active-space="simulator"] #sim-window-data .simulator-run{min-height:34px}
+body[data-active-space="simulator"] #sim-window-code .sim-window-body{padding:0 10px 10px}
+body[data-active-space="simulator"] #sim-window-code .pseudocode-lines{max-height:none;height:100%;border:0;background:transparent}
+body[data-active-space="simulator"] .sim-window-actions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+body[data-active-space="simulator"] .sim-window-actions .small-icon-button{width:28px;height:28px;min-width:28px}
+body[data-active-space="simulator"] .sim-window-pin.is-pinned{
+ color:var(--hl);border-color:var(--hl);background:color-mix(in srgb,var(--hl) 15%,var(--card))
+}
+body[data-active-space="simulator"] .sim-window[hidden]{display:none!important}
+body[data-active-space="simulator"] .sim-window-rail{
+ position:fixed;z-index:125;left:5px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;
+ gap:6px;max-height:min(72vh,560px);overflow:auto;padding:5px;border:1px solid var(--line);
+ border-radius:13px;color:var(--ink);background:color-mix(in srgb,var(--card) 94%,transparent);
+ backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:auto
+}
+body[data-active-space="simulator"] .sim-window-rail[hidden]{display:none!important}
+body[data-active-space="simulator"] .sim-window-restore{
+ position:relative;display:grid;place-items:center;width:38px;height:38px;min-height:38px;
+ border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--card);
+ font:800 12px/1 ui-monospace,monospace;cursor:pointer
+}
+body[data-active-space="simulator"] .sim-window-restore b{
+ position:absolute;right:-4px;top:-5px;min-width:15px;height:15px;padding:2px 3px;
+ border-radius:99px;color:#17212a;background:var(--hl);font:800 9px/1 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .sim-context-window{
+ position:fixed;z-index:88;width:278px;min-height:90px;max-height:220px;padding:0;overflow:visible;
+ border:1px solid #9a78ed;border-radius:13px;color:var(--ink);
+ background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(10px);
+ box-shadow:0 12px 34px rgba(0,0,0,.26);pointer-events:auto
+}
+body[data-active-space="simulator"] .sim-context-window[hidden]{display:none!important}
+body[data-active-space="simulator"] .sim-context-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;
+ border-bottom:1px solid var(--line);color:#bca9ff;font-size:13px
+}
+body[data-active-space="simulator"] .sim-context-heading button{
+ display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--line);
+ border-radius:7px;color:var(--ink);background:var(--card)
+}
+body[data-active-space="simulator"] .sim-context-content{padding:10px 12px;font-size:12px;line-height:1.4}
+body[data-active-space="simulator"] .sim-context-content p{margin:6px 0 0;color:var(--pen)}
+body[data-active-space="simulator"] .sim-vf-flow{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap}
+body[data-active-space="simulator"] .sim-vf-flow strong{color:var(--ok);font-size:1.4em}
+body[data-active-space="simulator"] .sim-vf-chip,
+body[data-active-space="simulator"] .sim-vf-output{
+ padding:6px 9px;border:1px solid var(--line);border-radius:8px;color:var(--ink);
+ background:var(--card);font:800 14px ui-monospace,monospace
+}
+body[data-active-space="simulator"] .sim-vf-result{display:inline-block;padding:5px 12px;border-radius:99px;font-size:20px}
+body[data-active-space="simulator"] .sim-vf-result.is-true{color:#073c27;background:#b9efd3}
+body[data-active-space="simulator"] .sim-vf-result.is-false{color:#702233;background:#ffc6d1}
+body[data-active-space="simulator"] .sim-vf-condition{font:700 13px ui-monospace,monospace;color:var(--ink)}
+body[data-active-space="simulator"] .sim-context-cable{
+ position:absolute;left:-10px;top:50%;width:10px;border-top:1px dashed #9a78ed
+}
+body[data-active-space="simulator"] .sim-context-window[data-cable="false"] .sim-context-cable{display:none}
+@media(max-width:900px){
+ body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{
+  display:none;top:auto;left:8px;right:8px;bottom:calc(var(--dk) + 57px);
+  width:auto;height:min(48vh,390px);max-height:none;overflow:auto;padding:0;border:0;
+  background:transparent;box-shadow:none;pointer-events:auto
+ }
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] .problem-panel#PL.sim-left-window-stack{
+  display:flex;flex-direction:column
+ }
+ body[data-active-space="simulator"] #PL>.sim-window{
+  position:relative;left:auto;right:auto;top:auto;bottom:auto;height:auto;max-height:185px;
+  min-height:0;margin-bottom:8px;flex:0 0 auto
+ }
+ body[data-active-space="simulator"] #sim-window-code{height:220px;max-height:none}
+ body[data-active-space="simulator"] .sim-window-rail{
+  top:auto;bottom:calc(var(--dk) + 64px);left:8px;transform:none;max-height:42vh
+ }
+ body[data-active-space="simulator"] .sim-window-restore{width:40px;height:40px}
+ body[data-active-space="simulator"] .sim-context-window{width:min(278px,calc(100vw - 24px));max-height:180px}
+}
+
+/* Etapa 2 · ruta real de la ficha y rastro del recorrido */
+body[data-active-space="simulator"] #flow-trail{
+  fill:none;stroke:var(--hl);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.7;
+  vector-effect:non-scaling-stroke;pointer-events:none
+}
+body[data-active-space="simulator"] .flow-token{
+  fill:var(--hl);stroke:#9b7600;stroke-width:1.5;vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 5px rgba(255,210,63,.45));transform-box:fill-box;transform-origin:center;
+  animation:sim-token-pulse 1s ease-in-out infinite alternate
+}
+@keyframes sim-token-pulse{from{scale:1}to{scale:1.22}}
+body[data-active-space="simulator"] .diagram-edge.is-token-route path{stroke:var(--hl);stroke-width:3.1;opacity:.95}
+@media(prefers-reduced-motion:reduce){body[data-active-space="simulator"] .flow-token{animation:none}}
+
+body[data-active-space="simulator"] #PR>.panel[hidden],
+body[data-active-space="simulator"] #PV[hidden],
+body[data-active-space="simulator"] #PL>.sim-window[hidden]{display:none!important}
+
+body[data-active-space="simulator"] .sim-flight-chip{
+  position:fixed;left:0;top:0;z-index:240;display:grid;place-items:center;min-width:32px;height:30px;
+  padding:0 9px;border:1px solid #a98210;border-radius:999px;color:#1f2b36;
+  background:var(--hl);box-shadow:0 6px 18px rgba(0,0,0,.3);
+  font:850 13px/1 ui-monospace,monospace;pointer-events:none;will-change:transform
+}
+body[data-active-space="simulator"] .sim-window.is-pulsing,
+body[data-active-space="simulator"] .sim-window-restore.is-pulsing{
+  border-color:var(--window-identity,var(--hl))!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--window-identity,var(--hl)) 65%,transparent),
+    0 0 24px color-mix(in srgb,var(--window-identity,var(--hl)) 55%,transparent),0 8px 28px rgba(0,0,0,.22);
+  animation:sim-window-pulse .9s ease-out
+}
+body[data-active-space="simulator"] .sim-pulse-count{
+  position:absolute;right:9px;top:7px;z-index:5;padding:3px 6px;border-radius:99px;
+  color:#17212a;background:var(--hl);font:850 10px/1 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .sim-window-restore .sim-pulse-count{right:-7px;top:-7px}
+@keyframes sim-window-pulse{
+  0%{filter:brightness(1.35);transform:scale(1.015)}
+  100%{filter:brightness(1);transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] .sim-flight-chip{display:none!important}
+  body[data-active-space="simulator"] .sim-window.is-pulsing,
+  body[data-active-space="simulator"] .sim-window-restore.is-pulsing{animation:none;box-shadow:0 0 0 2px var(--window-identity,var(--hl))}
+}
+
+body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-active{
+  transform-box:fill-box;transform-origin:center;animation:sim-active-node-pop .45s ease-out
+}
+@keyframes sim-active-node-pop{
+  0%{scale:1.14;filter:drop-shadow(0 0 8px rgba(255,210,63,.75))}
+  100%{scale:1;filter:drop-shadow(0 0 0 transparent)}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-active{animation:none}
+}
+
+@media(max-width:900px){
+  body[data-active-space="simulator"] #diagram-pan-hit{z-index:130;inset:94px 0 205px 0}
+}
+
+body[data-active-space="simulator"] .sim-context-wire{
+  position:fixed;inset:0;z-index:87;width:100vw;height:100vh;overflow:visible;
+  pointer-events:none
+}
+body[data-active-space="simulator"] .sim-context-wire[hidden]{display:none!important}
+body[data-active-space="simulator"] .sim-context-wire path{
+  fill:none;stroke:#9a78ed;stroke-width:1.35;stroke-dasharray:4 4;opacity:.85;
+  vector-effect:non-scaling-stroke
+}
+body[data-active-space="simulator"] .diagram-node.has-context-fallback{
+  filter:drop-shadow(0 0 7px rgba(154,120,237,.7))
+}
+body[data-active-space="simulator"] #sim-window-code .panel-heading #pseudocode-line-count{
+  flex:0 0 auto;white-space:nowrap;font-size:12px
+}
+body[data-active-space="simulator"] #sim-window-code .panel-heading h3{min-width:0;white-space:nowrap}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-context-window{max-height:160px}
+}

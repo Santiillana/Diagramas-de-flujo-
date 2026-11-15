@@ -1,5 +1,7 @@
 import { flattenPseudocode } from "../core/parser.js";
 import { executePseudocode } from "../core/interpreter.js";
+import { buildArrowChallenge, buildGapChallenge, mixedModeOrder } from "./lab/generators.js";
+import { normalizeProgress, recordLabResult, modeStars } from "./lab/progress.js";
 
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -12,6 +14,93 @@ let predictionAnswer=null;
 let whatIfResult=null;
 let orderChecked=false;
 let errorScenario=0;
+let labAttempt=0;
+let gapHints=0;
+let mixedQueue=[];
+let labProgress=loadLabProgress();
+
+function loadLabProgress(){
+  try{
+    const saved=window.localStorage.getItem("traza:v2:progress");
+    return normalizeProgress(saved?JSON.parse(saved):null);
+  }catch{return normalizeProgress(null);}
+}
+function saveLabProgress(){
+  try{window.localStorage.setItem("traza:v2:progress",JSON.stringify(labProgress));}catch{}
+}
+function updateProgressBadges(){
+  const exerciseId=trace?.exercise?.id;
+  if(!exerciseId)return;
+  $("#lab-activity-list")?.querySelectorAll("[data-lab-activity]").forEach(button=>{
+    const stars=modeStars(labProgress,exerciseId,button.dataset.labActivity);
+    let output=button.querySelector(".activity-progress");
+    if(!output){
+      output=document.createElement("span");
+      output.className="activity-progress";
+      output.setAttribute("aria-label","Estrellas de progreso");
+      button.append(output);
+    }
+    output.textContent="★".repeat(stars)+"☆".repeat(3-stars);
+  });
+}
+function recordResult(mode,correct,hints=0){
+  const exerciseId=trace?.exercise?.id;
+  if(!exerciseId)return;
+  labProgress=recordLabResult(labProgress,{exerciseId,mode,correct,hints});
+  saveLabProgress();
+  updateProgressBadges();
+}
+function mixedAdvanceMarkup(){
+  return mixedQueue.length
+    ? '<button type="button" class="button button-secondary" id="lab-next-mixed">Siguiente reto mixto</button>'
+    : "";
+}
+function bindMixedAdvance(){
+  $("#lab-next-mixed")?.addEventListener("click",nextMixed);
+}
+function nextMixed(){
+  const next=mixedQueue.shift();
+  if(!next){
+    $("#lab-task-title").textContent="Práctica mixta completada";
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Has completado los cinco retos.</strong><p>La práctica quedó guardada en tu progreso.</p></div>';
+    return;
+  }
+  labAttempt++;
+  setActivity(next,{keepMixed:true});
+}
+function startMixedPractice(){
+  if(!requireTrace())return;
+  const pool=["predict","order","symbol","error","fill-gap","follow-arrow"];
+  mixedQueue=mixedModeOrder(trace.exercise.id,labAttempt,pool).slice(0,5);
+  nextMixed();
+}
+function addLabActivity(id,title,description,icon){
+  const list=$("#lab-activity-list");
+  if(!list||list.querySelector('[data-lab-activity="'+id+'"]'))return;
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="activity-card";
+  button.dataset.labActivity=id;
+  button.innerHTML='<span class="activity-icon" aria-hidden="true">'+icon+'</span><span><strong></strong><small></small></span><span class="activity-arrow" aria-hidden="true">›</span>';
+  button.querySelector("strong").textContent=title;
+  button.querySelector("small").textContent=description;
+  list.append(button);
+}
+function addMixedPracticeButton(){
+  const view=$("#view-lab");
+  const layout=view?.querySelector(".lab-layout");
+  if(!layout||$("#lab-start-mixed"))return;
+  const actions=document.createElement("div");
+  actions.className="lab-practice-actions";
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="button button-primary";
+  button.id="lab-start-mixed";
+  button.textContent="Empezar práctica mixta · 5 retos";
+  button.addEventListener("click",startMixedPractice);
+  actions.append(button);
+  layout.before(actions);
+}
 const symbolMap={
   input:{name:"Entrada de datos",options:["Paralelogramo","Rectángulo","Rombo"],correct:"Paralelogramo",why:"Leer recibe datos del exterior; se representa con un paralelogramo."},
   assignment:{name:"Proceso / asignación",options:["Rectángulo","Óvalo","Rombo"],correct:"Rectángulo",why:"Una asignación transforma o actualiza un valor; corresponde al símbolo de proceso."},
@@ -31,8 +120,8 @@ function publishContext(detail){
   if(!detail?.execution?.events?.length)return;
   trace=detail;
   updateLabContext();
-  if(activity==="predict")renderActivity();
-  if(activity==="table")renderActivity();
+  if(["predict","table","follow-arrow"].includes(activity))renderActivity();
+  updateProgressBadges();
 }
 function updateLabContext(){
   if(!trace)return;
@@ -66,14 +155,15 @@ function updateLabContext(){
   $("#lab-current-step").innerHTML="PASO <b>"+(index+1)+" / "+execution.events.length+"</b>";
   $("#lab-current-exercise").innerHTML="EJERCICIO <b>"+(exercise?.id??"—")+"</b>";
 }
-function setActivity(next){
+function setActivity(next,options={}){
+  if(!options.keepMixed)mixedQueue=[];
   activity=next;
   predictionAnswer=null;
   whatIfResult=null;
   orderChecked=false;
   $("#lab-activity-list").querySelectorAll("[data-lab-activity]").forEach(button=>
     button.classList.toggle("is-active",button.dataset.labActivity===next));
-  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento",order:"Ordena instrucciones",symbol:"Identifica el símbolo",error:"Encuentra el error",whatif:"¿Y si…?"};
+  const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento",order:"Ordena instrucciones",symbol:"Identifica el símbolo",error:"Encuentra el error",whatif:"¿Y si…?", "fill-gap":"Completa el hueco","follow-arrow":"Sigue la flecha"};
   $("#lab-task-title").textContent=titles[next]??"Actividad";
   renderActivity();
 }
@@ -121,6 +211,7 @@ function renderPredict(){
     };
     const expected=labels[next.type]??next.type;
     const correct=predictionAnswer===expected;
+    recordResult("predict",correct);
     const symbol=next.type==="input"?"Paralelogramo":
       ["assignment","loop-init","loop-update"].includes(next.type)?"Rectángulo de proceso":
       next.type==="output"?"Documento / salida":
@@ -130,10 +221,11 @@ function renderPredict(){
       "<strong>"+(correct?"Predicción correcta.":"La predicción no coincide.")+"</strong>"+
       "<p>El evento real es <b>"+esc(expected)+"</b>: "+esc(next.scene?.body??next.message??"")+"</p>"+
       "<p>Símbolo relacionado: "+esc(symbol)+". "+esc(next.scene?.technical??"")+"</p>"+
-      "<button type='button' class='text-link' id='lab-go-predicted'>Inspeccionar el paso "+(targetIndex+1)+" ↗</button>";
+      "<button type='button' class='text-link' id='lab-go-predicted'>Inspeccionar el paso "+(targetIndex+1)+" ↗</button>"+mixedAdvanceMarkup();
     feedback.classList.toggle("is-correct",correct);
     feedback.classList.toggle("is-wrong",!correct);
     $("#lab-go-predicted")?.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("traza:jump-to-step",{detail:{index:targetIndex}})));
+    bindMixedAdvance();
   });
   $("#lab-task-content").querySelectorAll("[data-predict]").forEach(button=>{
     button.addEventListener("click",()=>{
@@ -186,10 +278,13 @@ function renderOrder(){
   $("#lab-order-reset").addEventListener("click",()=>{orderedLines=[...lines].reverse();orderChecked=false;renderOrder();});
   $("#lab-order-check").addEventListener("click",()=>{
     const correct=orderedLines.every((line,index)=>line===lines[index]);
+    recordResult("order",correct);
     orderChecked=true;
     $("#lab-order-feedback").innerHTML=correct?
       "<strong>Correcto.</strong> El orden coincide con el pseudocódigo de este método.":
       "<strong>Hay instrucciones fuera de lugar.</strong> Revisa la secuencia y vuelve a comprobarla.";
+    $("#lab-order-feedback").innerHTML+=mixedAdvanceMarkup();
+    bindMixedAdvance();
     $("#lab-order-feedback").classList.toggle("is-correct",correct);
     $("#lab-order-feedback").classList.toggle("is-wrong",!correct);
   });
@@ -220,7 +315,9 @@ function renderSymbol(){
     '<div id="lab-symbol-feedback" class="lab-feedback" role="status"></div></div>';
   $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(button=>button.addEventListener("click",()=>{
     const correct=button.dataset.symbolChoice===model.correct;
-    $("#lab-symbol-feedback").innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>No exactamente.</strong> ")+esc(model.why);
+    recordResult("symbol",correct);
+    $("#lab-symbol-feedback").innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>No exactamente.</strong> ")+esc(model.why)+mixedAdvanceMarkup();
+    bindMixedAdvance();
     $("#lab-symbol-feedback").classList.toggle("is-correct",correct);
     $("#lab-symbol-feedback").classList.toggle("is-wrong",!correct);
     $("#lab-task-content").querySelectorAll("[data-symbol-choice]").forEach(item=>item.disabled=true);
@@ -241,10 +338,12 @@ function renderError(){
     const actual=tested.outputs[0];
     const correct=tested.ok&&JSON.stringify(tested.outputs)===JSON.stringify([scenario.expected]);
     const chosen=button.dataset.errorChoice==="correct";
+    recordResult("error",chosen===correct);
     const feedback=$("#lab-error-feedback");
     feedback.innerHTML=(chosen===correct?"<strong>Buena detección.</strong> ":"<strong>Revisa el contraejemplo.</strong> ")+
       "<p>Entrada: "+esc(JSON.stringify(scenario.inputs))+". Resultado del algoritmo: "+esc(JSON.stringify(actual))+
-      "; resultado esperado: "+esc(JSON.stringify(scenario.expected))+".</p><p>"+esc(scenario.explanation)+"</p>";
+      "; resultado esperado: "+esc(JSON.stringify(scenario.expected))+".</p><p>"+esc(scenario.explanation)+"</p>"+mixedAdvanceMarkup();
+    bindMixedAdvance();
     feedback.classList.toggle("is-correct",chosen===correct);
     feedback.classList.toggle("is-wrong",chosen!==correct);
     $("#lab-task-content").querySelectorAll("[data-error-choice]").forEach(item=>item.disabled=true);
@@ -288,6 +387,96 @@ function renderWhatIf(){
   });
 }
 
+function actualInputValues(){
+  return trace.execution.events.filter(event=>event.type==="input").map(event=>event.value);
+}
+function stableValues(value){
+  if(!value||typeof value!=="object"||Array.isArray(value))return JSON.stringify(value);
+  return JSON.stringify(Object.keys(value).sort().map(key=>[key,value[key]]));
+}
+function renderFillGap(){
+  if(!requireTrace())return;
+  const challenge=buildGapChallenge(trace.exercise.id,trace.methodIndex,trace.source,labAttempt);
+  gapHints=0;
+  if(!challenge){
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Este método no tiene una asignación que se pueda ocultar.</strong><p>Elige otro método o un ejercicio distinto.</p></div>';
+    return;
+  }
+  $("#lab-task-content").innerHTML=
+    '<div class="lab-question"><p class="eyebrow">RETO '+(labAttempt+1)+' · MISMO EJERCICIO Y MISMA TRAZA</p><h4>Completa la expresión que falta.</h4>'+
+    '<p class="lab-muted">La respuesta se comprobará ejecutando el pseudocódigo con los mismos datos de esta ejecución.</p>'+
+    '<pre class="lab-snippet"><code>'+esc(challenge.maskedLines.join("\n"))+'</code></pre>'+
+    '<label class="lab-editor-field"><span>EXPRESIÓN QUE FALTA EN '+esc(challenge.variable)+'</span><input id="lab-gap-answer" autocomplete="off" spellcheck="false"></label>'+
+    '<div class="lab-task-actions"><button type="button" class="button button-secondary" id="lab-gap-hint">Pista</button><button type="button" class="button button-primary" id="lab-gap-check">Comprobar</button><button type="button" class="button button-secondary" id="lab-gap-surrender">Ver solución</button><button type="button" class="button button-secondary" id="lab-gap-new">Nuevo reto</button></div>'+
+    '<div id="lab-gap-feedback" class="lab-feedback" role="status"></div></div>';
+  $("#lab-gap-hint").addEventListener("click",()=>{
+    const hints=[
+      "Piensa qué valores necesita la variable para completar el cálculo.",
+      "La expresión debe usar variables que ya existan en ese punto del programa.",
+      "La expresión original es: "+challenge.answer
+    ];
+    $("#lab-gap-feedback").textContent=hints[Math.min(gapHints,hints.length-1)];
+    gapHints=Math.min(3,gapHints+1);
+  });
+  $("#lab-gap-check").addEventListener("click",()=>{
+    const answer=$("#lab-gap-answer").value.trim();
+    if(!answer){$("#lab-gap-feedback").textContent="Escribe una expresión antes de comprobar.";return;}
+    const candidate=[...challenge.lines];
+    candidate[challenge.index]=challenge.variable+" = "+answer;
+    let result;
+    try{result=executePseudocode(candidate.join("|"),actualInputValues());}
+    catch(error){result={ok:false,error:{message:error.message},outputs:[],variables:{}};}
+    const sameOutputs=JSON.stringify(result.outputs)===JSON.stringify(trace.execution.outputs);
+    const sameVariables=stableValues(result.variables)===stableValues(trace.execution.variables);
+    const correct=Boolean(result.ok&&sameOutputs&&sameVariables);
+    recordResult("fill-gap",correct,gapHints);
+    const feedback=$("#lab-gap-feedback");
+    feedback.innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>Aún no coincide.</strong> ")+
+      (correct?"La ejecución conserva las mismas salidas y variables.":"Resultado obtenido: "+esc(JSON.stringify(result.outputs))+". Resultado esperado: "+esc(JSON.stringify(trace.execution.outputs))+".")+
+      (result.error?"<p>"+esc(result.error.message)+"</p>":"")+mixedAdvanceMarkup();
+    feedback.classList.toggle("is-correct",correct);
+    feedback.classList.toggle("is-wrong",!correct);
+    bindMixedAdvance();
+  });
+  $("#lab-gap-surrender").addEventListener("click",()=>{
+    recordResult("fill-gap",false,gapHints);
+    $("#lab-gap-answer").value=challenge.answer;
+    const feedback=$("#lab-gap-feedback");
+    feedback.innerHTML="<strong>Solución:</strong> "+esc(challenge.answer)+
+      "<p>Esta expresión reproduce las salidas y variables de la traza original.</p>"+mixedAdvanceMarkup();
+    bindMixedAdvance();
+  });
+  $("#lab-gap-new").addEventListener("click",()=>{labAttempt++;renderFillGap();});
+}
+function renderFollowArrow(){
+  if(!requireTrace())return;
+  const challenge=buildArrowChallenge(trace.execution.events,trace.index,trace.exercise.id,labAttempt);
+  if(!challenge){
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Ya no hay otra figura por recorrer.</strong><p>Vuelve al simulador y selecciona un paso anterior para seguir una ruta distinta.</p></div>';
+    return;
+  }
+  $("#lab-task-content").innerHTML=
+    '<div class="lab-question"><p class="eyebrow">PASO ACTUAL · '+(trace.index+1)+' / '+trace.execution.events.length+'</p>'+
+    '<h4>¿A qué figura llegará la ficha después?</h4>'+
+    '<p class="lab-muted">Sigue la conexión que se ejecuta, no la figura que esté más cerca.</p>'+
+    '<div class="lab-choice-list">'+challenge.options.map(option=>
+      '<button type="button" class="lab-choice" data-arrow-node="'+esc(option.nodeId)+'">'+esc(option.label)+'</button>'
+    ).join("")+'</div>'+
+    '<div id="lab-arrow-feedback" class="lab-feedback" role="status"></div></div>';
+  $("#lab-task-content").querySelectorAll("[data-arrow-node]").forEach(button=>button.addEventListener("click",()=>{
+    const correct=String(button.dataset.arrowNode)===String(challenge.correct.nodeId);
+    recordResult("follow-arrow",correct);
+    const feedback=$("#lab-arrow-feedback");
+    feedback.innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>Ese no es el siguiente paso.</strong> ")+
+      "<p>La siguiente instrucción real es: "+esc(challenge.next.sourceText||challenge.next.scene?.title||"Fin")+". "+
+      esc(challenge.next.scene?.body??challenge.next.message??"")+"</p>"+
+      '<button type="button" class="text-link" id="lab-arrow-inspect">Míralo correr</button>'+mixedAdvanceMarkup();
+    feedback.classList.toggle("is-correct",correct);
+    feedback.classList.toggle("is-wrong",!correct);
+    $("#lab-arrow-inspect")?.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("traza:jump-to-step",{detail:{index:challenge.next.step}})));
+    bindMixedAdvance();
+  }));
+}
 function renderActivity(){
   if(activity==="predict")renderPredict();
   else if(activity==="table")renderTable();
@@ -295,6 +484,8 @@ function renderActivity(){
   else if(activity==="symbol")renderSymbol();
   else if(activity==="error")renderError();
   else if(activity==="whatif")renderWhatIf();
+  else if(activity==="fill-gap")renderFillGap();
+  else if(activity==="follow-arrow")renderFollowArrow();
 }
 export function initLab(){
   $("#lab-activity-list")?.addEventListener("click",event=>{
@@ -305,6 +496,14 @@ export function initLab(){
   document.addEventListener("traza:execution-updated",event=>{
     publishContext(event.detail);
   });
+  addLabActivity("fill-gap","Completa el hueco","Escribe una expresión y comprueba la ejecución.","▤");
+  addLabActivity("follow-arrow","Sigue la flecha","Predice la siguiente figura del recorrido.","➜");
+  const activityHeading=$("#lab-activity-list")?.closest(".activity-panel")?.querySelector(".panel-heading h3");
+  if(activityHeading)activityHeading.textContent="Ocho formas de pensar";
+  const countLabel=$("#view-lab .section-intro .phase-chip");
+  if(countLabel)countLabel.textContent="8 ACTIVIDADES · PRÁCTICA COMPARTIDA";
+  addMixedPracticeButton();
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
   setActivity("predict");
+  updateProgressBadges();
 }

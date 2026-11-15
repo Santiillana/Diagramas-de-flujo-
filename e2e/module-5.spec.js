@@ -1,5 +1,27 @@
 import { test, expect } from "@playwright/test";
 
+async function logHitTarget(locator, label) {
+  await locator.scrollIntoViewIfNeeded();
+  const hit = await locator.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const stack = document.elementsFromPoint(x, y).slice(0, 8).map(node => {
+      const style = getComputedStyle(node);
+      return {
+        tag: node.tagName,
+        id: node.id,
+        className: typeof node.className === "string" ? node.className : "",
+        pointerEvents: style.pointerEvents,
+        position: style.position,
+        zIndex: style.zIndex
+      };
+    });
+    return {rect: {x:rect.x,y:rect.y,width:rect.width,height:rect.height}, stack};
+  });
+  console.log("SIMULATOR_HIT_TEST "+label+" "+JSON.stringify(hit));
+}
+
 test("restaurar ejemplo vuelve a cargar los datos originales del método",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
@@ -17,6 +39,7 @@ test("historial de variable se reconstruye desde la traza hasta el paso seleccio
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-last").click();
+  await logHitTarget(page.locator('#variables-content [data-variable-history="a"]'),"variable-history-trigger");
   await page.locator('#variables-content [data-variable-history="a"]').click();
   await expect(page.locator("#variable-history")).toContainText("Historial · a");
   await expect(page.locator("#variable-history .variable-history-list li")).toHaveCount(1);
@@ -58,14 +81,15 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await expect(stage).toBeVisible();
   const initialTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
   const rect=await stage.boundingBox();
-  await page.mouse.move(rect.x+Math.min(rect.width-30,280),rect.y+120);
+  await page.mouse.move(rect.x+Math.min(rect.width-30,170),rect.y+120);
   await page.mouse.down();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
   await page.mouse.move(rect.x+40,rect.y+120,{steps:5});
   await page.mouse.up();
   const movedTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
-  expect(movedTransform).not.toBe(initialTransform);
+  expect(Number(await stage.getAttribute("data-pan-start"))).toBeGreaterThan(0);
   expect(Number(await stage.getAttribute("data-pan-moved"))).toBeGreaterThan(0);
+  expect(movedTransform).not.toBe(initialTransform);
 });
 
 test("tema y reducción de movimiento no alteran el estado de ejecución",async({page})=>{
@@ -88,6 +112,7 @@ test("el token SVG sigue el paso y destaca la rama V/F realmente seleccionada",a
   await page.locator("#exercise-detail [data-reveal-solution]").click();
   await page.locator("#exercise-detail [data-open-simulator]").click();
   const decision=page.locator("#trace-history li").filter({hasText:"DECISIÓN"}).first();
+  await logHitTarget(decision,"decision-history");
   await decision.click();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
@@ -101,7 +126,9 @@ test("la escena desglosa los operandos y el resultado del cálculo activo",async
   page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await page.locator("#trace-history li").filter({hasText:"ASIGNACIÓN"}).first().click();
+  const assignment=page.locator("#trace-history li").filter({hasText:"ASIGNACIÓN"}).first();
+  await logHitTarget(assignment,"assignment-history");
+  await assignment.click();
   await expect(page.locator("#scene-content .scene-operation-breakdown")).toContainText("8 + 5 = 13");
   expect(errors).toEqual([]);
 });
@@ -145,12 +172,12 @@ test("zoom y ajuste automático encajan el SVG y la preferencia de tamaño persi
   await expect.poll(async()=>Number(await page.locator("#diagram-stage").getAttribute("data-fit-count"))).toBeGreaterThan(previousFitCount);
   await expect.poll(()=>svg.evaluate(el=>el.getBoundingClientRect().width)).toBeLessThan(enlarged);
   await page.locator("#simulator-text-larger").click();
-  const stored=await page.evaluate(()=>localStorage.getItem("traza-pseudocode-size"));
-  expect(stored).toBe("11");
+  const stored=await page.evaluate(()=>localStorage.getItem("traza:v2:pseudocode-size"));
+  expect(stored).toBe("18");
   await page.reload();
   await page.locator('[data-space="simulator"]').click();
   const restored=await page.locator(".pseudocode-lines li").first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  expect(restored).toBe(11);
+  expect(restored).toBe(18);
 });
 
 

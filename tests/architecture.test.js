@@ -19,10 +19,14 @@ test("el simulador reserva las vistas pedagógicas y el dock", async () => {
   }
 });
 
-test("el laboratorio conserva sus seis actividades definidas", async () => {
+test("el laboratorio registra las ocho actividades", async () => {
   const html = await read("../index.html");
+  const lab = await read("../src/ui/lab.js");
   for (const activity of ["Predice", "Tabla de seguimiento", "Ordena instrucciones", "Identifica símbolo", "Encuentra el error", "¿Y si…?"]) {
     assert.ok(html.includes(activity), "Falta la actividad " + activity);
+  }
+  for (const id of ["fill-gap", "follow-arrow"]) {
+    assert.ok(lab.includes('addLabActivity("' + id + '"'), "Falta registrar la actividad " + id);
   }
 });
 

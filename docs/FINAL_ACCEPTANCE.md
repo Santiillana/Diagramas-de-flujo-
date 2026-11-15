@@ -62,3 +62,19 @@ El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido e
 - CI `main`: 222/222 Node y 38/38 Chromium.
 - El único bloqueo externo restante es activar GitHub Pages en Settings → Pages → Build and deployment → Source → GitHub Actions. Tras hacerlo, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
 - No se afirma que Pages esté publicado mientras esa activación no se realice y el deployment no termine correctamente.
+
+
+## Aceptación final — rama mejoras/traza-v2
+
+Fecha: 15 de noviembre de 2026. Esta sección actualiza el estado de la rama de mejoras y prevalece sobre los resultados históricos de M5 indicados arriba.
+
+- Rama: mejoras/traza-v2.
+- Commit de código validado: af28e95bb648c126ee445797d9ef9b1da236af22.
+- Pull request: [#7](https://github.com/Santiillana/Diagramas-de-flujo-/pull/7), base main, estado abierto, no fusionado.
+- GitHub Actions: [run 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), resultado success.
+- Node: 259 pruebas aprobadas, 0 fallidas.
+- Playwright/Chromium: 58 pruebas aprobadas, 0 fallidas.
+- El job completó las pruebas de arquitectura y navegador y cargó 17 capturas PNG como artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57 (ID 14163486649, 3.388.715 bytes, retención configurada de 7 días).
+- La prueba final de movimiento reducido quedó ajustada para comprobar la duración computada efectiva (≤0,01 ms), no una representación textual específica del CSS.
+
+La aprobación de CI verifica esta revisión automatizada en Chromium; no equivale a una prueba física en dispositivos ni a una publicación web. No se fusionó la PR y no se afirma que GitHub Pages esté desplegado. La rama main permanece fuera de esta entrega.

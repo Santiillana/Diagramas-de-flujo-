@@ -80,3 +80,39 @@
 2. GitHub Pages: el repo es estático y compatible, pero no se verificó su configuración ni una URL pública desde esta ejecución; activar Pages desde Settings si no está habilitado.
 3. Constructor: editor estructurado de secuencias y bloques anidados, no libre conexión manual de cualquier puerto.
 4. La cámara y la inspección se prueban mediante Chromium y capturas automatizadas; no se realizó prueba táctil en un dispositivo físico real.
+
+
+## Extensión en revisión — rama `mejoras/traza-v2`
+
+Este apartado describe cambios posteriores al estado histórico de M5. No modifica el hecho de que los cinco módulos base se integraron en `main`; estas mejoras siguen separadas y no están fusionadas.
+
+- Aprende: 17 lecciones, cinco bloques, cinco pantallas por lección y progreso local.
+- Ejercicios: 45 en total (20 básicos, 10 intermedios, 10 avanzados y 5 expertos). Se preservan los 40 originales.
+- Retos expertos: Euclides (MCD/MCM), divisores y primalidad, Cramer 3×3, Newton–Raphson y Simpson 1/3.
+- Catálogo: búsqueda, nivel, filtro conceptual derivado del pseudocódigo, filtro «De clase» y paginación.
+- Laboratorio: ocho actividades con progreso y dos actividades nuevas basadas en la traza real.
+- Simulador: escenas específicas y narración conectadas a eventos reales.
+- Constructor: historial de deshacer/rehacer, con atajos Ctrl/Cmd+Z y Ctrl/Cmd+Y.
+- Inicio: panel de acceso rápido con estadísticas y progreso de aprendizaje.
+
+**Validación pendiente:** Node y Playwright deben ejecutarse sobre el commit final de esta rama. No declarar aceptación hasta revisar CI y corregir cualquier fallo. `main` y las rutas protegidas permanecen intactas.
+
+
+## Validación final de la rama mejoras/traza-v2
+
+GitHub Actions run 43676037183 finalizó correctamente: 259 pruebas Node y 41 pruebas Playwright aprobadas, sin fallos. Se generaron capturas de escritorio, tableta y móvil. La PR #7 permanece abierta contra main; no se ha fusionado.
+
+
+## Estado final actualizado — mejoras/traza-v2 (15-11-2026)
+
+La validación que faltaba ya terminó correctamente. Esta sección reemplaza la nota anterior que dejaba Node y Playwright como pendientes:
+
+- Rama: mejoras/traza-v2.
+- Commit de código probado: af28e95bb648c126ee445797d9ef9b1da236af22.
+- CI: [GitHub Actions 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), success.
+- Node: 259/259 pruebas aprobadas, 0 fallidas.
+- Playwright/Chromium: 58/58 pruebas aprobadas, 0 fallidas.
+- Auditoría visual: 17 capturas PNG cargadas; artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57, ID 14163486649.
+- PR #7: abierta contra main, no fusionada. La rama principal no se modificó por esta PR.
+
+Las cifras históricas de aceptación de M5 (222/38) describen aquella integración y no deben confundirse con la suite actual de esta rama (259/58). La configuración/publicación de GitHub Pages sigue siendo una acción externa no verificada. El constructor continúa siendo estructurado, no un editor de conexiones libres por puerto.

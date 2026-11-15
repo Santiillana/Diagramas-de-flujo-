@@ -1,28 +1,42 @@
 import { test, expect } from "@playwright/test";
 
-test("Aprende presenta las catorce lecciones con explicación y comprobación", async ({ page }) => {
+test("Aprende presenta las diecisiete lecciones en cinco pantallas progresivas", async ({ page }) => {
   await page.goto("/");
   await page.locator('[data-space="learn"]').click();
-  await expect(page.locator('[data-lesson-id]')).toHaveCount(14);
+  await expect(page.locator('[data-lesson-id]')).toHaveCount(17);
   await page.locator('[data-lesson-id="variables"]').click();
   await expect(page.locator("#lesson-detail h3")).toHaveText("Variables y asignación");
+  await page.locator("[data-lesson-next]").click();
+  await expect(page.locator(".lesson-screen-count")).toHaveText("2 de 5");
+  await page.locator("[data-lesson-next]").click();
   await page.locator("#lesson-data-input").fill("15");
-  await expect(page.locator("#lesson-data-result")).toContainText("15 → 20");
-  await page.locator("[data-visual-next]").click();
-  await expect(page.locator(".visual-step-count")).toHaveText("2 / 3");
+  await expect(page.locator("#lesson-data-result")).toContainText("Salida: 20");
+  await page.locator("[data-lesson-next]").click();
   await page.locator('[data-check-option="1"]').click();
   await expect(page.locator("#lesson-feedback")).toContainText("Correcto");
+  await page.locator("[data-lesson-next]").click();
+  await page.locator("[data-lesson-complete]").click();
+  await expect(page.locator(".lesson-completion")).toHaveText("COMPLETADA");
+  await page.reload();
+  await page.locator('[data-space="learn"]').click();
+  await page.locator('[data-lesson-id="variables"]').click();
+  await expect(page.locator(".lesson-completion")).toHaveText("COMPLETADA");
 });
 
-test("el catálogo muestra exactamente cuarenta ejercicios y filtra 20/10/10", async ({ page }) => {
+test("el catálogo muestra 45 ejercicios, filtra los niveles y pagina el resultado", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(40);
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(12);
+  await expect(page.locator("#exercise-count")).toContainText("45 ejercicios");
   await page.locator("#exercise-level").selectOption("basic");
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(20);
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(12);
+  await page.locator("[data-page-next]").click();
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(8);
   await page.locator("#exercise-level").selectOption("intermediate");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(10);
   await page.locator("#exercise-level").selectOption("advanced");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(10);
+  await page.locator("#exercise-level").selectOption("expert");
+  await expect(page.locator("[data-select-exercise]")).toHaveCount(5);
   await page.locator("#exercise-level").selectOption("all");
   await page.locator("#exercise-search").fill("Fibonacci");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(1);
@@ -30,6 +44,7 @@ test("el catálogo muestra exactamente cuarenta ejercicios y filtra 20/10/10", a
 
 test("la ficha del ejercicio explica las entradas, métodos y pruebas", async ({ page }) => {
   await page.goto("/");
+  await page.locator("[data-page-next]").click();
   await page.locator('[data-select-exercise="23"]').click();
   await expect(page.locator("#exercise-detail h3")).toHaveText("Fibonacci: términos que no superen 40");
   await expect(page.locator(".exercise-gate")).toBeVisible();
