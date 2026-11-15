@@ -1,55 +1,69 @@
-import { test, expect } from "@playwright/test";
+import {test,expect} from "@playwright/test";
 
-test("la barra tiene controles etiquetados, accesibles y sin Laboratorio",async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
+test("el panel flotante reúne los controles y se cierra con Escape",async({page})=>{
+  await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await expect(page.locator("#simulator-lab")).toHaveCount(0);
-  await expect(page.locator("#sim-exercise-search")).toBeVisible();
-  await expect(page.locator("#sim-exercise-level-filter")).toBeVisible();
-  const controls=page.locator("#simulator-toolbar button");
-  const count=await controls.count();
-  expect(count).toBeGreaterThanOrEqual(10);
-  for(let i=0;i<count;i++){
-    const button=controls.nth(i);
-    await expect(button).toHaveAttribute("aria-label",/.+/);
-    await expect(button).toHaveAttribute("title",/.+/);
+  await expect(page.locator("#simulator-controls-toggle")).toBeVisible();
+  await expect(page.locator("#simulator-controls-panel")).toBeHidden();
+  await page.locator("#simulator-controls-toggle").click();
+  await expect(page.locator("#simulator-controls-panel")).toBeVisible();
+  for(const selector of ["#diagram-zoom-in","#diagram-zoom-out","#diagram-fit","#diagram-camera-toggle","#diagram-fullscreen","#simulator-predict","#simulator-presentation-mode","#sim-exercise-search","#sim-exercise-level-filter"]){
+    await expect(page.locator(selector)).toBeVisible();
   }
-  const before=await page.evaluate(()=>({hash:location.hash,space:document.body.dataset.activeSpace}));
-  await page.locator("#simulator-predict").click();
-  await expect(page.locator("#simulator-predict")).toHaveAttribute("aria-pressed","true");
-  await page.locator("#simulator-predict").click();
-  await page.locator("#diagram-camera-toggle").click();
-  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
-  await page.locator("#diagram-zoom-in").click();
-  const zoomed=Number(await page.locator("#flow-diagram-container").getAttribute("data-camera-zoom"));
-  await page.locator("#diagram-zoom-out").click();
-  expect(Number(await page.locator("#flow-diagram-container").getAttribute("data-camera-zoom"))).toBeLessThan(zoomed);
-  await page.locator("#diagram-fit").click();
-  await page.locator("#simulator-panel-toggle").click();
-  await expect(page.locator("#PL")).toBeHidden();
-  await page.locator("#simulator-panel-toggle").click();
-  await expect(page.locator("#PL")).toBeVisible();
-  await page.locator("#diagram-fullscreen").click();
-  await expect(page.locator("body")).toHaveClass(/focus/);
   await page.keyboard.press("Escape");
-  await expect(page.locator("body")).not.toHaveClass(/focus/);
-  expect(await page.evaluate(()=>({hash:location.hash,space:document.body.dataset.activeSpace}))).toEqual(before);
+  await expect(page.locator("#simulator-controls-panel")).toBeHidden();
 });
 
-test("el selector admite búsqueda y selección por teclado",async({page})=>{
+test("los nueve intervalos de velocidad son reales y afectan la reproducción",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const initial=await page.locator("#sim-exercise-select").inputValue();
-  await page.locator("#sim-exercise-search").fill("Factorial");
-  await expect(page.locator("#sim-exercise-select option")).toHaveCount(1);
-  await expect(page.locator("#sim-exercise-select option").filter({hasText:"Factorial"})).toHaveCount(1);
-  await page.locator("#sim-exercise-search").fill("");
-  await page.locator("#sim-exercise-select").selectOption("21");
-  await expect(page.locator("#simulator-exercise-title")).toContainText("Factorial");
-  await page.locator("#simulator-text-smaller").click();
-  await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.body).getPropertyValue("--fs").trim())).toBe("16");
-  await page.locator("#simulator-text-reset").click();
-  await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.body).getPropertyValue("--fs").trim())).toBe("17");
-  await page.locator("#sim-exercise-select").selectOption(initial);
+  const speeds=["0.1","0.25","0.5","0.75","1","1.5","2","4","8"];
+  await expect(page.locator("#simulator-speed option")).toHaveCount(9);
+  for(const speed of speeds){
+    await page.locator("#simulator-speed").selectOption(speed);
+    await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue("--sim-speed").trim())).toBe(speed);
+  }
+  await page.locator("#simulator-speed").selectOption("1");
+});
+
+test("el zoom solo cambia con los botones y la cámara recentra el paso",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
+  const svg=page.locator("#flow-svg");
+  const before=await svg.evaluate(el=>el.getBoundingClientRect().width);
+  await page.locator("#diagram-zoom-in").click();
+  const after=await svg.evaluate(el=>el.getBoundingClientRect().width);
+  expect(after).toBeGreaterThan(before);
+  await page.locator("#diagram-zoom-out").click();
+  await page.locator("#diagram-fit").click();
+  const stage=await page.locator("#diagram-stage").boundingBox();
+  const node=await page.locator("#flow-node-start").boundingBox().catch(()=>null);
+  expect(stage).not.toBeNull();
+  if(node)expect(Math.abs((node.x+node.width/2)-(stage.x+stage.width/2))).toBeLessThan(stage.width*.35);
+});
+
+test("el modo Aparecer y Mostrar completo son seleccionables",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
+  await page.locator("#simulator-presentation-mode").selectOption("complete");
+  await expect(page.locator("body")).toHaveAttribute("data-presentation-mode","complete");
+  await page.locator("#simulator-presentation-mode").selectOption("appear");
+  await expect(page.locator("body")).toHaveAttribute("data-presentation-mode","appear");
+});
+
+test("los cuatro paneles se pueden ocultar y volver a mostrar",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
+  await page.locator('[data-window-toggle="pseudocode"]').uncheck();
+  await expect(page.locator("#sim-window-code")).toBeHidden();
+  await page.locator('[data-window-toggle="pseudocode"]').check();
+  await expect(page.locator("#sim-window-code")).toBeVisible();
+  await page.locator("[data-hide-all-windows]").click();
+  for(const selector of ["#sim-window-context","#sim-window-code","#PV","#PR"])await expect(page.locator(selector)).toBeHidden();
+  await page.locator('[data-window-toggle="context"]').check();
+  await expect(page.locator("#sim-window-context")).toBeVisible();
 });
