@@ -221,7 +221,7 @@ function renderTable(){
     let correct=0,firstWrong=null;
     inputs.forEach(input=>{
       const expected=tableExpectedCells[input.dataset.traceAnswer];
-      const normalized=value=>String(value??"").trim().replace(/\\s+/g," ").toLocaleLowerCase("es");
+      const normalized=value=>String(value??"").trim().replace(/\s+/g," ").toLocaleLowerCase("es");
       const ok=normalized(input.value)===normalized(expected.value);
       input.classList.toggle("is-correct",ok);
       input.classList.toggle("is-wrong",!ok);
