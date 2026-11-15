@@ -7,6 +7,9 @@ import * as decision from "./decision.js";
 import * as loopFor from "./loop-for.js";
 import * as loopWhile from "./loop-while.js";
 import * as loopDoWhile from "./loop-do-while.js";
+import * as loopIteration from "./loop-iteration.js";
+import * as loopExit from "./loop-exit.js";
+import * as failure from "./failure.js";
 import { escapeHTML } from "./common.js";
 
 const renderers = {
@@ -14,8 +17,8 @@ const renderers = {
   input:input.render,process:process.render,output:output.render,
   decision:decision.render,"for-init":loopFor.render,"for-cond":loopFor.render,"for-step":loopFor.render,
   "while-cond":loopWhile.render,"dowhile-cond":loopDoWhile.render,
-  "loop-iteration":loopFor.render,"loop-exit":loopFor.render,
-  failure:process.render
+  "loop-iteration":loopIteration.render,"loop-exit":loopExit.render,
+  failure:failure.render
 };
 
 export function renderScene(event, context = {}) {
