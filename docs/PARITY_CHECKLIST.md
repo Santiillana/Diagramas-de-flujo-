@@ -60,7 +60,7 @@
 | Guía de figuras y conceptos | `tests/symbol-guide.test.js`, `e2e/symbol-guide.spec.js` | Cubierto por pruebas |
 | Seis actividades del Laboratorio sin ejecución previa | `e2e/lab-independent.spec.js`, `tests/lab-independent.test.js` | Cubierto por pruebas |
 | Razonamiento y pistas progresivas en 40 ejercicios | `tests/reasoning.test.js`, `e2e/reasoning.spec.js` | Cubierto por pruebas |
-| Prueba del Constructor contra el oráculo | `src/ui/builder.js`, `src/content/reference-oracle.js`, `e2e/active-learning.spec.js` | Implementado; e2e comprueba un caso de éxito. Añadir/confirmar el caso de contraejemplo fallido en aceptación final |
+| Prueba del Constructor contra el oráculo | `src/ui/builder.js`, `src/content/reference-oracle.js`, `e2e/active-learning.spec.js` | Implementado; e2e cubre un caso de éxito y otro fallido con el primer contraejemplo y su traza. El test nuevo espera CI |
 | Predicción con diagnóstico basado en errores frecuentes | `src/ui/content-view.js` | Parcial: el flujo usa el primer error frecuente de la ficha, no selecciona un diagnóstico contextual |
 | Avanzar a la siguiente vuelta y salir del ciclo | `src/ui/simulator.js`, `e2e/active-learning.spec.js` | Implementado y probado |
 | Tabla de seguimiento rellenable | `src/ui/lab.js`, `e2e/active-learning.spec.js` | Implementada y probada; la corrección identifica la primera diferencia |
