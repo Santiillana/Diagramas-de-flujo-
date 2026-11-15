@@ -366,7 +366,7 @@ function runOracleChecks(){
     (passed===results.length?'<p>Tu diagrama coincide con todos los casos de referencia de este ejercicio.</p>':
     '<p>Primer caso no superado: <b>'+esc(failed.method)+' · '+esc(failed.name)+'</b></p><p>Esperado: <code>'+esc(failed.expected)+'</code> · Obtenido: <code>'+esc(failed.actual)+'</code></p>'+
     (failed.error?'<p>'+esc(failed.error)+'</p>':'')+
-    '<details class="builder-oracle-counterexample"><summary>Ver traza del contraejemplo paso a paso</summary><ol>'+failed.trace.map((event,index)=>'<li><b>Paso '+(index+1)+' · '+esc(event.scene?.title??event.type)+'</b><span>'+esc(event.scene?.body??event.message??"")+'</span>'+(Object.keys(event.variables??{}).length?'<code>'+esc(JSON.stringify(event.variables))+'</code>':'')+(event.outputs?.length?'<code>Salida: '+esc(event.outputs.map(fmt).join(", "))+'</code>':'')+'</li>').join("")+'</ol></details>');
+    '<details class="builder-oracle-counterexample"><summary>Ver traza del contraejemplo paso a paso</summary><ol>'+failed.trace.map((event,index)=>'<li><b>Paso '+(index+1)+' · '+esc(event.scene?.title??event.type)+'</b><span>'+esc(event.scene?.body??event.message??"")+'</span>'+(Object.keys(event.variables??{}).length?'<code>'+esc(JSON.stringify(event.variables))+'</code>':'')+(event.outputs?.length?'<code>Salida: '+esc(event.outputs.map(fmt).join(", "))+'</code>':'')+'</li>').join("")+'</ol></details>'));
   host.classList.toggle("is-correct",passed===results.length);
   host.classList.toggle("is-wrong",passed!==results.length);
 }

@@ -158,3 +158,35 @@ test("la línea de tiempo permite colapsar y desplegar cada vuelta del ciclo",as
  await expect(group).toHaveAttribute("open","");
  await expect(group.locator("li[data-history-step]").first()).toBeVisible();
 });
+
+test("la tabla de seguimiento permite responder y señala la primera celda incorrecta",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="lab"]').click();
+ await page.locator('[data-lab-activity="table"]').click();
+ const answers=page.locator("#lab-task-content [data-trace-answer]");
+ await expect(answers.first()).toBeVisible();
+ await expect(answers).not.toHaveCount(0);
+ await page.locator("#lab-table-check").click();
+ await expect(page.locator("#lab-table-feedback")).toContainText("Primera diferencia");
+ await expect(answers.first()).toHaveClass(/is-wrong/);
+});
+
+test("el Constructor contrasta el diagrama del estudiante con los casos del oráculo",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="builder"]').click();
+ await page.locator("[data-builder-preset='sequence']").click();
+ const nodes=page.locator("#builder-canvas-list [data-select-node]");
+ await nodes.nth(0).click();
+ await page.locator("[data-inspector-field='variables']").fill("a,b");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await nodes.nth(1).click();
+ await page.locator("[data-inspector-field='variable']").fill("s");
+ await page.locator("[data-inspector-field='expression']").fill("a+b");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await nodes.nth(2).click();
+ await page.locator("[data-inspector-field='expression']").fill("s");
+ await page.locator("#builder-inspector-form button[type='submit']").click();
+ await page.locator("#builder-oracle-exercise").selectOption("1");
+ await page.locator("#builder-oracle-run").click();
+ await expect(page.locator("#builder-oracle-results")).toContainText("6 de 6 casos superados");
+});
