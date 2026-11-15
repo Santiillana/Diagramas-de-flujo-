@@ -55,9 +55,13 @@ test("movimiento reducido conserva el resaltado instantáneo y omite vuelos y an
   await expect(page.locator('#PR > .variables-panel[data-pulse]')).toBeVisible();
   await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
   const styles=await page.locator('#PR > .variables-panel').evaluate(el=>({
-    animation:getComputedStyle(el).animationName,
-    duration:getComputedStyle(el).animationDuration
+    animationDuration:getComputedStyle(el).animationDuration,
+    transitionDuration:getComputedStyle(el).transitionDuration
   }));
-  expect(styles.animation).toBe("none");
-  expect(styles.duration==="0s"||styles.duration==="1ms").toBe(true);
+  const milliseconds=value=>{
+    const amount=parseFloat(value);
+    return value.trim().endsWith("ms")?amount:amount*1000;
+  };
+  expect(milliseconds(styles.animationDuration)).toBeLessThanOrEqual(0.01);
+  expect(milliseconds(styles.transitionDuration)).toBeLessThanOrEqual(0.01);
 });
