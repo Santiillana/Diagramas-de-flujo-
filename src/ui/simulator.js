@@ -404,12 +404,34 @@ function parseInputs(){
   const raw=$("#simulator-inputs").value.trim();
   return raw?raw.split(/[\s,;]+/).filter(Boolean):[];
 }
-function pseudocode(source,active=null,visited=[]){
+function variableTone(name){
+  let hash=0;for(const char of String(name))hash=(hash*31+char.charCodeAt(0))>>>0;
+  return "variable-tone-"+(hash%6+1);
+}
+function pseudocode(source,active=null,visited=[],activeVariables=[]){
+  const host=$("#pseudocode-lines");
+  const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
+  const seen=new Set(visited),names=[...new Set(activeVariables)].filter(Boolean).sort((a,b)=>b.length-a.length);
+  const matcher=names.length?new RegExp("\\b("+names.map(name=>name.replace(/[.*+?^${}()|[\\]\\]/g,"\\function pseudocode(source,active=null,visited=[]){
   const host=$("#pseudocode-lines");
   const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
   const seen=new Set(visited);
   $("#pseudocode-line-count").textContent=rows.length+" líneas";
   host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+esc(row.text)+'</code></li>').join("");
+  if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
+}")).join("|")+")\\b","g"):null;
+  const variableMarkup=text=>{
+    if(!matcher)return esc(text);
+    let output="",last=0;matcher.lastIndex=0;
+    for(const match of text.matchAll(matcher)){
+      output+=esc(text.slice(last,match.index));
+      output+='<mark class="pseudocode-variable '+variableTone(match[0])+'" data-variable="'+esc(match[0])+'">'+esc(match[0])+'</mark>';
+      last=match.index+match[0].length;
+    }
+    return output+esc(text.slice(last));
+  };
+  $("#pseudocode-line-count").textContent=rows.length+" líneas";
+  host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+variableMarkup(row.text)+'</code></li>').join("");
   if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
 }
 function prepare(){
@@ -952,7 +974,10 @@ function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
   const seen=execution.events.slice(0,timeline.index+1);
-  pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean));
+  const activeVariableNames=e.change?.name?[e.change.name]:e.condition
+    ?[...new Set((e.condition.match(/[A-Za-z_][A-Za-z0-9_]*/g)??[]).filter(name=>Object.hasOwn(e.variables??{},name)))]
+    :[];
+  pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean),activeVariableNames);
   if(diagram){
     const routeEvent=[...seen].reverse().find(item=>item.route&&(item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
     const previousSource=[...seen.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
@@ -994,17 +1019,31 @@ function render(){
     loopExplanation+
     renderOperationBreakdown(e)+
     (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
-  const vars=e.variables??{}, names=Object.keys(vars), change=e.change;
-  $("#variables-content").innerHTML=names.length?'<table class="variables-table"><thead><tr><th>VARIABLE</th><th>VALOR ACTUAL</th></tr></thead><tbody>'+
-    names.map(name=>'<tr class="'+(change?.name===name?"is-changed":"")+'"><td><button type="button" class="variable-history-trigger" data-variable-history="'+esc(name)+'" aria-pressed="'+String(selectedVariable===name)+'">'+esc(name)+'</button></td><td>'+esc(fmt(vars[name]))+'</td></tr>').join("")+'</tbody></table>':'<p class="empty-state-copy">Todavía no hay variables asignadas.</p>';
-  $("#variable-change").textContent=change?change.name+": "+(change.previous===undefined?"(sin valor)":fmt(change.previous))+" → "+fmt(change.value):"Sin cambios en este paso.";
+  const vars=e.variables??{},names=Object.keys(vars),change=e.change;
+  const variableMarkup=names.map(name=>{
+    const changed=change?.name===name,active=activeVariableNames.includes(name),tone=variableTone(name);
+    const old=changed&&change.previous!==undefined?'<span class="variable-old-value">'+esc(fmt(change.previous))+'</span><span class="variable-value-arrow">→</span>':"";
+    const why=changed?'<small class="variable-why">'+esc(brief(e))+'</small>':"";
+    return '<button type="button" class="variable-card '+tone+(changed?" is-changed":"")+(active?" is-active-variable":"")+'" data-variable-card="'+esc(name)+'" data-variable-history="'+esc(name)+'" aria-pressed="'+String(selectedVariable===name)+'">'+
+      '<span class="variable-card-name">'+esc(name)+'</span><span class="variable-card-values">'+old+'<strong>'+esc(fmt(vars[name]))+'</strong></span>'+why+'</button>';
+  }).join("");
+  $("#variables-content").innerHTML=names.length?'<div class="variable-cards">'+variableMarkup+'</div>':'<p class="empty-state-copy">La memoria aún está vacía. La primera asignación mostrará aquí cada cajita.</p>';
+  $("#variable-change").textContent=change?"Por qué cambia: "+brief(e):e.condition?"La decisión utiliza: "+activeVariableNames.join(", "):"Sin cambios de variable en este paso.";
+  const activeModel=diagramNodeForEvent(e),activeNode=activeModel?document.getElementById("flow-node-"+activeModel.id):null;
+  document.querySelectorAll("#flow-svg .diagram-node").forEach(node=>{node.classList.remove("has-active-variable");node.style.removeProperty("--active-variable-color");});
+  if(activeNode&&activeVariableNames.length){
+    activeNode.classList.add("has-active-variable");
+    activeNode.style.setProperty("--active-variable-color","var(--"+variableTone(activeVariableNames[0]).replace("variable-tone-","variable-color-")+")");
+    activeNode.dataset.activeVariables=activeVariableNames.join(",");
+  }
   renderVariableHistory();
   const out=e.outputs??[];
   $("#output-count").textContent=String(out.length);
-  $("#simulator-output").innerHTML=out.length?out.map((v,i)=>'<li><span class="output-index">'+(i+1)+'.</span> '+esc(fmt(v))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
+  $("#simulator-output").innerHTML=out.length?out.map((value,index)=>'<li><span class="output-index">'+(index+1)+'.</span> '+esc(fmt(value))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
   if(choreographyPlayback)choreographEvent(e);
   $("#trace-history").querySelectorAll("[data-history-step]").forEach(item=>item.classList.toggle("is-active",Number(item.dataset.historyStep)===timeline.index));
-  $("#trace-history").querySelector('[data-history-step="'+timeline.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
+  if($("#simulator-history-details")?.open)$("#trace-history").querySelector('[data-history-step="'+timeline.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
+  if($("#simulator-output-details")&&out.length)$("#simulator-output-details").classList.toggle("has-new-output",e.type==="output");
   $("#timeline-count").textContent=(timeline.index+1)+" / "+timeline.length;
   $("#simulator-timeline").max=String(timeline.length-1);
   $("#simulator-timeline").value=String(timeline.index);
