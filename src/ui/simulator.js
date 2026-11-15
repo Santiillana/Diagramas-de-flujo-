@@ -198,6 +198,7 @@ function closeContextWindow(){
 
 
 let choreographyPlayback=false,flightRaf=0,flightTimeouts=[],pulseTimeouts=[];
+let tokenTravelDuration=0,flightTravelDuration=0;
 function cancelChoreography(){
   if(flightRaf)cancelAnimationFrame(flightRaf);
   flightRaf=0;
@@ -239,6 +240,7 @@ function flightTargetFor(event,targetId){
   return getWindowElement(targetId);
 }
 function animateFlight(event,targetId){
+  flightTravelDuration=0;
   if(!event||reducedMotion())return false;
   const source=event.type==="input"?$("#simulator-inputs"):(()=>{
     const model=diagramNodeForEvent(event);
@@ -260,7 +262,7 @@ function animateFlight(event,targetId){
   chip.style.transform="translate3d("+start.x+"px,"+start.y+"px,0)";
   layer.append(chip);
   const control={x:(start.x+finish.x)/2,y:Math.min(start.y,finish.y)-52};
-  const duration=Math.min(2600,Math.max(180,700/currentSpeedFactor()));let began=0;
+  const duration=Math.min(9000,Math.max(180,700/currentSpeedFactor()));flightTravelDuration=duration;let began=0;
   const frame=now=>{
     if(!began)began=now;
     const t=Math.min(1,(now-began)/duration),u=1-t;
@@ -390,6 +392,7 @@ function setCameraFree(){
 function setCameraFollowing(){
   cameraAuto=true;
   updateCameraButton();
+  if(timeline)centerActiveNode(timeline.current,"auto");
 }
 
 function publishTrace(){
@@ -810,6 +813,7 @@ function drawExecutionTrail(events){
   }
 }
 function animateTokenRoute(route,event,animate=choreographyPlayback){
+  tokenTravelDuration=0;
   const token=$("#flow-diagram-container .flow-token");
   const trail=$("#flow-active-trail"),label=$("#flow-token-label"),ring=$("#flow-token-ring");
   if(!token)return;
@@ -842,7 +846,8 @@ function animateTokenRoute(route,event,animate=choreographyPlayback){
   const pointsValue=points.map(point=>point.x+","+point.y).join(" ");
   if(trail){trail.setAttribute("points",pointsValue);trail.style.strokeDasharray=String(total);trail.style.strokeDashoffset=String(total);}
   place(points[0]);
-  const duration=Math.min(6000,Math.max(220,(500+total*1.6)/speed));
+  const duration=Math.min(9000,Math.max(220,(500+total*1.6)/speed));
+  tokenTravelDuration=duration;
   let started=0;
   const frame=now=>{
     if(!started)started=now;
@@ -877,7 +882,7 @@ function centerActiveNode(event,behavior){
   if(!stage||!node||!model)return;
   const free=freeCanvasRect(),target=node.getBoundingClientRect();
   const desiredX=free.left+free.width/2;
-  const desiredY=free.top+free.height*.45;
+  const desiredY=free.top+free.height*.5;
   const goal={
     x:panOffset.x+(desiredX-(target.left+target.width/2)),
     y:panOffset.y+(desiredY-(target.top+target.height/2))
@@ -986,12 +991,10 @@ function render(){
     animateTokenRoute(walked,e);
   }
   document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
+  document.documentElement.style.setProperty("--sim-animation-duration",Math.round(Math.max(100,Math.min(5000,500/currentSpeedFactor())))+"ms");
   updateCameraButton();
   if(cameraAuto)centerActiveNode(e);
-  if(choreographyPlayback){
-    const contextTimer=setTimeout(()=>showContextWindow(e),100/currentSpeedFactor());
-    flightTimeouts.push(contextTimer);
-  }else showContextWindow(e);
+  /* La ficha contextual se presenta al terminar el movimiento de la ficha y del dato. */
   const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
   $("#scene-content").dataset.eventType=e.type;
@@ -1035,7 +1038,13 @@ function render(){
   const out=e.outputs??[];
   $("#output-count").textContent=String(out.length);
   $("#simulator-output").innerHTML=out.length?out.map((value,index)=>'<li><span class="output-index">'+(index+1)+'.</span> '+esc(fmt(value))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
-  if(choreographyPlayback)choreographEvent(e);
+  if(choreographyPlayback){
+    tokenTravelDuration=tokenTravelDuration||0;
+    choreographEvent(e);
+    const wait=Math.min(10000,Math.max(tokenTravelDuration,flightTravelDuration)+Math.max(100,120/currentSpeedFactor()));
+    const contextTimer=setTimeout(()=>showContextWindow(e),wait);
+    flightTimeouts.push(contextTimer);
+  }else showContextWindow(e);
   $("#trace-history").querySelectorAll("[data-history-step]").forEach(item=>item.classList.toggle("is-active",Number(item.dataset.historyStep)===timeline.index));
   if($("#simulator-history-details")?.open)$("#trace-history").querySelector('[data-history-step="'+timeline.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
   if($("#simulator-output-details")&&out.length)$("#simulator-output-details").classList.toggle("has-new-output",e.type==="output");
@@ -1260,9 +1269,10 @@ function fitDiagram(){
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
   const focus=document.body.classList.contains("focus");
-  const widthScale=Math.max(.36,Math.min(2.15,(free.width-36)/viewBox.width));
-  const heightScale=Math.max(.32,Math.min(1.8,(free.height-38)/viewBox.height));
-  fitScale=focus?Math.max(.75,Math.min(2.6,Math.min(innerWidth*.9/viewBox.width,innerHeight*.84/viewBox.height))):Math.min(widthScale,heightScale);
+  const widthScale=(free.width-48)/viewBox.width;
+  fitScale=focus
+    ?Math.max(.9,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.88/Math.min(viewBox.height,700))))
+    :Math.max(.82,Math.min(1.95,widthScale));
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
   zoom=1;
   const stageBox=stage.getBoundingClientRect();
@@ -1462,6 +1472,7 @@ function bind(){
   $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
   $("#simulator-speed")?.addEventListener("change",()=>{
     document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
+    document.documentElement.style.setProperty("--sim-animation-duration",Math.round(Math.max(100,Math.min(5000,500/currentSpeedFactor())))+"ms");
     if(timer!==null){stop();play();}
   });
   $("#trace-history")?.addEventListener("click",event=>{
@@ -1539,6 +1550,7 @@ export function initSimulator(){
   document.documentElement.style.setProperty("--fs",String(pseudocodeSize));
   setPresentationMode((()=>{try{return localStorage.getItem("traza:v3:presentation-mode")||"appear";}catch{return "appear";}})());
   document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
+  document.documentElement.style.setProperty("--sim-animation-duration",Math.round(Math.max(100,Math.min(5000,500/currentSpeedFactor())))+"ms");
   syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();
