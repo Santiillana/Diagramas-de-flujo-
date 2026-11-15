@@ -110,14 +110,18 @@ Los tokens `--traza-*` definen escenario, vidrio, texto y acentos. La paleta osc
 ## D-037 · La rueda no es un control de zoom
 La rueda vertical desplaza el lienzo, Shift/deltaX desplazan horizontalmente y solo Ctrl/⌘+rueda, pellizco y botones modifican la escala. Esto conserva el comportamiento de desplazamiento espacial y evita el zoom involuntario.
 
-## D-038 · GitHub Pages es una tarea manual; Cloudflare es producción
-El sitio de producción se despliega mediante Cloudflare Workers. El workflow de GitHub Pages queda limitado a `workflow_dispatch`, porque Pages no es el destino de despliegue configurado y no debe dejar un check fallido en cada push.
+## D-038 · No asumir un destino de producción no documentado
+El repositorio no contiene una configuración de despliegue ni una URL pública verificable. GitHub Pages queda como tarea manual porque su origen debe activarse en Settings. La rama no debe declarar que Cloudflare u otro proveedor es producción sin evidencia verificable. El workflow post-deploy es manual y requiere el origen HTTPS real como entrada.
 
 ## D-039 · Respaldo antes del cambio de producción
 La rama `respaldo/antes-simulador-v3` y la etiqueta `v2-antes-simulador-v3` apuntan al SHA `893dd1cf4192be1a627d8e21eea49d012506e3fb`. El PR se fusionará solo tras el éxito de pruebas unitarias, e2e, paridad y controles del Simulador; la etiqueta permite identificar el estado anterior.
 
-## D-040 · Marca de release verificable desde producción
-Cada entrega del Simulador v3 incorpora una meta `traza-release` y la misma cadena en el pie de página. El workflow post-deploy espera la marca exacta y ejecuta humo de navegador contra la URL pública antes de declarar el despliegue verificado.
+## D-040 · Marca de release verificable contra un origen explícito
+Cada entrega del Simulador v3 incorpora una meta `traza-release` y la misma cadena en el pie de página. El workflow post-deploy solo se ejecuta manualmente y exige el origen HTTPS real como entrada. Espera la marca exacta y ejecuta humo de navegador contra ese origen antes de declarar la versión verificada.
 
 ## D-041 · Evidencia antes que afirmaciones
-La incapacidad de clonar el repositorio desde el entorno de trabajo no se sustituye por resultados simulados. Las pruebas se consideran aprobadas solo con el resumen real de GitHub Actions para el SHA exacto del PR y, para producción, con la marca HTTP y la ejecución del workflow post-deploy.
+La incapacidad de clonar el repositorio desde el entorno de trabajo no se sustituye por resultados simulados. Las pruebas se consideran aprobadas solo con el resumen real de GitHub Actions para el SHA exacto del PR y, para producción, con la marca HTTP y la ejecución del workflow post-deploy sobre un origen proporcionado y verificable.
+
+
+## D-042 · No hay publicación implícita al fusionar
+La validación CI del PR no equivale a un despliegue. El workflow de humo post-deploy no se activa en cada push a `main`: exige ejecución manual con el origen público real. Si no se dispone de ese origen, se reporta como pendiente y no se declara producción verificada.
