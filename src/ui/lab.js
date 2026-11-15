@@ -111,10 +111,25 @@ const symbolMap={
   for:{name:"Ciclo Para",options:["Hexágono / ciclo definido","Óvalo","Documento"],correct:"Hexágono / ciclo definido",why:"La forma didáctica del Para concentra preparación, condición y avance; el flujo de ejecución sigue teniendo un cuerpo y un retorno."}
 };
 const errorScenarios=[
-  {title:"Máximo inicializado en cero",statement:"El algoritmo busca el mayor de dos números. ¿Funciona si los dos son negativos?",source:"M=0|para i=1;i<=2;i++|leer n|si n>M|M=n|fin|fin|imp M",inputs:[-4,-2],expected:-2,explanation:"El máximo debe inicializarse con el primer dato. Empezar en cero falla cuando todos los números son negativos."},
-  {title:"Factorial inicializado en cero",statement:"El algoritmo multiplica de 1 a N. ¿Obtiene el factorial para N = 5?",source:"F=0|para i=1;i<=5;i++|F=F*i|fin|imp F",inputs:[],expected:120,explanation:"El acumulador de producto comienza en 1, porque 1 es el elemento neutro de la multiplicación. Si comienza en cero, siempre permanece en cero."},
-  {title:"Centinela contado como dato",statement:"El algoritmo cuenta datos hasta recibir cero. ¿Debe contar también el cero que detiene la lectura?",source:"C=0|hacer|leer n|C=C+1|hm n<>0|imp C",inputs:[4,5,0],expected:2,explanation:"El valor cero es una señal de parada, no un dato de la serie. La actualización del contador debe ejecutarse solo cuando el valor leído sea distinto del centinela."},
-  {title:"Promedio correcto con centinela y sin datos",statement:"¿Este algoritmo calcula el promedio de los datos anteriores al cero y evita dividir entre cero cuando no hay entradas?",source:"S=0|C=0|leer n|mientras n<>0|S=S+n|C=C+1|leer n|fin|si C>0|imp S/C|sino|imp 0|fin",inputs:[2,4,0],expected:3,explanation:"El algoritmo excluye el centinela, cuenta los datos procesados y solo divide cuando hay al menos un dato. Por tanto, este caso es correcto."}
+  {title:"Máximo inicializado en cero",statement:"El algoritmo busca el mayor de dos números. ¿Funciona si los dos son negativos?",source:"M=0|para i=1;i<=2;i++|leer n|si n>M|M=n|fin|fin|imp M",inputs:[-4,-2],expected:-2,faultyLine:0,explanation:"El máximo debe empezar con un dato real. Un cero inventado puede ser mayor que todos los valores negativos.",fixes:[
+    {label:"Leer el primer dato y usarlo como máximo",source:"leer M|para i=2;i<=2;i++|leer n|si n>M|M=n|fin|fin|imp M"},
+    {label:"Mantener M=0",source:"M=0|para i=1;i<=2;i++|leer n|si n>M|M=n|fin|fin|imp M"},
+    {label:"Inicializar M=1",source:"M=1|para i=1;i<=2;i++|leer n|si n>M|M=n|fin|fin|imp M"}
+  ]},
+  {title:"Factorial inicializado en cero",statement:"El algoritmo multiplica de 1 a N. ¿Obtiene el factorial para N = 5?",source:"F=0|para i=1;i<=5;i++|F=F*i|fin|imp F",inputs:[],expected:120,faultyLine:0,explanation:"El acumulador de producto comienza en 1, que es el elemento neutro de la multiplicación. Con cero, el resultado siempre será cero.",fixes:[
+    {label:"Inicializar F en 1",source:"F=1|para i=1;i<=5;i++|F=F*i|fin|imp F"},
+    {label:"Inicializar F en 5",source:"F=5|para i=1;i<=5;i++|F=F*i|fin|imp F"},
+    {label:"Mantener F en 0",source:"F=0|para i=1;i<=5;i++|F=F*i|fin|imp F"}
+  ]},
+  {title:"Centinela contado como dato",statement:"El algoritmo cuenta datos hasta recibir cero. ¿Debe contar también el cero que detiene la lectura?",source:"C=0|hacer|leer n|C=C+1|hm n<>0|imp C",inputs:[4,5,0],expected:2,faultyLine:3,explanation:"El cero es la señal de parada, no un dato de la serie. El contador solo aumenta cuando el valor leído es distinto de cero.",fixes:[
+    {label:"Aumentar C solo si n es distinto de 0",source:"C=0|hacer|leer n|si n<>0|C=C+1|fin|hm n<>0|imp C"},
+    {label:"Incrementar C antes de leer n",source:"C=0|hacer|C=C+1|leer n|hm n<>0|imp C"},
+    {label:"Mantener el incremento fuera de la condición",source:"C=0|hacer|leer n|C=C+1|hm n<>0|imp C"}
+  ]},
+  {title:"Promedio correcto con centinela",statement:"¿Este algoritmo calcula el promedio de los datos anteriores al cero y evita dividir entre cero cuando no hay entradas?",source:"S=0|C=0|leer n|mientras n<>0|S=S+n|C=C+1|leer n|fin|si C>0|imp S/C|sino|imp 0|fin",inputs:[2,4,0],expected:3,faultyLine:-1,explanation:"El algoritmo excluye el centinela, cuenta los datos procesados y solo divide cuando hay al menos un dato. No necesita corrección.",fixes:[
+    {label:"No modificar: el algoritmo ya es correcto",source:"S=0|C=0|leer n|mientras n<>0|S=S+n|C=C+1|leer n|fin|si C>0|imp S/C|sino|imp 0|fin"},
+    {label:"Dividir siempre entre C, incluso si C es 0",source:"S=0|C=0|leer n|mientras n<>0|S=S+n|C=C+1|leer n|fin|imp S/C"}
+  ]}
 ];
 function publishContext(detail){
   if(!detail?.execution?.events?.length)return;
@@ -382,32 +397,64 @@ function renderSymbol(){
   }));
 }
 
+let errorLineSelected=null;
 function renderError(){
   const scenario=errorScenarios[errorScenario%errorScenarios.length];
-  $("#lab-task-content").innerHTML=
-    '<div class="lab-question"><p class="eyebrow">CASO DE PRUEBA · '+(errorScenario+1)+' / '+errorScenarios.length+'</p><h4>'+esc(scenario.title)+'</h4><p>'+esc(scenario.statement)+'</p>'+
-    '<pre class="lab-snippet"><code>'+esc(scenario.source.split("|").join("\n"))+'</code></pre><div class="lab-choice-list">'+
-    '<button type="button" class="lab-choice" data-error-choice="correct">El algoritmo es correcto</button>'+
-    '<button type="button" class="lab-choice" data-error-choice="incorrect">El algoritmo tiene un error</button></div>'+
-    '<div id="lab-error-feedback" class="lab-feedback" role="status"></div>'+
-    '<button type="button" class="button button-secondary" id="lab-next-error">Siguiente caso</button></div>';
-  $("#lab-task-content").querySelectorAll("[data-error-choice]").forEach(button=>button.addEventListener("click",()=>{
+  const lines=scenario.source.split("|");
+  if(errorLineSelected===null){
     const tested=executePseudocode(scenario.source,scenario.inputs);
-    const actual=tested.outputs[0];
-    const correct=tested.ok&&JSON.stringify(tested.outputs)===JSON.stringify([scenario.expected]);
-    const chosen=button.dataset.errorChoice==="correct";
-    recordResult("error",chosen===correct);
+    const actual=JSON.stringify(tested.outputs??[]);
+    const expected=JSON.stringify([scenario.expected]);
+    $("#lab-task-content").innerHTML=
+      '<div class="lab-question lab-debug-question"><p class="eyebrow">CASO DE PRUEBA · '+(errorScenario+1)+' / '+errorScenarios.length+'</p>'+
+      '<h4>'+esc(scenario.title)+'</h4><p>'+esc(scenario.statement)+'</p>'+
+      '<div class="lab-debug-result-strip"><span>Entrada <code>'+esc(JSON.stringify(scenario.inputs))+'</code></span><span>Resultado observado <code>'+esc(actual)+'</code></span><span>Resultado esperado <code>'+esc(expected)+'</code></span></div>'+
+      '<p class="lab-muted">Selecciona la línea que provoca el resultado incorrecto. Si todo está bien, elige «No hay error».</p>'+
+      '<ol class="lab-debug-lines">'+lines.map((line,index)=>
+        '<li><button type="button" data-error-line="'+index+'"><span>'+String(index+1).padStart(2,"0")+'</span><code>'+esc(line)+'</code><b>Elegir</b></button></li>'
+      ).join("")+'</ol>'+
+      '<button type="button" class="lab-choice lab-no-error" data-error-line="-1">✓ No hay error: el algoritmo es correcto</button></div>';
+    return;
+  }
+  const chosenLine=Number(errorLineSelected);
+  const selectedLine=chosenLine<0?"No hay error":(lines[chosenLine]??"Línea desconocida");
+  const actual=executePseudocode(scenario.source,scenario.inputs);
+  const options=scenario.fixes;
+  $("#lab-task-content").innerHTML=
+    '<div class="lab-question lab-debug-question"><p class="eyebrow">CORRECCIÓN · CASO '+(errorScenario+1)+'</p>'+
+    '<h4>Elegiste: '+esc(selectedLine)+'</h4>'+
+    '<p class="lab-muted">Ahora selecciona la corrección y comprueba el recorrido con los mismos datos.</p>'+
+    '<div class="lab-debug-lines is-compact">'+lines.map((line,index)=>
+      '<div class="'+(index===chosenLine?"is-selected-error":"")+'"><span>'+String(index+1).padStart(2,"0")+'</span><code>'+esc(line)+'</code></div>'
+    ).join("")+'</div>'+
+    '<div class="lab-debug-fixes">'+options.map((option,index)=>
+      '<button type="button" class="lab-choice" data-error-fix="'+index+'">'+esc(option.label)+'</button>'
+    ).join("")+'</div><div id="lab-error-feedback" class="lab-feedback" role="status"></div>'+
+    '<div class="lab-task-actions"><button type="button" class="button button-secondary" id="lab-error-back">Volver a las líneas</button><button type="button" class="button button-secondary" id="lab-next-error">Siguiente caso</button></div></div>';
+  $("#lab-error-back").addEventListener("click",()=>{errorLineSelected=null;renderError();});
+  $("#lab-next-error").addEventListener("click",()=>{errorScenario=(errorScenario+1)%errorScenarios.length;errorLineSelected=null;renderError();});
+  $("#lab-task-content").querySelectorAll("[data-error-fix]").forEach(button=>button.addEventListener("click",()=>{
+    const fix=options[Number(button.dataset.errorFix)];
+    const corrected=executePseudocode(fix.source,scenario.inputs);
+    const originalOK=Boolean(actual.ok&&JSON.stringify(actual.outputs)===JSON.stringify([scenario.expected]));
+    const correctedOK=Boolean(corrected.ok&&JSON.stringify(corrected.outputs)===JSON.stringify([scenario.expected]));
+    const lineCorrect=chosenLine===scenario.faultyLine;
+    const fixCorrect=correctedOK&&(scenario.faultyLine<0?chosenLine===-1:lineCorrect);
+    recordResult("error",fixCorrect);
     const feedback=$("#lab-error-feedback");
-    feedback.innerHTML=(chosen===correct?"<strong>Buena detección.</strong> ":"<strong>Revisa el contraejemplo.</strong> ")+
-      "<p>Entrada: "+esc(JSON.stringify(scenario.inputs))+". Resultado del algoritmo: "+esc(JSON.stringify(actual))+
-      "; resultado esperado: "+esc(JSON.stringify(scenario.expected))+".</p><p>"+esc(scenario.explanation)+"</p>"+mixedAdvanceMarkup();
-    bindMixedAdvance();
-    feedback.classList.toggle("is-correct",chosen===correct);
-    feedback.classList.toggle("is-wrong",chosen!==correct);
-    $("#lab-task-content").querySelectorAll("[data-error-choice]").forEach(item=>item.disabled=true);
+    const actualOriginal=JSON.stringify(actual.outputs??[]);
+    const actualFixed=JSON.stringify(corrected.outputs??[]);
+    feedback.innerHTML=
+      '<strong>'+(fixCorrect?"Corrección correcta.":"Todavía no coincide con el caso esperado.")+'</strong>'+
+      '<div class="lab-debug-comparison"><div><span>ANTES · ORIGINAL</span><code>'+esc(actualOriginal)+'</code><small>'+(originalOK?"El caso original ya era correcto.":"El caso original falla.")+'</small></div>'+
+      '<div><span>DESPUÉS · CORRECCIÓN</span><code>'+esc(actualFixed)+'</code><small>'+(correctedOK?"El resultado coincide con lo esperado.":"La modificación aún no resuelve el caso.")+'</small></div></div>'+
+      '<p>'+esc(scenario.explanation)+'</p>';
+    feedback.classList.toggle("is-correct",fixCorrect);
+    feedback.classList.toggle("is-wrong",!fixCorrect);
+    $("#lab-task-content").querySelectorAll("[data-error-fix]").forEach(item=>item.disabled=true);
   }));
-  $("#lab-next-error").addEventListener("click",()=>{errorScenario=(errorScenario+1)%errorScenarios.length;renderError();});
 }
+
 function renderWhatIf(){
   if(!requireTrace())return;
   $("#lab-task-content").innerHTML=
