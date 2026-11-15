@@ -90,3 +90,6 @@ La explicación breve de cada evento se ancla al nodo activo y prueba cuatro pos
 El grafo de navegación se construye a partir de las aristas generadas por layoutFlow y sus paths SVG. Dijkstra selecciona la ruta de coste geométrico mínimo; los vértices del rastro se muestrean desde el atributo d real del conector. Si el navegador no ofrece métricas SVG, el fallback reproduce la misma geometría del renderer (secuencia, rama V/F o retorno), sin inventar una trayectoria ni modificar el intérprete.
 ## D-031 · Coreografía cancelable sobre snapshots
 Los pasos manuales y la reproducción automática adaptan el evento de snapshot ya existente. Leer y las asignaciones vuelan hacia la variable afectada; Imprimir vuela hacia la nueva salida. Cada movimiento cancela RAF y temporizadores anteriores antes de iniciar otro. La preferencia de movimiento reducido elimina vuelos y pulsos animados, manteniendo el resaltado del destino.
+
+## D-032 · No cubrir la decisión ni las ramas V/F
+En los eventos de decisión, rama y condición de ciclo, la explicación permanece en el panel persistente En escena. La ventana flotante se oculta y el cable guía conecta el rombo con ese panel; las burbujas flotantes se reservan a los eventos secuenciales cuando existe un rectángulo libre. Esto prioriza la visibilidad de las ramas y sus etiquetas en los momentos de mayor densidad gráfica.

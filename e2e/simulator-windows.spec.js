@@ -49,7 +49,7 @@ test("la ventana contextual evita nodos y conectores, o delega la explicación a
     return {hidden:vf.hidden,wireVisible:wire?!wire.hidden:false,box,nodeOverlap,
       edgeOverlap:overlaps("#flow-svg .diagram-edge"),
       otherNodeOverlap:overlaps("#flow-svg .diagram-node:not(#flow-node-"+anchor+")"),
-      inside:box.left>=0&&box.top>=54&&box.right<=1920&&box.bottom<=1080};
+      inside:vf.hidden||(box.left>=0&&box.top>=54&&box.right<=1920&&box.bottom<=1080)};
   });
   expect(report).not.toBeNull();
   expect(report.inside).toBe(true);

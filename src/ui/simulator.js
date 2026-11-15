@@ -181,6 +181,15 @@ function placeContextWindow(event){
   const nodeRect=node?.getBoundingClientRect();
   const width=box.offsetWidth||278,height=box.offsetHeight||132,margin=12;
   const free=freeCanvasRect();
+  if(["decision","branch","loop-condition"].includes(event.type)){
+    box.hidden=true;
+    box.dataset.cable="fallback-scene";
+    box.dataset.anchorNode=String(model?.id??"");
+    box.dataset.anchorSourceLine=String(event.sourceLine??"");
+    if(node)node.classList.add("has-context-fallback");
+    drawContextWire(nodeRect,$("#PV")?.getBoundingClientRect());
+    return;
+  }
   const workspace={left:Math.max(8,free.left+8),top:Math.max(54,free.top+8),right:Math.min(innerWidth-8,free.right-8),bottom:Math.min(innerHeight-8,free.bottom-8)};
   const figure=nodeRect??{left:innerWidth/2-30,top:innerHeight/2-20,right:innerWidth/2+30,bottom:innerHeight/2+20,width:60,height:40};
   const midY=figure.top+figure.height/2,midX=figure.left+figure.width/2;
