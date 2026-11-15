@@ -222,7 +222,7 @@ function renderExerciseDetail(){
   if(!host)return;
   const item=selectedExercise;
   if(!item){
-    host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">40</span><p class="eyebrow">CATÁLOGO PROGRESIVO</p><h3>Selecciona un reto para analizarlo.</h3><p>Las fichas incluyen objetivo, conceptos, entradas, salidas, restricciones, métodos, pruebas y errores frecuentes.</p></div>';
+    host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">45</span><p class="eyebrow">CATÁLOGO PROGRESIVO</p><h3>Selecciona un reto para analizarlo.</h3><p>Las fichas incluyen objetivo, conceptos, entradas, salidas, restricciones, métodos, pruebas y errores frecuentes.</p></div>';
     return;
   }
   selectedMethod=Math.min(selectedMethod,item.methods.length-1);
