@@ -499,7 +499,6 @@ function pseudocode(source,active=null,visited=[]){
   if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
 }
 function prepare(){
-  const previousExerciseId=exercise?.id??null;
   exercise=getExercise(exerciseId)??exercises[0];
   exerciseId=exercise.id;
   methodIndex=Math.max(0,Math.min(methodIndex,exercise.methods.length-1));
@@ -543,7 +542,6 @@ function prepare(){
     $("#diagram-empty p").textContent=error.message;
   }
   run();
-  if(previousExerciseId!==exercise.id&&document.body.dataset.activeSpace==="simulator")showChallengeGate();
 }
 function typeName(type){
   return ({ "program-start":"INICIO",input:"ENTRADA",assignment:"ASIGNACIÓN",output:"SALIDA",
@@ -1449,7 +1447,7 @@ function bind(){
   $("#simulator-exercise-nav")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-exercise-shortcut]");
     if(!button)return;
-    exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;prepare();
+    exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;prepare();showChallengeGate();
   });
   $("#simulator-method-tabs")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-method-index]");
@@ -1591,7 +1589,7 @@ function bind(){
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
-    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();if(exercise&&!challengeSkip&&!challengeSeenExercises.has(exercise.id))showChallengeGate();});
+    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();});
   });
   syncDockHeight();
   const dock=$("#dock");
