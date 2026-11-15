@@ -1190,26 +1190,33 @@ function fitDiagram(){
   applyDiagramZoom();
   if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
 }async function toggleDiagramFullscreen(){
-  const stage=$("#diagram-stage");
-  if(!stage)return;
-  try{
-    if(document.fullscreenElement)await document.exitFullscreen();
-    else if(stage.requestFullscreen)await stage.requestFullscreen();
-  }catch(error){
-    $("#simulator-status").textContent="No se pudo activar pantalla completa: "+error.message;
+  const body=document.body;
+  if(body.classList.contains("focus")){
+    body.classList.remove("focus");
+    clearTimeout(focusIdleTimer);
+    if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch{}}
+    document.documentElement.dataset.fullscreenRequested="false";
+    updateFullscreenButton();
+    requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    return;
   }
+  body.classList.add("focus");
+  if(document.documentElement.requestFullscreen){
+    document.documentElement.dataset.fullscreenRequested="true";
+    try{await document.documentElement.requestFullscreen();}
+    catch{document.documentElement.dataset.fullscreenRequested="false";}
+  }
+  updateFullscreenButton();
+  requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");showFocusControls();});
 }
 function updateFullscreenButton(){
-  const active=document.fullscreenElement===$("#diagram-stage");
+  const active=document.body.classList.contains("focus");
   const button=$("#diagram-fullscreen");
   button?.setAttribute("aria-pressed",String(active));
-  if(button){
-    button.setAttribute("aria-label",active?"Pantalla completa activa":"Ver diagrama a pantalla completa");
-    button.title=active?"Pantalla completa activa":"Pantalla completa";
-  }
+  button?.setAttribute("aria-label",active?"Salir del modo Concentración":"Entrar al modo Concentración");
+  if(button){button.title=active?"Salir de Concentración · F":"Concentración · F";button.textContent=active?"⤢ Salir":"⛶ Concentración";}
   const exitButton=$("#diagram-fullscreen-exit");
   if(exitButton)exitButton.hidden=!active;
-  if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
   const stage=$("#diagram-stage"),hit=$("#diagram-pan-hit"),canvas=$("#flow-diagram-container");
@@ -1345,10 +1352,27 @@ function bind(){
   });
   $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
   $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
+  $("#focus-previous")?.addEventListener("click",()=>{move(-1);showFocusControls();});
+  $("#focus-next")?.addEventListener("click",()=>{move(1);showFocusControls();});
+  $("#focus-progress")?.addEventListener("input",event=>{seek(Number(event.target.value));showFocusControls();});
+  $("#diagram-pan-hit")?.addEventListener("click",event=>{
+    if(!document.body.classList.contains("focus")||event.target.closest("button,input,select"))return;
+    if(event.clientX<innerWidth/3)move(-1);else if(event.clientX>innerWidth*2/3)move(1);
+    showFocusControls();
+  });
+  document.addEventListener("pointermove",()=>showFocusControls(),{passive:true});
   $("#simulator-shortcuts-close")?.addEventListener("click",()=>{$("#simulator-shortcuts").hidden=true;});
   $("#vf-close")?.addEventListener("click",closeContextWindow);
   bindWindows();
-  document.addEventListener("fullscreenchange",updateFullscreenButton);
+  document.addEventListener("fullscreenchange",()=>{
+    if(document.body.classList.contains("focus")&&!document.fullscreenElement&&document.documentElement.dataset.fullscreenRequested==="true"){
+      document.documentElement.dataset.fullscreenRequested="false";
+      document.body.classList.remove("focus");
+      clearTimeout(focusIdleTimer);
+      requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    }
+    updateFullscreenButton();
+  });
   $("#variables-content").addEventListener("click",event=>{
     const button=event.target.closest("[data-variable-history]");
     if(button){selectedVariable=button.dataset.variableHistory;render();}
@@ -1392,6 +1416,7 @@ function bind(){
     if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
     if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
+    if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
     else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
