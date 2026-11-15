@@ -15,6 +15,7 @@ let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, de
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
 let predictEnabled=false,predictionPending=null,predictionResume=false,predictionCorrect=0,predictionAttempts=0;
+let focusIdleTimer=0;
 let routeGraph=new Map(), routeWeights=new Map(), routeCache=new Map(), tokenRaf=0;
 
 function readPseudocodeSize(){
@@ -978,9 +979,64 @@ function render(){
     $("#simulator-status").textContent="DETENIDO · "+e.message;
     $("#simulator-status").classList.add("simulator-status-error");
   }
+  renderFocusState(e);
   publishTrace();
 }
 
+
+function showFocusControls(){
+  const ui=$("#focus-ui");if(!ui||!document.body.classList.contains("focus"))return;
+  ui.classList.remove("is-idle");clearTimeout(focusIdleTimer);
+  focusIdleTimer=window.setTimeout(()=>ui.classList.add("is-idle"),3000);
+}
+function focusCopy(event){
+  if(event.type==="input")return {title:"📥 Entra un dato",value:event.change?.name+" ← "+fmt(event.value),line:"El dato se guarda en "+event.change?.name+"."};
+  if(event.type==="output")return {title:"🖨️ Sale en pantalla",value:fmt(event.value),line:"Ese valor aparece en la Pantalla."};
+  if(event.condition)return {title:event.type==="decision"?"❓ Decisión":"🔁 Condición del ciclo",value:event.condition+" → "+(event.result?"V":"F"),line:event.result?"Sigue el camino V.":"Sigue el camino F."};
+  if(event.change)return {title:"✏️ Cambia una variable",value:event.change.name+": "+(event.change.previous===undefined?"∅":fmt(event.change.previous))+" → "+fmt(event.change.value),line:"Se guarda el nuevo valor."};
+  if(event.type==="program-end")return {title:"🏁 Fin del algoritmo",value:"Ejecución terminada",line:"La memoria y la Pantalla conservan el resultado."};
+  if(event.type==="loop-enter")return {title:"🔁 Nueva vuelta",value:"Vuelta "+event.iteration,line:"Comienza otra repetición."};
+  return {title:typeName(event.type),value:"Paso "+(timeline.index+1),line:brief(event)};
+}
+function placeFocusCard(){
+  const card=$("#focus-card");if(!card||card.hidden)return;
+  const node=timeline?.current?.nodeId==null?null:document.getElementById("flow-node-"+timeline.current.nodeId);
+  if(!node){card.style.left="50%";card.style.top="18%";card.style.transform="translateX(-50%)";return;}
+  const figure=node.getBoundingClientRect(),w=card.offsetWidth||300,h=card.offsetHeight||120,gap=16,margin=12;
+  const choices=[
+    {left:figure.right+gap,top:figure.top+figure.height/2-h/2},
+    {left:figure.left-w-gap,top:figure.top+figure.height/2-h/2},
+    {left:figure.left+figure.width/2-w/2,top:figure.top-h-gap},
+    {left:figure.left+figure.width/2-w/2,top:figure.bottom+gap}
+  ];
+  const safe=choices.map(box=>({...box,right:box.left+w,bottom:box.top+h})).find(box=>
+    box.left>=margin&&box.top>=margin&&box.right<=innerWidth-margin&&box.bottom<=innerHeight-margin&&!rectIntersects(box,figure,8)
+  );
+  const chosen=safe??{left:Math.max(margin,Math.min(innerWidth-w-margin,figure.right+gap)),top:Math.max(margin,Math.min(innerHeight-h-margin,figure.top))};
+  card.style.left=chosen.left+"px";card.style.top=chosen.top+"px";card.style.transform="none";
+}
+function renderFocusState(event){
+  if(!document.body.classList.contains("focus"))return;
+  const copy=focusCopy(event),card=$("#focus-card");
+  $("#focus-card-title").textContent=copy.title;$("#focus-card-value").textContent=copy.value;$("#focus-card-line").textContent=copy.line;
+  if(card){card.hidden=false;requestAnimationFrame(placeFocusCard);}
+  const memory=$("#focus-memory"),variables=event.variables??{};
+  memory.innerHTML=Object.entries(variables).map(([name,value])=>
+    '<span class="focus-memory-item '+(event.change?.name===name?"is-changed":"")+'"><small>'+esc(name)+'</small>'+
+    (event.change?.name===name&&event.change.previous!==undefined?'<del>'+esc(fmt(event.change.previous))+'</del>':"")+
+    '<strong>'+esc(fmt(value))+'</strong></span>'
+  ).join("");
+  memory.hidden=!Object.keys(variables).length;
+  const output=event.outputs??[],screen=$("#focus-screen");
+  if(output.length){screen.hidden=false;$("#focus-screen-lines").innerHTML=output.slice(-4).map(value=>'<li>'+esc(fmt(value))+'</li>').join("");}
+  else screen.hidden=true;
+  const loop=event.loopStack?.at(-1),counter=$("#focus-loop");
+  counter.hidden=!loop&&!event.iteration;if(!counter.hidden)counter.textContent="Vuelta "+(event.iteration??loop.iteration);
+  const code=$("#focus-code");code.textContent=event.sourceText||"";code.hidden=!event.sourceText;
+  clearTimeout(code._fadeTimer);code.classList.remove("is-fading");code._fadeTimer=window.setTimeout(()=>code.classList.add("is-fading"),3000);
+  $("#focus-subtitle").textContent=brief(event);$("#focus-step").textContent="Paso "+(timeline.index+1)+" de "+timeline.length;
+  const progress=$("#focus-progress");progress.max=String(timeline.length-1);progress.value=String(timeline.index);
+}
 
 function eventAskable(event){
   if(!event||event.nodeId===null||event.nodeId===undefined||event.type==="input"||event.type==="error")return false;
