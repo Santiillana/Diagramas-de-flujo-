@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("Aprende presenta las catorce lecciones con explicación y comprobación", async ({ page }) => {
   await page.goto("/");
   await page.locator('[data-space="learn"]').click();
-  await expect(page.locator('[data-lesson-id]')).toHaveCount(14);
+  await expect(page.locator('[data-lesson-id]')).toHaveCount(17);
   await page.locator('[data-lesson-id="variables"]').click();
   await expect(page.locator("#lesson-detail h3")).toHaveText("Variables y asignación");
   await page.locator("#lesson-data-input").fill("15");
