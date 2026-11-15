@@ -19,9 +19,9 @@ test("la ventana contextual no tapa la figura activa ni sale del viewport",async
   await page.setViewportSize({width:1920,height:1080});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await page.locator("#simulator-last").click();
+  await page.locator("#simulator-next").click();
   const report=await page.evaluate(()=>{
-    const vf=document.querySelector("#vf"),node=document.querySelector("#flow-node-"+vf?.dataset.anchorNode);
+    const vf=document.querySelector("#vf");const anchor=vf?.dataset.anchorNode;const node=anchor?document.querySelector("#flow-node-"+anchor):null;
     if(!vf||vf.hidden||!node)return null;
     const a=vf.getBoundingClientRect(),b=node.getBoundingClientRect();
     return {vf:{left:a.left,top:a.top,right:a.right,bottom:a.bottom},node:{left:b.left,top:b.top,right:b.right,bottom:b.bottom}};

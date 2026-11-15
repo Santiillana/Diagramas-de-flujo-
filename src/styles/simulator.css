@@ -845,3 +845,7 @@ body[data-active-space="simulator"] .flow-token{
 @keyframes sim-token-pulse{from{scale:1}to{scale:1.22}}
 body[data-active-space="simulator"] .diagram-edge.is-token-route path{stroke:var(--hl);stroke-width:3.1;opacity:.95}
 @media(prefers-reduced-motion:reduce){body[data-active-space="simulator"] .flow-token{animation:none}}
+
+body[data-active-space="simulator"] #PR>.panel[hidden],
+body[data-active-space="simulator"] #PV[hidden],
+body[data-active-space="simulator"] #PL>.sim-window[hidden]{display:none!important}

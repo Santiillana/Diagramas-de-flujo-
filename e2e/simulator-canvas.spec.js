@@ -56,9 +56,10 @@ test("la ficha recorre las aristas SVG reales y deja un rastro amarillo",async({
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-next").click();
-  await expect(page.locator("#flow-trail")).toBeAttached();
+  await page.locator("#simulator-next").click();
+  await expect(page.locator("#flow-diagram-container #flow-trail")).toBeAttached();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
-  const points=await page.locator("#flow-trail").getAttribute("points");
+  const points=await page.locator("#flow-diagram-container #flow-trail").getAttribute("points");
   expect(points.trim().split(/\s+/).length).toBeGreaterThan(1);
   await expect(page.locator("#flow-diagram-container .diagram-edge.is-token-route")).not.toHaveCount(0);
 });

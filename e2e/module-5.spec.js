@@ -81,7 +81,7 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await expect(stage).toBeVisible();
   const initialTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
   const rect=await stage.boundingBox();
-  await page.mouse.move(rect.x+Math.min(rect.width-30,280),rect.y+120);
+  await page.mouse.move(rect.x+Math.min(rect.width-30,170),rect.y+120);
   await page.mouse.down();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
   await page.mouse.move(rect.x+40,rect.y+120,{steps:5});
