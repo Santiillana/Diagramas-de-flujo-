@@ -91,3 +91,10 @@ El proyecto es estático y compatible con Pages, sin proceso de build. Para publ
 - Laboratorio: ocho actividades conectadas a la traza real.
 - El catálogo incorpora filtros por nivel, concepto y «De clase», además de paginación.
 - Esta rama no se considera aceptada hasta que Node y Playwright terminen correctamente. No se ha fusionado en main.
+
+
+## Validación final de mejoras/traza-v2
+
+La rama mejoras/traza-v2 quedó validada en GitHub Actions: [run 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), commit af28e95bb648c126ee445797d9ef9b1da236af22. Resultado: **259/259 pruebas Node y 58/58 pruebas Playwright/Chromium**, sin fallos. La CI cargó 17 capturas PNG en el artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57.
+
+La PR [#7](https://github.com/Santiillana/Diagramas-de-flujo-/pull/7) permanece abierta contra main y no se ha fusionado. Por tanto, esta ampliación está terminada y validada en su rama, pero todavía no forma parte de main. GitHub Pages no se declara publicado: requiere configuración y verificación independiente.
