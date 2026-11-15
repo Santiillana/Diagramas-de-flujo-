@@ -129,3 +129,16 @@ test("dos métodos se ejecutan con las mismas entradas y comparan sus salidas",a
  await expect(page.locator("[data-method-comparison-result] .method-live-comparison-grid article")).toHaveCount(2);
  await expect(page.locator("[data-method-comparison-result]")).toContainText("Los métodos producen la misma salida");
 });
+
+test("el recorrido guiado de 30 segundos completa y guarda el onboarding",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="exercises"]').click();
+ await page.locator("[data-start-onboarding]").click();
+ await expect(page.locator("[data-onboarding-host]")).toContainText("Paso 1 de 4");
+ for(let i=0;i<4;i++){
+  await page.locator("[data-onboarding-next]").click();
+ }
+ await expect(page.locator("[data-onboarding-host]")).toContainText("Recorrido completado");
+ await expect.poll(()=>page.evaluate(()=>localStorage.getItem("traza-onboarding-complete"))).toBe("true");
+ await expect(page.locator("[data-start-onboarding]")).toContainText("Repetir recorrido");
+});

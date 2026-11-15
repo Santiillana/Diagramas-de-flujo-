@@ -271,3 +271,14 @@ body.exercise-projector-mode .exercise-projector-exit{display:block}
 .method-live-comparison-grid small{color:var(--danger)}
 .method-live-comparison-result p{margin:0}
 @media(max-width:560px){.method-live-comparison-grid{grid-template-columns:1fr}}
+
+.exercise-onboarding{display:grid;gap:8px;margin:10px 0 14px;padding:13px;border:1px solid var(--accent);border-radius:12px;background:var(--accent-soft)}
+.exercise-onboarding>div{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.exercise-onboarding>div>b{color:var(--accent-strong);font-size:13px}
+.exercise-onboarding h4{margin:0;color:var(--ink);font-size:16px}
+.exercise-onboarding p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.55}
+.exercise-onboarding-actions{display:flex;justify-content:flex-end;gap:8px}
+.exercise-onboarding-actions .button{min-height:36px}
+.exercise-onboarding.is-complete{border-color:var(--positive);background:var(--positive-soft)}
+.exercise-onboarding-start{min-height:34px;padding:0 10px;font-size:13px}
+@media(max-width:520px){.exercise-progress-overall{align-items:flex-start;flex-wrap:wrap}.exercise-onboarding-actions{justify-content:stretch}.exercise-onboarding-actions .button{flex:1}}

@@ -125,7 +125,7 @@ function renderExerciseProgressSummary(){
   const totalHints=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.hintsUsed??0),0);
   const totalErrors=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.wrongPredictions??0),0);
   host.innerHTML=`
-    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span></div>
+    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span><button type="button" class="button button-secondary exercise-onboarding-start" data-start-onboarding>${localStorage.getItem("traza-onboarding-complete")==="true"?"Repetir recorrido":"Recorrido guiado · 30 s"}</button></div>
     <div class="exercise-progress-levels">${levels.map(level=>{
       const group=exercises.filter(item=>item.level===level);
       const verified=group.filter(item=>exerciseProgressStatus(item.id)==="verified").length;
@@ -364,6 +364,35 @@ function restoreSharedExercise(){
   exerciseHintStep=0;
   return true;
 }
+function renderExerciseOnboarding(){
+  const host=$("#exercise-detail [data-onboarding-host]");
+  if(!host)return;
+  if(onboardingStep<0){host.innerHTML="";return;}
+  if(onboardingStep>=onboardingSteps.length){
+    try{localStorage.setItem("traza-onboarding-complete","true");}catch{}
+    onboardingStep=-1;
+    host.innerHTML='<aside class="exercise-onboarding is-complete" role="status"><strong>Recorrido completado.</strong><p>Ya conoces el camino: analizar, pedir pistas, revelar y comprobar.</p></aside>';
+    renderExerciseProgressSummary();
+    return;
+  }
+  const step=onboardingSteps[onboardingStep];
+  host.innerHTML='<aside class="exercise-onboarding" aria-live="polite"><div><span class="eyebrow">RECORRIDO GUIADO · 30 SEGUNDOS</span><b>Paso '+(onboardingStep+1)+' de '+onboardingSteps.length+'</b></div><h4>'+escapeHTML(step.title)+'</h4><p>'+escapeHTML(step.body)+'</p><div class="exercise-onboarding-actions"><button type="button" class="button button-secondary" data-onboarding-skip>Omitir</button><button type="button" class="button button-primary" data-onboarding-next>'+(onboardingStep===onboardingSteps.length-1?"Terminar":"Siguiente")+'</button></div></aside>';
+}
+function startExerciseOnboarding(){
+  if(!selectedExercise)selectExercise(1);
+  onboardingStep=0;
+  renderExerciseOnboarding();
+  $("#exercise-detail [data-onboarding-host]")?.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+function advanceExerciseOnboarding(){
+  if(onboardingStep>=0){onboardingStep++;renderExerciseOnboarding();}
+}
+function skipExerciseOnboarding(){
+  onboardingStep=-1;
+  try{localStorage.setItem("traza-onboarding-complete","true");}catch{}
+  renderExerciseOnboarding();
+  renderExerciseProgressSummary();
+}
 function renderExerciseCards(){
   const host=$("#exercise-grid");
   if(!host)return;
@@ -405,6 +434,7 @@ function renderExerciseDetail(){
     <div class="exercise-detail-scroll">
       <header class="exercise-detail-heading"><div class="exercise-detail-kicker"><span class="exercise-number">${String(item.id).padStart(2,"0")}</span><span class="exercise-level ${level.className}">${level.label}</span></div>
         <h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.statement)}</p></header>
+      <div data-onboarding-host></div>
       <div class="exercise-action-bar">
         <button type="button" class="button button-secondary" data-share-action="copy">Copiar enlace</button>
         <button type="button" class="button button-secondary" data-share-action="share">Compartir reto</button>
@@ -539,6 +569,13 @@ function bindContentEvents(){
   });
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;renderExerciseCards();});
+  $("#exercise-progress-summary")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-start-onboarding]")){startExerciseOnboarding();return;}
+  });
+  $("#exercise-detail")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-onboarding-next]")){advanceExerciseOnboarding();return;}
+    if(event.target.closest("[data-onboarding-skip]")){skipExerciseOnboarding();return;}
+  });
   $("#exercise-grid")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-select-exercise]");
     if(card)selectExercise(card.dataset.selectExercise);
