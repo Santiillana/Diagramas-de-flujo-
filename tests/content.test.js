@@ -20,7 +20,8 @@ test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
   assert.equal(exercises.length,45);
   assert.equal(exercises.filter(x=>x.level==="basic").length,20);
   assert.equal(exercises.filter(x=>x.level==="intermediate").length,10);
-  assert.equal(exercises.filter(x=>x.level==="advanced").length,10);\n  assert.equal(exercises.filter(x=>x.level==="expert").length,5);
+  assert.equal(exercises.filter(x=>x.level==="advanced").length,10);
+  assert.equal(exercises.filter(x=>x.level==="expert").length,5);
   assert.deepEqual(validateCatalog(),[]);
 });
 
