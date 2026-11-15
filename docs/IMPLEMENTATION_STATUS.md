@@ -101,3 +101,18 @@ Este apartado describe cambios posteriores al estado histórico de M5. No modifi
 ## Validación final de la rama mejoras/traza-v2
 
 GitHub Actions run 43676037183 finalizó correctamente: 259 pruebas Node y 41 pruebas Playwright aprobadas, sin fallos. Se generaron capturas de escritorio, tableta y móvil. La PR #7 permanece abierta contra main; no se ha fusionado.
+
+
+## Estado final actualizado — mejoras/traza-v2 (15-11-2026)
+
+La validación que faltaba ya terminó correctamente. Esta sección reemplaza la nota anterior que dejaba Node y Playwright como pendientes:
+
+- Rama: mejoras/traza-v2.
+- Commit de código probado: af28e95bb648c126ee445797d9ef9b1da236af22.
+- CI: [GitHub Actions 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), success.
+- Node: 259/259 pruebas aprobadas, 0 fallidas.
+- Playwright/Chromium: 58/58 pruebas aprobadas, 0 fallidas.
+- Auditoría visual: 17 capturas PNG cargadas; artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57, ID 14163486649.
+- PR #7: abierta contra main, no fusionada. La rama principal no se modificó por esta PR.
+
+Las cifras históricas de aceptación de M5 (222/38) describen aquella integración y no deben confundirse con la suite actual de esta rama (259/58). La configuración/publicación de GitHub Pages sigue siendo una acción externa no verificada. El constructor continúa siendo estructurado, no un editor de conexiones libres por puerto.
