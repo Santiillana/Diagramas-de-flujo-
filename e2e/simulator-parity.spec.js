@@ -14,7 +14,7 @@ test("paridad geométrica con el prototipo original en el ejercicio 14, paso 7",
   const app=await browser.newPage({viewport});
   await app.goto("/");
   await app.locator('[data-space="simulator"]').click();
-  await app.locator('#sim-exercise-strip [data-sim-exercise="24"]').click();
+  await app.locator("#sim-exercise-select").selectOption("24");
   await app.locator("#simulator-timeline").evaluate(input=>{
     input.value="7";
     input.dispatchEvent(new Event("input",{bubbles:true}));
