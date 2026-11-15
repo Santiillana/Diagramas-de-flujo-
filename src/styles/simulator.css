@@ -1365,3 +1365,24 @@ body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
   }
   body[data-active-space="simulator"] .simulator-grid{inset:94px 0 0!important}
 }
+
+/* La barra no permite que el buscador invada el grupo de controles. */
+@media(min-width:901px){
+  body[data-active-space="simulator"] .simulator-toolbar{
+    flex:1 1 0%;min-width:0;max-width:none;overflow:hidden;gap:8px
+  }
+  body[data-active-space="simulator"] .sim-exercise-strip{
+    display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1.2fr);
+    flex:0 1 320px;width:320px;min-width:220px;max-width:320px;gap:4px;overflow:hidden
+  }
+  body[data-active-space="simulator"] .sim-toolbar-controls{
+    flex:1 1 0%;width:0;min-width:0;max-width:none;overflow-x:auto;overflow-y:hidden;
+    justify-content:flex-end;gap:4px
+  }
+  body[data-active-space="simulator"] .sim-toolbar-group{flex:0 0 auto;gap:2px;padding-left:5px}
+  body[data-active-space="simulator"] .sim-tool-button{flex:0 0 auto;min-width:34px;padding-inline:5px}
+}
+@media(max-width:1250px) and (min-width:901px){
+  body[data-active-space="simulator"] .sim-exercise-strip{flex-basis:260px;width:260px;min-width:205px}
+  body[data-active-space="simulator"] .sim-tool-button{min-width:31px;padding-inline:3px;font-size:11px}
+}
