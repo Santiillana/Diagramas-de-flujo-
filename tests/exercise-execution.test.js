@@ -15,7 +15,7 @@ function equivalent(actual,expected,path="salida"){
   }
 }
 
-test("todos los métodos de los cuarenta ejercicios cumplen sus resultados esperados",()=>{
+test("todos los métodos de los 45 ejercicios cumplen sus resultados esperados",()=>{
   const failures=[];
   let scenarios=0,methods=0;
   for(const exercise of exercises){
