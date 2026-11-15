@@ -1314,3 +1314,31 @@ body[data-active-space="simulator"].focus #focus-predict{
 body[data-active-space="simulator"].focus #focus-predict[aria-pressed="true"]{
   color:#1f2b36;background:var(--traza-amber);border-color:var(--traza-amber)
 }
+
+/* La subbarra ocupa su propia fila y nunca queda debajo de los controles globales. */
+body[data-active-space="simulator"] .topbar#hd{z-index:90}
+body[data-active-space="simulator"] .simulator-toolbar{
+  position:fixed;z-index:95;top:54px;left:0;right:0;height:44px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:2px 14px;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  backdrop-filter:blur(12px) saturate(1.15);overflow:visible
+}
+body[data-active-space="simulator"] .topbar-actions{position:relative;z-index:100;align-self:center;margin-left:auto}
+body[data-active-space="simulator"] .simulator-grid{inset:98px 0 0!important}
+body[data-active-space="simulator"] #PL{top:108px!important}
+body[data-active-space="simulator"] #RC{top:108px!important}
+body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{top:108px}
+body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
+@media(max-width:1250px){
+  body[data-active-space="simulator"] .simulator-toolbar{gap:5px;padding-inline:8px}
+  body[data-active-space="simulator"] .sim-exercise-strip{max-width:300px}
+  body[data-active-space="simulator"] .sim-tool-button{padding-inline:5px;font-size:11px}
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .simulator-toolbar{top:54px;height:48px;gap:5px}
+  body[data-active-space="simulator"] .simulator-grid{inset:102px 0 0!important}
+  body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{top:auto}
+  body[data-active-space="simulator"] #PL{top:auto!important}
+  body[data-active-space="simulator"] #RC{top:auto!important}
+}
