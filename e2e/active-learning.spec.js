@@ -166,7 +166,7 @@ test("la tabla de seguimiento permite responder y señala la primera celda incor
  await page.goto("/");
  await page.locator('[data-space="lab"]').click();
  await page.locator('[data-lab-activity="table"]').click();
- const answers=page.locator("#lab-task-content [data-trace-answer][aria-label*="+"\"variable\""+"]");
+ const answers=page.locator('#lab-task-content [data-trace-answer][aria-label*="variable"]');
  await expect(answers.first()).toBeVisible();
  await expect(answers).not.toHaveCount(0);
  await page.locator("#lab-table-check").click();
