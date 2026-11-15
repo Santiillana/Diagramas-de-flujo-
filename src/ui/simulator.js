@@ -9,9 +9,11 @@ import { renderScene } from "./scenes/index.js";
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = value => typeof value==="number" ? String(Number(value.toFixed(6))) : String(value);
-const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado"};
+const labels = {basic:"Básico",intermediate:"Intermedio",advanced:"Avanzado",expert:"Experto"};
 let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, diagram=null, timer=null;
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
+let challengeSkip=(()=>{try{return window.localStorage.getItem("traza:v3:challenge-skip")==="true";}catch{return false;}})();
+const challengeSeenExercises=new Set();
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
 let predictEnabled=false,predictionPending=null,predictionResume=false,predictionCorrect=0,predictionAttempts=0;
@@ -383,7 +385,7 @@ function choreographEvent(event){
 function paintExerciseSelector(){
   const host=$("#sim-exercise-strip");if(!host)return;
   if(host.dataset.ready!=="true"){
-    host.innerHTML='<input id="sim-exercise-search" type="search" aria-label="Buscar ejercicio" placeholder="Buscar…" autocomplete="off"><select id="sim-exercise-level-filter" aria-label="Filtrar por nivel"><option value="all">Todos</option><option value="basic">Básico</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option></select><select id="sim-exercise-select" aria-label="Seleccionar ejercicio"></select>';
+    host.innerHTML='<input id="sim-exercise-search" type="search" aria-label="Buscar ejercicio" placeholder="Buscar…" autocomplete="off"><select id="sim-exercise-level-filter" aria-label="Filtrar por nivel"><option value="all">Todos los niveles</option><option value="basic">Básico</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option><option value="expert">Experto</option></select><select id="sim-exercise-select" aria-label="Seleccionar ejercicio"></select>';
     host.dataset.ready="true";
   }
   const search=host.querySelector("#sim-exercise-search");
@@ -394,12 +396,47 @@ function paintExerciseSelector(){
   const selected=exercises.find(item=>item.id===exerciseId)??exercises[0];
   const filtered=exercises.filter(item=>{
     const levelMatch=level==="all"||item.level===level;
-    const queryMatch=!query||(String(item.id)+" "+item.title+" "+(labels[item.level]??item.level)).toLocaleLowerCase("es").includes(query);
-    return levelMatch&&queryMatch;
+    const haystack=(String(item.id)+" "+item.title+" "+(labels[item.level]??item.level)+" "+(item.concepts??[]).join(" ")).toLocaleLowerCase("es");
+    return levelMatch&&(!query||haystack.includes(query));
   });
   select.innerHTML=filtered.map(item=>'<option value="'+item.id+'">'+String(item.id).padStart(2,"0")+' · '+esc(item.title)+'</option>').join("");
   select.value=filtered.some(item=>String(item.id)===String(exerciseId))?String(exerciseId):String(filtered[0]?.id??"");
   host.setAttribute("aria-label","Ejercicio actual: "+(selected?.title??"sin seleccionar"));
+  const quickNav=$("#simulator-exercise-nav");
+  if(quickNav){
+    quickNav.innerHTML=filtered.map(item=>'<button type="button" data-exercise-shortcut="'+item.id+'" data-level="'+esc(item.level)+'" aria-pressed="'+String(item.id===exerciseId)+'" title="Ejercicio '+String(item.id).padStart(2,"0")+': '+esc(item.title)+' · '+esc(labels[item.level]??item.level)+'">'+String(item.id).padStart(2,"0")+'</button>').join("");
+    quickNav.setAttribute("aria-label",filtered.length+" ejercicios visibles de "+exercises.length);
+  }
+}
+function paintMethodTabs(){
+  const host=$("#simulator-method-tabs"),select=$("#simulator-method");
+  if(!host||!select||!exercise)return;
+  host.innerHTML=exercise.methods.map((item,index)=>
+    '<button type="button" data-method-index="'+index+'" aria-pressed="'+String(index===methodIndex)+'" title="'+esc(item.note??item.name)+'">'+
+      '<span class="simulator-method-index">'+String(index+1).padStart(2,"0")+'</span>'+
+      '<span class="simulator-method-name">'+esc(item.name)+'</span></button>'
+  ).join("");
+}
+function setChallengeSkip(value){
+  challengeSkip=Boolean(value);
+  try{window.localStorage.setItem("traza:v3:challenge-skip",String(challengeSkip));}catch{}
+  const checkbox=$("#simulator-challenge-skip");
+  if(checkbox)checkbox.checked=challengeSkip;
+}
+function showChallengeGate(force=false){
+  const panel=$("#simulator-challenge");
+  if(!panel||!exercise||(!force&&(challengeSkip||challengeSeenExercises.has(exercise.id))))return;
+  $("#simulator-challenge-level").textContent=(labels[exercise.level]??exercise.level).toUpperCase();
+  $("#simulator-challenge-title").textContent=String(exercise.id).padStart(2,"0")+" · "+exercise.title;
+  $("#simulator-challenge-statement").textContent=exercise.statement;
+  const checkbox=$("#simulator-challenge-skip");if(checkbox)checkbox.checked=challengeSkip;
+  panel.hidden=false;
+  $("#simulator-challenge-reveal")?.focus({preventScroll:true});
+}
+function hideChallengeGate(markSeen=false){
+  const panel=$("#simulator-challenge");
+  if(markSeen&&exercise)challengeSeenExercises.add(exercise.id);
+  if(panel)panel.hidden=true;
 }
 function openLabActivity(activity){
   document.querySelector('[data-space="lab"]')?.click();
@@ -451,7 +488,7 @@ function publishTrace(){
 }
 function parseInputs(){
   const raw=$("#simulator-inputs").value.trim();
-  return raw?raw.split(/[;,]/).map(v=>v.trim()):[];
+  return raw?raw.split(/[\s,;]+/).filter(Boolean):[];
 }
 function pseudocode(source,active=null,visited=[]){
   const host=$("#pseudocode-lines");
@@ -484,6 +521,7 @@ function prepare(){
   ].map(([name,items])=>'<p class="eyebrow">'+name.toUpperCase()+'</p><ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>').join("");
   $("#simulator-method").innerHTML=exercise.methods.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join("");
   $("#simulator-method").value=String(methodIndex);
+  paintMethodTabs();
   defaultInputSample=[...(method().sample??[])];
   $("#simulator-inputs").value=defaultInputSample.join(", ");
   pseudocode(method().pseudocode);
@@ -520,6 +558,65 @@ function substituteValues(expression,values){
 }
 function loopNodeType(event){
   return diagram?.byId.get(String(event?.nodeId))?.type??null;
+}
+function symbolExplanation(event){
+  const loopType=loopNodeType(event);
+  if(event.type==="program-start")return {key:"terminal",name:"Óvalo · Inicio",text:"El óvalo señala dónde comienza la ejecución. Todavía no se han procesado datos."};
+  if(event.type==="program-end")return {key:"terminal",name:"Óvalo · Fin",text:"El óvalo marca el punto donde termina el algoritmo. La memoria conserva los últimos valores."};
+  if(event.type==="input")return {key:"input",name:"Paralelogramo · Entrada",text:"El paralelogramo representa Leer: un dato entra desde fuera y se guarda en la variable indicada."};
+  if(event.type==="assignment")return {key:"process",name:"Rectángulo · Proceso",text:"El rectángulo representa un cálculo o una asignación. El resultado sustituye o crea el valor de una variable."};
+  if(event.type==="output")return {key:"output",name:"Documento · Salida",text:"La figura de salida representa Imprimir: comunica un resultado en pantalla, sin modificar por sí misma las variables."};
+  if(event.type==="decision"||event.type==="branch")return {key:"decision",name:"Rombo · Decisión",text:"El rombo evalúa una condición y abre dos rutas excluyentes: Verdadera (V) o Falsa (F). La etiqueta muestra cuál se tomó."};
+  if(event.type==="loop-condition"){
+    if(loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"El hexágono reúne el ciclo definido: preparación del contador, evaluación de la condición y avance. Esta comprobación decide si entra otra vuelta."};
+    if(loopType==="doWhile")return {key:"decision",name:"Rombo · Hacer–Mientras",text:"El rombo aparece al final del cuerpo. La primera ejecución ya ocurrió; V repite y F termina."};
+    return {key:"decision",name:"Rombo · Mientras",text:"El rombo pregunta antes de entrar al cuerpo. Si la respuesta inicial es Falsa, el cuerpo puede ejecutarse cero veces."};
+  }
+  if(["loop-init","loop-update"].includes(event.type)&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"Esta es una de las tres partes del Para: primero se prepara el contador y después se avanza según el paso definido."};
+  if(event.type==="loop-enter"&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"La condición se cumplió y el flujo entra al cuerpo del Para. Al terminar sus instrucciones se realizará el avance."};
+  if(event.type==="loop-enter"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta verdadera",text:"La condición se cumplió. El flujo entra al cuerpo y ejecuta sus instrucciones antes de volver a comprobarla cuando corresponda."};
+  if(event.type==="loop-exit"&&loopType==="for")return {key:"loop",name:"Hexágono · Salida del Para",text:"La condición del Para resultó falsa. El flujo abandona el ciclo y continúa con la instrucción siguiente."};
+  if(event.type==="loop-exit"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta falsa",text:"La condición dejó de cumplirse. Se toma la salida del rombo y el algoritmo continúa después del ciclo."};
+  if(event.type==="loop-enter")return {key:"connector",name:"Conector · Entrada al ciclo",text:"La flecha conduce al cuerpo de la repetición. El número de vuelta identifica cuántas veces se ha ejecutado."};
+  if(event.type==="loop-exit")return {key:"connector",name:"Conector · Salida del ciclo",text:"La ruta abandona el cuerpo porque la condición dejó de cumplirse. La ejecución continúa después del ciclo."};
+  if(event.type==="loop-init")return {key:"process",name:"Rectángulo · Inicialización",text:"La variable de control recibe su valor inicial antes de comprobar la condición."};
+  if(event.type==="loop-update")return {key:"process",name:"Rectángulo · Avance",text:"El contador cambia al terminar la vuelta. Ese avance permite que la condición llegue a ser falsa y el ciclo termine."};
+  return {key:"connector",name:"Conector · Flujo",text:"Las flechas conectan las instrucciones y muestran el sentido en que se ejecuta el algoritmo."};
+}
+function symbolShapeMarkup(key){
+  const shapes={
+    terminal:'<rect x="7" y="12" width="86" height="36" rx="18"/>',
+    input:'<polygon points="20,10 96,10 80,50 4,50"/>',
+    process:'<rect x="7" y="10" width="86" height="40" rx="2"/>',
+    output:'<path d="M7 8H93V43Q70 34 50 43T7 43Z"/>',
+    decision:'<polygon points="50,3 98,30 50,57 2,30"/>',
+    loop:'<polygon points="20,8 80,8 98,30 80,52 20,52 2,30"/>',
+    connector:'<circle cx="50" cy="30" r="22"/>'
+  };
+  return '<svg viewBox="0 0 100 60" aria-hidden="true" focusable="false">'+(shapes[key]??shapes.connector)+'</svg>';
+}
+function orderExplanation(event){
+  const loopType=loopNodeType(event);
+  if(event.type==="program-start")return "El algoritmo debe iniciar antes de leer, calcular o decidir. Por eso el terminal aparece primero.";
+  if(event.type==="input")return "Primero se reciben los datos. Las operaciones posteriores necesitan que las variables ya tengan un valor.";
+  if(event.type==="assignment")return "El cálculo usa los valores que existían antes de esta línea; después guarda el nuevo resultado en la variable.";
+  if(event.type==="output")return "La salida se produce después de calcular. Imprimir muestra el valor, pero no cambia la memoria del programa.";
+  if(event.type==="decision"||event.type==="branch")return "La condición se evalúa antes de escoger una rama. Solo se recorre el camino que corresponde al resultado V o F.";
+  if(event.type==="loop-init")return "En un ciclo Para, la inicialización se ejecuta una sola vez antes de la primera comprobación.";
+  if(event.type==="loop-condition"){
+    if(loopType==="doWhile")return "Hacer–Mientras evalúa al final: primero ejecuta el cuerpo al menos una vez y después decide si repite.";
+    if(loopType==="for")return "Para comprueba la condición antes de cada vuelta. Si es verdadera ejecuta el cuerpo; después realiza el avance.";
+    return "Mientras pregunta antes de cada vuelta. Si la condición es falsa desde el inicio, el cuerpo no se ejecuta.";
+  }
+  if(event.type==="loop-enter")return "La condición permitió entrar. Ahora se ejecutan las instrucciones del cuerpo en el orden en que están escritas.";
+  if(event.type==="loop-update")return "El avance ocurre después del cuerpo y antes de la siguiente comprobación. Sin avance, un ciclo puede quedarse repitiéndose.";
+  if(event.type==="loop-exit")return "La condición ya es falsa. El flujo sale del ciclo y continúa con la primera instrucción posterior.";
+  if(event.type==="program-end")return "No quedan instrucciones por ejecutar. La salida y los valores finales quedan disponibles para revisar.";
+  return "Las flechas mantienen el orden de ejecución y enlazan cada bloque con el siguiente.";
+}
+function symbolExplanationMarkup(event){
+  const item=symbolExplanation(event);
+  return '<div class="scene-symbol-explanation" data-symbol="'+item.key+'"><div class="scene-symbol-graphic">'+symbolShapeMarkup(item.key)+'</div><div><span>POR QUÉ ESTA FIGURA</span><strong>'+esc(item.name)+'</strong><p>'+esc(item.text)+'</p></div></div>';
 }
 function loopCountBefore(event){
   return execution?.events.slice(0,event.step).filter(item=>
@@ -980,6 +1077,8 @@ function render(){
     '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
     '<p class="scene-event-body">'+esc(sceneNarration)+'</p>'+transfer+
     '<div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
+    symbolExplanationMarkup(e)+
+    '<details class="scene-order-explanation"><summary>¿Por qué se ejecuta en este orden?</summary><p>'+esc(orderExplanation(e))+'</p></details>'+
     loopExplanation+
     renderOperationBreakdown(e)+
     (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
@@ -1349,6 +1448,46 @@ function bind(){
     if(event.target.id!=="sim-exercise-select")return;
     exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
   });
+  $("#simulator-exercise-nav-toggle")?.addEventListener("click",event=>{
+    const nav=$("#simulator-exercise-nav"),toggle=event.currentTarget;
+    if(!nav)return;
+    const open=!nav.classList.contains("is-open");
+    nav.classList.toggle("is-open",open);
+    toggle.setAttribute("aria-expanded",String(open));
+    toggle.setAttribute("aria-label",open?"Cerrar navegación numerada de ejercicios":"Abrir navegación numerada de ejercicios");
+    if(open)nav.querySelector('[data-exercise-shortcut="'+exerciseId+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
+  });
+  $("#simulator-exercise-nav")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-exercise-shortcut]");
+    if(!button)return;
+    $("#simulator-exercise-nav").classList.remove("is-open");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
+    exerciseId=Number(button.dataset.exerciseShortcut)||1;methodIndex=0;selectedVariable=null;prepare();showChallengeGate();
+  });
+  document.addEventListener("pointerdown",event=>{
+    const nav=$("#simulator-exercise-nav");
+    if(!nav?.classList.contains("is-open")||event.target.closest("#simulator-exercise-nav,#simulator-exercise-nav-toggle"))return;
+    nav.classList.remove("is-open");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");
+    $("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");
+  });
+  $("#simulator-method-tabs")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-method-index]");
+    if(!button)return;
+    const next=Number(button.dataset.methodIndex);
+    if(!Number.isInteger(next)||next<0||next>=exercise.methods.length||next===methodIndex)return;
+    methodIndex=next;prepare();
+  });
+  $("#simulator-challenge-reveal")?.addEventListener("click",()=>{
+    hideChallengeGate(true);
+  });
+  $("#simulator-challenge-skip")?.addEventListener("change",event=>setChallengeSkip(event.target.checked));
+  $("#simulator-challenge-reopen")?.addEventListener("click",()=>showChallengeGate(true));
+  $("#simulator-practice-actions")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-simulator-practice]");
+    if(button)openLabActivity(button.dataset.simulatorPractice);
+  });
   $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
   $("#focus-predict")?.addEventListener("click",()=>{togglePredictionMode();showFocusControls();});
   $("#simulator-question")?.addEventListener("click",event=>{
@@ -1454,6 +1593,10 @@ function bind(){
     if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
     if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
+    if(key==="Escape"&&!$("#simulator-challenge")?.hidden){event.preventDefault();hideChallengeGate(true);return;}
+    if(key==="Escape"&&$("#simulator-exercise-nav")?.classList.contains("is-open")){
+      event.preventDefault();$("#simulator-exercise-nav").classList.remove("is-open");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-expanded","false");$("#simulator-exercise-nav-toggle")?.setAttribute("aria-label","Abrir navegación numerada de ejercicios");return;
+    }
     if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
