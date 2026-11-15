@@ -87,8 +87,9 @@ test("se puede desplazar el lienzo con arrastre y la cámara pasa a control manu
   await page.mouse.move(rect.x+40,rect.y+120,{steps:5});
   await page.mouse.up();
   const movedTransform=await page.locator("#flow-diagram-container").evaluate(el=>getComputedStyle(el).transform);
-  expect(movedTransform).not.toBe(initialTransform);
+  expect(Number(await stage.getAttribute("data-pan-start"))).toBeGreaterThan(0);
   expect(Number(await stage.getAttribute("data-pan-moved"))).toBeGreaterThan(0);
+  expect(movedTransform).not.toBe(initialTransform);
 });
 
 test("tema y reducción de movimiento no alteran el estado de ejecución",async({page})=>{

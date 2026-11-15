@@ -20,6 +20,7 @@ test("la ventana contextual no tapa la figura activa ni sale del viewport",async
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-next").click();
+  await expect(page.locator("#vf")).toHaveAttribute("data-anchor-node","1");
   const report=await page.evaluate(()=>{
     const vf=document.querySelector("#vf");const anchor=vf?.dataset.anchorNode;const node=anchor?document.querySelector("#flow-node-"+anchor):null;
     if(!vf||vf.hidden||!node)return null;

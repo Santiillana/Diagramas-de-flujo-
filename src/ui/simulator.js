@@ -152,8 +152,16 @@ function contextWindowMarkup(event){
   if(event.type==="program-end")return {title:"Algoritmo finalizado",body:'<p>El recorrido terminó. Las variables y la pantalla conservan el estado final.</p>'};
   return {title:"Paso activo",body:'<p>'+esc(brief(event))+'</p>'};
 }
+function diagramNodeForEvent(event){
+  if(!diagram||!event)return null;
+  const sourceId=event.nodeId===null||event.nodeId===undefined?null:String(event.nodeId);
+  return diagram.nodes.find(node=>sourceId!==null&&String(node.sourceId)===sourceId)
+    ??diagram.nodes.find(node=>event.sourceLine!==null&&event.sourceLine!==undefined&&Number(node.line)===Number(event.sourceLine))
+    ??null;
+}
 function placeContextWindow(event){
-  const box=$("#vf"),node=document.getElementById("flow-node-"+event.nodeId);
+  const box=$("#vf"),model=diagramNodeForEvent(event);
+  const node=model?document.getElementById("flow-node-"+model.id):null;
   if(!box||box.hidden)return;
   const nodeRect=node?.getBoundingClientRect();
   const width=box.offsetWidth||278,height=box.offsetHeight||132,margin=12;
@@ -177,7 +185,8 @@ function placeContextWindow(event){
   }
   box.style.left=chosen.left+"px";box.style.top=chosen.top+"px";
   box.dataset.cable=String(cable);
-  box.dataset.anchorNode=String(event.nodeId??"");
+  box.dataset.anchorNode=String(model?.id??"");
+  box.dataset.anchorSourceLine=String(event.sourceLine??"");
 }
 function showContextWindow(event){
   const box=$("#vf");
@@ -246,7 +255,10 @@ function flightTargetFor(event,targetId){
 }
 function animateFlight(event,targetId){
   if(!event||reducedMotion()||currentSpeedFactor()>=4)return false;
-  const source=event.type==="input"?$("#simulator-inputs"):document.getElementById("flow-node-"+event.nodeId);
+  const source=event.type==="input"?$("#simulator-inputs"):(()=>{
+    const model=diagramNodeForEvent(event);
+    return model?document.getElementById("flow-node-"+model.id):null;
+  })();
   const target=flightTargetFor(event,targetId);
   if(!source||!target||target.hidden)return false;
   const a=source.getBoundingClientRect(),b=target.getBoundingClientRect();
@@ -640,19 +652,42 @@ function shortestRoute(fromId,toId){
   const result=cursor===start?route:[];
   routeCache.set(key,result);return result;
 }
+function svgPathVertices(path){
+  const d=path?.getAttribute("d")??"";
+  const tokens=d.match(/[MLHV]|-?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?/gi)??[];
+  const points=[];let command=null,x=0,y=0,index=0;
+  while(index<tokens.length){
+    if(/^[MLHV]$/i.test(tokens[index]))command=tokens[index++];
+    if(!command)break;
+    if(command==="M"||command==="L"){
+      const nx=Number(tokens[index++]),ny=Number(tokens[index++]);
+      if(!Number.isFinite(nx)||!Number.isFinite(ny))break;
+      x=nx;y=ny;points.push({x,y});
+      if(command==="M")command="L";
+    }else if(command==="H"){
+      const nx=Number(tokens[index++]);if(!Number.isFinite(nx))break;x=nx;points.push({x,y});
+    }else if(command==="V"){
+      const ny=Number(tokens[index++]);if(!Number.isFinite(ny))break;y=ny;points.push({x,y});
+    }else break;
+  }
+  return points;
+}
 function routeCoordinates(route){
   const points=[];
   for(const step of route){
-    const info=routeWeights.get(step.edgeId),path=info?.path,length=info?.weight??0;
-    if(!path||length<=0)continue;
-    const count=Math.max(2,Math.ceil(length/12));
-    for(let index=0;index<=count;index++){
-      if(points.length&&index===0)continue;
-      const distance=length*index/count;
-      try{
-        const point=path.getPointAtLength(step.forward?distance:length-distance);
-        points.push({x:point.x,y:point.y});
-      }catch{}
+    const info=routeWeights.get(step.edgeId),path=info?.path;
+    if(!path)continue;
+    let vertices=svgPathVertices(path);
+    if(!step.forward)vertices=vertices.reverse();
+    if(vertices.length<2)continue;
+    for(let segment=1;segment<vertices.length;segment++){
+      const a=vertices[segment-1],b=vertices[segment];
+      const length=Math.hypot(b.x-a.x,b.y-a.y),count=Math.max(2,Math.ceil(length/12));
+      for(let index=0;index<=count;index++){
+        if(points.length&&segment===1&&index===0)continue;
+        const t=index/count;
+        points.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+      }
     }
   }
   return points;
@@ -908,7 +943,9 @@ function seek(index){
 function move(delta){
   if(!timeline)return;
   stop();
-  timeline.seek(timeline.index+delta);render();
+  timeline.seek(timeline.index+delta);
+  choreographyPlayback=true;
+  try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
   if(!timeline)return;
@@ -982,7 +1019,10 @@ function bindDiagramPan(){
   const getPoints=()=>[...pointerState.values()];
   const onDown=event=>{
     if(event.pointerType==="mouse"&&event.button!==0)return;
-    if(event.target.closest("button,a,input,select,textarea"))return;
+    const target=event.target instanceof Element?event.target:null;
+    if(target?.closest("button,a,input,select,textarea,#sim-minimap,#sim-camera-follow,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading"))return;
+    const hitRect=hit.getBoundingClientRect();
+    if(event.clientX<hitRect.left||event.clientX>hitRect.right||event.clientY<hitRect.top||event.clientY>hitRect.bottom)return;
     event.preventDefault();
     try{hit.setPointerCapture(event.pointerId);}catch{}
     pointerState.set(event.pointerId,{x:event.clientX,y:event.clientY,type:event.pointerType});
@@ -1030,10 +1070,10 @@ function bindDiagramPan(){
     }
     try{if(hit.hasPointerCapture(event.pointerId))hit.releasePointerCapture(event.pointerId);}catch{}
   };
-  hit.addEventListener("pointerdown",onDown);
-  hit.addEventListener("pointermove",onMove);
-  hit.addEventListener("pointerup",onUp);
-  hit.addEventListener("pointercancel",onUp);
+  document.addEventListener("pointerdown",onDown,true);
+  document.addEventListener("pointermove",onMove,true);
+  document.addEventListener("pointerup",onUp,true);
+  document.addEventListener("pointercancel",onUp,true);
   hit.addEventListener("lostpointercapture",onUp);
   hit.addEventListener("wheel",event=>{
     event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
