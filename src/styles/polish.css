@@ -39,6 +39,8 @@
   min-width:36px;
   min-height:36px;
 }
+/* El selector superior no debe bloquear los controles de los paneles flotantes. */
+.simulator-exercise-strip {z-index:5}
 /* Colores semánticos por figura del diagrama. */
 .diagram-node.node-terminal rect {fill:var(--positive-soft);stroke:var(--positive)}
 .diagram-node.node-input polygon {fill:var(--accent-soft);stroke:var(--accent)}
