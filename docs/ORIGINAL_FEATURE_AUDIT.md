@@ -28,6 +28,8 @@ Esta tabla diferencia una función migrada y probada, una sustitución intencion
 | Ventana flotante de escena | `#vf`, `showVF`, `hideVF` | Panel persistente junto al diagrama; puede minimizarse, no flota sobre el lienzo | Sustitución intencional de UI |
 | Variables actuales | `#vars` | Tabla de variables desde el evento actual | Migrada |
 | Valor anterior/nuevo y causa | estado original / `#hist` | Transición, instrucción fuente e historial por variable | Migrada |
+| Grafo geométrico de rutas | Referencia: Dijkstra sobre aristas SVG | Grafo de conectores con Dijkstra y rastro SVG sobre los mismos paths; fallback geométrico equivalente | Migrada |
+| Transferencia de valores (fly) | Referencia: Leer / asignación / Imprimir | Chips animados desde el evento al nodo/celda de variable o nueva salida, con pulso y contador de destino | Migrada |
 | Historial variable por iteración | `#hist` | Eventos filtrados por variable con número de paso y vuelta | Migrada |
 | Salida | `#out` | Salida acumulada del snapshot | Migrada |
 | Explicaciones y desglose de operaciones | `#ex`, `show` | traceExpression con operandos y resultados desde el evaluador común | Migrada |

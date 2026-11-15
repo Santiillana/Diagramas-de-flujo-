@@ -57,6 +57,8 @@ test("la ficha recorre las aristas SVG reales y deja un rastro amarillo",async({
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-next").click();
   await page.locator("#simulator-next").click();
+  await page.locator("#simulator-next").click();
+  await expect(page.locator("#dock-step-title")).toContainText("ASIGNACIÓN");
   await expect(page.locator("#flow-diagram-container #flow-trail")).toBeAttached();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
   const points=await page.locator("#flow-diagram-container #flow-trail").getAttribute("points");
