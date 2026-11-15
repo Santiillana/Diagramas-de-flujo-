@@ -42,16 +42,59 @@ src/core/interpreter.js es zona protegida.
 - Zona protegida: src/core/*, src/content/exercises.js, reference/*, .github/* y las pruebas existentes, salvo las dos excepciones expresas del documento de mejoras (conteo de lecciones y texto e2e eliminado).
 - reference/diagramas_de_flujo_original.html tiene blob SHA 9f7f5a3d68d10b004e2ea306df1109906f13bc33, coincidente con el SHA consignado en docs/IMPLEMENTATION_STATUS.md. No hay un segundo archivo del prototipo original en esta sesión para hacer una comparación byte a byte independiente.
 
-## 5. Ejercicios «De clase»
+## 5. Riesgos, decisiones y preguntas de integración del Simulador
 
-La búsqueda por título localizó:
-- 22: Potencia con exponente entero no negativo.
-- 23: Fibonacci: términos que no superen 40.
-- 24: Encontrar el mayor de diez números.
-- 28: Promedio de cinco materias, seis notas cada una.
-- 39: Analizar cinco materias con seis notas: promedios, promedio general y conteo de aprobadas/reprobadas.
+### 5.1. Alcance y zonas protegidas
 
-Los cuatro elementos pedidos parecen corresponder a 22, 23, 24 y 28; el ejercicio 39 también trata las cinco materias y las seis notas. La selección exacta entre 28 y 39 queda NO VERIFICADA hasta derivarla de los comentarios de clase originales, sin crear ni alterar ejercicios.
+- El objetivo inmediato es el **Simulador inmersivo**, no volver a construir Aprende, Ejercicios, Laboratorio ni Constructor.
+- Se modifica únicamente la capa del Simulador y sus estilos/pruebas específicas. `src/core/*`, `src/content/exercises.js`, `src/content/lessons.js`, `reference/*`, `.github/*`, Constructor y Laboratorio quedan fuera de alcance.
+- La rama de trabajo sigue siendo `mejoras/traza-v2`; no se fusiona y `main` permanece intacta.
+- El motor mantiene su contrato y límites actuales (2.500 eventos y 500 iteraciones). Los efectos visuales consumen eventos ya emitidos; no añaden lógica de ejecución al pseudocódigo.
+
+### 5.2. Riesgos técnicos que deben resolverse
+
+| Riesgo | Evidencia actual | Decisión de integración |
+|---|---|---|
+| El lienzo no es infinito | `#diagram-stage` usa `overflow:auto`; `.flow-diagram-container` se dispone con grid y la cámara solo traslada el contenedor | El escenario pasa a ser un viewport sin scroll. Un único `translate3d(x,y,0) scale(k)` en el contenedor del mundo controla el SVG completo |
+| Zoom no anclado al cursor | `zoomDiagram()` cambia una variable de zoom y centra el nodo; límites actuales 0,65–3 | Implementar zoom cursor-céntrico entre 0,25–3 y pinch con dos punteros; no usar `scrollLeft/scrollTop` |
+| La cámara desconoce las ventanas | `centerActiveNode()` calcula el encuadre a partir de `#diagram-stage`, sin restar paneles superpuestos | Medir el área libre con `getBoundingClientRect`; recalcular por `ResizeObserver`, minimización, texto, modo enfoque y viewport |
+| Los gestos compiten con la UI | El pan escucha eventos en `document`; no usa `setPointerCapture` | Captura de puntero en el escenario; cancelar al perder/cancelar puntero; ignorar controles y ventanas |
+| Paneles no son ventanas independientes | Existe la cuadrícula de tarjetas; solo “En escena” tiene botón de minimizar y móvil usa pestañas | Convertir paneles requeridos en ventanas de borde con identidad, minimizar/restaurar y contador de cambios |
+| Ventanita contextual puede tapar rutas | La explicación actual se dibuja dentro de “En escena”; no existe cálculo de posiciones candidatas respecto a aristas y etiquetas | Probar derecha/izquierda/arriba/abajo usando bounds de nodo, aristas y V/F; fallback con cable |
+| No existe vuelo hacia el destino exacto | La ficha SVG se mueve por el recorrido y aparecen valores en la escena; no hay chips que viajen a celdas concretas | Añadir una capa de vuelo que convierta bounds de origen y destino a coordenadas de pantalla, sin modificar el SVG por paso |
+| Interrupciones pueden dejar efectos pendientes | La reproducción usa un intervalo limpiado por `stop()`; aún no hay ciclo de vida común para vuelos, RAF y pulsos | Un único gestor cancelable por paso limpia RAF, temporizadores, transiciones y chips antes de cada seek/run |
+| Responsive cambia el escenario actual | Hay pestañas móviles para seis vistas y breakpoints 1080/760/440 | Escritorio usa ventanas en bordes; ≤1100 minimiza la columna izquierda; ≤900 usa paneles inferiores, con lienzo táctil |
+| Capturas no se deben simular | CI ya sube `test-results/**/*.png`; Playwright ejecuta Chromium en `e2e/` | Escribir capturas reales en `test-results` y mantener intacto `.github/workflows/quality.yml` |
+
+### 5.3. Discrepancia de identificación del ejercicio de aceptación
+
+La referencia aportada llama “ejercicio 14” al algoritmo **Mayor de 10 números**, con variante Para y traza de 50 eventos. En el catálogo actual de la rama, ese mismo problema está identificado como **ejercicio 24**; el ID 14 es “Sumar los números de 1 hasta N”. La prueba visual debe localizar y ejecutar “Encontrar el mayor de diez números” (ID actual 24) sin cambiar el catálogo. Se comprobarán sus 50 eventos contra la referencia antes de convertir ese número en aserción fija.
+
+### 5.4. Integración de la barra de ejercicios con la navegación 01–05
+
+- Se conserva la navegación global existente, en el mismo orden y con la misma función: **01 Aprende · 02 Ejercicios · 03 Simulador · 04 Laboratorio · 05 Constructor**. No se reutilizan sus botones como selector de ejercicios.
+- La barra de ejercicios será una segunda navegación, local a `#view-simulator`, visible solo dentro del Simulador. No cambia de espacio global ni duplica la barra 01–05.
+- Se alimentará de los ejercicios ya existentes en memoria (lectura únicamente); cada selección cambiará `exerciseId` y `methodIndex` a través del flujo actual `prepare()` / `traza:request-simulation`. No se crean, renombran, reordenan ni corrigen ejercicios.
+- La barra indicará el ejercicio activo y su variante/método; conservará selección y ejecución al minimizar/restaurar ventanas. La selección de otro ejercicio sí preparará una ejecución nueva, como hoy.
+- En escritorio se mantiene compacta en el borde superior del Simulador. En móvil se hace desplazable horizontalmente y no reduce el área táctil del lienzo. La zona de trabajo comienza debajo de la barra superior global y de esta barra local; nunca se superponen para ocultar controles.
+
+### 5.5. Criterios que todavía deben probarse
+
+1. El escenario cubre el espacio disponible debajo de la cabecera global y la barra local, sin borde, radio ni scroll interno.
+2. Una sola transformación del mundo conserva el punto bajo el cursor en zoom; traslación ilimitada y escala entre 0,25 y 3.
+3. El área libre excluye todas las ventanas visibles y el dock; figura activa, flecha de salida y etiquetas V/F permanecen visibles en cada paso automático.
+4. Ventanita contextual sin intersección con figura, conectores y etiquetas; cable de fallback cuando no cabe.
+5. Vuelos de Leer e Imprimir terminan dentro del objetivo DOM específico; el destino recibe pulso/contador.
+6. Cinco seeks rápidos cancelan todos los vuelos; no quedan elementos ni temporizadores huérfanos.
+7. Movimiento reducido omite vuelos y pulsos animados.
+8. Capturas verificables de escritorio 1920×1080 y móvil 390×844 para pasos 1, 3 y 7 del algoritmo “Mayor de 10 números”.
+
+### 5.6. Preguntas que quedan explícitas (sin bloquear el plan)
+
+- Identidad exacta de “De clase”: el catálogo contiene 22 (potencia), 23 (Fibonacci), 24 (mayor de diez), 28 (promedio de cinco materias) y 39 (análisis ampliado de cinco materias). La selección original sigue NO VERIFICADA; no afecta el Simulador y no se tocará aquí.
+- El ancho máximo del 28 % para cada columna lateral se interpretará como límite individual; en ventanas simultáneas se preservará siempre un rectángulo libre útil para el diagrama.
+- Si ninguna posición de la ventanita contextual cabe, se utilizará cable fino al nodo y la explicación permanecerá en “En escena”, sin tapar la ruta.
+- Para la barra local se propone selector horizontal desplazable, no un sexto espacio ni una modificación de la navegación 01–05.
 
 ## 6. Auditoría tipográfica
 
