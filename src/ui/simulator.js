@@ -1228,7 +1228,8 @@ function fitDiagram(){
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
   applyDiagramZoom();
   if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
-}async async function toggleDiagramFullscreen(){
+}
+async function toggleDiagramFullscreen(){
   const body=document.body;
   if(body.classList.contains("focus")){
     body.classList.remove("focus");
