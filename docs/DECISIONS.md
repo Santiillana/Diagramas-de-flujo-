@@ -80,3 +80,8 @@ Los cambios se publican únicamente en `mejoras/traza-v2` y se mantienen en la P
 El SVG mantiene sus dimensiones base tras prepararse el ejercicio. Desplazamiento y zoom se aplican juntos en una única transformación de #flow-diagram-container; no se utiliza scroll para navegar el diagrama. El zoom conserva el punto bajo el cursor y los gestos de puntero usan captura para evitar saltos al salir del área.
 ## D-027 · Encuadre según el espacio disponible
 La cámara automática calcula el rectángulo libre entre barra superior, paneles visibles y dock. El minimapa refleja la zona visible y permite desplazar la cámara con clic o arrastre. Una manipulación manual pausa el seguimiento y muestra el control «Seguir el proceso».
+
+## D-028 · Ventanas satélite con estado independiente
+Problema, Tus datos, Pseudocódigo, En escena, Variables, Pantalla e Historial son ventanas separadas con identidad cromática, controles para minimizar y fijar, y un rail para restaurarlas. El estado minimizado/fijado se guarda de forma tolerante a fallos en localStorage; en tablet se minimizan automáticamente las ventanas izquierdas que no estén fijadas.
+## D-029 · Ventana contextual ligada a la figura
+La explicación breve de cada evento se ancla al nodo activo y prueba cuatro posiciones (derecha, izquierda, arriba y abajo). Se rechazan ubicaciones que se crucen con la figura, flechas, etiquetas de rama, paneles o dock; cuando no existe una posición limpia se usa una conexión de apoyo.
