@@ -26,6 +26,7 @@ function readPseudocodeSize(){
 
 function stop(){
   if(timer!==null){clearInterval(timer);timer=null;}
+  cancelChoreography();
   const b=$("#simulator-play");
   if(b){b.textContent="▶";b.title="Reproducir";b.setAttribute("aria-label","Reproducir");}
 }
@@ -198,6 +199,106 @@ function closeContextWindow(){
   dismissedVfStep=timeline?.index??-1;
   const box=$("#vf");if(box)box.hidden=true;
   if(vfRaf)cancelAnimationFrame(vfRaf);vfRaf=0;
+}
+
+
+let choreographyPlayback=false,flightRaf=0,flightTimeouts=[],pulseTimeouts=[];
+function cancelChoreography(){
+  if(flightRaf)cancelAnimationFrame(flightRaf);
+  flightRaf=0;
+  flightTimeouts.forEach(clearTimeout);flightTimeouts=[];
+  pulseTimeouts.forEach(clearTimeout);pulseTimeouts=[];
+  document.querySelectorAll(".sim-flight-chip").forEach(element=>element.remove());
+  document.querySelectorAll("[data-pulse]").forEach(element=>{
+    element.classList.remove("is-pulsing");
+    delete element.dataset.pulse;
+  });
+  document.querySelectorAll(".sim-pulse-count").forEach(element=>element.remove());
+}
+function reducedMotion(){
+  return document.documentElement.dataset.motion==="reduced"||
+    matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function pulseWindow(id){
+  const meta=WINDOW_META.find(item=>item.id===id);
+  const panel=meta?getWindowElement(id):null;
+  const target=panel?.hidden?document.querySelector('[data-window-restore="'+id+'"]'):panel;
+  if(!target)return;
+  target.classList.remove("is-pulsing");
+  void target.offsetWidth;
+  target.classList.add("is-pulsing");
+  target.dataset.pulse=String((Number(target.dataset.pulse)||0)+1);
+  let mark=target.querySelector(":scope > .sim-pulse-count");
+  if(!mark){mark=document.createElement("span");mark.className="sim-pulse-count";target.append(mark);}
+  mark.textContent="+1";
+  const timeout=setTimeout(()=>{
+    target.classList.remove("is-pulsing");delete target.dataset.pulse;mark.remove();
+  },900);
+  pulseTimeouts.push(timeout);
+}
+function flightTargetFor(event,targetId){
+  if(targetId==="variables"&&event.change?.name){
+    const button=[...document.querySelectorAll("[data-variable-history]")].find(el=>el.dataset.variableHistory===event.change.name);
+    return button?.closest("tr")?.lastElementChild??getWindowElement("variables");
+  }
+  if(targetId==="output")return $("#simulator-output li:last-child")??getWindowElement("output");
+  return getWindowElement(targetId);
+}
+function animateFlight(event,targetId){
+  if(!event||reducedMotion()||currentSpeedFactor()>=4)return false;
+  const source=event.type==="input"?$("#simulator-inputs"):document.getElementById("flow-node-"+event.nodeId);
+  const target=flightTargetFor(event,targetId);
+  if(!source||!target||target.hidden)return false;
+  const a=source.getBoundingClientRect(),b=target.getBoundingClientRect();
+  const start={x:a.left+a.width/2,y:a.top+a.height/2},finish={x:b.left+b.width/2,y:b.top+b.height/2};
+  if(![start.x,start.y,finish.x,finish.y].every(Number.isFinite))return false;
+  const layer=$("#simulator-flight-layer")??(()=>{
+    const node=document.createElement("div");node.id="simulator-flight-layer";node.setAttribute("aria-hidden","true");
+    document.body.append(node);return node;
+  })();
+  const chip=document.createElement("span");
+  chip.className="sim-flight-chip";
+  chip.dataset.destination=targetId;
+  chip.textContent=fmt(event.change?.value??event.value??event.variables?.[event.change?.name]??"");
+  chip.style.transform="translate3d("+start.x+"px,"+start.y+"px,0)";
+  layer.append(chip);
+  const control={x:(start.x+finish.x)/2,y:Math.min(start.y,finish.y)-52};
+  const duration=700/currentSpeedFactor();let began=0;
+  const frame=now=>{
+    if(!began)began=now;
+    const t=Math.min(1,(now-began)/duration),u=1-t;
+    const x=u*u*start.x+2*u*t*control.x+t*t*finish.x;
+    const y=u*u*start.y+2*u*t*control.y+t*t*finish.y;
+    chip.style.transform="translate3d("+x+"px,"+y+"px,0)";
+    if(t<1)flightRaf=requestAnimationFrame(frame);
+    else{
+      chip.remove();flightRaf=0;pulseWindow(targetId);
+    }
+  };
+  flightRaf=requestAnimationFrame(frame);
+  return true;
+}
+function choreographEvent(event){
+  if(!event)return;
+  const speed=currentSpeedFactor();
+  if(reducedMotion()||speed>=4){
+    if(event.type==="input"||event.change)pulseWindow("variables");
+    else if(event.type==="output")pulseWindow("output");
+    else if(event.type==="decision"||event.type==="loop-condition")pulseWindow("scene");
+    else if(event.type==="program-end"){pulseWindow("variables");pulseWindow("output");}
+    return;
+  }
+  if(event.type==="input"){
+    if(!animateFlight(event,"variables"))pulseWindow("variables");
+  }else if(["assignment","loop-init","loop-update"].includes(event.type)&&event.change){
+    if(!animateFlight(event,"variables"))pulseWindow("variables");
+  }else if(event.type==="output"){
+    if(!animateFlight(event,"output"))pulseWindow("output");
+  }else if(event.type==="decision"||event.type==="loop-condition"){
+    pulseWindow("scene");
+  }else if(event.type==="program-end"){
+    pulseWindow("variables");pulseWindow("output");
+  }
 }
 
 function paintExerciseSelector(){
@@ -709,6 +810,7 @@ function renderOperationBreakdown(event){
 function render(){
   if(!execution||!timeline)return;
   const e=timeline.current;
+  if(choreographyPlayback)choreographEvent(e);
   const seen=execution.events.slice(0,timeline.index+1);
   pseudocode(method().pseudocode,e.sourceLine,seen.map(x=>x.sourceLine).filter(Boolean));
   if(diagram){
@@ -811,9 +913,12 @@ function play(){
   if(timeline.index>=timeline.length-1)timeline.first();
   const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
   timer=window.setInterval(()=>{
-    timeline.next();render();
+    cancelChoreography();
+    timeline.next();
+    choreographyPlayback=true;
+    try{render();}finally{choreographyPlayback=false;}
     if(timeline.index>=timeline.length-1)stop();
-  },Number($("#simulator-speed").value)||650);
+  },2400/currentSpeedFactor());
 }
 function applyDiagramZoom(){
   const svg=$("#flow-svg");

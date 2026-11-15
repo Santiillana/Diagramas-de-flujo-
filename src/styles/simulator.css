@@ -849,3 +849,31 @@ body[data-active-space="simulator"] .diagram-edge.is-token-route path{stroke:var
 body[data-active-space="simulator"] #PR>.panel[hidden],
 body[data-active-space="simulator"] #PV[hidden],
 body[data-active-space="simulator"] #PL>.sim-window[hidden]{display:none!important}
+
+body[data-active-space="simulator"] .sim-flight-chip{
+  position:fixed;left:0;top:0;z-index:240;display:grid;place-items:center;min-width:32px;height:30px;
+  padding:0 9px;border:1px solid #a98210;border-radius:999px;color:#1f2b36;
+  background:var(--hl);box-shadow:0 6px 18px rgba(0,0,0,.3);
+  font:850 13px/1 ui-monospace,monospace;pointer-events:none;will-change:transform
+}
+body[data-active-space="simulator"] .sim-window.is-pulsing,
+body[data-active-space="simulator"] .sim-window-restore.is-pulsing{
+  border-color:var(--window-identity,var(--hl))!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--window-identity,var(--hl)) 65%,transparent),
+    0 0 24px color-mix(in srgb,var(--window-identity,var(--hl)) 55%,transparent),0 8px 28px rgba(0,0,0,.22);
+  animation:sim-window-pulse .9s ease-out
+}
+body[data-active-space="simulator"] .sim-pulse-count{
+  position:absolute;right:9px;top:7px;z-index:5;padding:3px 6px;border-radius:99px;
+  color:#17212a;background:var(--hl);font:850 10px/1 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .sim-window-restore .sim-pulse-count{right:-7px;top:-7px}
+@keyframes sim-window-pulse{
+  0%{filter:brightness(1.35);transform:scale(1.015)}
+  100%{filter:brightness(1);transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-active-space="simulator"] .sim-flight-chip{display:none!important}
+  body[data-active-space="simulator"] .sim-window.is-pulsing,
+  body[data-active-space="simulator"] .sim-window-restore.is-pulsing{animation:none;box-shadow:0 0 0 2px var(--window-identity,var(--hl))}
+}
