@@ -622,10 +622,9 @@ body[data-active-space="simulator"] .simulator-view{
   display:block;position:relative;width:100%;height:calc(100vh - 54px);min-height:0;margin:0;padding:0
 }
 body[data-active-space="simulator"] .simulator-grid{position:fixed;inset:54px 0 0}
-body[data-active-space="simulator"] #RC{z-index:120;pointer-events:none}
-body[data-active-space="simulator"] #PR{pointer-events:none!important}
-body[data-active-space="simulator"] #PR>.panel{pointer-events:none!important}
-body[data-active-space="simulator"] #PR>.panel *{pointer-events:auto}
+body[data-active-space="simulator"] #RC{z-index:120;pointer-events:auto}
+body[data-active-space="simulator"] #PR,
+body[data-active-space="simulator"] #PR>.panel{pointer-events:auto}
 body[data-active-space="simulator"] #PR .trace-history,
 body[data-active-space="simulator"] #PR .trace-history li{position:relative;z-index:5;pointer-events:auto}
 body[data-active-space="simulator"] #PL{z-index:120}
