@@ -31,6 +31,8 @@ test("se puede seleccionar un ejercicio desde el catálogo y cambiar sus datos",
   await expect(page.locator("#exercise-detail [data-open-simulator]")).toBeVisible();
   await page.locator("#exercise-detail [data-open-simulator]").click();
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Sumar los números de 1 hasta N");
+  await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
+  await expect(page.locator("#simulator-inputs")).toHaveValue("4");
   await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output")).toContainText("10");
   await page.locator("#simulator-inputs").fill("6");

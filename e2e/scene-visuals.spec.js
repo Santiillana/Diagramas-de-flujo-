@@ -28,9 +28,14 @@ test("En escena representa el ciclo Para y la vuelta actual",async({page})=>{
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
  await page.locator('[data-simulator-exercise="10"]').click();
- await page.locator("#trace-history li").filter({hasText:"INICIALIZACIÓN"}).first().click();
+ await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
+ const initialization=page.locator("#trace-history [data-history-step]").filter({hasText:"INICIALIZACIÓN"}).first();
+ await expect(initialization).toBeVisible();
+ await initialization.click();
  await expect(page.locator("#scene-content .scene-visual-loop-init")).toBeVisible();
- const iteration=page.locator("#trace-history li").filter({hasText:"ITERACIÓN"}).first();
+ const group=page.locator("#trace-history details.trace-loop-group").first();
+ await group.locator("summary").click();
+ const iteration=group.locator("[data-history-step]").first();
  await iteration.click();
  await expect(page.locator("#scene-content .scene-visual-loop-enter")).toBeVisible();
  await expect(page.locator("#scene-content .scene-visual-loop-ring")).toBeVisible();

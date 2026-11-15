@@ -203,7 +203,7 @@ function renderTable(){
       });
       const output=(event.outputs??[]).map(fmt).join(", ");
       let outputCell="—";
-      if(output!=="—"){
+      if(output){
         const id=index+":output";
         tableExpectedCells[id]={value:output,row:index+1,column:"Salida"};
         outputCell='<input class="lab-trace-answer" type="text" data-trace-answer="'+esc(id)+'" aria-label="Fila '+(index+1)+', salida" placeholder="Completa" value="'+esc(tableAnswers[id]??"")+'">';

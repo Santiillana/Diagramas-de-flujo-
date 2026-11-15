@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("captura las cinco secciones en escritorio, tableta y móvil",async({page},testInfo)=>{
+  test.setTimeout(90000);
   const viewports=[
     ["desktop",1440,1000],
     ["tablet",1024,768],

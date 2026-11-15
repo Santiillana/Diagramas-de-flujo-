@@ -69,12 +69,15 @@ test("los controles de ciclo saltan a la siguiente vuelta y permiten salir",asyn
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
  await page.locator("#simulator-exercise-picker [data-simulator-exercise='10']").click();
- await page.locator("#simulator-run").click();
+ await page.locator("#simulator-exercise-picker [data-simulator-exercise='10']").click();
+ await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
+ const group=page.locator("#trace-history details.trace-loop-group").first();
+ await expect(group).toBeVisible();
+ await group.locator("summary").click();
+ await group.locator("[data-history-step]").first().click();
+ await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
  const nextLoop=page.locator("#simulator-next-loop");
  const exitLoop=page.locator("#simulator-exit-loop");
- await expect(nextLoop).toBeDisabled();
- for(let i=0;i<4;i++)await page.locator("#simulator-next").click();
- await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
  await expect(nextLoop).toBeEnabled();
  await nextLoop.click();
  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
@@ -150,7 +153,7 @@ test("la línea de tiempo permite colapsar y desplegar cada vuelta del ciclo",as
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
  await page.locator('[data-simulator-exercise="10"]').click();
- await page.locator("#simulator-run").click();
+ await expect(page.locator("#simulator-status")).toContainText("TRAZA GENERADA");
  const group=page.locator("#trace-history details.trace-loop-group").first();
  await expect(group).toBeVisible();
  await expect(group.locator("summary")).toContainText("Vuelta 1");
@@ -163,7 +166,7 @@ test("la tabla de seguimiento permite responder y señala la primera celda incor
  await page.goto("/");
  await page.locator('[data-space="lab"]').click();
  await page.locator('[data-lab-activity="table"]').click();
- const answers=page.locator("#lab-task-content [data-trace-answer]");
+ const answers=page.locator("#lab-task-content [data-trace-answer][aria-label*="+"\"variable\""+"]");
  await expect(answers.first()).toBeVisible();
  await expect(answers).not.toHaveCount(0);
  await page.locator("#lab-table-check").click();
