@@ -154,7 +154,6 @@
 }
 
 /* El lienzo recibe los gestos; los controles del encabezado quedan por encima */
-}
 
 .flow-token{transition:cx 320ms cubic-bezier(.2,.8,.2,1),cy 320ms cubic-bezier(.2,.8,.2,1)}
 .scene-loop-stack{display:grid;gap:5px;margin-top:9px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft)}
