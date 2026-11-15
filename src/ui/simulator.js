@@ -1105,6 +1105,8 @@ function updatePredictionButton(){
   button.title=predictEnabled?"Predice activo · P":"Predice · P";
   button.classList.toggle("is-active",predictEnabled);
   button.textContent="🎯 Predice "+predictionCorrect+"/"+predictionAttempts;
+  const focusButton=$("#focus-predict");
+  if(focusButton){focusButton.setAttribute("aria-pressed",String(predictEnabled));focusButton.textContent="🎯 Predice "+predictionCorrect+"/"+predictionAttempts;}
 }
 function togglePredictionMode(){
   predictEnabled=!predictEnabled;predictionPending=null;
@@ -1344,6 +1346,7 @@ function bind(){
     exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
   });
   $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
+  $("#focus-predict")?.addEventListener("click",()=>{togglePredictionMode();showFocusControls();});
   $("#simulator-question")?.addEventListener("click",event=>{
     const answer=event.target.closest("[data-prediction-answer]");
     if(answer){answerPrediction(answer);return;}
