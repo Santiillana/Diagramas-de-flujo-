@@ -1416,3 +1416,18 @@ body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
   }
   body[data-active-space="simulator"] .sim-tool-button{min-width:31px;padding-inline:3px;font-size:11px}
 }
+
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-exercise-strip{
+    display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(0,1.15fr);
+    flex:0 1 190px;width:190px;min-width:150px;max-width:200px;gap:3px;overflow:hidden
+  }
+  body[data-active-space="simulator"] .sim-exercise-strip input,
+  body[data-active-space="simulator"] .sim-exercise-strip select{min-width:0;padding-inline:4px;font-size:10px}
+  body[data-active-space="simulator"] .sim-toolbar-controls{
+    flex:1 1 0%;width:0;min-width:0;overflow-x:auto;overflow-y:hidden;
+    justify-content:flex-start;gap:2px
+  }
+  body[data-active-space="simulator"] .sim-toolbar-group{flex:0 0 auto;gap:2px;padding-left:3px}
+  body[data-active-space="simulator"] .sim-tool-button{flex:0 0 auto;min-width:31px;height:36px;padding-inline:3px;font-size:10px}
+}
