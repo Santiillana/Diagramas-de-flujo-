@@ -80,3 +80,19 @@
 2. GitHub Pages: el repo es estático y compatible, pero no se verificó su configuración ni una URL pública desde esta ejecución; activar Pages desde Settings si no está habilitado.
 3. Constructor: editor estructurado de secuencias y bloques anidados, no libre conexión manual de cualquier puerto.
 4. La cámara y la inspección se prueban mediante Chromium y capturas automatizadas; no se realizó prueba táctil en un dispositivo físico real.
+
+
+## Extensión en revisión — rama `mejoras/traza-v2`
+
+Este apartado describe cambios posteriores al estado histórico de M5. No modifica el hecho de que los cinco módulos base se integraron en `main`; estas mejoras siguen separadas y no están fusionadas.
+
+- Aprende: 17 lecciones, cinco bloques, cinco pantallas por lección y progreso local.
+- Ejercicios: 45 en total (20 básicos, 10 intermedios, 10 avanzados y 5 expertos). Se preservan los 40 originales.
+- Retos expertos: Euclides (MCD/MCM), divisores y primalidad, Cramer 3×3, Newton–Raphson y Simpson 1/3.
+- Catálogo: búsqueda, nivel, filtro conceptual derivado del pseudocódigo, filtro «De clase» y paginación.
+- Laboratorio: ocho actividades con progreso y dos actividades nuevas basadas en la traza real.
+- Simulador: escenas específicas y narración conectadas a eventos reales.
+- Constructor: historial de deshacer/rehacer, con atajos Ctrl/Cmd+Z y Ctrl/Cmd+Y.
+- Inicio: panel de acceso rápido con estadísticas y progreso de aprendizaje.
+
+**Validación pendiente:** Node y Playwright deben ejecutarse sobre el commit final de esta rama. No declarar aceptación hasta revisar CI y corregir cualquier fallo. `main` y las rutas protegidas permanecen intactas.
