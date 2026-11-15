@@ -380,20 +380,26 @@ function choreographEvent(event){
 }
 
 function paintExerciseSelector(){
-  const host=$("#sim-exercise-strip");
-  if(!host)return;
+  const host=$("#sim-exercise-strip");if(!host)return;
   if(host.dataset.ready!=="true"){
-    host.innerHTML=exercises.map(item=>{
-      const level=item.level==="basic"?"basic":item.level==="advanced"?"advanced":"intermediate";
-      return '<button class="sim-exercise-chip level-'+level+'" type="button" data-sim-exercise="'+item.id+'" aria-label="Ejercicio '+item.id+' - '+esc(item.title)+'" title="'+esc(item.title)+'">'+String(item.id).padStart(2,"0")+'</button>';
-    }).join("");
+    host.innerHTML='<input id="sim-exercise-search" type="search" aria-label="Buscar ejercicio" placeholder="Buscar…" autocomplete="off"><select id="sim-exercise-level-filter" aria-label="Filtrar por nivel"><option value="all">Todos</option><option value="basic">Básico</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option></select><select id="sim-exercise-select" aria-label="Seleccionar ejercicio"></select>';
     host.dataset.ready="true";
   }
-  host.querySelectorAll("[data-sim-exercise]").forEach(button=>{
-    const active=Number(button.dataset.simExercise)===exerciseId;
-    button.classList.toggle("is-selected",active);
-    button.setAttribute("aria-pressed",String(active));
+  const search=host.querySelector("#sim-exercise-search");
+  const filter=host.querySelector("#sim-exercise-level-filter");
+  const select=host.querySelector("#sim-exercise-select");
+  const query=(search?.value??"").trim().toLocaleLowerCase("es");
+  const level=filter?.value??"all";
+  const selected=exercises.find(item=>item.id===exerciseId)??exercises[0];
+  const filtered=exercises.filter(item=>{
+    const levelMatch=level==="all"||item.level===level;
+    const queryMatch=!query||(String(item.id)+" "+item.title+" "+(labels[item.level]??item.level)).toLocaleLowerCase("es").includes(query);
+    return levelMatch&&queryMatch;
   });
+  if(selected&&!filtered.some(item=>item.id===selected.id))filtered.unshift(selected);
+  select.innerHTML=filtered.map(item=>'<option value="'+item.id+'">'+String(item.id).padStart(2,"0")+' · '+esc(item.title)+'</option>').join("");
+  select.value=String(exerciseId);
+  host.setAttribute("aria-label","Ejercicio actual: "+(selected?.title??"sin seleccionar"));
 }
 function openLabActivity(activity){
   document.querySelector('[data-space="lab"]')?.click();
@@ -1235,13 +1241,12 @@ function bindDiagramPan(){
   });
 }
 function bind(){
-  $("#sim-exercise-strip")?.addEventListener("click",event=>{
-    const button=event.target.closest("[data-sim-exercise]");
-    if(!button)return;
-    exerciseId=Number(button.dataset.simExercise)||1;
-    methodIndex=0;
-    selectedVariable=null;
-    prepare();
+  $("#sim-exercise-strip")?.addEventListener("input",event=>{
+    if(event.target.id==="sim-exercise-search"||event.target.id==="sim-exercise-level-filter")paintExerciseSelector();
+  });
+  $("#sim-exercise-strip")?.addEventListener("change",event=>{
+    if(event.target.id!=="sim-exercise-select")return;
+    exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
   });
   $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
   $("#simulator-question")?.addEventListener("click",event=>{
