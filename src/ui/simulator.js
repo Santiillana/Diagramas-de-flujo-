@@ -885,7 +885,7 @@ function currentSpeedFactor(){
 function zoomAt(nextZoom,clientX,clientY){
   const stage=$("#diagram-stage");
   if(!stage)return;
-  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.25,Math.min(3,nextZoom));
+  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.3,Math.min(3,nextZoom));
   const anchorX=clientX-box.left,anchorY=clientY-box.top;
   const worldX=(anchorX-panOffset.x)/oldZoom,worldY=(anchorY-panOffset.y)/oldZoom;
   zoom=target;
@@ -1162,7 +1162,7 @@ function seek(index){
   stop();timeline.seek(index);render();
 }
 function move(delta){
-  if(!timeline)return;
+  if(!timeline||predictionPending)return;
   const destination=Math.max(0,Math.min(timeline.length-1,timeline.index+delta));
   if(destination===timeline.index)return;
   if(delta>0&&predictEnabled&&eventAskable(execution.events[destination])){
@@ -1236,7 +1236,7 @@ function fitDiagram(){
     catch{document.documentElement.dataset.fullscreenRequested="false";}
   }
   updateFullscreenButton();
-  requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");showFocusControls();});
+  requestAnimationFrame(()=>{fitDiagram();if(timeline){renderFocusState(timeline.current);if(cameraAuto)centerActiveNode(timeline.current,"auto");}showFocusControls();});
 }
 function updateFullscreenButton(){
   const active=document.body.classList.contains("focus");
@@ -1254,7 +1254,7 @@ function bindDiagramPan(){
   const onDown=event=>{
     if(event.pointerType==="mouse"&&event.button!==0)return;
     const target=event.target instanceof Element?event.target:null;
-    if(target?.closest("button,a,input,select,textarea,#sim-minimap,#sim-camera-follow,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading"))return;
+    if(target?.closest("button,a,input,select,textarea,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading,.focus-ui"))return;
     const hitRect=hit.getBoundingClientRect();
     if(event.clientX<hitRect.left||event.clientX>hitRect.right||event.clientY<hitRect.top||event.clientY>hitRect.bottom)return;
     event.preventDefault();
@@ -1347,7 +1347,6 @@ function bind(){
     if(event.target.closest("#simulator-question-reveal"))revealPrediction();
     if(event.target.closest("#simulator-question-close")){predictionPending=null;$("#simulator-question").hidden=true;}
   });
-  $("#simulator-lab")?.addEventListener("click",()=>openLabActivity(null));
   $("#simulator-panel-toggle")?.addEventListener("click",()=>{
     const hidden=document.body.dataset.simulatorPanels==="hidden";
     document.body.dataset.simulatorPanels=hidden?"visible":"hidden";
@@ -1507,5 +1506,5 @@ export function initSimulator(){
   syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();
-  bind();prepare();
+  bind();updatePredictionButton();updateFullscreenButton();prepare();
 }
