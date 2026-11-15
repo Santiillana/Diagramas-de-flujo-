@@ -393,7 +393,7 @@ body[data-active-space="simulator"] .diagram-empty{position:absolute;inset:45% 1
 body[data-active-space="simulator"] .canvas-coordinate{display:none}
 body[data-active-space="simulator"] .problem-panel#PL{
   position:fixed;z-index:20;top:64px;left:10px;bottom:auto;width:calc(var(--fs)*21px);max-width:calc(100vw - 20px);
-  height:calc(100vh - 205px);max-height:calc(100vh - 205px);display:flex;flex-direction:column;overflow:hidden;
+  height:auto;max-height:calc(100vh - var(--dk) - 86px);display:flex;flex-direction:column;overflow:hidden;
   border:1px solid var(--line);border-radius:14px;color:var(--ink);
   background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);
   box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:auto
