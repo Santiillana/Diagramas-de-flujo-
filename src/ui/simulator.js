@@ -63,6 +63,7 @@ function applyWindowState(){
     const toggle=document.querySelector('[data-window-toggle="'+meta.id+'"]');
     if(toggle)toggle.checked=!hiddenWindows.has(meta.id);
   }
+  document.body.dataset.simWindowsHidden=[...hiddenWindows].join(" ");
   requestAnimationFrame(()=>{if(diagramFitWidth&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");});
 }
 function setWindowVisible(id,visible){
@@ -175,7 +176,8 @@ function showContextWindow(event){
   box.hidden=false;
   if(vfRaf)cancelAnimationFrame(vfRaf);
   clearTimeout(contextTimer);
-  const wait=reducedMotion()?0:Math.min(900,540/Math.sqrt(currentSpeedFactor()));
+  const complete=document.body.dataset.presentationMode==="complete";
+  const wait=reducedMotion()||complete?0:Math.min(10000,Math.max(tokenTravelDuration,flightTravelDuration)+Math.max(100,120/currentSpeedFactor()));
   contextTimer=window.setTimeout(()=>{
     vfRaf=requestAnimationFrame(()=>{
       placeContextWindow(event);
