@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 
 test("diagnóstico de reparto horizontal de la barra",async({page})=>{
-  for(const width of [1920,1440,1280,1024]){
+  for(const width of [1920,1440,1280,1024,390]){
     await page.setViewportSize({width,height:900});
     await page.goto("/");
     await page.locator('[data-space="simulator"]').click();
