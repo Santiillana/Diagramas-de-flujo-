@@ -233,14 +233,13 @@ function pulseWindow(id){
 }
 function flightTargetFor(event,targetId){
   if(targetId==="variables"&&event.change?.name){
-    const button=[...document.querySelectorAll("[data-variable-history]")].find(el=>el.dataset.variableHistory===event.change.name);
-    return button?.closest("tr")?.lastElementChild??getWindowElement("variables");
+    return document.querySelector('[data-variable-card="'+CSS.escape(event.change.name)+'"]')??getWindowElement("variables");
   }
-  if(targetId==="output")return $("#simulator-output li:last-child")??getWindowElement("output");
+  if(targetId==="output")return $("#simulator-output-details")??getWindowElement("variables");
   return getWindowElement(targetId);
 }
 function animateFlight(event,targetId){
-  if(!event||reducedMotion()||currentSpeedFactor()>=4)return false;
+  if(!event||reducedMotion())return false;
   const source=event.type==="input"?$("#simulator-inputs"):(()=>{
     const model=diagramNodeForEvent(event);
     return model?document.getElementById("flow-node-"+model.id):null;
@@ -261,7 +260,7 @@ function animateFlight(event,targetId){
   chip.style.transform="translate3d("+start.x+"px,"+start.y+"px,0)";
   layer.append(chip);
   const control={x:(start.x+finish.x)/2,y:Math.min(start.y,finish.y)-52};
-  const duration=700/currentSpeedFactor();let began=0;
+  const duration=Math.min(2600,Math.max(180,700/currentSpeedFactor()));let began=0;
   const frame=now=>{
     if(!began)began=now;
     const t=Math.min(1,(now-began)/duration),u=1-t;
@@ -279,11 +278,9 @@ function animateFlight(event,targetId){
 function choreographEvent(event){
   if(!event)return;
   const speed=currentSpeedFactor();
-  if(reducedMotion()||speed>=4){
-    if(event.type==="input"||event.change)pulseWindow("variables");
-    else if(event.type==="output")pulseWindow("output");
+  if(reducedMotion()){
+    if(event.type==="input"||event.change||event.type==="output")pulseWindow("variables");
     else if(event.type==="decision"||event.type==="loop-condition")pulseWindow("scene");
-    else if(event.type==="program-end"){pulseWindow("variables");pulseWindow("output");}
     return;
   }
   if(event.type==="input"){
@@ -814,7 +811,7 @@ function animateTokenRoute(route,event,animate=choreographyPlayback){
     token.setAttribute("cx",String(point.x));token.setAttribute("cy",String(point.y));
     if(label){label.setAttribute("x",String(point.x+16));label.setAttribute("y",String(point.y-14));}
   };
-  if(points.length<2||!animate||reduced||speed>=4){
+  if(points.length<2||!animate||reduced){
     place(target);if(trail)trail.setAttribute("points","");
     if(ring)ring.setAttribute("visibility","hidden");
     return;
@@ -828,7 +825,7 @@ function animateTokenRoute(route,event,animate=choreographyPlayback){
   const pointsValue=points.map(point=>point.x+","+point.y).join(" ");
   if(trail){trail.setAttribute("points",pointsValue);trail.style.strokeDasharray=String(total);trail.style.strokeDashoffset=String(total);}
   place(points[0]);
-  const duration=(total<1?150:Math.min(500+total*1.6,1500))/speed;
+  const duration=Math.min(6000,Math.max(220,(500+total*1.6)/speed));
   let started=0;
   const frame=now=>{
     if(!started)started=now;
@@ -862,9 +859,7 @@ function centerActiveNode(event,behavior){
   const model=diagram?.nodes.find(item=>String(item.sourceId)===String(event.nodeId));
   if(!stage||!node||!model)return;
   const free=freeCanvasRect(),target=node.getBoundingClientRect();
-  const scale=fitScale*zoom,branchOffset=(model.x-520)*scale;
-  const sharesAxis=Math.abs(branchOffset)<free.width*.48;
-  const desiredX=free.left+free.width/2+(sharesAxis?branchOffset*.45:0);
+  const desiredX=free.left+free.width/2;
   const desiredY=free.top+free.height*.45;
   const goal={
     x:panOffset.x+(desiredX-(target.left+target.width/2)),
@@ -878,14 +873,14 @@ function centerActiveNode(event,behavior){
     const step=now=>{
       if(!cameraAuto)return;
       const dt=Math.max(0,now-previous);previous=now;
-      const alpha=1-Math.exp(-dt/(130/Math.sqrt(currentSpeedFactor())));
+      const alpha=1-Math.exp(-dt/(180/currentSpeedFactor()));
       panOffset={
         x:panOffset.x+(goal.x-panOffset.x)*alpha,
         y:panOffset.y+(goal.y-panOffset.y)*alpha
       };
       applyCanvasTransform();
       const distance=Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y);
-      if(distance<1.5||now-started>2500){
+      if(distance<1.5||now-started>Math.min(6000,1800/currentSpeedFactor())){
         panOffset=goal;cameraRaf=0;applyCanvasTransform();
       }else cameraRaf=requestAnimationFrame(step);
     };
@@ -894,8 +889,8 @@ function centerActiveNode(event,behavior){
   stage.dataset.cameraTarget=String(event.nodeId);
 }
 function currentSpeedFactor(){
-  const value=Number($("#simulator-speed")?.value??650);
-  return value<=100?8:value<=180?4:value<=400?2:value<=800?1:.5;
+  const value=Number($("#simulator-speed")?.value??1);
+  return Number.isFinite(value)&&value>0?Math.max(.1,Math.min(8,value)):1;
 }
 function zoomAt(nextZoom,clientX,clientY){
   const stage=$("#diagram-stage");
@@ -971,8 +966,9 @@ function render(){
     drawExecutionTrail(seen);
     animateTokenRoute(walked,e);
   }
-  cameraAuto=true;updateCameraButton();
-  centerActiveNode(e);
+  document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
+  updateCameraButton();
+  if(cameraAuto)centerActiveNode(e);
   if(choreographyPlayback){
     const contextTimer=setTimeout(()=>showContextWindow(e),100/currentSpeedFactor());
     flightTimeouts.push(contextTimer);
@@ -1206,7 +1202,7 @@ function play(){
     choreographyPlayback=true;
     try{render();}finally{choreographyPlayback=false;}
     if(timeline.index>=timeline.length-1)stop();
-  },2400/currentSpeedFactor());
+  },Math.min(12000,2400/currentSpeedFactor()));
 }
 function applyDiagramZoom(){
   const svg=$("#flow-svg");
@@ -1231,8 +1227,9 @@ function fitDiagram(){
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
   const focus=document.body.classList.contains("focus");
-  fitScale=focus?Math.max(1.3,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.9/Math.min(viewBox.height,560))*1.08)):
-    Math.round(Math.max(300,Math.min(free.width-20,viewBox.width*2))*1.1)/viewBox.width;
+  const widthScale=Math.max(.36,Math.min(2.15,(free.width-36)/viewBox.width));
+  const heightScale=Math.max(.32,Math.min(1.8,(free.height-38)/viewBox.height));
+  fitScale=focus?Math.max(.75,Math.min(2.6,Math.min(innerWidth*.9/viewBox.width,innerHeight*.84/viewBox.height))):Math.min(widthScale,heightScale);
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
   zoom=1;
   const stageBox=stage.getBoundingClientRect();
@@ -1241,7 +1238,7 @@ function fitDiagram(){
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
   applyDiagramZoom();
-  if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
+  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }
 async function toggleDiagramFullscreen(){
   const body=document.body;
