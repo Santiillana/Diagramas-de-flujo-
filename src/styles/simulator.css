@@ -629,3 +629,46 @@ body[data-active-space="simulator"] #PR .trace-history,
 body[data-active-space="simulator"] #PR .trace-history li{position:relative;z-index:5;pointer-events:auto}
 body[data-active-space="simulator"] #PL{z-index:120}
 body[data-active-space="simulator"] #dock{z-index:130}
+
+/* Composición estable de la columna derecha: escena + tres ventanas apiladas. */
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  pointer-events:auto!important;z-index:80
+}
+body[data-active-space="simulator"] #PR.sim-right-content{
+  display:flex!important;flex:1 1 0;flex-direction:column;align-items:stretch;gap:10px;
+  width:100%;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;
+  pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR>.panel{
+  position:relative;display:flex;flex:0 0 auto;flex-direction:column;align-self:stretch;
+  width:100%;min-width:0;max-width:none;overflow:hidden;pointer-events:auto!important;z-index:5
+}
+body[data-active-space="simulator"] #PR>.variables-panel{height:155px;min-height:135px}
+body[data-active-space="simulator"] #PR>.output-panel{height:115px;min-height:105px}
+body[data-active-space="simulator"] #PR>.trace-panel{flex:1 0 145px;min-height:145px}
+body[data-active-space="simulator"] #PR .variables-content{
+  position:relative;z-index:8;flex:1 1 auto;width:100%;min-width:0;min-height:45px;
+  max-height:none;overflow:auto;pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR .variables-table{width:100%;table-layout:fixed}
+body[data-active-space="simulator"] #PR .variable-history,
+body[data-active-space="simulator"] #PR .variable-change{position:relative;z-index:8;flex:0 0 auto;width:100%;pointer-events:auto!important}
+body[data-active-space="simulator"] #PR .variable-history-trigger{
+  position:relative;z-index:30;display:inline-flex;align-items:center;justify-content:center;
+  min-width:40px;min-height:36px;padding:6px 10px;pointer-events:auto!important;touch-action:manipulation
+}
+body[data-active-space="simulator"] #PR .trace-history{
+  position:relative;z-index:20;display:flex;flex:1 1 auto;flex-direction:column;
+  width:100%;min-width:0;min-height:0;overflow:auto;pointer-events:auto!important
+}
+body[data-active-space="simulator"] #PR .trace-history li{
+  position:relative;z-index:30;display:flex;flex:0 0 auto;flex-direction:column;
+  width:100%;min-width:0;min-height:48px;pointer-events:auto!important;touch-action:manipulation
+}
+body[data-active-space="simulator"] #PR .trace-history li *{pointer-events:none}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #PR>.variables-panel,
+  body[data-active-space="simulator"] #PR>.output-panel,
+  body[data-active-space="simulator"] #PR>.trace-panel{height:auto;min-height:0;flex:1 1 auto}
+  body[data-active-space="simulator"] #PR .trace-history li{width:100%}
+}
