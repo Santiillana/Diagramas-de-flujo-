@@ -892,3 +892,23 @@ body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-act
 @media(max-width:900px){
   body[data-active-space="simulator"] #diagram-pan-hit{z-index:130;inset:94px 0 205px 0}
 }
+
+body[data-active-space="simulator"] .sim-context-wire{
+  position:fixed;inset:0;z-index:87;width:100vw;height:100vh;overflow:visible;
+  pointer-events:none
+}
+body[data-active-space="simulator"] .sim-context-wire[hidden]{display:none!important}
+body[data-active-space="simulator"] .sim-context-wire path{
+  fill:none;stroke:#9a78ed;stroke-width:1.35;stroke-dasharray:4 4;opacity:.85;
+  vector-effect:non-scaling-stroke
+}
+body[data-active-space="simulator"] .diagram-node.has-context-fallback{
+  filter:drop-shadow(0 0 7px rgba(154,120,237,.7))
+}
+body[data-active-space="simulator"] #sim-window-code .panel-heading #pseudocode-line-count{
+  flex:0 0 auto;white-space:nowrap;font-size:12px
+}
+body[data-active-space="simulator"] #sim-window-code .panel-heading h3{min-width:0;white-space:nowrap}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .sim-context-window{max-height:160px}
+}
