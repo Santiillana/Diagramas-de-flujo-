@@ -807,24 +807,35 @@ function animateTokenRoute(route,event){
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
   const stage=$("#diagram-stage"),node=document.getElementById("flow-node-"+event.nodeId);
-  if(!stage||!node)return;
+  const model=diagram?.nodes.find(item=>String(item.sourceId)===String(event.nodeId));
+  if(!stage||!node||!model)return;
   const free=freeCanvasRect(),target=node.getBoundingClientRect();
+  const scale=fitScale*zoom,branchOffset=(model.x-520)*scale;
+  const sharesAxis=Math.abs(branchOffset)<free.width*.48;
+  const desiredX=free.left+free.width/2+(sharesAxis?branchOffset*.45:0);
+  const desiredY=free.top+free.height*.45;
   const goal={
-    x:panOffset.x+(free.left+free.width/2-(target.left+target.width/2)),
-    y:panOffset.y+(free.top+free.height/2-(target.top+target.height/2))
+    x:panOffset.x+(desiredX-(target.left+target.width/2)),
+    y:panOffset.y+(desiredY-(target.top+target.height/2))
   };
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
-  if(behavior==="auto"||document.documentElement.dataset.motion==="reduced"){
+  if(behavior==="auto"||reducedMotion()){
     panOffset=goal;cameraRaf=0;applyCanvasTransform();
   }else{
-    const start={...panOffset},started=performance.now(),duration=130/Math.sqrt(currentSpeedFactor());
+    let previous=performance.now(),started=previous;
     const step=now=>{
       if(!cameraAuto)return;
-      const elapsed=now-started,eased=1-Math.exp(-Math.max(0,elapsed)/duration);
-      panOffset={x:start.x+(goal.x-start.x)*eased,y:start.y+(goal.y-start.y)*eased};
+      const dt=Math.max(0,now-previous);previous=now;
+      const alpha=1-Math.exp(-dt/(130/Math.sqrt(currentSpeedFactor())));
+      panOffset={
+        x:panOffset.x+(goal.x-panOffset.x)*alpha,
+        y:panOffset.y+(goal.y-panOffset.y)*alpha
+      };
       applyCanvasTransform();
-      if(elapsed<duration*4&&Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y)>.7)cameraRaf=requestAnimationFrame(step);
-      else{panOffset=goal;cameraRaf=0;applyCanvasTransform();}
+      const distance=Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y);
+      if(distance<1.5||now-started>2500){
+        panOffset=goal;cameraRaf=0;applyCanvasTransform();
+      }else cameraRaf=requestAnimationFrame(step);
     };
     cameraRaf=requestAnimationFrame(step);
   }
@@ -908,6 +919,7 @@ function render(){
     drawExecutionTrail(seen);
     animateTokenRoute(walked,e);
   }
+  cameraAuto=true;updateCameraButton();
   centerActiveNode(e);
   if(choreographyPlayback){
     const contextTimer=setTimeout(()=>showContextWindow(e),100/currentSpeedFactor());
