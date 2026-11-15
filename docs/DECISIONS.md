@@ -59,3 +59,19 @@ El desglose de cada operación utiliza el mismo evaluador de expresiones y el sn
 
 ## D-020 · El límite de Pages se declara, no se presume
 El proyecto estático es compatible con GitHub Pages, pero un merge no demuestra por sí mismo que Pages esté activado. La URL pública y la configuración de despliegue deben comprobarse tras configurar Settings → Pages.
+
+
+## D-021 · La referencia original es la autoridad visual del Simulador
+Para la vista Simulador, la composición de tarjetas y el dock en una fila del grid quedan sustituidos por la composición inmersiva de la referencia original: barra de 54 px, lienzo de viewport, paneles de vidrio laterales y dock flotante. La navegación global 01–05 y el resto de espacios se conservan. Esta decisión prevalece sobre D-005 para el Simulador porque la solicitud de rediseño especifica esa paridad visual; el dock debe permanecer por encima del escenario y no consumir una fila del layout.
+
+## D-022 · Motor y SVG de una sola construcción
+El intérprete y `src/core/*` no se modifican. El SVG sigue construyéndose al preparar un ejercicio; el avance actualiza clases y snapshots mediante `highlightDiagram()`. Las nuevas capas de cámara, rutas, paneles y animación consumen los mismos eventos y no vuelven a ejecutar el pseudocódigo.
+
+## D-023 · Tokens del Simulador aislados y alineados con la referencia
+El Simulador utiliza los valores cromáticos de la referencia y el tamaño base de 17 px en escritorio / 15 px en móvil, con rango de 13–26 px. Los nuevos alias quedan limitados al contexto del Simulador para no cambiar Aprende, Ejercicios, Laboratorio ni Constructor. Tema oscuro como valor inicial; el interruptor existente sigue controlando el tema.
+
+## D-024 · La geometría de referencia se mide, no se codifica en la prueba
+La aceptación compara bounding boxes del HTML original y del Simulador a 1920×1080. Las medidas de referencia se leen durante la ejecución de Playwright; no se duplican como fixtures fijos. Criterio máximo de diferencia: 6 px por elemento.
+
+## D-025 · Despliegue separado de revisión
+Los cambios se publican únicamente en `mejoras/traza-v2` y se mantienen en la PR #7. No se actualiza `main` ni se fusiona la PR. La disponibilidad del preview de Cloudflare se configura externamente y no se presume desde GitHub.
