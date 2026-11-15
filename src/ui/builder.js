@@ -249,7 +249,7 @@ function validate(){
   try{
     const compiled=compileFlow(model);
     $("#builder-status").textContent="ESTRUCTURA VÁLIDA";
-    $("#builder-errors").innerHTML='<p class="builder-success">El diagrama tiene Inicio, Fin, bloques completos y sintaxis compatible con el motor M3.</p>';
+    $("#builder-errors").innerHTML='<p class="builder-success">El diagrama está completo y listo para ejecutarse.</p>';
     $("#builder-code").textContent=compiled.source.split("|").join("\n");
     return compiled;
   }catch(error){
