@@ -41,3 +41,15 @@ test("una ejecución propia reemplaza el ejemplo guiado y se mantiene sincroniza
  await expect(page.locator("#lab-current-exercise")).toContainText("EJERCICIO");
  await expect(page.locator("#lab-variables-content")).toContainText("a");
 });
+
+test("la tabla de seguimiento permite completar celdas y señala la primera diferencia",async({page})=>{
+ await page.goto("/");
+ await page.locator('[data-space="lab"]').click();
+ await page.locator('[data-lab-activity="table"]').click();
+ const first=page.locator("[data-trace-answer]").first();
+ await expect(first).toBeVisible();
+ await first.fill("respuesta incorrecta");
+ await page.locator("#lab-table-check").click();
+ await expect(first).toHaveClass(/is-wrong/);
+ await expect(page.locator("#lab-table-feedback")).toContainText("Primera diferencia");
+});

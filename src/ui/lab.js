@@ -16,6 +16,9 @@ let predictionAnswer=null;
 let whatIfResult=null;
 let orderChecked=false;
 let errorScenario=0;
+let tableAnswers={};
+let tableExpectedCells={};
+let tableTraceKey="";
 const symbolMap={
   input:{name:"Entrada de datos",options:["Paralelogramo","Rectángulo","Rombo"],correct:"Paralelogramo",why:"Leer recibe datos del exterior; se representa con un paralelogramo."},
   assignment:{name:"Proceso / asignación",options:["Rectángulo","Óvalo","Rombo"],correct:"Rectángulo",why:"Una asignación transforma o actualiza un valor; corresponde al símbolo de proceso."},
@@ -177,9 +180,12 @@ function renderTable(){
   if(!requireTrace())return;
   const events=trace.execution.events;
   const keys=[...new Set(events.flatMap(e=>Object.keys(e.variables??{})))];
-  const headings=["Paso","Iteración","Evento",...keys.map(key=>key+" · anterior → actual"),"Salida"];
+  const traceKey=[trace.exerciseId,trace.methodIndex,trace.source].join("|");
+  if(traceKey!==tableTraceKey){tableAnswers={};tableTraceKey=traceKey;}
+  tableExpectedCells={};
+  const headings=["Paso","Iteración","Evento",...keys,"Salida"];
   $("#lab-task-content").innerHTML=
-    '<p class="lab-muted">Cada fila conserva el snapshot del motor. Las celdas muestran la primera asignación, el cambio anterior → actual o un valor sin cambio; la fila activa sigue al simulador.</p>'+
+    '<p class="lab-muted">Completa las celdas de variables y salidas. La corrección compara tus respuestas con el snapshot real de cada paso; no muestra la referencia antes de comprobar.</p>'+
     '<div class="lab-table-wrap"><table class="lab-trace-table"><thead><tr>'+headings.map(x=>"<th>"+esc(x)+"</th>").join("")+'</tr></thead><tbody>'+
     events.map((event,index)=>{
       const previous=events[index-1]?.variables??{};
@@ -188,20 +194,48 @@ function renderTable(){
       const variableCells=keys.map(key=>{
         const hasCurrent=Object.hasOwn(current,key);
         const hasPrevious=Object.hasOwn(previous,key);
-        if(!hasCurrent)return "—";
+        if(!hasCurrent)return "<td>—</td>";
         const value=fmt(current[key]);
-        if(!hasPrevious)return "(nace) → "+value;
-        const before=fmt(previous[key]);
-        return before===value?value+" (sin cambio)":before+" → "+value;
+        const expected=!hasPrevious?"(nace) → "+value:fmt(previous[key])===value?value+" (sin cambio)":fmt(previous[key])+" → "+value;
+        const id=index+":"+key;
+        tableExpectedCells[id]={value:expected,row:index+1,column:key};
+        return '<td><input class="lab-trace-answer" type="text" data-trace-answer="'+esc(id)+'" aria-label="Fila '+(index+1)+', variable '+esc(key)+'" placeholder="Completa" value="'+esc(tableAnswers[id]??"")+'"></td>';
       });
-      const cells=[index+1,iteration,event.scene?.title??event.type,...variableCells,(event.outputs??[]).map(fmt).join(", ")||"—"];
-      return '<tr class="'+(index===trace.index?"is-current":"")+'" data-lab-row="'+index+'">'+cells.map(cell=>"<td>"+esc(cell)+"</td>").join("")+"</tr>";
+      const output=(event.outputs??[]).map(fmt).join(", ");
+      let outputCell="—";
+      if(output!=="—"){
+        const id=index+":output";
+        tableExpectedCells[id]={value:output,row:index+1,column:"Salida"};
+        outputCell='<input class="lab-trace-answer" type="text" data-trace-answer="'+esc(id)+'" aria-label="Fila '+(index+1)+', salida" placeholder="Completa" value="'+esc(tableAnswers[id]??"")+'">';
+      }
+      return '<tr class="'+(index===trace.index?"is-current":"")+'" data-lab-row="'+index+'"><td>'+(index+1)+'</td><td>'+esc(iteration)+'</td><td>'+esc(event.scene?.title??event.type)+'</td>'+variableCells.join("")+'<td>'+outputCell+'</td></tr>';
     }).join("")+
-    '</tbody></table></div><button type="button" class="button button-secondary" id="lab-table-follow">Ir a la fila actual</button>';
-  $("#lab-table-follow").addEventListener("click",()=>$("#lab-task-content").querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"center"}));
-  $("#lab-task-content").querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
+    '</tbody></table></div><div class="lab-task-actions"><button type="button" class="button button-secondary" id="lab-table-follow">Ir a la fila actual</button><button type="button" class="button button-primary" id="lab-table-check">Comprobar tabla</button></div><div id="lab-table-feedback" class="lab-feedback" role="status"></div>';
+  const host=$("#lab-task-content");
+  host.querySelectorAll("[data-trace-answer]").forEach(input=>{
+    input.addEventListener("input",()=>{tableAnswers[input.dataset.traceAnswer]=input.value;input.classList.remove("is-correct","is-wrong");});
+  });
+  $("#lab-table-follow").addEventListener("click",()=>host.querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"center"}));
+  $("#lab-table-check").addEventListener("click",()=>{
+    const inputs=[...host.querySelectorAll("[data-trace-answer]")];
+    let correct=0,firstWrong=null;
+    inputs.forEach(input=>{
+      const expected=tableExpectedCells[input.dataset.traceAnswer];
+      const normalized=value=>String(value??"").trim().replace(/\\s+/g," ").toLocaleLowerCase("es");
+      const ok=normalized(input.value)===normalized(expected.value);
+      input.classList.toggle("is-correct",ok);
+      input.classList.toggle("is-wrong",!ok);
+      if(ok)correct++;else if(!firstWrong)firstWrong=expected;
+    });
+    const feedback=$("#lab-table-feedback");
+    feedback.textContent=firstWrong?
+      correct+" de "+inputs.length+" celdas correctas. Primera diferencia: fila "+firstWrong.row+", columna "+firstWrong.column+". Revisa el valor de esa variable en el paso indicado.":
+      "Tabla completa: "+correct+" de "+inputs.length+" celdas coinciden con la traza.";
+    feedback.classList.toggle("is-correct",!firstWrong);
+    feedback.classList.toggle("is-wrong",Boolean(firstWrong));
+  });
+  host.querySelector('[data-lab-row="'+trace.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
 }
-
 function renderOrder(){
   if(!requireTrace())return;
   const lines=trace.method.pseudocode.split("|").map(x=>x.trim()).filter(Boolean);
