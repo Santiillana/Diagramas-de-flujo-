@@ -122,14 +122,33 @@ function renderExerciseProgressSummary(){
   const levels=["basic","intermediate","advanced"];
   const totalVerified=exercises.filter(item=>exerciseProgressStatus(item.id)==="verified").length;
   const totalStarted=exercises.filter(item=>exerciseProgressStatus(item.id)==="in-progress").length;
+  const totalHints=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.hintsUsed??0),0);
+  const totalErrors=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.wrongPredictions??0),0);
   host.innerHTML=`
-    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · progreso guardado en este navegador</span></div>
+    <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span></div>
     <div class="exercise-progress-levels">${levels.map(level=>{
       const group=exercises.filter(item=>item.level===level);
       const verified=group.filter(item=>exerciseProgressStatus(item.id)==="verified").length;
       const started=group.filter(item=>exerciseProgressStatus(item.id)==="in-progress").length;
       return '<span><b>'+LEVELS[level].label+'</b><small>'+verified+'/'+group.length+' verificados · '+started+' en práctica</small></span>';
     }).join("")}</div>`;
+}
+function recordExerciseHint(id){
+  const previous=exerciseProgress[id]??{attempts:0};
+  exerciseProgress[id]={...previous,hintsUsed:(previous.hintsUsed??0)+1,updatedAt:Date.now()};
+  persistExerciseProgress();
+  renderExerciseProgressSummary();
+}
+function recordExercisePredictionError(id,diagnostic){
+  const previous=exerciseProgress[id]??{attempts:0};
+  exerciseProgress[id]={
+    ...previous,
+    wrongPredictions:(previous.wrongPredictions??0)+1,
+    lastDiagnostic:diagnostic,
+    updatedAt:Date.now()
+  };
+  persistExerciseProgress();
+  renderExerciseProgressSummary();
 }
 function parseInputValues(raw){
   const text=String(raw??"").trim();
@@ -281,13 +300,17 @@ function runCustomExercisePrediction(){
     feedback.textContent="Tu predicción coincide con el intérprete y con la prueba de referencia. "+actualText;
     feedback.classList.add("is-correct");
   }else if(matchesReference===true){
-    feedback.textContent="El método coincide con la salida de referencia, pero tu predicción fue distinta. Compara el cambio de cada variable. "+actualText;
+    const diagnostic=selectedExercise.errors?.[0]??"Compara el orden de las operaciones y el valor de las variables.";
+    recordExercisePredictionError(selectedExercise.id,diagnostic);
+    feedback.textContent="El método coincide con la salida de referencia, pero tu predicción fue distinta. Posible confusión: "+diagnostic+" "+actualText;
     feedback.classList.add("is-wrong");
   }else if(matchesReference===false&&matchesPrediction===true){
     feedback.textContent="Predijiste correctamente lo que hace este método, pero el resultado no coincide con la referencia. El método necesita revisión. "+actualText;
     feedback.classList.add("is-wrong");
   }else if(matchesReference===false){
-    feedback.textContent="La predicción y la ejecución difieren de la salida de referencia. Revisa el orden de las instrucciones y las condiciones. "+actualText;
+    const diagnostic=selectedExercise.errors?.[0]??"Revisa las condiciones y los límites del ciclo.";
+    recordExercisePredictionError(selectedExercise.id,diagnostic);
+    feedback.textContent="La predicción y la ejecución difieren de la salida de referencia. Posible error frecuente: "+diagnostic+" "+actualText;
     feedback.classList.add("is-wrong");
   }else if(matchesPrediction){
     feedback.textContent="Tu predicción coincide con la ejecución real. Para una comprobación independiente, ejecuta todos los casos definidos. "+actualText;
@@ -506,6 +529,7 @@ function bindContentEvents(){
         const current=exerciseHintStep;
         if(feedback)feedback.textContent="Pista "+(current+1)+" de "+hints.length+" · "+hints[current];
         exerciseHintStep++;
+        recordExerciseHint(selectedExercise.id);
         if(button){
           button.textContent=exerciseHintStep<hints.length?"Ver pista "+(exerciseHintStep+1)+" de "+hints.length:"Pistas utilizadas";
           button.disabled=exerciseHintStep>=hints.length;
