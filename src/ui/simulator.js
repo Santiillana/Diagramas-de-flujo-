@@ -624,7 +624,7 @@ function updateCameraButton(){
   if(!button)return;
   button.setAttribute("aria-pressed",String(cameraAuto));
   button.setAttribute("aria-label",cameraAuto?"Desactivar cámara automática":"Activar cámara automática");
-  button.title=cameraAuto?"Cámara automática activa":"Cámara automática desactivada";
+  button.title=cameraAuto?"Cámara activa · C":"Cámara pausada · C";
   button.classList.toggle("is-active",cameraAuto);
 }
 function applyCanvasTransform(){
@@ -1182,6 +1182,11 @@ function play(){
   if(timeline.index>=timeline.length-1)timeline.first();
   const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
   timer=window.setInterval(()=>{
+    if(predictionPending)return;
+    const destination=timeline.index+1;
+    if(predictEnabled&&eventAskable(execution.events[destination])){
+      predictionResume=true;stop();showPredictionQuestion(destination);return;
+    }
     cancelChoreography();
     timeline.next();
     choreographyPlayback=true;
@@ -1223,7 +1228,7 @@ function fitDiagram(){
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
   applyDiagramZoom();
   if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
-}async function toggleDiagramFullscreen(){
+}async async function toggleDiagramFullscreen(){
   const body=document.body;
   if(body.classList.contains("focus")){
     body.classList.remove("focus");
@@ -1459,7 +1464,7 @@ function bind(){
     else if(key==="+"||key==="="){event.preventDefault();zoomDiagram(1);}
     else if(key==="-"){event.preventDefault();zoomDiagram(-1);}
     else if(key==="0"){event.preventDefault();centerDiagram();}
-    else if(key.toLowerCase()==="c"){event.preventDefault();if(timeline)centerActiveNode(timeline.current,"auto");}
+    else if(key.toLowerCase()==="c"){event.preventDefault();if(cameraAuto)setCameraFree();else setCameraFollowing();}
     else if(key.toLowerCase()==="p"){event.preventDefault();togglePredictionMode();}
     else if(key.toLowerCase()==="h"){event.preventDefault();document.body.dataset.simulatorPanels=document.body.dataset.simulatorPanels==="hidden"?"visible":"hidden";requestAnimationFrame(()=>fitDiagram());}
     else if(key.toLowerCase()==="f"){event.preventDefault();toggleDiagramFullscreen();}
