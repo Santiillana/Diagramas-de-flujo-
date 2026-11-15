@@ -86,7 +86,7 @@ export const lessons = [
   {
     id:"variables",order:7,title:"Variables y asignación",duration:"8 min",
     objective:"Comprender nombre, valor, primera asignación y actualización de una variable.",
-    miniProgram:{"title":"Ejecutar con datos de ejemplo","code":"a=5|b=a|a=9|imp b","sample":[]},
+    miniProgram:{"title":"Actualizar una variable","code":"leer x|x=x+5|imp x","sample":[10]},
     commonError:"Creer que B cambia automáticamente cuando cambia A.",
     tryIt:{"prompt":"Predice qué ocurrirá antes de mirar el resultado."},
     summary:"Ya puedes explicar comprender nombre, valor, primera asignación y actualización de una variable.",
