@@ -122,6 +122,6 @@
 .exercise-home-stats strong{font-size:clamp(21px,2.2vw,28px);color:var(--accent)}
 .exercise-home-stats span,.exercise-home-stats small{color:var(--muted);font-size:13px}
 .exercise-home-shortcuts{grid-column:1/-1;display:flex;gap:16px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
-.exercise-home-shortcuts button{padding:4px 0;border:0;color:var(--accent-strong);background:transparent;font:700 13px inherit;cursor:pointer}
+.exercise-home-shortcuts button{padding:4px 0;border:0;color:var(--accent-strong);background:transparent;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 @media(max-width:800px){.exercise-home-hero{grid-template-columns:1fr}.exercise-home-stats{max-width:520px}}
 @media(max-width:520px){.exercise-home-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.exercise-home-stats>div{padding:9px 4px}.exercise-home-actions{flex-direction:column}.exercise-home-actions>*{width:100%}}
