@@ -55,8 +55,9 @@ test("tema y movimiento reducido responden a controles y preferencia del sistema
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-motion", "reduced");
-  await page.locator('[data-action="toggle-theme"]').click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.locator('[data-action="toggle-theme"]').click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.locator('[data-action="toggle-motion"]').click();
   await expect(page.locator("html")).toHaveAttribute("data-motion", "full");
 });
