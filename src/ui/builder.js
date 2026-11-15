@@ -350,7 +350,17 @@ function runBuilder(){
 }
 function bindBuilder(){
   const canvas=$("#builder-canvas-list");
-  let dragId=null;
+  let dragId=null,paletteDragType=null;
+  document.querySelectorAll("[data-add-node]").forEach(button=>{
+    button.setAttribute("draggable","true");
+    button.addEventListener("dragstart",event=>{
+      paletteDragType=button.dataset.addNode;
+      event.dataTransfer.effectAllowed="copy";
+      event.dataTransfer.setData("application/x-traza-node",paletteDragType);
+      canvas.classList.add("is-palette-drop-target");
+    });
+    button.addEventListener("dragend",()=>{paletteDragType=null;canvas.classList.remove("is-palette-drop-target");});
+  });
   canvas.addEventListener("dragstart",event=>{
     const card=event.target.closest("[data-node-card]");
     if(!card||!event.target.closest(".builder-node-select")){event.preventDefault();return;}
@@ -359,15 +369,20 @@ function bindBuilder(){
     event.dataTransfer.setData("text/plain",dragId);
   });
   canvas.addEventListener("dragover",event=>{
+    if(paletteDragType){event.preventDefault();event.dataTransfer.dropEffect="copy";canvas.classList.add("is-palette-drop-target");return;}
     const card=event.target.closest("[data-node-card]");
     if(!dragId||!card||card.dataset.nodeCard===dragId)return;
     event.preventDefault();event.dataTransfer.dropEffect="move";
     canvas.querySelectorAll(".is-drop-before,.is-drop-after").forEach(node=>node.classList.remove("is-drop-before","is-drop-after"));
-    const after=event.clientY>card.getBoundingClientRect().top+card.getBoundingClientRect().height/2;
+    const rect=card.getBoundingClientRect(),after=event.clientY>rect.top+rect.height/2;
     card.classList.add(after?"is-drop-after":"is-drop-before");
     card.dataset.dropAfter=String(after);
   });
   canvas.addEventListener("drop",event=>{
+    const paletteType=event.dataTransfer.getData("application/x-traza-node");
+    if(paletteType&&["input","process","output","decision","for","while","doWhile"].includes(paletteType)){
+      event.preventDefault();canvas.classList.remove("is-palette-drop-target");paletteDragType=null;dragId=null;addNode(paletteType);return;
+    }
     const card=event.target.closest("[data-node-card]");
     if(!dragId||!card)return;
     event.preventDefault();
