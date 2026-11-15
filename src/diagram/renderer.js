@@ -14,11 +14,11 @@ const wrapped = (text,max=16) => {
 };
 function shape(node){
   const x=node.x-node.width/2,y=node.y,w=node.width,h=node.height;
-  if (node.type==="terminal") return '<rect x="'+(x+28)+'" y="'+y+'" width="'+(w-56)+'" height="'+h+'" rx="'+(h/2)+'"/>';
-  if (node.type==="input") return '<polygon points="'+(x+15)+','+y+' '+(x+w)+','+y+' '+(x+w-15)+','+(y+h)+' '+x+','+(y+h)+'"/>';
-  if (node.type==="output") return '<path d="M '+x+' '+y+' H '+(x+w)+' V '+(y+h-10)+' Q '+(x+w*.75)+' '+(y+h-24)+' '+(x+w*.5)+' '+(y+h-10)+' T '+x+' '+(y+h-10)+' Z"/>';
+  if (node.type==="terminal") return '<rect x="'+(x+25)+'" y="'+y+'" width="'+(w-50)+'" height="'+h+'" rx="'+(h/2)+'"/>';
+  if (node.type==="input") return '<polygon points="'+(x+16)+','+y+' '+(x+w)+','+y+' '+(x+w-16)+','+(y+h)+' '+x+','+(y+h)+'"/>';
+  if (node.type==="output") return '<path d="M '+x+' '+y+' H '+(x+w)+' V '+(y+h-10)+' Q '+(x+w*.75)+' '+(y+h-20)+' '+(x+w*.5)+' '+(y+h-10)+' T '+x+' '+(y+h-10)+' Z"/>';
   if (node.type==="if"||node.type==="while"||node.type==="doWhile") return '<polygon points="'+node.x+','+y+' '+(x+w)+','+(y+h/2)+' '+node.x+','+(y+h)+' '+x+','+(y+h/2)+'"/>';
-  if (node.type==="for") return '<polygon points="'+(x+22)+','+y+' '+(x+w-22)+','+y+' '+(x+w)+','+(y+h/2)+' '+(x+w-22)+','+(y+h)+' '+(x+22)+','+(y+h)+' '+x+','+(y+h/2)+'"/>';
+  if (node.type==="for") return '<polygon points="'+(x+24)+','+y+' '+(x+w-24)+','+y+' '+(x+w)+','+(y+h/2)+' '+(x+w-24)+','+(y+h)+' '+(x+24)+','+(y+h)+' '+x+','+(y+h/2)+'"/>';
   if (node.type==="merge") return '<circle cx="'+node.x+'" cy="'+(y+h/2)+'" r="9"/>';
   if (node.type==="body") return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="12" stroke-dasharray="5 4"/>';
   return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="5"/>';
@@ -27,6 +27,10 @@ function edgePath(edge,diagram){
   const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
   if (!from||!to) return "";
   const fx=from.x, fy=from.y+from.height/2, tx=to.x, ty=to.y+to.height/2;
+  if (edge.kind==="false") {
+    const y=from.y+from.height/2;
+    return "M "+(from.x+from.width/2)+" "+y+" L "+tx+" "+y+" L "+tx+" "+to.y;
+  }
   if (edge.kind==="back") {
     const bendX=Math.min(fx,tx)-95;
     const top=Math.min(from.y,to.y)-25;
