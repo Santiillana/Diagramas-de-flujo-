@@ -212,7 +212,7 @@ function renderLesson(){
   if(screen===0){
     body='<section class="lesson-screen lesson-screen-idea"><p class="eyebrow">¿PARA QUÉ SIRVE?</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p>'+
       '<details class="lesson-technical"><summary>Versión técnica</summary><p>'+escapeHTML(lesson.technical)+'</p></details>'+
-      '<div class="lesson-idea-scene">'+lessonScene(lesson,0)+'</div>'+
+      '<div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+
       '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p></section>';
   }else if(screen===1){
     body=visualMarkup(lesson);
@@ -466,6 +466,6 @@ export function initContentViews(){
   const homeProgress=$("#home-learn-progress");if(homeProgress)homeProgress.textContent=learnProgress.completed.length+" completadas";
   const mark=$("#view-learn .detail-empty-mark");if(mark)mark.textContent="17";
   lessonList();renderLesson();
-  renderExerciseCards();renderExerciseDetail();
+  renderConceptFilters();renderExerciseCards();renderExerciseDetail();
   bindContentEvents();
 }
