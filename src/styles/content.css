@@ -102,3 +102,12 @@
 .exercise-pagination button{padding:7px 11px;border:1px solid var(--line);border-radius:7px;color:var(--ink);background:var(--surface);font:inherit;cursor:pointer}
 .exercise-pagination button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:520px){.exercise-pagination{justify-content:space-between}}
+
+
+.catalog-toolbar{grid-template-columns:minmax(180px,1.4fr) minmax(140px,.7fr) minmax(160px,.9fr) auto auto}
+.catalog-toolbar .catalog-class-filter{display:flex;align-items:center;gap:7px;white-space:nowrap;padding-bottom:9px}
+.catalog-toolbar .catalog-class-filter span{text-transform:none;letter-spacing:0}
+.catalog-toolbar .catalog-class-filter input{width:16px;min-height:16px;accent-color:var(--accent)}
+.catalog-toolbar .catalog-category{min-width:0}
+@media(max-width:800px){.catalog-toolbar{grid-template-columns:1fr 1fr}.catalog-toolbar .catalog-count{grid-column:1/-1}.catalog-toolbar .catalog-class-filter{padding-bottom:0}}
+@media(max-width:520px){.catalog-toolbar{grid-template-columns:1fr}.catalog-toolbar .catalog-count{grid-column:auto}}
