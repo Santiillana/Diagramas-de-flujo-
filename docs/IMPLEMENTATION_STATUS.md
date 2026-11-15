@@ -1,6 +1,6 @@
 # Estado de implementación
 
-Última actualización: 14 de noviembre de 2026
+Última actualización: 15 de noviembre de 2026
 
 ## Repositorio y ramas
 - Repositorio: `Santiillana/Diagramas-de-flujo-`
@@ -47,11 +47,11 @@ El PR #6 de M5 está fusionado. No queda pendiente crear ni fusionar ese PR.
 | G · Guía de figuras y ciclos | **Aceptado** | Commits `43cc57c934561de82b63cd28c60cec6c1c97f3a1` + corrección; CI #? (`43643271857`): 260/260 Node y 67/67 Chromium, success; capturas guardadas |
 | H · Laboratorio sin bloqueo | **Aceptado** | Commit `171fd66ff9c1526e16c08223dc6e615e7673a8fa`; CI (`43643879643`): 263/263 Node y 70/70 Chromium, success; capturas guardadas |
 | I · Razonamiento, pistas y métodos | **Aceptado** | Commit `6f40140e6ee1a6e79ea7bbd11d02cd59848000c7`; CI (`43644547610`): 267/267 Node y 73/73 Chromium, success; capturas guardadas |
-| J · Aprendizaje activo | Pendiente | Prueba de solución, predicción diagnóstica, progreso, compartir y proyector |
-| K · Pulido visual global | Pendiente | Tipografía mínima y contraste AA en ambos temas |
-| L · Auditoría y piloto | Pendiente | Paridad, capturas de cinco espacios y prueba con estudiantes |
+| J · Aprendizaje activo | **En desarrollo** | Commit inicial `f45e5cbaf6f6c8c606150138911f5efdb2454a65`; corrección de puerta de reto y enlace compartido; controles de siguiente vuelta/salir del ciclo en `src/ui/simulator.js`. CI de ciclo #? (`43658925370`): browser 79/79, success. Aún faltan oráculo del Constructor, tabla rellenable, diagnóstico específico por errores, persistencia de errores/pistas y recorrido guiado. |
+| K · Pulido visual global | **En validación** | `src/styles/polish.css`: mínimos tipográficos, tokens semánticos y foco visible; tamaño A−/A+ actualizado a base 14 px. Las primeras ejecuciones detectaron regresiones; no aceptar hasta que la última CI quede verde y se revisen capturas. |
+| L · Auditoría y piloto | **Parcial** | Creados `docs/PARITY_CHECKLIST.md` y `docs/PILOT_NOTES.md`. La matriz distingue migrado/parcial/pendiente. Piloto humano, auditoría axe/AA, ciclo largo y verificación de URL pública siguen pendientes. |
 
-## Comandos reproducibles
+## Evidencia reciente de la fase 2\n- Corrección del enlace compartido tras respetar la puerta de reto: CI #? (run `43658800632`, success).\n- Controles de ciclo: CI #? (run `43658925370`, success; 79 pruebas Chromium).\n- CI de pulido K y auditoría L: en validación; consultar [Actions](https://github.com/Santiillana/Diagramas-de-flujo-/actions).\n\n## Comandos reproducibles
 - Requisito: Node.js 22.
 - Instalación limpia: `npm ci`
 - Pruebas Node: `npm test`
