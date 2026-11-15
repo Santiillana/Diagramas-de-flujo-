@@ -51,7 +51,8 @@ test("el dock flota sobre el lienzo sin consumir una fila del simulador", async 
   expect(stage).not.toBeNull();
   expect(position).toBe("fixed");
   expect(Math.abs(1000 - dock.y - dock.height - 10)).toBeLessThanOrEqual(2);
-  expect(dock.y + dock.height).toBeGreaterThan(stage.y + stage.height - 1);
+  expect(dock.y).toBeLessThan(stage.y + stage.height);
+  expect(dock.y + dock.height).toBeGreaterThan(stage.y);
 });
 
 test("tema y movimiento reducido responden a controles y preferencia del sistema", async ({ page }) => {
