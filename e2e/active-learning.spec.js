@@ -73,7 +73,8 @@ test("los controles de ciclo saltan a la siguiente vuelta y permiten salir",asyn
  const nextLoop=page.locator("#simulator-next-loop");
  const exitLoop=page.locator("#simulator-exit-loop");
  await expect(nextLoop).toBeDisabled();
- await page.locator("#simulator-timeline").fill("4");
+ for(let i=0;i<4;i++)await page.locator("#simulator-next").click();
+ await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
  await expect(nextLoop).toBeEnabled();
  await nextLoop.click();
  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
