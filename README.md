@@ -7,7 +7,7 @@ Plataforma educativa modular basada en la especificación maestra V5 y en el pro
 | Módulo | Estado | Evidencia |
 |---|---|---|
 | 1. Arquitectura y experiencia visual | Aceptado e integrado en `main` | 7/7 Node + 7/7 Chromium en aceptación inicial |
-| 2. Aprende y 40 ejercicios | Aceptado e integrado; correcciones del contenido consolidadas | 17 lecciones, 45 ejercicios (20/10/10/5), oráculo de 170 escenarios |
+| 2. Aprende y 45 ejercicios | Aceptado e integrado; correcciones del contenido consolidadas | 17 lecciones, 45 ejercicios (20/10/10/5), oráculo de 170 escenarios |
 | 3. Parser, intérprete, diagramas y simulador | Aceptado e integrado en `main` | 31/31 Node + 16/16 Chromium |
 | 4. Laboratorio y constructor | Aceptado e integrado en `main` | 216/216 Node + 28/28 Chromium |
 | 5. Integración y auditoría final | Aceptado e integrado en `main` (PR #6) | 222/222 Node + 38/38 Chromium en CI de `main` |
