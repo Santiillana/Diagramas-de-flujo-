@@ -1,0 +1,39 @@
+name: Create simulator v3 pre-release backup tag
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag-backup:
+    name: Create backup tag on the exact current main commit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Create or verify backup tag
+        env:
+          TARGET_SHA: 893dd1cf4192be1a627d8e21eea49d012506e3fb
+          TAG_NAME: v2-antes-simulador-v3
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --tags
+          current="$(git rev-parse HEAD)"
+          test "$current" = "$TARGET_SHA"
+          git config user.name "Santiillana"
+          git config user.email "131924179+Santiillana@users.noreply.github.com"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"
+            tag_target="$(git rev-list -n 1 "$TAG_NAME")"
+            test "$tag_target" = "$TARGET_SHA"
+          else
+            git tag -a "$TAG_NAME" "$TARGET_SHA" -m "Respaldo de main antes de Simulador v3"
+            git push origin "refs/tags/$TAG_NAME"
+          fi
+          echo "Backup tag $TAG_NAME -> $(git rev-list -n 1 "$TAG_NAME")"

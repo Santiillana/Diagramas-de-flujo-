@@ -1,9 +1,8 @@
 name: Deploy GitHub Pages
 
+# La aplicación se publica en Cloudflare Workers. Pages queda disponible solo
+# para una ejecución manual de diagnóstico, evitando un check rojo en cada push.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -17,11 +16,8 @@ concurrency:
 
 jobs:
   deploy:
-    name: Publish static site
+    name: Publicación manual de respaldo en GitHub Pages
     runs-on: ubuntu-24.04
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7

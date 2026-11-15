@@ -14,6 +14,8 @@ let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, d
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
+let predictEnabled=false,predictionPending=null,predictionResume=false,predictionCorrect=0,predictionAttempts=0;
+let focusIdleTimer=0;
 let routeGraph=new Map(), routeWeights=new Map(), routeCache=new Map(), tokenRaf=0;
 
 function readPseudocodeSize(){
@@ -97,7 +99,7 @@ function applyWindowState(){
     }
   }
   renderWindowRail();
-  requestAnimationFrame(()=>{if(diagramFitWidth){updateMinimap();if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");}});
+  requestAnimationFrame(()=>{if(diagramFitWidth&&cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");});
 }
 function minimizeWindow(id){
   if(!WINDOW_META.some(item=>item.id===id))return;
@@ -379,20 +381,25 @@ function choreographEvent(event){
 }
 
 function paintExerciseSelector(){
-  const host=$("#sim-exercise-strip");
-  if(!host)return;
+  const host=$("#sim-exercise-strip");if(!host)return;
   if(host.dataset.ready!=="true"){
-    host.innerHTML=exercises.map(item=>{
-      const level=item.level==="basic"?"basic":item.level==="advanced"?"advanced":"intermediate";
-      return '<button class="sim-exercise-chip level-'+level+'" type="button" data-sim-exercise="'+item.id+'" aria-label="Ejercicio '+item.id+' - '+esc(item.title)+'" title="'+esc(item.title)+'">'+String(item.id).padStart(2,"0")+'</button>';
-    }).join("");
+    host.innerHTML='<input id="sim-exercise-search" type="search" aria-label="Buscar ejercicio" placeholder="Buscar…" autocomplete="off"><select id="sim-exercise-level-filter" aria-label="Filtrar por nivel"><option value="all">Todos</option><option value="basic">Básico</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option></select><select id="sim-exercise-select" aria-label="Seleccionar ejercicio"></select>';
     host.dataset.ready="true";
   }
-  host.querySelectorAll("[data-sim-exercise]").forEach(button=>{
-    const active=Number(button.dataset.simExercise)===exerciseId;
-    button.classList.toggle("is-selected",active);
-    button.setAttribute("aria-pressed",String(active));
+  const search=host.querySelector("#sim-exercise-search");
+  const filter=host.querySelector("#sim-exercise-level-filter");
+  const select=host.querySelector("#sim-exercise-select");
+  const query=(search?.value??"").trim().toLocaleLowerCase("es");
+  const level=filter?.value??"all";
+  const selected=exercises.find(item=>item.id===exerciseId)??exercises[0];
+  const filtered=exercises.filter(item=>{
+    const levelMatch=level==="all"||item.level===level;
+    const queryMatch=!query||(String(item.id)+" "+item.title+" "+(labels[item.level]??item.level)).toLocaleLowerCase("es").includes(query);
+    return levelMatch&&queryMatch;
   });
+  select.innerHTML=filtered.map(item=>'<option value="'+item.id+'">'+String(item.id).padStart(2,"0")+' · '+esc(item.title)+'</option>').join("");
+  select.value=filtered.some(item=>String(item.id)===String(exerciseId))?String(exerciseId):String(filtered[0]?.id??"");
+  host.setAttribute("aria-label","Ejercicio actual: "+(selected?.title??"sin seleccionar"));
 }
 function openLabActivity(activity){
   document.querySelector('[data-space="lab"]')?.click();
@@ -405,6 +412,7 @@ function syncDockHeight(){
 function freeCanvasRect(){
   const stage=$("#diagram-stage"),header=$("#hd"),dock=$("#dock");
   if(!stage)return {left:0,top:0,right:innerWidth,bottom:innerHeight,width:innerWidth,height:innerHeight};
+  if(document.body.classList.contains("focus"))return {left:0,top:0,right:innerWidth,bottom:innerHeight,width:innerWidth,height:innerHeight};
   const box=stage.getBoundingClientRect();
   const hidden=document.body.dataset.simulatorPanels==="hidden";
   const mobile=matchMedia("(max-width: 900px)").matches;
@@ -427,15 +435,10 @@ function setCameraFree(){
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
   cameraRaf=0;
   updateCameraButton();
-  const follow=$("#sim-camera-follow");
-  if(follow){follow.hidden=false;follow.textContent="Cámara libre · Seguir el proceso";}
 }
 function setCameraFollowing(){
   cameraAuto=true;
   updateCameraButton();
-  const follow=$("#sim-camera-follow");
-  if(follow){follow.hidden=true;follow.textContent="Cámara libre · Seguir el proceso";}
-  if(timeline)centerActiveNode(timeline.current,"auto");
 }
 
 function publishTrace(){
@@ -620,7 +623,7 @@ function updateCameraButton(){
   if(!button)return;
   button.setAttribute("aria-pressed",String(cameraAuto));
   button.setAttribute("aria-label",cameraAuto?"Desactivar cámara automática":"Activar cámara automática");
-  button.title=cameraAuto?"Cámara automática activa":"Cámara automática desactivada";
+  button.title=cameraAuto?"Cámara activa · C":"Cámara pausada · C";
   button.classList.toggle("is-active",cameraAuto);
 }
 function applyCanvasTransform(){
@@ -636,39 +639,6 @@ function applyCanvasTransform(){
     wrap.style.backgroundSize=step+"px "+step+"px,"+step+"px "+step+"px,"+major+"px "+major+"px,"+major+"px "+major+"px";
     wrap.style.backgroundPosition=(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%step)+"px "+(panOffset.y%step)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px,"+(panOffset.x%major)+"px "+(panOffset.y%major)+"px";
   }
-  updateMinimap();
-}
-function updateMinimap(){
-  const host=$("#sim-minimap"),viewport=$("#sim-minimap-viewport");
-  if(!host||!viewport||!diagram||!diagramFitWidth)return;
-  const rect=freeCanvasRect(),stage=$("#diagram-stage").getBoundingClientRect();
-  const scale=fitScale*zoom,miniW=180,miniH=104,pad=7;
-  const usableW=miniW-pad*2,usableH=miniH-pad*2;
-  const ratio=Math.min(usableW/diagram.width,usableH/diagram.height);
-  const ox=(miniW-diagram.width*ratio)/2,oy=(miniH-diagram.height*ratio)/2;
-  const visible={x:(rect.left-stage.left-panOffset.x)/scale,y:(rect.top-stage.top-panOffset.y)/scale,width:rect.width/scale,height:rect.height/scale};
-  const x=Math.max(ox,Math.min(ox+usableW,ox+visible.x*ratio));
-  const y=Math.max(oy,Math.min(oy+usableH,oy+visible.y*ratio));
-  const w=Math.max(3,Math.min(usableW,visible.width*ratio));
-  const h=Math.max(3,Math.min(usableH,visible.height*ratio));
-  viewport.setAttribute("x",String(x));viewport.setAttribute("y",String(y));
-  viewport.setAttribute("width",String(Math.min(w,miniW-x)));viewport.setAttribute("height",String(Math.min(h,miniH-y)));
-  viewport.setAttribute("rx","3");
-}
-function renderMinimap(){
-  const svg=$("#sim-minimap-svg");
-  if(!svg||!diagram)return;
-  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
-  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
-  const edgeMarkup=diagram.edges.map(edge=>{
-    const path=$("#flow-diagram-container")?.querySelector('[data-edge-id="'+edge.id+'"] path');
-    const d=path?.getAttribute("d");
-    return d?'<path d="'+esc(d)+'"/>':"";
-  }).join("");
-  const nodeMarkup=diagram.nodes.map(node=>'<rect x="'+(node.x-node.width/2)+'" y="'+node.y+'" width="'+node.width+'" height="'+node.height+'" rx="2"/>').join("");
-  svg.innerHTML='<g transform="translate('+ox+' '+oy+') scale('+ratio+')"><g class="minimap-edges">'+edgeMarkup+'</g><g class="minimap-nodes">'+nodeMarkup+'</g></g>'+
-    '<rect id="sim-minimap-viewport" class="minimap-viewport" x="0" y="0" width="1" height="1" rx="3"/>';
-  updateMinimap();
 }
 function buildRouteGraph(){
   routeGraph=new Map();routeWeights=new Map();routeCache.clear();
@@ -787,6 +757,9 @@ function routeCoordinates(route){
 function clearDiagramTrail(){
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   $("#flow-trail")?.setAttribute("points","");
+  $("#flow-active-trail")?.setAttribute("points","");
+  $("#flow-token-ring")?.setAttribute("visibility","hidden");
+  $("#flow-token-label")?.setAttribute("visibility","hidden");
   $("#flow-diagram-container .flow-token")?.setAttribute("visibility","hidden");
 }
 function drawExecutionTrail(events){
@@ -808,59 +781,99 @@ function drawExecutionTrail(events){
     stage.dataset.trailNodeCount=String(events.filter(event=>event.nodeId!==null&&event.nodeId!==undefined).length);
   }
 }
-function animateTokenRoute(route,event){
+function animateTokenRoute(route,event,animate=choreographyPlayback){
   const token=$("#flow-diagram-container .flow-token");
+  const trail=$("#flow-active-trail"),label=$("#flow-token-label"),ring=$("#flow-token-ring");
   if(!token)return;
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   const points=routeCoordinates(route);
   const node=diagram?.nodes.find(item=>String(item.sourceId)===String(event?.nodeId));
   const target=points.length?points[points.length-1]:node?{x:node.x,y:Math.max(10,node.y-12)}:null;
-  if(!target)return;
-  const reduced=document.documentElement.dataset.motion==="reduced"||matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(points.length<2||reduced||currentSpeedFactor()>=4){
-    token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));token.setAttribute("visibility","visible");return;
+  if(!target){token.setAttribute("visibility","hidden");return;}
+  const reduced=reducedMotion(),speed=currentSpeedFactor();
+  const caption=event?.change?event.change.name+" ← "+fmt(event.change.value):
+    event?.condition?event.condition+" → "+(event.result?"V":"F"):
+    event?.type==="output"?"imprime "+fmt(event.value):typeName(event?.type??"paso");
+  token.setAttribute("visibility","visible");
+  if(label){label.textContent=caption;label.setAttribute("x",String(target.x+16));label.setAttribute("y",String(target.y-14));label.setAttribute("visibility","visible");}
+  const place=point=>{
+    token.setAttribute("cx",String(point.x));token.setAttribute("cy",String(point.y));
+    if(label){label.setAttribute("x",String(point.x+16));label.setAttribute("y",String(point.y-14));}
+  };
+  if(points.length<2||!animate||reduced||speed>=4){
+    place(target);if(trail)trail.setAttribute("points","");
+    if(ring)ring.setAttribute("visibility","hidden");
+    return;
   }
   const lengths=[0];let total=0;
   for(let index=1;index<points.length;index++){
     total+=Math.hypot(points[index].x-points[index-1].x,points[index].y-points[index-1].y);
     lengths.push(total);
   }
-  token.setAttribute("cx",String(points[0].x));token.setAttribute("cy",String(points[0].y));token.setAttribute("visibility","visible");
-  const duration=480/Math.sqrt(currentSpeedFactor());let started=0;
+  if(total<1){place(target);return;}
+  const pointsValue=points.map(point=>point.x+","+point.y).join(" ");
+  if(trail){trail.setAttribute("points",pointsValue);trail.style.strokeDasharray=String(total);trail.style.strokeDashoffset=String(total);}
+  place(points[0]);
+  const duration=(total<1?150:Math.min(500+total*1.6,1500))/speed;
+  let started=0;
   const frame=now=>{
     if(!started)started=now;
-    const progress=Math.min(1,(now-started)/duration),distance=progress*total;
+    const u=Math.min(1,(now-started)/duration);
+    const eased=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    const distance=total*eased;
     let index=1;while(index<lengths.length-1&&lengths[index]<distance)index++;
     const segment=lengths[index]-lengths[index-1]||1,ratio=(distance-lengths[index-1])/segment;
-    const a=points[index-1],b=points[index];
-    token.setAttribute("cx",String(a.x+(b.x-a.x)*ratio));
-    token.setAttribute("cy",String(a.y+(b.y-a.y)*ratio));
-    if(progress<1)tokenRaf=requestAnimationFrame(frame);
-    else{token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));tokenRaf=0;}
+    const from=points[index-1],to=points[index];
+    const point={x:from.x+(to.x-from.x)*ratio,y:from.y+(to.y-from.y)*ratio};
+    place(point);
+    if(trail)trail.style.strokeDashoffset=String(total*(1-eased));
+    if(u<1)tokenRaf=requestAnimationFrame(frame);
+    else{
+      place(target);tokenRaf=0;
+      if(trail)trail.style.strokeDashoffset="0";
+      if(ring){
+        ring.setAttribute("cx",String(target.x));ring.setAttribute("cy",String(target.y));ring.setAttribute("visibility","visible");
+        ring.classList.remove("is-expanding");void ring.getBoundingClientRect();ring.classList.add("is-expanding");
+      }
+      token.classList.remove("is-bouncing");void token.getBoundingClientRect();token.classList.add("is-bouncing");
+      const timer=setTimeout(()=>{if(trail)trail.setAttribute("points","");token.classList.remove("is-bouncing");},420);
+      pulseTimeouts.push(timer);
+    }
   };
   tokenRaf=requestAnimationFrame(frame);
 }
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
   const stage=$("#diagram-stage"),node=document.getElementById("flow-node-"+event.nodeId);
-  if(!stage||!node)return;
+  const model=diagram?.nodes.find(item=>String(item.sourceId)===String(event.nodeId));
+  if(!stage||!node||!model)return;
   const free=freeCanvasRect(),target=node.getBoundingClientRect();
+  const scale=fitScale*zoom,branchOffset=(model.x-520)*scale;
+  const sharesAxis=Math.abs(branchOffset)<free.width*.48;
+  const desiredX=free.left+free.width/2+(sharesAxis?branchOffset*.45:0);
+  const desiredY=free.top+free.height*.45;
   const goal={
-    x:panOffset.x+(free.left+free.width/2-(target.left+target.width/2)),
-    y:panOffset.y+(free.top+free.height/2-(target.top+target.height/2))
+    x:panOffset.x+(desiredX-(target.left+target.width/2)),
+    y:panOffset.y+(desiredY-(target.top+target.height/2))
   };
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
-  if(behavior==="auto"||document.documentElement.dataset.motion==="reduced"){
+  if(behavior==="auto"||reducedMotion()){
     panOffset=goal;cameraRaf=0;applyCanvasTransform();
   }else{
-    const start={...panOffset},started=performance.now(),duration=130/Math.sqrt(currentSpeedFactor());
+    let previous=performance.now(),started=previous;
     const step=now=>{
       if(!cameraAuto)return;
-      const elapsed=now-started,eased=1-Math.exp(-Math.max(0,elapsed)/duration);
-      panOffset={x:start.x+(goal.x-start.x)*eased,y:start.y+(goal.y-start.y)*eased};
+      const dt=Math.max(0,now-previous);previous=now;
+      const alpha=1-Math.exp(-dt/(130/Math.sqrt(currentSpeedFactor())));
+      panOffset={
+        x:panOffset.x+(goal.x-panOffset.x)*alpha,
+        y:panOffset.y+(goal.y-panOffset.y)*alpha
+      };
       applyCanvasTransform();
-      if(elapsed<duration*4&&Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y)>.7)cameraRaf=requestAnimationFrame(step);
-      else{panOffset=goal;cameraRaf=0;applyCanvasTransform();}
+      const distance=Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y);
+      if(distance<1.5||now-started>2500){
+        panOffset=goal;cameraRaf=0;applyCanvasTransform();
+      }else cameraRaf=requestAnimationFrame(step);
     };
     cameraRaf=requestAnimationFrame(step);
   }
@@ -873,7 +886,7 @@ function currentSpeedFactor(){
 function zoomAt(nextZoom,clientX,clientY){
   const stage=$("#diagram-stage");
   if(!stage)return;
-  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.25,Math.min(3,nextZoom));
+  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.3,Math.min(3,nextZoom));
   const anchorX=clientX-box.left,anchorY=clientY-box.top;
   const worldX=(anchorX-panOffset.x)/oldZoom,worldY=(anchorY-panOffset.y)/oldZoom;
   zoom=target;
@@ -887,20 +900,7 @@ function zoomDiagram(direction){
   const free=freeCanvasRect();
   zoomAt(zoom*(direction>0?1.18:1/1.18),free.left+free.width/2,free.top+free.height/2);
 }
-function jumpMinimap(event){
-  if(!diagram||!diagramFitWidth)return;
-  const svg=$("#sim-minimap-svg"),point=svg.createSVGPoint();
-  point.x=event.clientX;point.y=event.clientY;
-  const cursor=point.matrixTransform(svg.getScreenCTM().inverse());
-  const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
-  const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
-  const worldX=Math.max(0,Math.min(diagram.width,(cursor.x-ox)/ratio));
-  const worldY=Math.max(0,Math.min(diagram.height,(cursor.y-oy)/ratio));
-  const stage=$("#diagram-stage").getBoundingClientRect(),free=freeCanvasRect();
-  const centerX=free.left+free.width/2-stage.left,centerY=free.top+free.height/2-stage.top;
-  panOffset={x:centerX-worldX*fitScale*zoom,y:centerY-worldY*fitScale*zoom};
-  setCameraFree();applyCanvasTransform();
-}
+
 function centerDiagram(){
   if(!diagram)return;
   fitDiagram();setCameraFollowing();
@@ -957,6 +957,7 @@ function render(){
     drawExecutionTrail(seen);
     animateTokenRoute(walked,e);
   }
+  cameraAuto=true;updateCameraButton();
   centerActiveNode(e);
   if(choreographyPlayback){
     const contextTimer=setTimeout(()=>showContextWindow(e),100/currentSpeedFactor());
@@ -1008,10 +1009,135 @@ function render(){
     $("#simulator-status").textContent="DETENIDO · "+e.message;
     $("#simulator-status").classList.add("simulator-status-error");
   }
+  renderFocusState(e);
   publishTrace();
 }
 
 
+function showFocusControls(){
+  const ui=$("#focus-ui");if(!ui||!document.body.classList.contains("focus"))return;
+  ui.classList.remove("is-idle");clearTimeout(focusIdleTimer);
+  focusIdleTimer=window.setTimeout(()=>ui.classList.add("is-idle"),3000);
+}
+function focusCopy(event){
+  if(event.type==="input")return {title:"📥 Entra un dato",value:event.change?.name+" ← "+fmt(event.value),line:"El dato se guarda en "+event.change?.name+"."};
+  if(event.type==="output")return {title:"🖨️ Sale en pantalla",value:fmt(event.value),line:"Ese valor aparece en la Pantalla."};
+  if(event.condition)return {title:event.type==="decision"?"❓ Decisión":"🔁 Condición del ciclo",value:event.condition+" → "+(event.result?"V":"F"),line:event.result?"Sigue el camino V.":"Sigue el camino F."};
+  if(event.change)return {title:"✏️ Cambia una variable",value:event.change.name+": "+(event.change.previous===undefined?"∅":fmt(event.change.previous))+" → "+fmt(event.change.value),line:"Se guarda el nuevo valor."};
+  if(event.type==="program-end")return {title:"🏁 Fin del algoritmo",value:"Ejecución terminada",line:"La memoria y la Pantalla conservan el resultado."};
+  if(event.type==="loop-enter")return {title:"🔁 Nueva vuelta",value:"Vuelta "+event.iteration,line:"Comienza otra repetición."};
+  return {title:typeName(event.type),value:"Paso "+(timeline.index+1),line:brief(event)};
+}
+function placeFocusCard(){
+  const card=$("#focus-card");if(!card||card.hidden)return;
+  const node=timeline?.current?.nodeId==null?null:document.getElementById("flow-node-"+timeline.current.nodeId);
+  if(!node){card.style.left="50%";card.style.top="18%";card.style.transform="translateX(-50%)";return;}
+  const figure=node.getBoundingClientRect(),w=card.offsetWidth||300,h=card.offsetHeight||120,gap=16,margin=12;
+  const choices=[
+    {left:figure.right+gap,top:figure.top+figure.height/2-h/2},
+    {left:figure.left-w-gap,top:figure.top+figure.height/2-h/2},
+    {left:figure.left+figure.width/2-w/2,top:figure.top-h-gap},
+    {left:figure.left+figure.width/2-w/2,top:figure.bottom+gap}
+  ];
+  const safe=choices.map(box=>({...box,right:box.left+w,bottom:box.top+h})).find(box=>
+    box.left>=margin&&box.top>=margin&&box.right<=innerWidth-margin&&box.bottom<=innerHeight-margin&&!rectIntersects(box,figure,8)
+  );
+  const chosen=safe??{left:Math.max(margin,Math.min(innerWidth-w-margin,figure.right+gap)),top:Math.max(margin,Math.min(innerHeight-h-margin,figure.top))};
+  card.style.left=chosen.left+"px";card.style.top=chosen.top+"px";card.style.transform="none";
+}
+function renderFocusState(event){
+  if(!document.body.classList.contains("focus"))return;
+  const copy=focusCopy(event),card=$("#focus-card");
+  $("#focus-card-title").textContent=copy.title;$("#focus-card-value").textContent=copy.value;$("#focus-card-line").textContent=copy.line;
+  if(card){card.hidden=false;requestAnimationFrame(placeFocusCard);}
+  const memory=$("#focus-memory"),variables=event.variables??{};
+  memory.innerHTML=Object.entries(variables).map(([name,value])=>
+    '<span class="focus-memory-item '+(event.change?.name===name?"is-changed":"")+'"><small>'+esc(name)+'</small>'+
+    (event.change?.name===name&&event.change.previous!==undefined?'<del>'+esc(fmt(event.change.previous))+'</del>':"")+
+    '<strong>'+esc(fmt(value))+'</strong></span>'
+  ).join("");
+  memory.hidden=!Object.keys(variables).length;
+  const output=event.outputs??[],screen=$("#focus-screen");
+  if(output.length){screen.hidden=false;$("#focus-screen-lines").innerHTML=output.slice(-4).map(value=>'<li>'+esc(fmt(value))+'</li>').join("");}
+  else screen.hidden=true;
+  const loop=event.loopStack?.at(-1),counter=$("#focus-loop");
+  counter.hidden=!loop&&!event.iteration;if(!counter.hidden)counter.textContent="Vuelta "+(event.iteration??loop.iteration);
+  const code=$("#focus-code");code.textContent=event.sourceText||"";code.hidden=!event.sourceText;
+  clearTimeout(code._fadeTimer);code.classList.remove("is-fading");code._fadeTimer=window.setTimeout(()=>code.classList.add("is-fading"),3000);
+  $("#focus-subtitle").textContent=brief(event);$("#focus-step").textContent="Paso "+(timeline.index+1)+" de "+timeline.length;
+  const progress=$("#focus-progress");progress.max=String(timeline.length-1);progress.value=String(timeline.index);
+}
+
+function eventAskable(event){
+  if(!event||event.nodeId===null||event.nodeId===undefined||event.type==="input"||event.type==="error")return false;
+  return ["decision","branch","loop-condition"].includes(event.type)||
+    Boolean(event.change&&typeof event.change.value==="number")||
+    (event.type==="output"&&typeof event.value==="number");
+}
+function predictionModel(event){
+  if(["decision","branch","loop-condition"].includes(event.type)){
+    return {answer:event.result?"V":"F",question:"¿Qué responde la condición?",detail:event.condition??event.sourceText,options:["V","F"]};
+  }
+  if(event.change&&typeof event.change.value==="number"){
+    const value=event.change.value,candidates=[value,event.change.previous,value+1,value-1,value*2,0,value+2,value-2];
+    const options=[];
+    for(const item of candidates){
+      if(typeof item==="number"&&Number.isFinite(item)){
+        const label=fmt(item);if(!options.includes(label))options.push(label);
+      }
+      if(options.length===4)break;
+    }
+    return {answer:fmt(value),question:"¿Qué valor tendrá "+event.change.name+" después de este paso?",detail:event.expression??"",options:options.sort(()=>Math.random()-.5)};
+  }
+  const value=event.value,options=[];
+  for(const item of [value,value+1,value-1,0,value*2]){
+    if(typeof item==="number"&&Number.isFinite(item)){const label=fmt(item);if(!options.includes(label))options.push(label);}
+    if(options.length===4)break;
+  }
+  return {answer:fmt(value),question:"¿Qué número sale en pantalla?",detail:event.expression??"",options:options.sort(()=>Math.random()-.5)};
+}
+function updatePredictionButton(){
+  const button=$("#simulator-predict");if(!button)return;
+  button.setAttribute("aria-pressed",String(predictEnabled));
+  button.setAttribute("aria-label",predictEnabled?"Desactivar modo Predice":"Activar modo Predice");
+  button.title=predictEnabled?"Predice activo · P":"Predice · P";
+  button.classList.toggle("is-active",predictEnabled);
+  button.textContent="🎯 Predice "+predictionCorrect+"/"+predictionAttempts;
+  const focusButton=$("#focus-predict");
+  if(focusButton){focusButton.setAttribute("aria-pressed",String(predictEnabled));focusButton.textContent="🎯 Predice "+predictionCorrect+"/"+predictionAttempts;}
+}
+function togglePredictionMode(){
+  predictEnabled=!predictEnabled;predictionPending=null;
+  const card=$("#simulator-question");if(card)card.hidden=true;
+  updatePredictionButton();
+}
+function showPredictionQuestion(index){
+  const event=execution?.events?.[index];if(!eventAskable(event))return;
+  const model=predictionModel(event),card=$("#simulator-question");if(!card)return;
+  predictionPending={index,event,model,answered:false};
+  card.hidden=false;card.classList.toggle("is-focus",document.body.classList.contains("focus"));
+  card.innerHTML='<div class="sim-question-card"><button type="button" id="simulator-question-close" aria-label="Cerrar pregunta">×</button><p class="sim-question-eyebrow">🎯 PREDICE ANTES DE VER</p><h3>'+esc(model.question)+'</h3><p class="sim-question-detail">'+esc(model.detail??"")+'</p><div class="sim-question-options">'+model.options.map(value=>'<button type="button" data-prediction-answer="'+esc(value)+'">'+esc(value)+'</button>').join("")+'</div><p id="sim-question-feedback" role="status" aria-live="polite"></p><button type="button" id="simulator-question-reveal" hidden>Ver el paso</button></div>';
+}
+function answerPrediction(button){
+  if(!predictionPending||predictionPending.answered)return;
+  const correct=button.dataset.predictionAnswer===predictionPending.model.answer;
+  predictionPending.answered=true;predictionAttempts++;if(correct)predictionCorrect++;
+  $("#simulator-question").querySelectorAll("[data-prediction-answer]").forEach(item=>{
+    item.disabled=true;
+    item.classList.toggle("is-correct",item.dataset.predictionAnswer===predictionPending.model.answer);
+    item.classList.toggle("is-wrong",item===button&&!correct);
+    item.classList.toggle("is-muted",item!==button&&item.dataset.predictionAnswer!==predictionPending.model.answer);
+  });
+  $("#sim-question-feedback").textContent=correct?"✓ ¡Correcto!":"✗ Era "+predictionPending.model.answer+".";
+  $("#simulator-question-reveal").hidden=false;updatePredictionButton();
+}
+function revealPrediction(){
+  if(!predictionPending?.answered)return;
+  const index=predictionPending.index,resume=predictionResume;predictionPending=null;
+  $("#simulator-question").hidden=true;timeline.seek(index);choreographyPlayback=true;
+  try{render();}finally{choreographyPlayback=false;}
+  if(resume)play();
+}
 function run(){
   stop();
   try{
@@ -1039,10 +1165,13 @@ function seek(index){
   stop();timeline.seek(index);render();
 }
 function move(delta){
-  if(!timeline)return;
-  stop();
-  timeline.seek(timeline.index+delta);
-  choreographyPlayback=true;
+  if(!timeline||predictionPending)return;
+  const destination=Math.max(0,Math.min(timeline.length-1,timeline.index+delta));
+  if(destination===timeline.index)return;
+  if(delta>0&&predictEnabled&&eventAskable(execution.events[destination])){
+    predictionResume=timer!==null;stop();showPredictionQuestion(destination);return;
+  }
+  stop();timeline.seek(destination);choreographyPlayback=true;
   try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
@@ -1051,6 +1180,11 @@ function play(){
   if(timeline.index>=timeline.length-1)timeline.first();
   const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
   timer=window.setInterval(()=>{
+    if(predictionPending)return;
+    const destination=timeline.index+1;
+    if(predictEnabled&&eventAskable(execution.events[destination])){
+      predictionResume=true;stop();showPredictionQuestion(destination);return;
+    }
     cancelChoreography();
     timeline.next();
     choreographyPlayback=true;
@@ -1080,36 +1214,47 @@ function fitDiagram(){
   const viewBox=svg.viewBox?.baseVal;
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
-  const availableWidth=Math.max(180,free.width-24),availableHeight=Math.max(180,free.height-24);
-  fitScale=Math.min(availableWidth/viewBox.width,availableHeight/viewBox.height);
+  const focus=document.body.classList.contains("focus");
+  fitScale=focus?Math.max(1.3,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.9/Math.min(viewBox.height,560))*1.08)):
+    Math.round(Math.max(300,Math.min(free.width-20,viewBox.width*2))*1.1)/viewBox.width;
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
-  zoom=1;panOffset={x:0,y:0};
+  zoom=1;
+  const stageBox=stage.getBoundingClientRect();
+  panOffset={x:free.left-stageBox.left+(free.width-diagramFitWidth)/2,y:free.top-stageBox.top+(free.height-diagramFitHeight)/2};
   if(cameraRaf)cancelAnimationFrame(cameraRaf);cameraRaf=0;
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
-  applyDiagramZoom();renderMinimap();
-  if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-}async function toggleDiagramFullscreen(){
-  const stage=$("#diagram-stage");
-  if(!stage)return;
-  try{
-    if(document.fullscreenElement)await document.exitFullscreen();
-    else if(stage.requestFullscreen)await stage.requestFullscreen();
-  }catch(error){
-    $("#simulator-status").textContent="No se pudo activar pantalla completa: "+error.message;
+  applyDiagramZoom();
+  if(cameraAuto&&timeline&&timeline.index>0)centerActiveNode(timeline.current,"auto");
+}
+async function toggleDiagramFullscreen(){
+  const body=document.body;
+  if(body.classList.contains("focus")){
+    body.classList.remove("focus");
+    clearTimeout(focusIdleTimer);
+    if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch{}}
+    document.documentElement.dataset.fullscreenRequested="false";
+    updateFullscreenButton();
+    requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    return;
   }
+  body.classList.add("focus");
+  if(document.documentElement.requestFullscreen){
+    document.documentElement.dataset.fullscreenRequested="true";
+    try{await document.documentElement.requestFullscreen();}
+    catch{document.documentElement.dataset.fullscreenRequested="false";}
+  }
+  updateFullscreenButton();
+  requestAnimationFrame(()=>{fitDiagram();if(timeline){renderFocusState(timeline.current);if(cameraAuto)centerActiveNode(timeline.current,"auto");}showFocusControls();});
 }
 function updateFullscreenButton(){
-  const active=document.fullscreenElement===$("#diagram-stage");
+  const active=document.body.classList.contains("focus");
   const button=$("#diagram-fullscreen");
   button?.setAttribute("aria-pressed",String(active));
-  if(button){
-    button.setAttribute("aria-label",active?"Pantalla completa activa":"Ver diagrama a pantalla completa");
-    button.title=active?"Pantalla completa activa":"Pantalla completa";
-  }
+  button?.setAttribute("aria-label",active?"Salir del modo Concentración":"Entrar al modo Concentración");
+  if(button){button.title=active?"Salir de Concentración · F":"Concentración · F";button.textContent=active?"⤢ Salir":"⛶ Concentración";}
   const exitButton=$("#diagram-fullscreen-exit");
   if(exitButton)exitButton.hidden=!active;
-  if(active)requestAnimationFrame(()=>fitDiagram());
 }
 function bindDiagramPan(){
   const stage=$("#diagram-stage"),hit=$("#diagram-pan-hit"),canvas=$("#flow-diagram-container");
@@ -1118,7 +1263,7 @@ function bindDiagramPan(){
   const onDown=event=>{
     if(event.pointerType==="mouse"&&event.button!==0)return;
     const target=event.target instanceof Element?event.target:null;
-    if(target?.closest("button,a,input,select,textarea,#sim-minimap,#sim-camera-follow,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading"))return;
+    if(target?.closest("button,a,input,select,textarea,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading,.focus-ui"))return;
     const hitRect=hit.getBoundingClientRect();
     if(event.clientX<hitRect.left||event.clientX>hitRect.right||event.clientY<hitRect.top||event.clientY>hitRect.bottom)return;
     event.preventDefault();
@@ -1174,16 +1319,18 @@ function bindDiagramPan(){
   document.addEventListener("pointercancel",onUp,true);
   hit.addEventListener("lostpointercapture",onUp);
   hit.addEventListener("wheel",event=>{
-    event.preventDefault();zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+    event.preventDefault();
+    if(event.ctrlKey||event.metaKey){
+      zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
+      return;
+    }
+    setCameraFree();
+    if(event.shiftKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)){
+      panOffset.x-=event.shiftKey&&event.deltaX===0?event.deltaY:event.deltaX;
+    }else panOffset.y-=event.deltaY;
+    applyCanvasTransform();
+    stage.dataset.wheelPan=String((Number(stage.dataset.wheelPan)||0)+1);
   },{passive:false});
-  const minimap=$("#sim-minimap");
-  if(minimap){
-    let dragging=false;
-    minimap.addEventListener("pointerdown",event=>{dragging=true;try{minimap.setPointerCapture(event.pointerId);}catch{}jumpMinimap(event);});
-    minimap.addEventListener("pointermove",event=>{if(dragging)jumpMinimap(event);});
-    const end=()=>{dragging=false;};
-    minimap.addEventListener("pointerup",end);minimap.addEventListener("pointercancel",end);
-  }
 }function setMobilePanel(name){
   const valid=["problem","diagram","scene","variables","output","history"];
   if(!valid.includes(name))return;
@@ -1195,16 +1342,21 @@ function bindDiagramPan(){
   });
 }
 function bind(){
-  $("#sim-exercise-strip")?.addEventListener("click",event=>{
-    const button=event.target.closest("[data-sim-exercise]");
-    if(!button)return;
-    exerciseId=Number(button.dataset.simExercise)||1;
-    methodIndex=0;
-    selectedVariable=null;
-    prepare();
+  $("#sim-exercise-strip")?.addEventListener("input",event=>{
+    if(event.target.id==="sim-exercise-search"||event.target.id==="sim-exercise-level-filter")paintExerciseSelector();
   });
-  $("#simulator-predict")?.addEventListener("click",()=>openLabActivity("predict"));
-  $("#simulator-lab")?.addEventListener("click",()=>openLabActivity(null));
+  $("#sim-exercise-strip")?.addEventListener("change",event=>{
+    if(event.target.id!=="sim-exercise-select")return;
+    exerciseId=Number(event.target.value)||1;methodIndex=0;selectedVariable=null;prepare();
+  });
+  $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
+  $("#focus-predict")?.addEventListener("click",()=>{togglePredictionMode();showFocusControls();});
+  $("#simulator-question")?.addEventListener("click",event=>{
+    const answer=event.target.closest("[data-prediction-answer]");
+    if(answer){answerPrediction(answer);return;}
+    if(event.target.closest("#simulator-question-reveal"))revealPrediction();
+    if(event.target.closest("#simulator-question-close")){predictionPending=null;$("#simulator-question").hidden=true;}
+  });
   $("#simulator-panel-toggle")?.addEventListener("click",()=>{
     const hidden=document.body.dataset.simulatorPanels==="hidden";
     document.body.dataset.simulatorPanels=hidden?"visible":"hidden";
@@ -1238,10 +1390,27 @@ function bind(){
   });
   $("#diagram-fullscreen").addEventListener("click",toggleDiagramFullscreen);
   $("#diagram-fullscreen-exit").addEventListener("click",toggleDiagramFullscreen);
+  $("#focus-previous")?.addEventListener("click",()=>{move(-1);showFocusControls();});
+  $("#focus-next")?.addEventListener("click",()=>{move(1);showFocusControls();});
+  $("#focus-progress")?.addEventListener("input",event=>{seek(Number(event.target.value));showFocusControls();});
+  $("#diagram-pan-hit")?.addEventListener("click",event=>{
+    if(!document.body.classList.contains("focus")||event.target.closest("button,input,select"))return;
+    if(event.clientX<innerWidth/3)move(-1);else if(event.clientX>innerWidth*2/3)move(1);
+    showFocusControls();
+  });
+  document.addEventListener("pointermove",()=>showFocusControls(),{passive:true});
   $("#simulator-shortcuts-close")?.addEventListener("click",()=>{$("#simulator-shortcuts").hidden=true;});
   $("#vf-close")?.addEventListener("click",closeContextWindow);
   bindWindows();
-  document.addEventListener("fullscreenchange",updateFullscreenButton);
+  document.addEventListener("fullscreenchange",()=>{
+    if(document.body.classList.contains("focus")&&!document.fullscreenElement&&document.documentElement.dataset.fullscreenRequested==="true"){
+      document.documentElement.dataset.fullscreenRequested="false";
+      document.body.classList.remove("focus");
+      clearTimeout(focusIdleTimer);
+      requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    }
+    updateFullscreenButton();
+  });
   $("#variables-content").addEventListener("click",event=>{
     const button=event.target.closest("[data-variable-history]");
     if(button){selectedVariable=button.dataset.variableHistory;render();}
@@ -1285,6 +1454,7 @@ function bind(){
     if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
     if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
+    if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
     else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
@@ -1293,9 +1463,8 @@ function bind(){
     else if(key==="+"||key==="="){event.preventDefault();zoomDiagram(1);}
     else if(key==="-"){event.preventDefault();zoomDiagram(-1);}
     else if(key==="0"){event.preventDefault();centerDiagram();}
-    else if(key.toLowerCase()==="c"){event.preventDefault();if(timeline)centerActiveNode(timeline.current,"auto");}
-    else if(key.toLowerCase()==="p"){event.preventDefault();openLabActivity("predict");}
-    else if(key.toLowerCase()==="l"){event.preventDefault();openLabActivity(null);}
+    else if(key.toLowerCase()==="c"){event.preventDefault();if(cameraAuto)setCameraFree();else setCameraFollowing();}
+    else if(key.toLowerCase()==="p"){event.preventDefault();togglePredictionMode();}
     else if(key.toLowerCase()==="h"){event.preventDefault();document.body.dataset.simulatorPanels=document.body.dataset.simulatorPanels==="hidden"?"visible":"hidden";requestAnimationFrame(()=>fitDiagram());}
     else if(key.toLowerCase()==="f"){event.preventDefault();toggleDiagramFullscreen();}
     else if(key==="?"){event.preventDefault();const help=$("#simulator-shortcuts");if(help)help.hidden=!help.hidden;}
@@ -1322,13 +1491,12 @@ function bind(){
   const freeAreaObserver=new ResizeObserver(()=>{
     requestAnimationFrame(()=>{
       if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
-      updateMinimap();
     });
   });
   for(const selector of ["#hd","#PL","#RC","#dock","#simulator-mobile-tabs"]){
     const element=$(selector);if(element)freeAreaObserver.observe(element);
   }
-  window.addEventListener("resize",()=>requestAnimationFrame(()=>cameraAuto?fitDiagram():updateMinimap()));
+  window.addEventListener("resize",()=>requestAnimationFrame(()=>fitDiagram()));
   document.addEventListener("traza:request-simulation",event=>{
     exerciseId=Number(event.detail?.exerciseId)||1;
     methodIndex=Number(event.detail?.methodIndex)||0;
@@ -1348,5 +1516,5 @@ export function initSimulator(){
   syncDockHeight();
   setMobilePanel("diagram");
   updateCameraButton();
-  bind();prepare();
+  bind();updatePredictionButton();updateFullscreenButton();prepare();
 }

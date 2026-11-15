@@ -19,7 +19,7 @@ test("la ventana contextual evita nodos y conectores, o delega la explicación a
   await page.setViewportSize({width:1920,height:1080});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await page.locator('#sim-exercise-strip [data-sim-exercise="24"]').click();
+  await page.locator("#sim-exercise-select").selectOption("24");
   await page.locator("#simulator-timeline").evaluate(input=>{
     input.value="7";input.dispatchEvent(new Event("input",{bubbles:true}));
   });

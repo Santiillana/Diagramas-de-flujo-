@@ -93,3 +93,35 @@ Los pasos manuales y la reproducción automática adaptan el evento de snapshot 
 
 ## D-032 · No cubrir la decisión ni las ramas V/F
 En los eventos de decisión, rama y condición de ciclo, la explicación permanece en el panel persistente En escena. La ventana flotante se oculta y el cable guía conecta el rombo con ese panel; las burbujas flotantes se reservan a los eventos secuenciales cuando existe un rectángulo libre. Esto prioriza la visibilidad de las ramas y sus etiquetas en los momentos de mayor densidad gráfica.
+
+
+## D-033 · El simulador v3 reproduce la navegación espacial sin minimapa
+El scroll convencional desplaza el lienzo; Ctrl/⌘+rueda y pellizco aplican zoom. El seguimiento automático puede pausarse con intervención manual y se reactiva al avanzar un evento. No se renderiza ni se mantiene una superficie de minimapa.
+
+## D-034 · Concentración es un estado CSS independiente de Fullscreen API
+La clase `body.focus` es la fuente de verdad del modo Concentración. La Fullscreen API mejora la inmersión cuando el navegador la admite, pero su ausencia o rechazo no impide el modo. Las flechas avanzan/retroceden eventos de la misma traza y Escape restaura el encuadre estándar.
+
+## D-035 · Predice pertenece al Simulador y consume eventos preguntables
+La pregunta se prepara desde el siguiente snapshot del intérprete y pausa la reproducción. Responder no modifica la traza; «Ver el paso» confirma el evento real y conserva el estado de reproducción anterior. El Laboratorio mantiene sus propias actividades, sin botón duplicado en la barra del Simulador.
+
+## D-036 · Paleta del Observatorio aislada por tokens
+Los tokens `--traza-*` definen escenario, vidrio, texto y acentos. La paleta oscura es la inicial y la paleta clara sigue el atributo `data-theme`; los alias solo se aplican dentro de `data-active-space="simulator"`.
+
+## D-037 · La rueda no es un control de zoom
+La rueda vertical desplaza el lienzo, Shift/deltaX desplazan horizontalmente y solo Ctrl/⌘+rueda, pellizco y botones modifican la escala. Esto conserva el comportamiento de desplazamiento espacial y evita el zoom involuntario.
+
+## D-038 · No asumir un destino de producción no documentado
+El repositorio no contiene una configuración de despliegue ni una URL pública verificable. GitHub Pages queda como tarea manual porque su origen debe activarse en Settings. La rama no debe declarar que Cloudflare u otro proveedor es producción sin evidencia verificable. El workflow post-deploy es manual y requiere el origen HTTPS real como entrada.
+
+## D-039 · Respaldo antes del cambio de producción
+La rama `respaldo/antes-simulador-v3` y la etiqueta `v2-antes-simulador-v3` apuntan al SHA `893dd1cf4192be1a627d8e21eea49d012506e3fb`. El PR se fusionará solo tras el éxito de pruebas unitarias, e2e, paridad y controles del Simulador; la etiqueta permite identificar el estado anterior.
+
+## D-040 · Marca de release verificable contra un origen explícito
+Cada entrega del Simulador v3 incorpora una meta `traza-release` y la misma cadena en el pie de página. El workflow post-deploy solo se ejecuta manualmente y exige el origen HTTPS real como entrada. Espera la marca exacta y ejecuta humo de navegador contra ese origen antes de declarar la versión verificada.
+
+## D-041 · Evidencia antes que afirmaciones
+La incapacidad de clonar el repositorio desde el entorno de trabajo no se sustituye por resultados simulados. Las pruebas se consideran aprobadas solo con el resumen real de GitHub Actions para el SHA exacto del PR y, para producción, con la marca HTTP y la ejecución del workflow post-deploy sobre un origen proporcionado y verificable.
+
+
+## D-042 · No hay publicación implícita al fusionar
+La validación CI del PR no equivale a un despliegue. El workflow de humo post-deploy no se activa en cada push a `main`: exige ejecución manual con el origen público real. Si no se dispone de ese origen, se reporta como pendiente y no se declara producción verificada.

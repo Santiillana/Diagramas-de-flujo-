@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Laboratorio visual e interactivo para aprender a resolver problemas mediante diagramas de flujo.">
+  <meta name="traza-release" content="simulador-v3-20261115-1850">
   <meta name="theme-color" content="#f4f6fb"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
@@ -26,17 +27,24 @@
     <div class="simulator-toolbar" id="simulator-toolbar" aria-label="Herramientas del simulador">
       <div class="sim-exercise-strip" id="sim-exercise-strip" aria-label="Seleccionar ejercicio"></div>
       <div class="sim-toolbar-controls" role="group" aria-label="Controles visuales">
-        <button class="sim-tool-button" type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto" title="Reducir texto">A−</button>
-        <button class="sim-tool-button" type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto" title="Tamaño normal">A</button>
-        <button class="sim-tool-button" type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto" title="Aumentar texto">A+</button>
-        <button class="sim-tool-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara automática">◎</button>
-        <button class="sim-tool-button" type="button" id="simulator-predict" title="Abrir Predice en Laboratorio">🎯</button>
-        <button class="sim-tool-button" type="button" id="simulator-lab" title="Abrir Laboratorio">🧪</button>
-        <button class="sim-tool-button" type="button" id="simulator-panel-toggle" aria-label="Ocultar paneles" aria-pressed="false" title="Mostrar u ocultar paneles">≡</button>
-        <button class="sim-tool-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Alejar">−</button>
-        <button class="sim-tool-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Acercar">+</button>
-        <button class="sim-tool-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Encuadrar">⌗</button>
-        <button class="sim-tool-button" type="button" id="diagram-fullscreen" aria-label="Ver diagrama a pantalla completa" title="Pantalla completa">⛶</button>
+        <div class="sim-toolbar-group" role="group" aria-label="Tamaño del texto">
+          <button class="sim-tool-button" type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto" title="Reducir texto">A−</button>
+          <button class="sim-tool-button" type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto" title="Restablecer a 17 px">A</button>
+          <button class="sim-tool-button" type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto" title="Aumentar texto">A+</button>
+        </div>
+        <div class="sim-toolbar-group" role="group" aria-label="Vista del diagrama">
+          <button class="sim-tool-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Zoom −">−</button>
+          <button class="sim-tool-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Zoom +">+</button>
+          <button class="sim-tool-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Ajustar · 0">⌗</button>
+          <button class="sim-tool-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara · C">🎥 Cámara</button>
+        </div>
+        <div class="sim-toolbar-group" role="group" aria-label="Aprendizaje">
+          <button class="sim-tool-button" type="button" id="simulator-predict" aria-label="Activar modo Predice" aria-pressed="false" title="Predice · P">🎯 Predice 0/0</button>
+        </div>
+        <div class="sim-toolbar-group" role="group" aria-label="Paneles y concentración">
+          <button class="sim-tool-button" type="button" id="simulator-panel-toggle" aria-label="Ocultar paneles" aria-pressed="false" title="Paneles · H">≡ Paneles</button>
+          <button class="sim-tool-button" type="button" id="diagram-fullscreen" aria-label="Entrar en Concentración" aria-pressed="false" title="Concentración · F">⛶ Concentración</button>
+        </div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -176,16 +184,30 @@
               <div id="vf-content" class="sim-context-content"></div>
               <i class="sim-context-cable" aria-hidden="true"></i>
             </div>
-            <button type="button" id="sim-camera-follow" class="sim-camera-follow" hidden>Seguir el proceso</button>
-            <aside id="sim-minimap" class="sim-minimap" aria-label="Minimapa del diagrama">
-              <span>VISTA GENERAL</span>
-              <svg id="sim-minimap-svg" viewBox="0 0 180 104" role="img" aria-label="Vista general y zona visible"></svg>
-            </aside>
+            <div id="focus-ui" class="focus-ui" aria-live="polite">
+              <button type="button" id="focus-predict" class="focus-predict" aria-pressed="false" aria-label="Activar modo Predice">🎯 Predice</button>
+              <article id="focus-card" class="focus-card" hidden>
+                <strong id="focus-card-title"></strong>
+                <b id="focus-card-value"></b>
+                <p id="focus-card-line"></p>
+              </article>
+              <aside id="focus-memory" class="focus-memory" aria-label="Memoria" hidden></aside>
+              <aside id="focus-screen" class="focus-screen" aria-label="Pantalla" hidden><strong>▣ Pantalla</strong><ol id="focus-screen-lines"></ol></aside>
+              <span id="focus-loop" class="focus-loop" hidden></span>
+              <code id="focus-code" class="focus-code" hidden></code>
+              <div class="focus-footer">
+                <button type="button" id="focus-previous" aria-label="Paso anterior">‹</button>
+                <div class="focus-progress-wrap"><strong id="focus-subtitle"></strong><input id="focus-progress" type="range" min="0" max="0" value="0" aria-label="Progreso del recorrido"><small id="focus-step"></small></div>
+                <button type="button" id="focus-next" aria-label="Paso siguiente">›</button>
+              </div>
+            </div>
+            <div id="simulator-question" class="simulator-question" hidden></div>
+
             <div id="simulator-shortcuts" class="simulator-shortcuts" role="dialog" aria-label="Atajos de teclado" hidden>
               <strong>Atajos del simulador</strong>
               <span>Espacio reproducir · ←/→ paso · Inicio/Fin extremos</span>
               <span>+ / − zoom · 0 encuadrar · C centrar</span>
-              <span>P Predice · L Laboratorio · H enfoque · F pantalla completa</span>
+              <span>P Predice · C Cámara · H paneles · F Concentración · Esc salir</span>
               <button type="button" id="simulator-shortcuts-close">Cerrar</button>
             </div>
             <span class="canvas-coordinate coordinate-top">TRAZA / SVG</span><span class="canvas-coordinate coordinate-bottom" id="diagram-dimensions">VIEWPORT</span>
@@ -323,7 +345,7 @@
       </section>
     </section>
 
-    <footer class="page-footer"><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Consultar el prototipo original ↗</a></footer>
+    <footer class="page-footer"><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Consultar el prototipo original ↗</a><small>versión simulador-v3-20261115-1850</small></footer>
   </main>
 </div>
 <noscript><p class="noscript-message">Activa JavaScript para navegar por los cinco espacios. El prototipo original permanece disponible en la carpeta reference.</p></noscript>
