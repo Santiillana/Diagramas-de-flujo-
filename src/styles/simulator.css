@@ -1386,3 +1386,16 @@ body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
   body[data-active-space="simulator"] .sim-exercise-strip{flex-basis:260px;width:260px;min-width:205px}
   body[data-active-space="simulator"] .sim-tool-button{min-width:31px;padding-inline:3px;font-size:11px}
 }
+
+/* Navegación y barra comparten el espacio disponible sin invadirse. */
+@media(min-width:901px){
+  body[data-active-space="simulator"] .primary-nav{
+    flex:0 1 430px;max-width:430px;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
+  }
+  body[data-active-space="simulator"] .primary-nav .nav-button{flex:0 0 auto}
+  body[data-active-space="simulator"] .topbar-actions{flex:0 0 70px;min-width:70px}
+}
+@media(max-width:1250px) and (min-width:901px){
+  body[data-active-space="simulator"] .primary-nav{flex-basis:300px;max-width:300px}
+  body[data-active-space="simulator"] .sim-exercise-strip{flex-basis:260px;width:260px;min-width:200px}
+}
