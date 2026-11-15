@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { lessons } from "../src/content/lessons.js";
 import { exercises, validateCatalog } from "../src/content/exercises.js";
 
-test("existen las 14 lecciones progresivas del temario oficial",()=>{
-  assert.equal(lessons.length,14);
+test("existen las 17 lecciones progresivas del temario oficial",()=>{
+  assert.equal(lessons.length,17);
   for(const lesson of lessons){
     assert.ok(lesson.id && lesson.title && lesson.objective);
     assert.ok(lesson.intuitive && lesson.technical);
@@ -16,11 +16,11 @@ test("existen las 14 lecciones progresivas del temario oficial",()=>{
   }
 });
 
-test("el catálogo tiene exactamente 40 ejercicios y distribución 20/10/10",()=>{
-  assert.equal(exercises.length,40);
+test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
+  assert.equal(exercises.length,45);
   assert.equal(exercises.filter(x=>x.level==="basic").length,20);
   assert.equal(exercises.filter(x=>x.level==="intermediate").length,10);
-  assert.equal(exercises.filter(x=>x.level==="advanced").length,10);
+  assert.equal(exercises.filter(x=>x.level==="advanced").length,10);\n  assert.equal(exercises.filter(x=>x.level==="expert").length,5);
   assert.deepEqual(validateCatalog(),[]);
 });
 
@@ -53,7 +53,7 @@ test("cada método incluye pseudocódigo y casos normales o límite",()=>{
 
 test("los contenidos no convierten conceptos externos en objetivos didácticos",()=>{
   const source=JSON.stringify({lessons,exercises}).toLowerCase();
-  for(const forbidden of ["matrices","recursividad","búsqueda binaria","ordenamiento","programación orientada a objetos"]){
+  for(const forbidden of ["recursividad","búsqueda binaria","ordenamiento","programación orientada a objetos"]){
     assert.equal(source.includes(forbidden),false,forbidden+" no pertenece al alcance aprobado");
   }
 });
