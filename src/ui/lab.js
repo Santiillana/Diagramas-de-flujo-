@@ -378,6 +378,96 @@ function renderWhatIf(){
   });
 }
 
+function actualInputValues(){
+  return trace.execution.events.filter(event=>event.type==="input").map(event=>event.value);
+}
+function stableValues(value){
+  if(!value||typeof value!=="object"||Array.isArray(value))return JSON.stringify(value);
+  return JSON.stringify(Object.keys(value).sort().map(key=>[key,value[key]]));
+}
+function renderFillGap(){
+  if(!requireTrace())return;
+  const challenge=buildGapChallenge(trace.exercise.id,trace.methodIndex,trace.source,labAttempt);
+  gapHints=0;
+  if(!challenge){
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Este método no tiene una asignación que se pueda ocultar.</strong><p>Elige otro método o un ejercicio distinto.</p></div>';
+    return;
+  }
+  $("#lab-task-content").innerHTML=
+    '<div class="lab-question"><p class="eyebrow">RETO '+(labAttempt+1)+' · MISMO EJERCICIO Y MISMA TRAZA</p><h4>Completa la expresión que falta.</h4>'+
+    '<p class="lab-muted">La respuesta se comprobará ejecutando el pseudocódigo con los mismos datos de esta ejecución.</p>'+
+    '<pre class="lab-snippet"><code>'+esc(challenge.maskedLines.join("\n"))+'</code></pre>'+
+    '<label class="lab-editor-field"><span>EXPRESIÓN QUE FALTA EN '+esc(challenge.variable)+'</span><input id="lab-gap-answer" autocomplete="off" spellcheck="false"></label>'+
+    '<div class="lab-task-actions"><button type="button" class="button button-secondary" id="lab-gap-hint">Pista</button><button type="button" class="button button-primary" id="lab-gap-check">Comprobar</button><button type="button" class="button button-secondary" id="lab-gap-surrender">Ver solución</button><button type="button" class="button button-secondary" id="lab-gap-new">Nuevo reto</button></div>'+
+    '<div id="lab-gap-feedback" class="lab-feedback" role="status"></div></div>';
+  $("#lab-gap-hint").addEventListener("click",()=>{
+    const hints=[
+      "Piensa qué valores necesita la variable para completar el cálculo.",
+      "La expresión debe usar variables que ya existan en ese punto del programa.",
+      "La expresión original es: "+challenge.answer
+    ];
+    $("#lab-gap-feedback").textContent=hints[Math.min(gapHints,hints.length-1)];
+    gapHints=Math.min(3,gapHints+1);
+  });
+  $("#lab-gap-check").addEventListener("click",()=>{
+    const answer=$("#lab-gap-answer").value.trim();
+    if(!answer){$("#lab-gap-feedback").textContent="Escribe una expresión antes de comprobar.";return;}
+    const candidate=[...challenge.lines];
+    candidate[challenge.index]=challenge.variable+" = "+answer;
+    let result;
+    try{result=executePseudocode(candidate.join("|"),actualInputValues());}
+    catch(error){result={ok:false,error:{message:error.message},outputs:[],variables:{}};}
+    const sameOutputs=JSON.stringify(result.outputs)===JSON.stringify(trace.execution.outputs);
+    const sameVariables=stableValues(result.variables)===stableValues(trace.execution.variables);
+    const correct=Boolean(result.ok&&sameOutputs&&sameVariables);
+    recordResult("fill-gap",correct,gapHints);
+    const feedback=$("#lab-gap-feedback");
+    feedback.innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>Aún no coincide.</strong> ")+
+      (correct?"La ejecución conserva las mismas salidas y variables.":"Resultado obtenido: "+esc(JSON.stringify(result.outputs))+". Resultado esperado: "+esc(JSON.stringify(trace.execution.outputs))+".")+
+      (result.error?"<p>"+esc(result.error.message)+"</p>":"")+mixedAdvanceMarkup();
+    feedback.classList.toggle("is-correct",correct);
+    feedback.classList.toggle("is-wrong",!correct);
+    bindMixedAdvance();
+  });
+  $("#lab-gap-surrender").addEventListener("click",()=>{
+    recordResult("fill-gap",false,gapHints);
+    $("#lab-gap-answer").value=challenge.answer;
+    const feedback=$("#lab-gap-feedback");
+    feedback.innerHTML="<strong>Solución:</strong> "+esc(challenge.answer)+
+      "<p>Esta expresión reproduce las salidas y variables de la traza original.</p>"+mixedAdvanceMarkup();
+    bindMixedAdvance();
+  });
+  $("#lab-gap-new").addEventListener("click",()=>{labAttempt++;renderFillGap();});
+}
+function renderFollowArrow(){
+  if(!requireTrace())return;
+  const challenge=buildArrowChallenge(trace.execution.events,trace.index,trace.exercise.id,labAttempt);
+  if(!challenge){
+    $("#lab-task-content").innerHTML='<div class="lab-guidance"><strong>Ya no hay otra figura por recorrer.</strong><p>Vuelve al simulador y selecciona un paso anterior para seguir una ruta distinta.</p></div>';
+    return;
+  }
+  $("#lab-task-content").innerHTML=
+    '<div class="lab-question"><p class="eyebrow">PASO ACTUAL · '+(trace.index+1)+' / '+trace.execution.events.length+'</p>'+
+    '<h4>¿A qué figura llegará la ficha después?</h4>'+
+    '<p class="lab-muted">Sigue la conexión que se ejecuta, no la figura que esté más cerca.</p>'+
+    '<div class="lab-choice-list">'+challenge.options.map(option=>
+      '<button type="button" class="lab-choice" data-arrow-node="'+esc(option.nodeId)+'">'+esc(option.label)+'</button>'
+    ).join("")+'</div>'+
+    '<div id="lab-arrow-feedback" class="lab-feedback" role="status"></div></div>';
+  $("#lab-task-content").querySelectorAll("[data-arrow-node]").forEach(button=>button.addEventListener("click",()=>{
+    const correct=String(button.dataset.arrowNode)===String(challenge.correct.nodeId);
+    recordResult("follow-arrow",correct);
+    const feedback=$("#lab-arrow-feedback");
+    feedback.innerHTML=(correct?"<strong>Correcto.</strong> ":"<strong>Ese no es el siguiente paso.</strong> ")+
+      "<p>La siguiente instrucción real es: "+esc(challenge.next.sourceText||challenge.next.scene?.title||"Fin")+". "+
+      esc(challenge.next.scene?.body??challenge.next.message??"")+"</p>"+
+      '<button type="button" class="text-link" id="lab-arrow-inspect">Míralo correr</button>'+mixedAdvanceMarkup();
+    feedback.classList.toggle("is-correct",correct);
+    feedback.classList.toggle("is-wrong",!correct);
+    $("#lab-arrow-inspect")?.addEventListener("click",()=>document.dispatchEvent(new CustomEvent("traza:jump-to-step",{detail:{index:challenge.next.step}})));
+    bindMixedAdvance();
+  }));
+}
 function renderActivity(){
   if(activity==="predict")renderPredict();
   else if(activity==="table")renderTable();
@@ -385,6 +475,8 @@ function renderActivity(){
   else if(activity==="symbol")renderSymbol();
   else if(activity==="error")renderError();
   else if(activity==="whatif")renderWhatIf();
+  else if(activity==="fill-gap")renderFillGap();
+  else if(activity==="follow-arrow")renderFollowArrow();
 }
 export function initLab(){
   $("#lab-activity-list")?.addEventListener("click",event=>{
