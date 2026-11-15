@@ -82,7 +82,7 @@ export const lessons = [
     example:{title:"Mostrar dos resultados",code:"a=3 | imp a | imp a*2",explanation:"La primera salida muestra 3 y la segunda 6. A sigue valiendo 3 después de imprimir."},
     manipulation:{prompt:"Cambia el valor de A.",input:"3",steps:["A conserva el valor asignado.","La primera salida muestra A.","La segunda salida muestra el doble de A."]},
     check:{question:"¿Qué ocurre con A después de imp A?",options:["A se borra","A cambia al doble","A conserva su valor"],answer:2,why:"Imprimir comunica el dato; no realiza una asignación."}
-  },,
+  },
   {
     id:"variables",order:7,title:"Variables y asignación",duration:"8 min",
     objective:"Comprender nombre, valor, primera asignación y actualización de una variable.",
