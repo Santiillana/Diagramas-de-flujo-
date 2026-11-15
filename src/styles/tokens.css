@@ -46,3 +46,30 @@ a{color:inherit}
 ::selection{color:var(--ink);background:rgba(240,189,75,.3)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 :root[data-theme="dark"] .simulator-view{background:var(--traza-observatory)}
+
+/* Compatibilidad semántica con los módulos SVG y los estilos anteriores */
+:root{
+  --card:var(--surface);
+  --pen:var(--ink);
+  --hl:var(--accent);
+  --grid:var(--grid-line);
+  --ok:var(--positive);
+  --bad:var(--danger);
+  --info:var(--teal);
+  --sim-speed:1;
+  --sim-animation-duration:500ms;
+  --variable-color-1:#d69a2d;
+  --variable-color-2:#438bc2;
+  --variable-color-3:#2e9874;
+  --variable-color-4:#bb6b7c;
+  --variable-color-5:#8d77bd;
+  --variable-color-6:#b37a4a;
+}
+:root[data-theme="dark"]{
+  --variable-color-1:#f0bd4b;
+  --variable-color-2:#6fa8d1;
+  --variable-color-3:#5bc18b;
+  --variable-color-4:#e17d73;
+  --variable-color-5:#b18a62;
+  --variable-color-6:#75a89b;
+}
