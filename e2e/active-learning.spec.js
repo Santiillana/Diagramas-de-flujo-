@@ -56,6 +56,8 @@ test("el enlace de compartir identifica el método seleccionado",async({page})=>
  await page.goto("/");
  await page.locator('[data-space="exercises"]').click();
  await page.locator('[data-select-exercise="4"]').click();
+ // Los métodos están protegidos por el modo reto hasta revelar la explicación.
+ await page.locator("[data-reveal-solution]").click();
  await page.locator("[data-method-index='1']").click();
  await page.locator('[data-share-action="copy"]').click();
  await expect(page.locator("[data-exercise-share-url]")).toHaveValue(/reto=4/);
