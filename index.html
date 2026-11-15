@@ -13,44 +13,25 @@
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 <div class="app-shell">
   <header class="topbar" id="hd">
-    <a class="brand" href="#main-content" aria-label="Traza, laboratorio de diagramas de flujo">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4v7M20 29v7M8 20h7M25 20h7"/><rect x="14" y="11" width="12" height="18" rx="5"/><path d="M17.5 16h5M17.5 24h5"/></svg></span>
+    <a class="brand" href="#main-content" aria-label="Traza, aprendizaje de diagramas de flujo">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40"><path d="M5 8h12v10H5v10h12V18h10v10h8"/><circle cx="35" cy="28" r="3.5" fill="currentColor" stroke="none"/><path d="M27 13h8v8"/></svg>
+      </span>
       <span class="brand-copy"><strong>traza<span>.</span></strong><small>LABORATORIO DE FLUJOS</small></span>
     </a>
     <nav class="primary-nav" id="primary-nav" aria-label="Espacios de aprendizaje">
-      <button class="nav-button" type="button" data-space="learn" aria-current="false"><span class="nav-index" aria-hidden="true">◎</span>Aprende</button>
-      <button class="nav-button is-active" type="button" data-space="exercises" aria-current="page"><span class="nav-index" aria-hidden="true">▦</span>Ejercicios</button>
-      <button class="nav-button" type="button" data-space="simulator" aria-current="false"><span class="nav-index" aria-hidden="true">▶</span>Simulador</button>
-      <button class="nav-button" type="button" data-space="lab" aria-current="false"><span class="nav-index" aria-hidden="true">✳</span>Laboratorio</button>
-      <button class="nav-button" type="button" data-space="builder" aria-current="false"><span class="nav-index" aria-hidden="true">✎</span>Constructor</button>
+      <button class="nav-button" type="button" data-space="learn" aria-current="false">Aprende</button>
+      <button class="nav-button is-active" type="button" data-space="exercises" aria-current="page">Ejercicios</button>
+      <button class="nav-button" type="button" data-space="simulator" aria-current="false">Simulador</button>
+      <button class="nav-button" type="button" data-space="lab" aria-current="false">Laboratorio</button>
     </nav>
-    <div class="simulator-toolbar" id="simulator-toolbar" aria-label="Herramientas del simulador">
-      <div class="sim-exercise-strip" id="sim-exercise-strip" aria-label="Seleccionar ejercicio"></div>
-      <div class="sim-toolbar-controls" role="group" aria-label="Controles visuales">
-        <div class="sim-toolbar-group" role="group" aria-label="Tamaño del texto">
-          <button class="sim-tool-button" type="button" id="simulator-text-smaller" aria-label="Reducir tamaño del texto" title="Reducir texto">A−</button>
-          <button class="sim-tool-button" type="button" id="simulator-text-reset" aria-label="Restablecer tamaño del texto" title="Restablecer a 17 px">A</button>
-          <button class="sim-tool-button" type="button" id="simulator-text-larger" aria-label="Aumentar tamaño del texto" title="Aumentar texto">A+</button>
-        </div>
-        <div class="sim-toolbar-group" role="group" aria-label="Vista del diagrama">
-          <button class="sim-tool-button" type="button" id="diagram-zoom-out" aria-label="Alejar diagrama" title="Zoom −">−</button>
-          <button class="sim-tool-button" type="button" id="diagram-zoom-in" aria-label="Acercar diagrama" title="Zoom +">+</button>
-          <button class="sim-tool-button" type="button" id="diagram-fit" aria-label="Ajustar diagrama" title="Ajustar · 0">⌗</button>
-          <button class="sim-tool-button" type="button" id="diagram-camera-toggle" aria-label="Desactivar cámara automática" aria-pressed="true" title="Cámara · C">🎥 Cámara</button>
-        </div>
-        <div class="sim-toolbar-group" role="group" aria-label="Aprendizaje">
-          <button class="sim-tool-button" type="button" id="simulator-exercise-nav-toggle" aria-label="Abrir navegación numerada de ejercicios" aria-expanded="false" aria-controls="simulator-exercise-nav" title="Lista de ejercicios">▦ Ejercicios</button>
-          <button class="sim-tool-button" type="button" id="simulator-predict" aria-label="Activar modo Predice" aria-pressed="false" title="Predice · P">🎯 Predice 0/0</button>
-        </div>
-        <div class="sim-toolbar-group" role="group" aria-label="Paneles y concentración">
-          <button class="sim-tool-button" type="button" id="simulator-panel-toggle" aria-label="Ocultar paneles" aria-pressed="false" title="Paneles · H">≡ Paneles</button>
-          <button class="sim-tool-button" type="button" id="diagram-fullscreen" aria-label="Entrar en Concentración" aria-pressed="false" title="Concentración · F">⛶ Concentración</button>
-        </div>
-      </div>
-    </div>
     <div class="topbar-actions">
-      <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema oscuro" aria-pressed="false" title="Activar tema oscuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42m-9.88 9.88-1.42 1.42"/><circle cx="12" cy="12" r="4.2"/></svg></button>
-      <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l2.3-5 3.4 10L16 12h4M3 4h18v16H3z"/></svg></button>
+      <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema oscuro" aria-pressed="false" title="Activar tema oscuro">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.2A8 8 0 0 1 8.8 4.5 8 8 0 1 0 19.5 15.2Z"/></svg>
+      </button>
+      <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.2-5 4.1 10 2.1-5H21"/></svg>
+      </button>
     </div>
   </header>
 
@@ -73,7 +54,7 @@
           <div><strong id="home-exercise-count">45</strong><span>ejercicios</span></div>
           <div><strong id="home-expert-count">5</strong><span>retos expertos</span></div>
         </div>
-        <div class="exercise-home-shortcuts"><button type="button" data-go="lab">Practicar en laboratorio ↗</button><button type="button" data-go="builder">Crear un diagrama ↗</button></div>
+        <div class="exercise-home-shortcuts"><button type="button" data-go="lab">Practicar en laboratorio ↗</button><button type="button" data-go="lab">Crear un diagrama ↗</button></div>
       </section>
       <div class="catalog-toolbar">
         <label class="catalog-search"><span>Buscar</span><input id="exercise-search" type="search" placeholder="Título, número o concepto…" autocomplete="off"></label>
@@ -381,5 +362,5 @@
     <footer class="page-footer"><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Consultar el prototipo original ↗</a><small>versión simulador-v3-20261115-1850</small></footer>
   </main>
 </div>
-<noscript><p class="noscript-message">Activa JavaScript para navegar por los cinco espacios. El prototipo original permanece disponible en la carpeta reference.</p></noscript>
+<noscript><p class="noscript-message">Activa JavaScript para navegar por los cuatro espacios. El prototipo original permanece disponible en la carpeta reference.</p></noscript>
 </body></html>
