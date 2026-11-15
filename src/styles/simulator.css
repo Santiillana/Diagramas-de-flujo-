@@ -1342,3 +1342,26 @@ body[data-active-space="simulator"] #RC.simulator-inspector{top:108px}
   body[data-active-space="simulator"] #PL{top:auto!important}
   body[data-active-space="simulator"] #RC{top:auto!important}
 }
+
+/* La barra de herramientas vive en la misma fila que la marca y la navegación. */
+@media(min-width:901px){
+  body[data-active-space="simulator"] .topbar#hd{z-index:90}
+  body[data-active-space="simulator"] .simulator-toolbar{
+    position:static!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;
+    height:auto!important;min-height:40px;flex:1 1 0%;width:auto;margin:0;padding:0;
+    border:0;background:transparent;backdrop-filter:none;overflow:hidden
+  }
+  body[data-active-space="simulator"] .sim-exercise-strip{flex:0 1 360px;max-width:360px;overflow:hidden}
+  body[data-active-space="simulator"] .sim-toolbar-controls{flex:1 1 auto;justify-content:flex-end;overflow-x:auto;scrollbar-width:thin}
+  body[data-active-space="simulator"] #main-content>.simulator-view .simulator-grid{inset:54px 0 0!important}
+  body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{top:64px!important}
+  body[data-active-space="simulator"] #RC.simulator-inspector{top:64px!important}
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .simulator-toolbar{
+    position:static!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;
+    height:43px!important;min-height:43px;grid-column:1/-1;grid-row:2;width:100%;
+    padding:0;border:0;background:transparent;backdrop-filter:none;overflow:hidden
+  }
+  body[data-active-space="simulator"] .simulator-grid{inset:94px 0 0!important}
+}
