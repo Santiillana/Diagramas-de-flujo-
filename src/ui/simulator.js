@@ -14,6 +14,7 @@ let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, d
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
+let predictEnabled=false,predictionPending=null,predictionResume=false,predictionCorrect=0,predictionAttempts=0;
 let routeGraph=new Map(), routeWeights=new Map(), routeCache=new Map(), tokenRaf=0;
 
 function readPseudocodeSize(){
@@ -975,6 +976,74 @@ function render(){
 }
 
 
+function eventAskable(event){
+  if(!event||event.nodeId===null||event.nodeId===undefined||event.type==="input"||event.type==="error")return false;
+  return ["decision","branch","loop-condition"].includes(event.type)||
+    Boolean(event.change&&typeof event.change.value==="number")||
+    (event.type==="output"&&typeof event.value==="number");
+}
+function predictionModel(event){
+  if(["decision","branch","loop-condition"].includes(event.type)){
+    return {answer:event.result?"V":"F",question:"¿Qué responde la condición?",detail:event.condition??event.sourceText,options:["V","F"]};
+  }
+  if(event.change&&typeof event.change.value==="number"){
+    const value=event.change.value,candidates=[value,event.change.previous,value+1,value-1,value*2,0,value+2,value-2];
+    const options=[];
+    for(const item of candidates){
+      if(typeof item==="number"&&Number.isFinite(item)){
+        const label=fmt(item);if(!options.includes(label))options.push(label);
+      }
+      if(options.length===4)break;
+    }
+    return {answer:fmt(value),question:"¿Qué valor tendrá "+event.change.name+" después de este paso?",detail:event.expression??"",options:options.sort(()=>Math.random()-.5)};
+  }
+  const value=event.value,options=[];
+  for(const item of [value,value+1,value-1,0,value*2]){
+    if(typeof item==="number"&&Number.isFinite(item)){const label=fmt(item);if(!options.includes(label))options.push(label);}
+    if(options.length===4)break;
+  }
+  return {answer:fmt(value),question:"¿Qué número sale en pantalla?",detail:event.expression??"",options:options.sort(()=>Math.random()-.5)};
+}
+function updatePredictionButton(){
+  const button=$("#simulator-predict");if(!button)return;
+  button.setAttribute("aria-pressed",String(predictEnabled));
+  button.setAttribute("aria-label",predictEnabled?"Desactivar modo Predice":"Activar modo Predice");
+  button.title=predictEnabled?"Predice activo · P":"Predice · P";
+  button.classList.toggle("is-active",predictEnabled);
+  button.textContent="🎯 Predice "+predictionCorrect+"/"+predictionAttempts;
+}
+function togglePredictionMode(){
+  predictEnabled=!predictEnabled;predictionPending=null;
+  const card=$("#simulator-question");if(card)card.hidden=true;
+  updatePredictionButton();
+}
+function showPredictionQuestion(index){
+  const event=execution?.events?.[index];if(!eventAskable(event))return;
+  const model=predictionModel(event),card=$("#simulator-question");if(!card)return;
+  predictionPending={index,event,model,answered:false};
+  card.hidden=false;card.classList.toggle("is-focus",document.body.classList.contains("focus"));
+  card.innerHTML='<div class="sim-question-card"><button type="button" id="simulator-question-close" aria-label="Cerrar pregunta">×</button><p class="sim-question-eyebrow">🎯 PREDICE ANTES DE VER</p><h3>'+esc(model.question)+'</h3><p class="sim-question-detail">'+esc(model.detail??"")+'</p><div class="sim-question-options">'+model.options.map(value=>'<button type="button" data-prediction-answer="'+esc(value)+'">'+esc(value)+'</button>').join("")+'</div><p id="sim-question-feedback" role="status" aria-live="polite"></p><button type="button" id="simulator-question-reveal" hidden>Ver el paso</button></div>';
+}
+function answerPrediction(button){
+  if(!predictionPending||predictionPending.answered)return;
+  const correct=button.dataset.predictionAnswer===predictionPending.model.answer;
+  predictionPending.answered=true;predictionAttempts++;if(correct)predictionCorrect++;
+  $("#simulator-question").querySelectorAll("[data-prediction-answer]").forEach(item=>{
+    item.disabled=true;
+    item.classList.toggle("is-correct",item.dataset.predictionAnswer===predictionPending.model.answer);
+    item.classList.toggle("is-wrong",item===button&&!correct);
+    item.classList.toggle("is-muted",item!==button&&item.dataset.predictionAnswer!==predictionPending.model.answer);
+  });
+  $("#sim-question-feedback").textContent=correct?"✓ ¡Correcto!":"✗ Era "+predictionPending.model.answer+".";
+  $("#simulator-question-reveal").hidden=false;updatePredictionButton();
+}
+function revealPrediction(){
+  if(!predictionPending?.answered)return;
+  const index=predictionPending.index,resume=predictionResume;predictionPending=null;
+  $("#simulator-question").hidden=true;timeline.seek(index);choreographyPlayback=true;
+  try{render();}finally{choreographyPlayback=false;}
+  if(resume)play();
+}
 function run(){
   stop();
   try{
@@ -1003,9 +1072,12 @@ function seek(index){
 }
 function move(delta){
   if(!timeline)return;
-  stop();
-  timeline.seek(timeline.index+delta);
-  choreographyPlayback=true;
+  const destination=Math.max(0,Math.min(timeline.length-1,timeline.index+delta));
+  if(destination===timeline.index)return;
+  if(delta>0&&predictEnabled&&eventAskable(execution.events[destination])){
+    predictionResume=timer!==null;stop();showPredictionQuestion(destination);return;
+  }
+  stop();timeline.seek(destination);choreographyPlayback=true;
   try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
@@ -1171,7 +1243,13 @@ function bind(){
     selectedVariable=null;
     prepare();
   });
-  $("#simulator-predict")?.addEventListener("click",()=>openLabActivity("predict"));
+  $("#simulator-predict")?.addEventListener("click",togglePredictionMode);
+  $("#simulator-question")?.addEventListener("click",event=>{
+    const answer=event.target.closest("[data-prediction-answer]");
+    if(answer){answerPrediction(answer);return;}
+    if(event.target.closest("#simulator-question-reveal"))revealPrediction();
+    if(event.target.closest("#simulator-question-close")){predictionPending=null;$("#simulator-question").hidden=true;}
+  });
   $("#simulator-lab")?.addEventListener("click",()=>openLabActivity(null));
   $("#simulator-panel-toggle")?.addEventListener("click",()=>{
     const hidden=document.body.dataset.simulatorPanels==="hidden";
@@ -1262,8 +1340,7 @@ function bind(){
     else if(key==="-"){event.preventDefault();zoomDiagram(-1);}
     else if(key==="0"){event.preventDefault();centerDiagram();}
     else if(key.toLowerCase()==="c"){event.preventDefault();if(timeline)centerActiveNode(timeline.current,"auto");}
-    else if(key.toLowerCase()==="p"){event.preventDefault();openLabActivity("predict");}
-    else if(key.toLowerCase()==="l"){event.preventDefault();openLabActivity(null);}
+    else if(key.toLowerCase()==="p"){event.preventDefault();togglePredictionMode();}
     else if(key.toLowerCase()==="h"){event.preventDefault();document.body.dataset.simulatorPanels=document.body.dataset.simulatorPanels==="hidden"?"visible":"hidden";requestAnimationFrame(()=>fitDiagram());}
     else if(key.toLowerCase()==="f"){event.preventDefault();toggleDiagramFullscreen();}
     else if(key==="?"){event.preventDefault();const help=$("#simulator-shortcuts");if(help)help.hidden=!help.hidden;}
