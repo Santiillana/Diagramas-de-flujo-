@@ -133,8 +133,12 @@ function renderExerciseProgressSummary(){
   const totalStarted=exercises.filter(item=>exerciseProgressStatus(item.id)==="in-progress").length;
   const totalHints=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.hintsUsed??0),0);
   const totalErrors=Object.values(exerciseProgress).reduce((sum,item)=>sum+(item.wrongPredictions??0),0);
+  const reviewItems=Object.entries(exerciseProgress).flatMap(([id,item])=>
+    Object.entries(item.diagnosticCounts??{}).map(([diagnostic,count])=>({id:Number(id),diagnostic,count}))
+  ).sort((a,b)=>b.count-a.count).slice(0,3);
   host.innerHTML=`
     <div class="exercise-progress-overall"><strong>${totalVerified} de 40 retos verificados</strong><span>${totalStarted} en práctica · ${totalHints} pistas usadas · ${totalErrors} errores por revisar · guardado en este navegador</span><button type="button" class="button button-secondary exercise-onboarding-start" data-start-onboarding>${hasCompletedOnboarding()?"Repetir recorrido":"Recorrido guiado · 30 s"}</button></div>
+    <section class="exercise-review-summary"><strong>Repasa esto</strong>${reviewItems.length?'<ul>'+reviewItems.map(item=>'<li><button type="button" data-review-exercise="'+item.id+'">Ejercicio '+item.id+' · '+escapeHTML(exercises.find(x=>x.id===item.id)?.title??"Reto")+'</button><span>'+item.count+' veces · '+escapeHTML(item.diagnostic)+'</span></li>').join("")+'</ul>':'<p>Cuando aparezca un error frecuente, lo verás aquí para repasarlo.</p>'}</section>
     <div class="exercise-progress-levels">${levels.map(level=>{
       const group=exercises.filter(item=>item.level===level);
       const verified=group.filter(item=>exerciseProgressStatus(item.id)==="verified").length;
@@ -150,10 +154,13 @@ function recordExerciseHint(id){
 }
 function recordExercisePredictionError(id,diagnostic){
   const previous=exerciseProgress[id]??{attempts:0};
+  const diagnosticCounts={...(previous.diagnosticCounts??{})};
+  diagnosticCounts[diagnostic]=(diagnosticCounts[diagnostic]??0)+1;
   exerciseProgress[id]={
     ...previous,
     wrongPredictions:(previous.wrongPredictions??0)+1,
     lastDiagnostic:diagnostic,
+    diagnosticCounts,
     updatedAt:Date.now()
   };
   persistExerciseProgress();
@@ -301,6 +308,9 @@ function renderExerciseTestSuite(results){
     <p class="exercise-suite-summary ${ok?"is-correct":"is-wrong"}">${passed} de ${results.length} pruebas superadas.</p>
     <ul class="exercise-suite-results">${results.map(result=>'<li class="'+(result.passed?"is-correct":"is-wrong")+'"><span>'+(result.passed?"✓":"!")+'</span><div><b>'+escapeHTML(result.method)+" · "+escapeHTML(result.scenario)+'</b><small>Esperado: '+escapeHTML(JSON.stringify(result.expected))+" · obtenido: "+escapeHTML(JSON.stringify(result.actual))+(result.error?" · "+escapeHTML(result.error):"")+'</small></div></li>').join("")}</ul>`;
 }
+function predictionAnswerMarkup(label,value){
+  return '<span class="prediction-answer-reveal"><b>'+escapeHTML(label)+':</b> '+escapeHTML(JSON.stringify(value))+'</span>';
+}
 function runCustomExercisePrediction(){
   if(!selectedExercise)return;
   const method=selectedExercise.methods[selectedMethod];
@@ -330,15 +340,15 @@ function runCustomExercisePrediction(){
   }else if(matchesReference===true){
     const diagnostic=selectedExercise.errors?.[0]??"Compara el orden de las operaciones y el valor de las variables.";
     recordExercisePredictionError(selectedExercise.id,diagnostic);
-    feedback.textContent="El método coincide con la salida de referencia, pero tu predicción no coincide. Posible confusión: "+diagnostic+" "+actualText;
+    feedback.innerHTML=escapeHTML("El método coincide con la salida de referencia, pero tu predicción no coincide. Posible confusión: "+diagnostic+" "+actualText)+predictionAnswerMarkup("Salida correcta",execution.outputs);
     feedback.classList.add("is-wrong");
   }else if(matchesReference===false&&matchesPrediction===true){
-    feedback.textContent="Predijiste correctamente lo que hace este método, pero el resultado no coincide con la referencia. El método necesita revisión. "+actualText;
+    feedback.innerHTML=escapeHTML("Predijiste correctamente lo que hace este método, pero el resultado no coincide con la referencia. El método necesita revisión. "+actualText)+predictionAnswerMarkup("Salida esperada",reference.expected);
     feedback.classList.add("is-wrong");
   }else if(matchesReference===false){
     const diagnostic=selectedExercise.errors?.[0]??"Revisa las condiciones y los límites del ciclo.";
     recordExercisePredictionError(selectedExercise.id,diagnostic);
-    feedback.textContent="La predicción y la ejecución difieren de la salida de referencia. Posible error frecuente: "+diagnostic+" "+actualText;
+    feedback.innerHTML=escapeHTML("La predicción y la ejecución difieren de la salida de referencia. Posible error frecuente: "+diagnostic+" "+actualText)+predictionAnswerMarkup("Salida esperada",reference.expected);
     feedback.classList.add("is-wrong");
   }else if(matchesPrediction){
     feedback.textContent="Tu predicción coincide con la ejecución real. Para una comprobación independiente, ejecuta todos los casos definidos. "+actualText;
@@ -346,7 +356,7 @@ function runCustomExercisePrediction(){
   }else{
     const diagnostic=selectedExercise.errors?.[0]??"Compara las entradas, los pasos y el resultado esperado.";
     recordExercisePredictionError(selectedExercise.id,diagnostic);
-    feedback.textContent="Tu predicción no coincide con la ejecución real. Posible confusión: "+diagnostic+" "+actualText;
+    feedback.innerHTML=escapeHTML("Tu predicción no coincide con la ejecución real. Posible confusión: "+diagnostic+" "+actualText)+predictionAnswerMarkup("Salida del intérprete",execution.outputs);
     feedback.classList.add("is-wrong");
   }
 }
@@ -581,6 +591,8 @@ function bindContentEvents(){
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;renderExerciseCards();});
   $("#exercise-progress-summary")?.addEventListener("click",event=>{
     if(event.target.closest("[data-start-onboarding]")){startExerciseOnboarding();return;}
+    const review=event.target.closest("[data-review-exercise]");
+    if(review){selectExercise(Number(review.dataset.reviewExercise));return;}
   });
   $("#exercise-detail")?.addEventListener("click",event=>{
     if(event.target.closest("[data-onboarding-next]")){advanceExerciseOnboarding();return;}

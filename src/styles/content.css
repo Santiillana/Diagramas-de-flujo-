@@ -282,3 +282,13 @@ body.exercise-projector-mode .exercise-projector-exit{display:block}
 .exercise-onboarding.is-complete{border-color:var(--positive);background:var(--positive-soft)}
 .exercise-onboarding-start{min-height:34px;padding:0 10px;font-size:13px}
 @media(max-width:520px){.exercise-progress-overall{align-items:flex-start;flex-wrap:wrap}.exercise-onboarding-actions{justify-content:stretch}.exercise-onboarding-actions .button{flex:1}}
+
+.exercise-review-summary{display:grid;gap:6px;margin-top:8px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface-soft)}
+.exercise-review-summary>strong{color:var(--ink);font-size:13px}
+.exercise-review-summary ul{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.exercise-review-summary li{display:grid;gap:2px}
+.exercise-review-summary li button{padding:0;border:0;background:none;color:var(--accent-strong);text-align:left;font-weight:700;cursor:pointer}
+.exercise-review-summary li span{color:var(--muted-strong);font-size:13px}
+.prediction-answer-reveal{display:block;margin-top:8px;padding:7px 10px;border-radius:8px;border:1px solid var(--positive);background:var(--positive-soft);color:var(--positive);font-weight:700;animation:prediction-answer-reveal .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes prediction-answer-reveal{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.prediction-answer-reveal{animation:none}}
