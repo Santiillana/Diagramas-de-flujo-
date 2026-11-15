@@ -1,10 +1,12 @@
 name: Post-deploy production verification
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Origen HTTPS del sitio ya publicado (por ejemplo, el dominio real de producción)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -16,11 +18,26 @@ concurrency:
 
 jobs:
   verify-production:
-    name: Verify Cloudflare production release
+    name: Verify the explicitly selected production release
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: Checkout deployed commit
+      - name: Validate production origin
+        id: target
+        shell: bash
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$BASE_URL" =~ ^https://[^/[:space:]]+/?$ ]]; then
+            echo "::error::Introduce el origen HTTPS real, sin ruta ni espacios."
+            exit 1
+          fi
+          BASE_URL="${BASE_URL%/}"
+          echo "value=$BASE_URL" >> "$GITHUB_OUTPUT"
+          echo "Destino de verificación: $BASE_URL"
+
+      - name: Checkout release under test
         uses: actions/checkout@v7
 
       - name: Read expected release marker
@@ -36,10 +53,10 @@ jobs:
           echo "value=$RELEASE" >> "$GITHUB_OUTPUT"
           echo "Esperando la marca $RELEASE"
 
-      - name: Wait for Cloudflare Worker to serve the exact release
+      - name: Wait for the exact release to become public
         shell: bash
         env:
-          BASE_URL: https://diagramas-de-flujo.davidsantiagosilvahernandez.workers.dev
+          BASE_URL: ${{ steps.target.outputs.value }}
           EXPECTED_RELEASE: ${{ steps.release.outputs.value }}
         run: |
           set -euo pipefail
@@ -47,15 +64,15 @@ jobs:
           for attempt in $(seq 1 30); do
             html="$(curl --silent --show-error --fail "$BASE_URL/" || true)"
             if [[ -n "$html" ]] && grep -Fq "name=\"traza-release\" content=\"$EXPECTED_RELEASE\"" <<< "$html"; then
-              echo "Producción sirve la versión exacta: $EXPECTED_RELEASE"
+              echo "El sitio sirve la versión exacta: $EXPECTED_RELEASE"
               found=true
               break
             fi
-            echo "Intento $attempt/30: esperando despliegue de $EXPECTED_RELEASE"
+            echo "Intento $attempt/30: esperando $EXPECTED_RELEASE"
             sleep 20
           done
           if [[ "$found" != true ]]; then
-            echo "::error::Cloudflare no publicó la marca $EXPECTED_RELEASE en 10 minutos."
+            echo "::error::El sitio no publicó la marca $EXPECTED_RELEASE en 10 minutos."
             exit 1
           fi
 
@@ -71,16 +88,16 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run browser smoke against production
+      - name: Run browser smoke against the selected production origin
         env:
-          PLAYWRIGHT_BASE_URL: https://diagramas-de-flujo.davidsantiagosilvahernandez.workers.dev
+          PLAYWRIGHT_BASE_URL: ${{ steps.target.outputs.value }}
         run: npx playwright test e2e/production-smoke.spec.js
 
       - name: Upload production screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cloudflare-production-${{ steps.release.outputs.value }}
+          name: production-smoke-${{ steps.release.outputs.value }}
           path: test-results/**/*.png
           if-no-files-found: warn
           retention-days: 14
