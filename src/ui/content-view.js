@@ -164,13 +164,43 @@ function visualMarkup(lesson){
   const index=Math.min(lessonVisualStep,Math.max(0,events.length-1));
   const event=events[index];
   const scene=event?renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample}):null;
-  return '<section class="lesson-visual" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
-    '<div class="lesson-visual-head"><div><p class="eyebrow">ESCENA DEL ALGORITMO</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
-    '<span class="visual-step-count">'+(index+1)+' / '+events.length+'</span></div>'+
+  const phases=lesson.visual.steps??[];
+  const phaseIndex=phases.length?Math.min(phases.length-1,Math.floor(index/Math.max(1,events.length)*phases.length)):0;
+  const phaseRail=phases.map(([title,description],position)=>
+    '<div class="lesson-phase '+(position===phaseIndex?"is-current":position<phaseIndex?"is-complete":"")+'"><span>'+String(position+1).padStart(2,"0")+'</span><strong>'+escapeHTML(title)+'</strong><small>'+escapeHTML(description)+'</small></div>'
+  ).join("");
+  return '<section class="lesson-visual lesson-visual-'+escapeHTML(lesson.visual.kind)+'" data-visual-kind="'+escapeHTML(lesson.visual.kind)+'" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
+    '<div class="lesson-visual-head"><div><p class="eyebrow">EXPERIMENTO VISUAL</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
+    '<span class="visual-step-count">Paso '+(index+1)+' / '+events.length+'</span></div>'+
+    '<div class="lesson-phase-rail">'+phaseRail+'</div>'+
     (scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
     '<p class="lesson-scene-caption">'+escapeHTML(event?.scene?.body??event?.message??event?.sourceText??"")+'</p>'+
     '<div class="visual-controls"><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
+    '<button type="button" class="button button-secondary" data-visual-prev '+(index<=0?"disabled":"")+'>← Anterior</button>'+
+    '<button type="button" class="button button-secondary" data-visual-play aria-pressed="'+String(lessonPlaying)+'">'+(lessonPlaying?"Ⅱ Pausar":"▶ Reproducir")+'</button>'+
     '<button type="button" class="button button-primary" data-visual-next '+(index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button></div></section>';
+}
+function stopLessonPlayback(){
+  if(lessonPlaybackTimer)clearTimeout(lessonPlaybackTimer);
+  lessonPlaybackTimer=0;lessonPlaying=false;
+}
+function startLessonPlayback(){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
+  const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
+  if(!events.length)return;
+  if(lessonVisualStep>=events.length-1)lessonVisualStep=0;
+  lessonPlaying=true;renderLesson();
+  const next=()=>{
+    if(!lessonPlaying)return;
+    if(lessonVisualStep>=events.length-1){stopLessonPlayback();renderLesson();return;}
+    lessonPlaybackTimer=window.setTimeout(()=>{
+      lessonVisualStep++;
+      renderLesson();
+      next();
+    },1650);
+  };
+  next();
 }
 function renderLesson(){
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
