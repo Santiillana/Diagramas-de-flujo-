@@ -14,6 +14,7 @@ let exerciseId=1, methodIndex=0, exercise=null, execution=null, timeline=null, d
 let cameraAuto=true, panState=null, pseudocodeSize=17, selectedVariable=null, defaultInputSample=[];
 let diagramFitWidth=0, diagramFitHeight=0, fitScale=1, zoom=1, panOffset={x:0,y:0};
 let cameraRaf=0, pointerState=new Map(), pinchState=null;
+let routeGraph=new Map(), routeWeights=new Map(), routeCache=new Map(), tokenRaf=0;
 
 function readPseudocodeSize(){
   try{
@@ -249,13 +250,13 @@ function setCameraFree(){
   cameraRaf=0;
   updateCameraButton();
   const follow=$("#sim-camera-follow");
-  if(follow)follow.hidden=false;
+  if(follow){follow.hidden=false;follow.textContent="Cámara libre · Seguir el proceso";}
 }
 function setCameraFollowing(){
   cameraAuto=true;
   updateCameraButton();
   const follow=$("#sim-camera-follow");
-  if(follow)follow.hidden=true;
+  if(follow){follow.hidden=true;follow.textContent="Cámara libre · Seguir el proceso";}
   if(timeline)centerActiveNode(timeline.current,"auto");
 }
 
@@ -309,12 +310,15 @@ function prepare(){
     const ast=parsePseudocode(method().pseudocode);
     diagram=layoutFlow(ast);
     renderDiagram($("#flow-diagram-container"),diagram);
+    buildRouteGraph();
+    clearDiagramTrail();
     $("#diagram-empty").hidden=true;
     requestAnimationFrame(()=>fitDiagram());
     $("#diagram-dimensions").textContent=diagram.width+" × "+diagram.height;
     const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}
   }catch(error){
-    diagram=null;$("#flow-diagram-container").innerHTML="";
+    diagram=null;routeGraph.clear();routeWeights.clear();routeCache.clear();clearDiagramTrail();
+    $("#flow-diagram-container").innerHTML="";
     $("#diagram-empty").hidden=false;$("#diagram-empty h4").textContent="No se pudo construir el diagrama";
     $("#diagram-empty p").textContent=error.message;
   }
@@ -479,16 +483,128 @@ function renderMinimap(){
   const w=180,h=104,pad=7,ratio=Math.min((w-pad*2)/diagram.width,(h-pad*2)/diagram.height);
   const ox=(w-diagram.width*ratio)/2,oy=(h-diagram.height*ratio)/2;
   const edgeMarkup=diagram.edges.map(edge=>{
-    const a=diagram.byId.get(edge.from),b=diagram.byId.get(edge.to);
-    if(!a||!b)return "";
-    return '<path d="M '+(ox+a.x*ratio)+' '+(oy+(a.y+a.height/2)*ratio)+' L '+(ox+b.x*ratio)+' '+(oy+(b.y+b.height/2)*ratio)+'"/>';
+    const path=$("#flow-diagram-container")?.querySelector('[data-edge-id="'+edge.id+'"] path');
+    const d=path?.getAttribute("d");
+    return d?'<path d="'+esc(d)+'"/>':"";
   }).join("");
-  const nodeMarkup=diagram.nodes.map(node=>{
-    const width=Math.max(2,node.width*ratio),height=Math.max(2,node.height*ratio);
-    return '<rect x="'+(ox+(node.x-node.width/2)*ratio)+'" y="'+(oy+node.y*ratio)+'" width="'+width+'" height="'+height+'" rx="1"/>';
-  }).join("");
-  svg.innerHTML='<g class="minimap-edges">'+edgeMarkup+'</g><g class="minimap-nodes">'+nodeMarkup+'</g><rect id="sim-minimap-viewport" class="minimap-viewport" x="0" y="0" width="1" height="1" rx="3"/>';
+  const nodeMarkup=diagram.nodes.map(node=>'<rect x="'+(node.x-node.width/2)+'" y="'+node.y+'" width="'+node.width+'" height="'+node.height+'" rx="2"/>').join("");
+  svg.innerHTML='<g transform="translate('+ox+' '+oy+') scale('+ratio+')"><g class="minimap-edges">'+edgeMarkup+'</g><g class="minimap-nodes">'+nodeMarkup+'</g></g>'+
+    '<rect id="sim-minimap-viewport" class="minimap-viewport" x="0" y="0" width="1" height="1" rx="3"/>';
   updateMinimap();
+}
+function buildRouteGraph(){
+  routeGraph=new Map();routeWeights=new Map();routeCache.clear();
+  if(!diagram)return;
+  for(const id of diagram.byId.keys())routeGraph.set(String(id),[]);
+  const container=$("#flow-diagram-container");
+  for(const edge of diagram.edges){
+    const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
+    const path=container?.querySelector('[data-edge-id="'+edge.id+'"] path');
+    let weight=0;
+    try{weight=path?.getTotalLength?.()??0;}catch{}
+    if(!weight&&from&&to)weight=Math.hypot(to.x-from.x,to.y-from.y);
+    routeWeights.set(edge.id,{path,weight});
+    routeGraph.get(String(edge.from))?.push({to:String(edge.to),edgeId:edge.id,forward:true,weight});
+    routeGraph.get(String(edge.to))?.push({to:String(edge.from),edgeId:edge.id,forward:false,weight});
+  }
+}
+function shortestRoute(fromId,toId){
+  const start=String(fromId),finish=String(toId);
+  if(start===finish)return [];
+  const key=start+":"+finish;
+  if(routeCache.has(key))return routeCache.get(key);
+  if(!routeGraph.has(start)||!routeGraph.has(finish))return [];
+  const distance=new Map([[start,0]]),previous=new Map(),unvisited=new Set(routeGraph.keys());
+  while(unvisited.size){
+    let current=null,best=Infinity;
+    for(const id of unvisited){const value=distance.get(id)??Infinity;if(value<best){best=value;current=id;}}
+    if(current===null||best===Infinity)break;
+    unvisited.delete(current);
+    if(current===finish)break;
+    for(const edge of routeGraph.get(current)??[]){
+      if(!unvisited.has(edge.to))continue;
+      const cost=best+edge.weight;
+      if(cost<(distance.get(edge.to)??Infinity)){
+        distance.set(edge.to,cost);
+        previous.set(edge.to,{from:current,edgeId:edge.edgeId,forward:edge.forward});
+      }
+    }
+  }
+  const route=[];let cursor=finish;
+  while(cursor!==start&&previous.has(cursor)){
+    const step=previous.get(cursor);
+    route.unshift({edgeId:step.edgeId,forward:step.forward});
+    cursor=step.from;
+  }
+  const result=cursor===start?route:[];
+  routeCache.set(key,result);return result;
+}
+function routeCoordinates(route){
+  const points=[];
+  for(const step of route){
+    const info=routeWeights.get(step.edgeId),path=info?.path,length=info?.weight??0;
+    if(!path||length<=0)continue;
+    const count=Math.max(2,Math.ceil(length/12));
+    for(let index=0;index<=count;index++){
+      if(points.length&&index===0)continue;
+      const distance=length*index/count;
+      try{
+        const point=path.getPointAtLength(step.forward?distance:length-distance);
+        points.push({x:point.x,y:point.y});
+      }catch{}
+    }
+  }
+  return points;
+}
+function clearDiagramTrail(){
+  if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
+  $("#flow-trail")?.setAttribute("points","");
+  $("#flow-diagram-container .flow-token")?.setAttribute("visibility","hidden");
+}
+function drawExecutionTrail(events){
+  const points=[];let previous=null;
+  for(const event of events){
+    if(event.nodeId===null||event.nodeId===undefined)continue;
+    if(previous!==null&&String(previous)!==String(event.nodeId)){
+      const segment=routeCoordinates(shortestRoute(previous,event.nodeId));
+      if(points.length&&segment.length&&Math.hypot(points[points.length-1].x-segment[0].x,points[points.length-1].y-segment[0].y)<2)segment.shift();
+      points.push(...segment);
+    }
+    previous=event.nodeId;
+  }
+  $("#flow-trail")?.setAttribute("points",points.slice(-1200).map(point=>point.x+","+point.y).join(" "));
+}
+function animateTokenRoute(route,event){
+  const token=$("#flow-diagram-container .flow-token");
+  if(!token)return;
+  if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
+  const points=routeCoordinates(route);
+  const node=diagram?.nodes.find(item=>String(item.sourceId)===String(event?.nodeId));
+  const target=points.length?points[points.length-1]:node?{x:node.x,y:Math.max(10,node.y-12)}:null;
+  if(!target)return;
+  const reduced=document.documentElement.dataset.motion==="reduced"||matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(points.length<2||reduced||currentSpeedFactor()>=4){
+    token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));token.setAttribute("visibility","visible");return;
+  }
+  const lengths=[0];let total=0;
+  for(let index=1;index<points.length;index++){
+    total+=Math.hypot(points[index].x-points[index-1].x,points[index].y-points[index-1].y);
+    lengths.push(total);
+  }
+  token.setAttribute("cx",String(points[0].x));token.setAttribute("cy",String(points[0].y));token.setAttribute("visibility","visible");
+  const duration=480/Math.sqrt(currentSpeedFactor());let started=0;
+  const frame=now=>{
+    if(!started)started=now;
+    const progress=Math.min(1,(now-started)/duration),distance=progress*total;
+    let index=1;while(index<lengths.length-1&&lengths[index]<distance)index++;
+    const segment=lengths[index]-lengths[index-1]||1,ratio=(distance-lengths[index-1])/segment;
+    const a=points[index-1],b=points[index];
+    token.setAttribute("cx",String(a.x+(b.x-a.x)*ratio));
+    token.setAttribute("cy",String(a.y+(b.y-a.y)*ratio));
+    if(progress<1)tokenRaf=requestAnimationFrame(frame);
+    else{token.setAttribute("cx",String(target.x));token.setAttribute("cy",String(target.y));tokenRaf=0;}
+  };
+  tokenRaf=requestAnimationFrame(frame);
 }
 function centerActiveNode(event,behavior){
   if(!cameraAuto||!event||event.nodeId===null||event.nodeId===undefined)return;
@@ -598,10 +714,14 @@ function render(){
   if(diagram){
     const routeEvent=[...seen].reverse().find(item=>item.route&&(item.type==="branch"||item.type==="decision"||item.type==="loop-condition"));
     const previousSource=[...seen.slice(0,-1)].reverse().find(item=>item.nodeId!==null&&item.nodeId!==undefined)?.nodeId;
+    const walked=previousSource!==null&&e.nodeId!==null&&e.nodeId!==undefined?shortestRoute(previousSource,e.nodeId):[];
     highlightDiagram($("#flow-diagram-container"),diagram,{
       activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
-      route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null
+      route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null,
+      walkEdgeIds:walked.map(item=>item.edgeId)
     });
+    drawExecutionTrail(seen);
+    animateTokenRoute(walked,e);
   }
   centerActiveNode(e);
   showContextWindow(e);
@@ -724,7 +844,7 @@ function fitDiagram(){
   if(cameraRaf)cancelAnimationFrame(cameraRaf);cameraRaf=0;
   stage.dataset.fitCount=String((Number(stage.dataset.fitCount)||0)+1);
   if(canvas){canvas.style.transition="none";canvas.style.transformOrigin="0 0";}
-  applyDiagramZoom();stage.scrollLeft=0;stage.scrollTop=0;renderMinimap();
+  applyDiagramZoom();renderMinimap();
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
 }async function toggleDiagramFullscreen(){
   const stage=$("#diagram-stage");
@@ -953,7 +1073,16 @@ function bind(){
     });
     observer.observe(stage);
   }
-  window.addEventListener("resize",()=>requestAnimationFrame(()=>fitDiagram()));
+  const freeAreaObserver=new ResizeObserver(()=>{
+    requestAnimationFrame(()=>{
+      if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
+      updateMinimap();
+    });
+  });
+  for(const selector of ["#hd","#PL","#RC","#dock","#simulator-mobile-tabs"]){
+    const element=$(selector);if(element)freeAreaObserver.observe(element);
+  }
+  window.addEventListener("resize",()=>requestAnimationFrame(()=>cameraAuto?fitDiagram():updateMinimap()));
   document.addEventListener("traza:request-simulation",event=>{
     exerciseId=Number(event.detail?.exerciseId)||1;
     methodIndex=Number(event.detail?.methodIndex)||0;

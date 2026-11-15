@@ -51,3 +51,14 @@ test("el minimapa refleja el diagrama y permite volver a centrar la cámara",asy
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
   await expect(page.locator("#sim-camera-follow")).toBeHidden();
 });
+
+test("la ficha recorre las aristas SVG reales y deja un rastro amarillo",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-next").click();
+  await expect(page.locator("#flow-trail")).toBeAttached();
+  await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
+  const points=await page.locator("#flow-trail").getAttribute("points");
+  expect(points.trim().split(/\s+/).length).toBeGreaterThan(1);
+  await expect(page.locator("#flow-diagram-container .diagram-edge.is-token-route")).not.toHaveCount(0);
+});

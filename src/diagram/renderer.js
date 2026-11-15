@@ -65,8 +65,8 @@ export function renderDiagram(container,diagram,options={}){
   }).join("");
   const svg='<svg class="flow-svg" id="flow-svg" role="img" aria-label="Diagrama de flujo generado desde el pseudocódigo" viewBox="0 0 '+diagram.width+' '+diagram.height+'" xmlns="http://www.w3.org/2000/svg">'+
     '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>'+
-    '<g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
-    '<circle class="flow-token" cx="520" cy="20" r="7" visibility="hidden" aria-hidden="true"/></svg>';
+    '<polyline id="flow-trail" class="flow-trail" points=""/><g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
+    '<circle class="flow-token" cx="520" cy="20" r="9" visibility="hidden" aria-hidden="true"/></svg>';
   container.innerHTML=svg;
 }
 export function highlightDiagram(container,diagram,options={}) {
@@ -77,6 +77,8 @@ export function highlightDiagram(container,diagram,options={}) {
   const route=options.route??null;
   const previous=options.previousNodeId==null?null:String(options.previousNodeId);
   const edgeElements=[...container.querySelectorAll(".diagram-edge")];
+  const walkedEdges=new Set((options.walkEdgeIds??[]).map(String));
+  edgeElements.forEach(element=>element.classList.toggle("is-token-route",walkedEdges.has(String(element.dataset.edgeId))));
   container.querySelectorAll(".diagram-node").forEach(element=>{
     const id=element.id.replace("flow-node-","");
     const model=diagram.byId.get(id);
