@@ -69,7 +69,7 @@ export function buildArrowChallenge(events,index,exerciseId,attempt=0) {
 }
 
 
-export function mixedModeOrder(exerciseId,attempt=0,modes=[]) {
+export function mixedModeOrder(exerciseId,attempt=0,modes=["predict","order","symbol","error","fill-gap","follow-arrow"]) {
   const available=[...new Set(modes)].filter(Boolean);
   if(!available.length)return [];
   return shuffled(available,hashSeed([exerciseId,attempt,"mixed-modes"]));
