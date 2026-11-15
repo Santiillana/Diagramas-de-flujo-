@@ -96,3 +96,8 @@ Este apartado describe cambios posteriores al estado histórico de M5. No modifi
 - Inicio: panel de acceso rápido con estadísticas y progreso de aprendizaje.
 
 **Validación pendiente:** Node y Playwright deben ejecutarse sobre el commit final de esta rama. No declarar aceptación hasta revisar CI y corregir cualquier fallo. `main` y las rutas protegidas permanecen intactas.
+
+
+## Validación final de la rama mejoras/traza-v2
+
+GitHub Actions run 43676037183 finalizó correctamente: 259 pruebas Node y 41 pruebas Playwright aprobadas, sin fallos. Se generaron capturas de escritorio, tableta y móvil. La PR #7 permanece abierta contra main; no se ha fusionado.
