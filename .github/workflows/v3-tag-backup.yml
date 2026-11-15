@@ -28,6 +28,8 @@ jobs:
           git fetch origin main --tags
           current="$(git rev-parse HEAD)"
           test "$current" = "$TARGET_SHA"
+          git config user.name "Santiillana"
+          git config user.email "131924179+Santiillana@users.noreply.github.com"
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
             git fetch origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"
             tag_target="$(git rev-list -n 1 "$TAG_NAME")"
