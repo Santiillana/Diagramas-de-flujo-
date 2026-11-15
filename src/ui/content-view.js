@@ -316,7 +316,9 @@ function runCustomExercisePrediction(){
     feedback.textContent="Tu predicción coincide con la ejecución real. Para una comprobación independiente, ejecuta todos los casos definidos. "+actualText;
     feedback.classList.add("is-correct");
   }else{
-    feedback.textContent="Tu predicción no coincide con la ejecución real. Observa el valor de cada variable y vuelve a intentarlo. "+actualText;
+    const diagnostic=selectedExercise.errors?.[0]??"Compara las entradas, los pasos y el resultado esperado.";
+    recordExercisePredictionError(selectedExercise.id,diagnostic);
+    feedback.textContent="Tu predicción no coincide con la ejecución real. Posible confusión: "+diagnostic+" "+actualText;
     feedback.classList.add("is-wrong");
   }
 }
