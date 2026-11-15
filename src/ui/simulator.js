@@ -900,7 +900,6 @@ function zoomAt(nextZoom,clientX,clientY){
   const worldX=(anchorX-panOffset.x)/oldZoom,worldY=(anchorY-panOffset.y)/oldZoom;
   zoom=target;
   panOffset={x:anchorX-worldX*zoom,y:anchorY-worldY*zoom};
-  setCameraFree();
   stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
   applyCanvasTransform();
 }
@@ -1270,81 +1269,42 @@ function updateFullscreenButton(){
   if(exitButton)exitButton.hidden=!active;
 }
 function bindDiagramPan(){
-  const stage=$("#diagram-stage"),hit=$("#diagram-pan-hit"),canvas=$("#flow-diagram-container");
-  if(!stage||!hit||!canvas)return;
-  const getPoints=()=>[...pointerState.values()];
+  const stage=$("#diagram-stage"),hit=$("#diagram-pan-hit");
+  if(!stage||!hit)return;
+  let drag=null;
   const onDown=event=>{
     if(event.pointerType==="mouse"&&event.button!==0)return;
     const target=event.target instanceof Element?event.target:null;
-    if(target?.closest("button,a,input,select,textarea,#simulator-shortcuts,#dock,#hd,.sim-window,.sim-window-rail,.diagram-heading,.focus-ui"))return;
-    const hitRect=hit.getBoundingClientRect();
-    if(event.clientX<hitRect.left||event.clientX>hitRect.right||event.clientY<hitRect.top||event.clientY>hitRect.bottom)return;
+    if(target?.closest("button,a,input,select,textarea,.simulator-control-dock,.simulator-controls-panel,.sim-window,.focus-ui"))return;
+    const rect=stage.getBoundingClientRect();
+    if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)return;
     event.preventDefault();
     try{hit.setPointerCapture(event.pointerId);}catch{}
-    pointerState.set(event.pointerId,{x:event.clientX,y:event.clientY,type:event.pointerType});
-    setCameraFree();
-    if(pointerState.size>=2){
-      const [a,b]=getPoints();
-      pinchState={distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),zoom,center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
-      panState=null;
-    }else{
-      panState={pointerId:event.pointerId,x:event.clientX,y:event.clientY,originX:panOffset.x,originY:panOffset.y};
-    }
+    drag={id:event.pointerId,x:event.clientX,y:event.clientY,originX:panOffset.x,originY:panOffset.y,moved:false};
     stage.classList.add("is-panning");
-    stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
   };
   const onMove=event=>{
-    if(!pointerState.has(event.pointerId))return;
-    pointerState.set(event.pointerId,{x:event.clientX,y:event.clientY,type:event.pointerType});
-    if(pointerState.size>=2){
-      const [a,b]=getPoints(),distance=Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));
-      const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-      if(!pinchState)pinchState={distance,zoom,center};
-      zoomAt(pinchState.zoom*distance/pinchState.distance,center.x,center.y);
-      stage.dataset.pinchZoom=String(zoom);
-      return;
-    }
-    if(!panState||panState.pointerId!==event.pointerId)return;
-    panOffset={x:panState.originX+(event.clientX-panState.x),y:panState.originY+(event.clientY-panState.y)};
+    if(!drag||drag.id!==event.pointerId)return;
+    const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
+    if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;
+    if(!drag.moved)return;
+    panOffset={x:drag.originX+dx,y:drag.originY+dy};
     applyCanvasTransform();
     stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
-    stage.dataset.panOffset=panOffset.x+","+panOffset.y;
   };
   const onUp=event=>{
-    if(!pointerState.has(event.pointerId))return;
-    pointerState.delete(event.pointerId);
-    if(pointerState.size>=2){
-      const [a,b]=getPoints();
-      pinchState={distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),zoom,center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
-      panState=null;
-    }else if(pointerState.size===1){
-      const [remainingId,point]=[...pointerState.entries()][0];
-      panState={pointerId:remainingId,x:point.x,y:point.y,originX:panOffset.x,originY:panOffset.y};
-      pinchState=null;
-    }else{
-      panState=null;pinchState=null;stage.classList.remove("is-panning");
-    }
+    if(!drag||drag.id!==event.pointerId)return;
+    drag=null;stage.classList.remove("is-panning");
     try{if(hit.hasPointerCapture(event.pointerId))hit.releasePointerCapture(event.pointerId);}catch{}
   };
-  document.addEventListener("pointerdown",onDown,true);
-  document.addEventListener("pointermove",onMove,true);
-  document.addEventListener("pointerup",onUp,true);
-  document.addEventListener("pointercancel",onUp,true);
+  hit.addEventListener("pointerdown",onDown);
+  hit.addEventListener("pointermove",onMove);
+  hit.addEventListener("pointerup",onUp);
+  hit.addEventListener("pointercancel",onUp);
   hit.addEventListener("lostpointercapture",onUp);
-  hit.addEventListener("wheel",event=>{
-    event.preventDefault();
-    if(event.ctrlKey||event.metaKey){
-      zoomAt(zoom*(event.deltaY<0?1.12:1/1.12),event.clientX,event.clientY);
-      return;
-    }
-    setCameraFree();
-    if(event.shiftKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)){
-      panOffset.x-=event.shiftKey&&event.deltaX===0?event.deltaY:event.deltaX;
-    }else panOffset.y-=event.deltaY;
-    applyCanvasTransform();
-    stage.dataset.wheelPan=String((Number(stage.dataset.wheelPan)||0)+1);
-  },{passive:false});
-}function setMobilePanel(name){
+}
+
+function setMobilePanel(name){
   const valid=["problem","diagram","scene","variables","output","history"];
   if(!valid.includes(name))return;
   document.body.dataset.simulatorMobilePanel=name;
