@@ -108,6 +108,26 @@
           <p>Una ejecución determinista mantiene sincronizados el pseudocódigo, el diagrama, las variables y la explicación.</p></div>
         <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
       </div>
+      <nav class="simulator-exercise-nav" id="simulator-exercise-nav" aria-label="Navegación rápida de ejercicios"></nav>
+      <section class="simulator-challenge" id="simulator-challenge" role="dialog" aria-modal="true" aria-labelledby="simulator-challenge-title" hidden>
+        <div class="simulator-challenge-card">
+          <div class="simulator-challenge-kicker"><span>ANTES DE VER LA EJECUCIÓN</span><span id="simulator-challenge-level">BÁSICO</span></div>
+          <div class="simulator-challenge-symbol" aria-hidden="true">?</div>
+          <p class="eyebrow">PRIMERO PIENSA. DESPUÉS COMPRUEBA.</p>
+          <h2 id="simulator-challenge-title">Analiza el problema</h2>
+          <p class="simulator-challenge-statement" id="simulator-challenge-statement"></p>
+          <ol class="simulator-challenge-prompts">
+            <li><b>Entrada y salida</b><span>¿Qué datos necesita el algoritmo y qué resultado debe mostrar?</span></li>
+            <li><b>Orden de las instrucciones</b><span>¿Qué operaciones harías y en qué secuencia?</span></li>
+            <li><b>Decisiones y ciclos</b><span>¿Debe elegir entre caminos o repetir una acción? ¿Con qué condición?</span></li>
+          </ol>
+          <div class="simulator-challenge-actions">
+            <button type="button" class="button button-primary" id="simulator-challenge-reveal">Ya lo intenté: mostrar la solución</button>
+            <label><input type="checkbox" id="simulator-challenge-skip"> Modo demostración: no volver a mostrar este reto</label>
+          </div>
+          <p class="simulator-challenge-footnote">El reto no modifica los datos ni la ejecución. Puedes volver a abrirlo desde la ficha del problema.</p>
+        </div>
+      </section>
       <div class="simulator-mobile-tabs" id="simulator-mobile-tabs" role="tablist" aria-label="Vistas del simulador">
         <button type="button" role="tab" data-mobile-panel="problem" aria-selected="false">Problema</button>
         <button type="button" role="tab" data-mobile-panel="diagram" aria-selected="true">Diagrama</button>
@@ -121,6 +141,7 @@
           <section class="panel sim-glass sim-window" id="sim-window-context" data-window-id="context" aria-labelledby="problem-title">
             <div class="panel-heading"><div><p class="eyebrow">EL PROBLEMA</p><h3 id="problem-title">Problema y propósito</h3></div>
               <div class="sim-window-actions">
+                <button type="button" class="small-icon-button sim-challenge-reopen" id="simulator-challenge-reopen" title="Volver a plantear el problema" aria-label="Volver a plantear el problema">? </button>
                 <button type="button" class="small-icon-button" data-window-minimize="context" aria-label="Minimizar Problema">−</button>
                 <button type="button" class="small-icon-button sim-window-pin" data-window-pin="context" aria-label="Fijar Problema" aria-pressed="false">⌖</button>
               </div>
@@ -145,10 +166,14 @@
               </div>
             </div>
             <div class="sim-window-body">
-              <label class="simulator-field"><span>MÉTODO</span><select id="simulator-method"></select></label>
+              <div class="simulator-method-picker">
+                <span class="simulator-field-label">MÉTODO DE SOLUCIÓN</span>
+                <div id="simulator-method-tabs" class="simulator-method-tabs" role="group" aria-label="Elegir método de solución"></div>
+                <select id="simulator-method" hidden aria-hidden="true" tabindex="-1"></select>
+              </div>
               <label class="simulator-field"><span>DATOS DE ENTRADA</span><input id="simulator-inputs" type="text" inputmode="decimal" placeholder="Ejemplo: 8, 5" autocomplete="off"></label>
               <button type="button" class="text-link simulator-restore" id="simulator-restore-inputs">↺ Restaurar datos de ejemplo</button>
-              <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas.</p>
+              <p class="simulator-help">Escribe los datos en el mismo orden de las instrucciones Leer. Sepáralos con comas o espacios.</p>
               <p id="simulator-input-warning" class="simulator-input-warning" role="status" hidden></p>
               <button type="button" class="button button-primary simulator-run" id="simulator-run">Ejecutar algoritmo <span aria-hidden="true">▶</span></button>
             </div>
@@ -220,6 +245,13 @@
           <section class="panel scene-panel sim-glass" id="PV" data-window-id="scene" aria-labelledby="scene-title">
             <div class="panel-heading"><div><p class="eyebrow">EXPLICACIÓN DEL PASO</p><h3 id="scene-title">En escena</h3></div><div class="scene-heading-actions"><button type="button" id="scene-minimize" class="small-icon-button" aria-controls="scene-content" aria-expanded="true" aria-label="Minimizar explicación" title="Minimizar explicación">−</button><button type="button" class="small-icon-button" data-window-minimize="scene" aria-label="Minimizar En escena">−</button><button type="button" class="small-icon-button sim-window-pin" data-window-pin="scene" aria-label="Fijar En escena" aria-pressed="false">⌖</button><span class="panel-index">B</span></div></div>
             <div class="scene-placeholder" id="scene-content"><span class="scene-orbit"><i></i><b></b></span><strong>El paso actual aparecerá aquí.</strong><p>La escena explica la acción que realiza el algoritmo.</p></div>
+            <div class="simulator-practice-actions" id="simulator-practice-actions" aria-label="Abrir actividades de práctica">
+              <p class="eyebrow">PON A PRUEBA LO QUE ENTENDISTE</p>
+              <button type="button" data-simulator-practice="table">▦ Tabla de seguimiento</button>
+              <button type="button" data-simulator-practice="symbol">◇ Identificar símbolos</button>
+              <button type="button" data-simulator-practice="error">! Encontrar errores</button>
+              <button type="button" data-simulator-practice="whatif">↗ ¿Y si…?</button>
+            </div>
           </section>
           <div id="PR" class="sim-right-content">
           <section class="panel variables-panel sim-glass" data-window-id="variables" aria-labelledby="variables-title">
