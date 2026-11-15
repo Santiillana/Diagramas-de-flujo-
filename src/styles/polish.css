@@ -1,0 +1,70 @@
+/* K · Legibilidad global y semántica visual. Cargado al final de la cascada. */
+:root {
+  --muted:#56647a;
+  --positive:#176d57;
+  --warning:#87580f;
+  --danger:#a63c4d;
+  --process:#7954bd;
+  --process-soft:#f0eaff;
+}
+:root[data-theme="dark"] {
+  --muted:#aebbd0;
+  --positive:#67c9a3;
+  --warning:#e6b76e;
+  --danger:#ed8b9a;
+  --process:#c1a7ff;
+  --process-soft:#382d52;
+}
+/* Ningún texto funcional queda por debajo de 13 px. */
+:where(.app-shell) :where(p,li,small,label,button,input,select,textarea,summary,th,td,a,code,span,dd,dt) {
+  font-size:max(13px,1em)!important;
+}
+/* El texto de lectura y los paneles informativos tienen cuerpo de 14 px. */
+:where(.app-shell) :where(p,li,small,dd,dt,th,td) {
+  font-size:max(14px,1em)!important;
+}
+:where(.app-shell) :where(button,input,select,textarea) {
+  min-height:34px;
+}
+:where(.app-shell) :where(.eyebrow,.phase-chip,.panel-index,.nav-index) {
+  letter-spacing:.035em;
+}
+/* El pseudocódigo y las expresiones deben poder leerse sin ampliar. */
+:where(.app-shell) :where(.exercise-pseudocode,.lesson-code,.builder-code,.pseudocode-lines,.pseudocode-lines code) {
+  font-size:14px!important;
+  line-height:1.65;
+}
+:where(.app-shell) :where(.simulator-dock,.simulator-dock *) {
+  font-size:max(16px,1em)!important;
+}
+:where(.app-shell) :where(.simulator-dock button) {
+  min-width:36px;
+  min-height:36px;
+}
+/* Colores semánticos por figura del diagrama. */
+.diagram-node.node-terminal rect {fill:var(--positive-soft);stroke:var(--positive)}
+.diagram-node.node-input polygon {fill:var(--accent-soft);stroke:var(--accent)}
+.diagram-node.node-process rect {fill:var(--process-soft);stroke:var(--process)}
+.diagram-node.node-output path {fill:var(--teal-soft);stroke:var(--teal)}
+.diagram-node.node-decision polygon,
+.diagram-node.node-if polygon,
+.diagram-node.node-while polygon,
+.diagram-node.node-doWhile polygon {fill:var(--warning-soft);stroke:var(--warning)}
+.diagram-node.node-for polygon {fill:var(--accent-soft);stroke:var(--accent)}
+.diagram-node.node-merge circle {fill:var(--surface);stroke:var(--process)}
+.diagram-edge.is-route-true path {stroke:var(--positive);stroke-width:3}
+.diagram-edge.is-route-false path {stroke:var(--danger);stroke-width:3}
+.diagram-edge.is-active-path path {stroke:var(--accent);stroke-width:2.5}
+:where(.app-shell) :where(button,a,input,select,textarea,[tabindex]):focus-visible {
+  outline:3px solid var(--accent);
+  outline-offset:3px;
+}
+@media(max-width:760px) {
+  :where(.app-shell) :where(p,li,small,dd,dt,th,td) {font-size:14px!important}
+  :where(.app-shell) :where(button,input,select,textarea) {min-height:40px}
+}
+@media(prefers-reduced-motion:reduce) {
+  :where(.app-shell) *, :where(.app-shell) *::before, :where(.app-shell) *::after {
+    scroll-behavior:auto!important;
+  }
+}
