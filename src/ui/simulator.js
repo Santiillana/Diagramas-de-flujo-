@@ -1342,6 +1342,22 @@ function bindDiagramPan(){
   hit.addEventListener("pointerup",onUp);
   hit.addEventListener("pointercancel",onUp);
   hit.addEventListener("lostpointercapture",onUp);
+  stage.addEventListener("wheel",event=>{
+    if(event.target instanceof Element&&event.target.closest(".simulator-control-dock,.simulator-controls-panel,.sim-window,.focus-ui"))return;
+    event.preventDefault();
+    if(event.ctrlKey||event.metaKey){
+      setCameraFree();
+      const factor=Math.exp(-event.deltaY*.002);
+      zoomAt(zoom*factor,event.clientX,event.clientY);
+      stage.dataset.wheelZoomCount=String((Number(stage.dataset.wheelZoomCount)||0)+1);
+    }else{
+      setCameraFree();
+      const multiplier=event.deltaMode===1?18:event.deltaMode===2?stage.clientHeight:1;
+      panOffset={x:panOffset.x-event.deltaX*multiplier,y:panOffset.y-event.deltaY*multiplier};
+      applyCanvasTransform();
+      stage.dataset.wheelPanCount=String((Number(stage.dataset.wheelPanCount)||0)+1);
+    }
+  },{passive:false});
 }
 
 function setMobilePanel(name){
@@ -1484,12 +1500,12 @@ function bind(){
   $("#diagram-fit")?.addEventListener("click",centerDiagram);
   bindDiagramPan();
   document.addEventListener("keydown",event=>{
-    const target=event.target;
-    if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
-    if(event.altKey||event.ctrlKey||event.metaKey)return;
     const key=event.key;
     if(key==="Escape"&&$("#simulator-controls-panel")&&!$("#simulator-controls-panel").hidden){event.preventDefault();toggleControls(false);return;}
     if(key==="Escape"&&document.body.classList.contains("focus")){event.preventDefault();toggleDiagramFullscreen();return;}
+    const target=event.target;
+    if(target instanceof HTMLElement&&(target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(target.tagName)))return;
+    if(event.altKey||event.ctrlKey||event.metaKey)return;
     if(key===" "){event.preventDefault();play();}
     else if(key==="ArrowRight"){event.preventDefault();move(1);}
     else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
