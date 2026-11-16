@@ -48,3 +48,16 @@
 .ficha-calendar-cell small{display:block;margin-top:3px;color:var(--accent);font-size:.62rem}
 .ficha-attention-panel>.ficha-empty-day{margin:0}
 @media(max-width:620px){.ficha-activity-card{align-items:flex-start;flex-direction:column;gap:6px}.ficha-activity-status{text-align:left}}
+
+
+.ficha-backup-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:center;margin-top:28px;padding:20px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--surface-soft)}
+.ficha-backup-tools h3{margin:0;font-size:1rem}
+.ficha-backup-tools p:not(.eyebrow){max-width:720px;margin:6px 0 0;color:var(--muted);font-size:.82rem}
+.ficha-backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ficha-backup-actions button{min-height:40px;padding:8px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:.82rem;font-weight:650;cursor:pointer}
+.ficha-backup-actions button:first-child{border-color:var(--accent-strong);background:var(--accent-soft)}
+.ficha-backup-actions button:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px}
+.ficha-backup-status{grid-column:1/-1;margin:0!important;font-size:.78rem!important}
+.ficha-backup-status[data-status="success"]{color:var(--positive)}
+.ficha-backup-status[data-status="error"]{color:var(--danger,var(--ink))}
+@media(max-width:720px){.ficha-backup-tools{grid-template-columns:1fr}.ficha-backup-actions{width:100%}.ficha-backup-actions button{flex:1}}
