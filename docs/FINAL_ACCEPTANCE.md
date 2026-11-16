@@ -1,80 +1,61 @@
-# Informe de aceptación final — Traza
+# Informe de aceptación final · Traza
 
-Fecha: 14 de noviembre de 2026  
-Repositorio: `Santiillana/Diagramas-de-flujo-`  
-Rama de aceptación: `module-5/final-audit-release`  
-Commit validado: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
+**Fecha de corte:** 16 de noviembre de 2026  
+**Repositorio:** `Santiillana/Traza`  
+**Rama predeterminada:** `main`  
+**Commit integrado antes de M5:** `e80d5773eed6ab0c193ad351e618ce744b0c8441`
 
-## Resultado ejecutivo
+## Resultado actual
 
-Los cinco módulos están integrados en `main`. El PR #6 de M5 se fusionó con el commit `e510f534049c0a990ee03fde38d6b21ec40e8505`; la CI de la rama principal pasó después de integrar.
+La base funcional y las mejoras v4 están integradas en `main`. El Módulo 5 es la auditoría final y la preparación de publicación. Este informe distingue la evidencia ya observada de las verificaciones que todavía requieren un deployment real.
 
-### Estado por módulo
+| Área | Resultado al iniciar M5 |
+|---|---|
+| Inicio y navegación | Integrados; la app declara Inicio, cinco espacios de Mi ficha y cuatro espacios de Aprende |
+| Aprende | 17 lecciones; progreso, escenas, ejemplos y comprobación |
+| Ejercicios | 45 retos, distribución 20/10/10/5; CI de M4 integrada |
+| Simulador | Parser e intérprete sin ejecución dinámica de JavaScript; UI conectada a traza determinista |
+| Laboratorio | Ocho actividades y constructor estructurado con compilador y motor compartidos |
+| Rendimiento | Pruebas automatizadas de ciclos de 200 vueltas, ciclos anidados y snapshots |
+| Accesibilidad | Pruebas de contraste WCAG AA, navegación por teclado y movimiento reducido |
+| Publicación | No aceptada como deployment público hasta completar smoke test sobre URL real |
 
-| Módulo | Resultado | Evidencia |
-|---|---|---|
-| 1. Arquitectura y diseño | Aceptado e integrado | 7/7 Node + 7/7 Chromium iniciales |
-| 2. Lecciones y ejercicios | Aceptado e integrado | 14 lecciones, 40 ejercicios (20/10/10), oráculo de 170 escenarios |
-| 3. Parser, motor y simulador | Aceptado e integrado | 31/31 Node + 16/16 Chromium |
-| 4. Laboratorio y constructor | Aceptado e integrado con límite de alcance documentado | 216/216 Node + 28/28 Chromium |
-| 5. Integración y auditoría | Implementado y CI validada; PR pendiente | 222/222 Node + 38/38 Chromium |
+## Evidencia CI de main previa a los nuevos tests M5
 
-## Evidencia M5
+[GitHub Actions run 43951436564](https://github.com/Santiillana/Traza/actions/runs/43951436564)
 
-CI aceptación de M5: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106
-CI main final: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615474220
+- Node: **267/267**.
+- Playwright/Chromium: **95/95**.
+- Instalación de dependencias: sin vulnerabilidades reportadas por npm.
+- Capturas visuales: 18 PNG subidos correctamente en el artefacto `ui-audit-e80d5773eed6ab0c193ad351e618ce744b0c8441` (ID `14266019722`).
 
-- **Node:** 222 pruebas pasaron, 0 fallaron.
-- **Chromium:** 38 pruebas pasaron, 0 fallaron.
-- Se ejecutaron 170 escenarios de referencia matemática independientes para el catálogo.
-- Se comprobaron cinco espacios, responsive a 1440 px, 1024 px y 390 px, arranque sin excepciones JS, modo reto, simulador, movimiento de cámara, zoom, fit, fullscreen, historial, restauración de entradas, pestañas móviles y reducción de movimiento.
-- Se capturaron las vistas del simulador, laboratorio y constructor en escritorio/tableta/móvil; artefacto CI: `ui-audit-045f5be0b2f5dc7fe39eb34797a69cba26448612`.
+La suite Node ejecuta todos los métodos y escenarios existentes del catálogo y contrasta resultados con un oráculo independiente. Los tests de rendimiento cubren 200 iteraciones, ciclos anidados y navegación por snapshots. La suite de navegador cubre el Simulador, Laboratorio, Constructor, responsive y la nueva navegación del catálogo.
 
-## Revisión visual de las capturas
+## Criterios de auditoría M5
 
-Se revisaron las capturas producidas por Chromium:
-- Simulador desktop: problema/pseudocódigo a la izquierda, diagrama central, escena/variables/salida a la derecha, historial y dock inferior.
-- Simulador mobile: barra de espacios navegable, pestañas táctiles para los seis paneles y dock conservado; no hay desbordamiento horizontal del documento.
-- Laboratorio desktop: diagrama, escena y variables persistentes junto a las seis actividades.
-- Constructor desktop/mobile: paleta, secuencia y terminales, propiedades, compilación/ejecución y vista previa; el layout se adapta sin scroll horizontal de página.
+Los nuevos tests de M5 deben verificar:
+- Entrada y navegación por las diez vistas declaradas.
+- Ausencia de excepciones JS y fallos al cargar scripts/hojas de estilo.
+- Ausencia de desbordamiento horizontal a 390, 768, 1024 y 1440 px.
+- Navegación por teclado en los controles visibles.
+- Comportamiento tolerante cuando el navegador bloquea localStorage.
+- Revalidación del suite de Node y Playwright en el commit de M5.
 
-La comprobación de interacción móvil se ejecutó con Chromium emulado; no equivale a probar un dispositivo físico real.
+El resultado final, SHA y artefacto se añadirán tras completar Actions. No se anticipa su aprobación antes de verla.
 
-## Diferencias o limitaciones que se declaran
+## Limitaciones que permanecen declaradas
 
-1. **Constructor estructurado, no cableado libre:** se crean secuencias, ramas V/F y cuerpos de ciclo anidados. Las flechas se infieren por orden/estructura. No se implementó todavía el editor libre de conexiones manuales por puerto que describe V5. La implementación no se etiqueta como ese editor completo.
-2. **GitHub Pages:** el proyecto es estático y compatible, pero no se pudo verificar la configuración ni una URL pública de Pages desde esta ejecución. Para publicar, habilitar Settings → Pages → Deploy from a branch → main → /(root), y luego comprobar la URL.
-3. **Prueba física:** responsive y gestos se probaron con Chromium a tamaños de viewport configurados, no en un teléfono/tableta físico.
+1. **Constructor:** el modelo es estructurado por secuencia, ramas V/F y bloques anidados. No es un editor de conexiones manuales arbitrarias entre puertos SVG.
+2. **Dispositivos físicos:** las pruebas responsive se ejecutan en Chromium emulado. No equivalen a una prueba táctil en teléfonos o tabletas reales.
+3. **Publicación:** `.github/workflows/pages.yml` permite despliegue manual de respaldo en GitHub Pages. `.github/workflows/post-deploy.yml` requiere introducir el origen HTTPS real. Hasta que esa ejecución finalice y confirme la marca `traza-release` y pase el smoke test, no debe decirse que el sitio está publicado ni que M5 está completamente aceptado.
+4. **Rendimiento:** las pruebas de traza acotada garantizan límites funcionales definidos, pero no son una medición de rendimiento en hardware de usuario ni una prueba de carga multiusuario.
 
-## Correcciones de contenido detectadas por la ejecución
+## Regla de aceptación
 
-- Ejercicio 34: en caso de todos los valores iguales, mantener la primera posición de máximo/mínimo.
-- Ejercicio 36: corregir el promedio y los aprobados para el caso declarado.
-- Se mantienen verificaciones de Fibonacci hasta 34 (sin imprimir 55), máximos con valores negativos, factorial 0! = 1, centinela no contado y promedio sin división entre cero.
+M5 podrá declararse aceptado cuando:
+- La CI del SHA final esté verde en Node y Chromium.
+- Las capturas de auditoría visual se hayan generado y revisado.
+- No queden fallos funcionales reproducibles sin documentar.
+- El smoke test del sitio desplegado pase contra el origen HTTPS real.
 
-## Publicación
-
-El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido estático en cada push a `main`. El intento posterior a la fusión terminó con HTTP 404 en “Configure GitHub Pages” (https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615398257): el sitio aún no está habilitado. El propietario debe ir a Settings → Pages → Build and deployment → Source y seleccionar GitHub Actions. Después, re-ejecutar Deploy GitHub Pages y comprobar la URL del entorno.
-
-## Estado final de integración
-
-- PR #6 se fusionó en `main`.
-- CI `main`: 222/222 Node y 38/38 Chromium.
-- El único bloqueo externo restante es activar GitHub Pages en Settings → Pages → Build and deployment → Source → GitHub Actions. Tras hacerlo, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
-- No se afirma que Pages esté publicado mientras esa activación no se realice y el deployment no termine correctamente.
-
-
-## Aceptación final — rama mejoras/traza-v2
-
-Fecha: 15 de noviembre de 2026. Esta sección actualiza el estado de la rama de mejoras y prevalece sobre los resultados históricos de M5 indicados arriba.
-
-- Rama: mejoras/traza-v2.
-- Commit de código validado: af28e95bb648c126ee445797d9ef9b1da236af22.
-- Pull request: [#7](https://github.com/Santiillana/Diagramas-de-flujo-/pull/7), base main, estado abierto, no fusionado.
-- GitHub Actions: [run 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), resultado success.
-- Node: 259 pruebas aprobadas, 0 fallidas.
-- Playwright/Chromium: 58 pruebas aprobadas, 0 fallidas.
-- El job completó las pruebas de arquitectura y navegador y cargó 17 capturas PNG como artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57 (ID 14163486649, 3.388.715 bytes, retención configurada de 7 días).
-- La prueba final de movimiento reducido quedó ajustada para comprobar la duración computada efectiva (≤0,01 ms), no una representación textual específica del CSS.
-
-La aprobación de CI verifica esta revisión automatizada en Chromium; no equivale a una prueba física en dispositivos ni a una publicación web. No se fusionó la PR y no se afirma que GitHub Pages esté desplegado. La rama main permanece fuera de esta entrega.
+Si el deployment o la prueba física no están disponibles, se conservarán como limitaciones explícitas; no se sustituirán por inferencias basadas en un merge o en pruebas locales.
