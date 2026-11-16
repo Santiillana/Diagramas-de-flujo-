@@ -1,10 +1,31 @@
 import { test, expect, goToSpace } from "./navigation.js";
-async function openLearn(page){await page.goto("/");await goToSpace(page, "learn");}
-test("Aprende organiza las 17 lecciones en cinco bloques progresivos",async({page})=>{
- await openLearn(page);
- await expect(page.locator("#lesson-catalog [data-lesson-id]")).toHaveCount(17);
- await expect(page.locator(".lesson-catalog-group-title")).toHaveText(["01 · Fundamentos","02 · Figuras básicas","03 · Variables y operaciones","04 · Decisiones y rutas","05 · Ciclos"]);
+
+async function openLearn(page){
+  await page.goto("/");
+  await goToSpace(page,"learn");
+}
+
+test("Aprende organiza las 17 lecciones en cuatro bloques progresivos",async({page})=>{
+  await openLearn(page);
+  await expect(page.locator("#lesson-catalog [data-lesson-id]")).toHaveCount(17);
+  await expect(page.locator(".lesson-catalog-group-title")).toHaveText([
+    "01 · Fundamentos","02 · Datos y operaciones","03 · Decisiones","04 · Ciclos"
+  ]);
+  await expect(page.locator(".lesson-catalog-group")).toHaveCount(4);
 });
+
+test("el progreso, el botón continuar y la ubicación de lección reflejan el estado real",async({page})=>{
+  await openLearn(page);
+  await expect(page.locator("#learn-progress-ring")).toHaveAttribute("aria-valuenow","0");
+  await expect(page.locator("#learn-progress-total")).toHaveText("0 de 17 lecciones completadas");
+  await expect(page.locator("#learn-continue-current")).toContainText("Continuar: lección 01");
+  await page.locator("#learn-continue-current").click();
+  await expect(page.locator(".lesson-breadcrumb")).toContainText("Fundamentos");
+  await expect(page.locator(".lesson-reading-progress")).toHaveAttribute("aria-valuenow","1");
+  await page.locator("[data-lesson-next]").click();
+  await expect(page.locator(".lesson-reading-progress")).toHaveAttribute("aria-valuenow","2");
+});
+
 test("cada lección explica cuándo se usa, muestra una escena, resuelve un ejemplo y comprueba comprensión",async({page})=>{
  await openLearn(page);
  const ids=["algorithm","reading","terminals","input","process","output","variables","arithmetic","comparisons","decisions","nested-decisions","counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"];
@@ -24,6 +45,7 @@ test("cada lección explica cuándo se usa, muestra una escena, resuelve un ejem
   await expect(page.locator(".lesson-option")).toHaveCount(3);
  }
 });
+
 test("la escena avanza, retrocede y respeta el movimiento reducido",async({page})=>{
  await page.addInitScript(()=>localStorage.setItem("traza:v2:motion","full"));
  await openLearn(page);
@@ -38,6 +60,7 @@ test("la escena avanza, retrocede y respeta el movimiento reducido",async({page}
  await page.locator("[data-visual-play]").click();
  await expect(page.locator("[data-visual-play]")).toHaveAttribute("aria-pressed","false");
 });
+
 test("la prueba interactiva ejecuta el pseudocódigo real con datos modificados",async({page})=>{
  await openLearn(page);
  await page.locator('[data-lesson-id="algorithm"]').click();
@@ -48,6 +71,7 @@ test("la prueba interactiva ejecuta el pseudocódigo real con datos modificados"
  await page.locator("[data-run-mini-program]").click();
  await expect(page.locator("#lesson-data-result")).toContainText("Salida: 10");
 });
+
 test("Aprende conserva una composición legible en escritorio y móvil",async({page},testInfo)=>{
  await page.setViewportSize({width:1440,height:900});
  await openLearn(page);

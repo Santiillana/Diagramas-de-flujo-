@@ -383,3 +383,120 @@ body.has-exercise-modal{overflow:hidden}
 @media(max-width:520px){.lesson-catalog{grid-template-columns:1fr;max-height:390px}.lesson-when-to-use{grid-template-columns:1fr;gap:4px}.lesson-worked-example{padding:10px}.lesson-visual .lesson-scene-host{min-height:155px;padding:10px}.lesson-visual .visual-controls{justify-content:stretch}.lesson-visual .visual-controls button{flex:1 1 42%}}
 @media(prefers-reduced-motion:reduce){.lesson-visual .scene-data-tape,.lesson-visual .scene-transfer-lane,.lesson-visual .scene-variable-box,.lesson-visual .scene-operation-breakdown,.lesson-visual .scene-process-result,.lesson-visual .scene-output-paper,.lesson-visual .scene-question-card,.lesson-visual .scene-path.is-active,.lesson-visual .scene-loop-step.is-active,.lesson-visual .scene-loop-question,.lesson-visual .scene-loop-body,.lesson-visual .scene-terminal-shape{animation:none!important;transition:none!important}}
 :root[data-motion="reduced"] .lesson-visual *{animation:none!important;transition:none!important}
+
+
+/* Traza v4 · Aprende: ruta visual, progreso y lectura guiada */
+.learn-intro{align-items:center;margin-bottom:18px}
+.learn-intro>div{max-width:850px}
+.learn-intro h2{max-width:760px}
+.learn-intro .learn-continue-button{flex:none;min-height:44px}
+.learn-progress-overview{
+  display:grid;grid-template-columns:62px minmax(0,1fr) auto;align-items:center;gap:16px;
+  max-width:1280px;margin:0 0 17px;padding:14px 18px;
+  border:1px solid var(--line);border-radius:15px;background:var(--surface);box-shadow:var(--shadow-sm)
+}
+.learn-progress-ring{
+  --learn-progress:0%;
+  display:grid;place-items:center;width:58px;height:58px;padding:5px;border-radius:50%;
+  background:conic-gradient(var(--accent) var(--learn-progress),var(--line) 0)
+}
+.learn-progress-ring>span{
+  display:grid;place-items:center;width:100%;height:100%;border:1px solid var(--line);
+  border-radius:50%;color:var(--ink);background:var(--surface);font-size:13px;font-weight:850;font-variant-numeric:tabular-nums
+}
+.learn-progress-copy{display:grid;gap:3px;min-width:0}
+.learn-progress-copy>.eyebrow{font-size:10px}
+.learn-progress-copy>strong{font-size:14px;line-height:1.35}
+.learn-progress-copy>p:not(.eyebrow){margin:0;color:var(--muted-strong);font-size:12px}
+.learn-progress-track{height:5px;max-width:420px;overflow:hidden;margin-top:5px;border-radius:999px;background:var(--line)}
+.learn-progress-track>span{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width var(--dur-3) var(--ease)}
+.learn-progress-count{display:grid;gap:0;justify-items:end;color:var(--accent-text);font:800 21px/1 ui-monospace,monospace}
+.learn-progress-count small{margin-top:4px;color:var(--muted);font:800 9px/1.2 ui-sans-serif,system-ui;letter-spacing:1px}
+.learn-workspace{grid-template-columns:minmax(380px,1.05fr) minmax(0,1.6fr);gap:16px}
+.lesson-catalog-panel{border-radius:15px}
+.lesson-catalog-panel>.panel-heading{padding:15px 16px 12px}
+.lesson-catalog-panel>.panel-heading h3{font-size:17px}
+.lesson-catalog{gap:10px;padding:0 11px 13px;max-height:calc(100vh - 285px)}
+.lesson-catalog-group{
+  display:grid;gap:0;margin:0;padding:0 0 3px;overflow:hidden;
+  border:1px solid var(--line);border-radius:13px;background:var(--surface)
+}
+.lesson-catalog-group-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 12px 10px;border-bottom:1px solid var(--line);background:var(--surface-soft)
+}
+.lesson-catalog-group-title{font-size:12px;letter-spacing:.1px}
+.lesson-catalog-group-heading small{max-width:390px;margin-top:3px;font-size:11px;line-height:1.4}
+.lesson-group-progress{padding:4px 7px;border-radius:999px;font-size:10px}
+.lesson-catalog-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:9px}
+.lesson-list-item{
+  grid-template-columns:26px minmax(0,1fr) 15px;align-items:start;gap:7px;
+  min-width:0;min-height:64px;padding:9px 8px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);
+  transition:background-color var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),transform var(--dur-2) var(--ease)
+}
+.lesson-list-item:hover{transform:translateY(-1px);border-color:var(--line-strong);background:var(--surface-soft)}
+.lesson-list-item.is-selected{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 16%,transparent)}
+.lesson-list-number{width:25px;height:25px;border-radius:8px;color:var(--accent-text);font-size:11px}
+.lesson-list-copy{min-width:0}
+.lesson-list-copy strong{font-size:11px;line-height:1.32;overflow-wrap:anywhere}
+.lesson-list-copy small{margin-top:5px;font-size:10px}
+.lesson-list-state{width:15px;height:15px;border-radius:50%;font-size:12px;line-height:1}
+.lesson-detail-panel{padding:clamp(17px,2vw,26px);border-radius:15px}
+.lesson-reader{max-width:100%;margin:0 auto}
+.lesson-breadcrumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;color:var(--muted);font-size:11px;font-weight:650}
+.lesson-breadcrumb strong{color:var(--accent-text);font-weight:800}
+.lesson-detail-heading{padding-bottom:14px}
+.lesson-detail-heading>div,.lesson-detail-heading h3{max-width:760px}
+.lesson-reading-progress{height:4px;overflow:hidden;margin:12px 0 13px;border-radius:999px;background:var(--line)}
+.lesson-reading-progress>span{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width var(--dur-2) var(--ease)}
+.lesson-screen-tabs{gap:5px;flex-wrap:wrap;margin-bottom:15px}
+.lesson-screen-step{padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:10px}
+.lesson-screen-step.is-current{border-color:var(--accent);color:var(--accent-text);background:var(--accent-soft)}
+.lesson-screen{max-width:760px;margin:0 auto}
+.lesson-screen-navigation{
+  position:sticky;bottom:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:18px -4px -4px;padding:12px 4px 4px;background:linear-gradient(to bottom,transparent,var(--surface) 22%)
+}
+.lesson-screen-navigation .button{min-height:42px}
+.lesson-screen-count{color:var(--muted);font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.lesson-detail-panel .lesson-visual{max-width:760px;margin-inline:auto}
+.lesson-detail-panel .lesson-visual .lesson-scene-host{max-width:760px}
+@media(max-width:1120px){
+  .learn-workspace{grid-template-columns:minmax(330px,1fr) minmax(0,1.35fr)}
+  .lesson-catalog-items{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:800px){
+  .learn-workspace{grid-template-columns:1fr}
+  .lesson-catalog-panel{position:static}
+  .lesson-catalog{max-height:none}
+  .lesson-catalog-items{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lesson-detail-panel{padding:18px}
+}
+@media(max-width:620px){
+  .learn-intro{align-items:flex-start}
+  .learn-intro .learn-continue-button{width:100%}
+  .learn-progress-overview{grid-template-columns:52px minmax(0,1fr);gap:11px;padding:12px}
+  .learn-progress-ring{width:50px;height:50px}
+  .learn-progress-count{display:none}
+  .lesson-catalog-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:7px}
+  .lesson-list-item{min-height:62px;padding:8px 6px;grid-template-columns:23px minmax(0,1fr) 13px;gap:5px}
+  .lesson-list-number{width:22px;height:22px;font-size:10px}
+  .lesson-list-copy strong{font-size:10.5px}
+  .lesson-detail-panel{padding:13px}
+  .lesson-detail-heading{display:block}
+  .lesson-completion{display:inline-flex;margin-top:9px}
+  .lesson-screen-navigation{margin-top:12px}
+  .lesson-screen-navigation .button{flex:1 1 0;justify-content:center;padding-inline:10px}
+  .lesson-screen-count{white-space:nowrap}
+}
+@media(max-width:440px){
+  .lesson-catalog-items{grid-template-columns:1fr}
+  .lesson-list-item{min-height:56px}
+  .lesson-list-copy strong{font-size:12px}
+  .lesson-screen-tabs{gap:4px}
+  .lesson-screen-step{font-size:9px;padding:5px 7px}
+}
+:root[data-motion="reduced"] .lesson-list-item,
+:root[data-motion="reduced"] .lesson-reading-progress>span,
+:root[data-motion="reduced"] .learn-progress-track>span{transition:none!important}

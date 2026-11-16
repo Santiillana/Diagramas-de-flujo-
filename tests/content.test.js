@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { lessons } from "../src/content/lessons.js";
+import { rutas } from "../src/content/rutas.js";
 import { exercises, validateCatalog } from "../src/content/exercises.js";
 
 test("existen las 17 lecciones progresivas del temario oficial",()=>{
@@ -28,6 +29,19 @@ test("las 17 lecciones indican cuándo se usan y contienen un ejemplo resuelto e
     assert.ok(lesson.commonError?.length>10,lesson.id+" debe explicar un error común");
     assert.ok(lesson.check?.question&&lesson.check.options.length===3,lesson.id+" debe incluir una comprobación breve");
   }
+});
+
+test("las 17 lecciones aparecen exactamente una vez en los cuatro bloques de la ruta",()=>{
+  const routedIds=rutas.flatMap(route=>route.ids);
+  const lessonIds=lessons.map(lesson=>lesson.id);
+  assert.equal(rutas.length,4);
+  assert.deepEqual(rutas.map(route=>route.title),[
+    "01 · Fundamentos","02 · Datos y operaciones","03 · Decisiones","04 · Ciclos"
+  ]);
+  assert.equal(routedIds.length,17);
+  assert.equal(new Set(routedIds).size,17);
+  assert.deepEqual([...routedIds].sort(),[...lessonIds].sort());
+  for(const route of rutas)assert.ok(route.id&&route.description&&route.ids.length>0);
 });
 
 test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
