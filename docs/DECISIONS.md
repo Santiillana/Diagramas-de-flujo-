@@ -144,3 +144,13 @@ En pantallas de hasta 900 px, el Simulador muestra pestañas Problema, Diagrama,
 
 ## D-048 · Los tests siguen el contrato de la interfaz vigente
 Las pruebas de aceptación deben seleccionar los ejercicios respetando la paginación, abrir el panel de controles antes de interactuar con sus controles internos y validar los nombres y agrupaciones visibles actuales. No se conservan expectativas de una quinta vista, ventanas minimizables, selector flotante independiente ni valores de variables que no correspondan al algoritmo ejecutado.
+
+
+## D-022 · El cierre de M5 se ancla al repositorio y SHA vigentes
+La evidencia de integración se registra contra `Santiillana/Traza`, su rama `main` y el SHA exacto validado. Los historiales que mencionan `Santiillana/Diagramas-de-flujo-`, PR antiguos o commits de una iteración previa se conservan solo como historial, no como estado vigente.
+
+## D-023 · Las verificaciones automatizadas no equivalen a publicación
+La suite CI demuestra el comportamiento del commit en el entorno de Actions. La publicación requiere completar un workflow de despliegue y ejecutar el smoke test contra el origen HTTPS real. Una URL no comprobada nunca se describe como producción activa.
+
+## D-024 · El diseño estructurado del constructor se declara con precisión
+El constructor integrado permite secuencias, decisiones y ciclos anidados mediante un modelo estructurado compilado al motor común. No se denomina editor libre de conexiones arbitrarias entre puertos. Esta limitación debe seguir visible en los informes de aceptación.
