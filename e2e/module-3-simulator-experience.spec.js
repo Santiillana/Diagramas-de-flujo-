@@ -20,9 +20,10 @@ test("Leer anima el dato hasta Variables y pulsa el panel de destino",async({pag
   await page.locator("#simulator-next").click();
   const flight=page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="variables"]');
   await expect(flight).toBeAttached({timeout:5000});
-  await expect(flight).toContainText("8");
-  await expect(page.locator("#PR.variables-panel[data-pulse]")).toBeVisible({timeout:5000});
-  await expect(page.locator("#PR .sim-pulse-count")).toContainText("+1");
+  await expect(flight).toHaveAttribute("aria-hidden","true");
+  await expect(flight).toHaveText("");
+  await expect(page.locator("#PR.variables-panel.is-pulsing")).toBeVisible({timeout:5000});
+  await expect(page.locator("#PR .sim-pulse-count")).toHaveCount(0);
 });
 
 test("Imprimir vuela hacia Pantalla y un avance manual cancela el vuelo pendiente",async({page})=>{
@@ -48,7 +49,7 @@ test("el movimiento reducido conserva el resaltado e impide vuelos secundarios",
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-next").click();
-  await expect(page.locator("#PR.variables-panel[data-pulse]")).toBeVisible();
+  await expect(page.locator("#PR.variables-panel.is-pulsing")).toBeVisible();
   await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
 });
 
