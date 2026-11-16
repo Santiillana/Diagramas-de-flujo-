@@ -1075,7 +1075,7 @@ function render(){
       '<span class="variable-card-name">'+esc(name)+'</span><span class="variable-card-values">'+old+'<strong>'+esc(fmt(vars[name]))+'</strong></span></button>';
   }).join("");
   $("#variables-content").innerHTML=names.length?'<div class="variable-cards">'+variableMarkup+'</div>':'<p class="empty-state-copy">La memoria aún está vacía. La primera asignación mostrará aquí cada cajita.</p>';
-  $("#variable-change").textContent=change?"Por qué cambia: "+brief(e):e.condition?brief(e):"Sin cambios de variable en este paso.";
+  $("#variable-change").textContent=change?"Por qué cambia: "+brief(e):"Sin cambios de variable en este paso.";
   $("#variables-content").scrollTop=0;
   const activeModel=diagramNodeForEvent(e),activeNode=activeModel?document.getElementById("flow-node-"+activeModel.id):null;
   document.querySelectorAll("#flow-svg .diagram-node").forEach(node=>{node.classList.remove("has-active-variable");node.style.removeProperty("--active-variable-color");});
