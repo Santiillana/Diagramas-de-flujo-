@@ -136,4 +136,16 @@ test("la navegación superior conserva cuatro etiquetas legibles a 390 px",async
  expect(report.items.every((item,index)=>index===0||item.left>=report.items[index-1].right-1)).toBe(true);
  await page.locator('[data-space="simulator"]').click();
  await expect(page.locator("#primary-nav .nav-button")).toHaveCount(4);
+ const dock=page.locator("#dock");
+ const transport=dock.locator(".dock-controls .transport-button");
+ await expect(transport).toHaveCount(5);
+ const geometry=await dock.evaluate(el=>{
+  const box=el.getBoundingClientRect();
+  const buttons=[...el.querySelectorAll(".dock-controls .transport-button")].map(node=>node.getBoundingClientRect());
+  const speed=el.querySelector(".dock-speed>span");
+  return {box:{left:box.left,right:box.right},buttons:buttons.map(r=>({left:r.left,right:r.right,width:r.width})),
+    speed:speed?{scrollWidth:speed.scrollWidth,clientWidth:speed.clientWidth}:null};
+ });
+ expect(geometry.buttons.every(button=>button.width>=16&&button.left>=geometry.box.left-1&&button.right<=geometry.box.right+1)).toBe(true);
+ expect(geometry.speed===null||geometry.speed.scrollWidth<=geometry.speed.clientWidth+2).toBe(true);
 });
