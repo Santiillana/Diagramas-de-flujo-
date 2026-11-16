@@ -12,15 +12,16 @@ test("el catálogo muestra los cinco ejercicios expertos sin revelar soluciones"
   await expect(page.locator("#exercise-detail [data-start-exercise]")).toBeVisible();
 });
 
-test("el filtro por clase se combina con conceptos y niveles",async({page})=>{
+test("los filtros por conceptos y dificultad utilizan metadatos de los ejercicios",async({page})=>{
   await page.locator('[data-space="exercises"]').click();
-  await page.locator("#exercise-class-only").check();
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(4);
-  await page.locator("#exercise-class-only").uncheck();
-  await page.locator('[data-concept-filter="Ciclo Mientras"]').click();
+  await page.locator("#exercise-level").selectOption("basic");
+  await expect(page.locator("#exercise-count")).toHaveText("20 de 45 ejercicios");
+  await page.locator('#exercise-concepts [data-concept-filter="Ciclo Para"]').click();
   await expect(page.locator("[data-select-exercise]")).not.toHaveCount(0);
   await page.locator("#exercise-level").selectOption("advanced");
   await expect(page.locator("[data-select-exercise]")).not.toHaveCount(0);
+  await page.locator("#exercise-filters-clear").click();
+  await expect(page.locator("#exercise-count")).toHaveText("45 de 45 ejercicios");
 });
 
 test("el constructor se encuentra dentro de Arma el diagrama y permite editar",async({page})=>{
