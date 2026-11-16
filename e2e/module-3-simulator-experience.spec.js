@@ -152,6 +152,13 @@ test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",as
     });
   });
   expect(geometry.length).toBeGreaterThan(0);
+
   expect(geometry.every(edge=>edge.outside)).toBe(true);
+  const phaseLayout=await page.locator("#scene-content .scene-loop-track .scene-loop-step").evaluateAll(nodes=>{
+    const tops=nodes.map(node=>node.getBoundingClientRect().top);
+    return {count:tops.length,singleRow:tops.length>0&&tops.every(top=>Math.abs(top-tops[0])<3)};
+  });
+  expect(phaseLayout.count).toBe(5);
+  expect(phaseLayout.singleRow).toBe(true);
   await expect(page.locator("#flow-token-label")).toHaveCount(0);
 });
