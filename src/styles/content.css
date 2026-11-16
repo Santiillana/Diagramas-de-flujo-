@@ -33,6 +33,9 @@
 .lesson-option>span{display:grid;place-items:center;width:23px;height:23px;border-radius:7px;background:var(--surface-soft);font-weight:800}.lesson-option:hover{border-color:var(--accent)}
 .lesson-option.is-correct{border-color:var(--positive);background:var(--positive-soft)}.lesson-option.is-wrong{border-color:var(--danger);background:var(--danger-soft)}.lesson-option:disabled{cursor:default}
 .lesson-feedback{min-height:16px;margin:9px 0 0;color:var(--muted-strong);font-size:13px}.lesson-feedback.is-correct{color:var(--positive)}.lesson-feedback.is-wrong{color:var(--danger)}
+.catalog-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,.45fr) auto;gap:12px;align-items:end;margin:6px 0 15px}
+.catalog-toolbar label{display:grid;gap:5px}.catalog-toolbar label span{color:var(--muted);font-size:13px;font-weight:850;letter-spacing:.9px;text-transform:uppercase}
+.catalog-toolbar input,.catalog-toolbar select{width:100%;min-height:39px;padding:0 11px;border:1px solid var(--line-strong);border-radius:9px;color:var(--ink);background:var(--surface);font:inherit;font-size:13px}
 .catalog-count{padding-bottom:10px;color:var(--muted);font-size:13px;font-weight:750;white-space:nowrap}
 .exercise-workspace{display:grid;grid-template-columns:minmax(260px,1.05fr) minmax(320px,1fr);gap:13px;align-items:start}
 .exercise-list-panel{min-width:0}.exercise-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -66,8 +69,8 @@
 .detail-empty-mark{display:grid;place-items:center;width:53px;height:53px;margin-bottom:15px;border:1px solid var(--line);border-radius:16px;color:var(--accent);background:var(--accent-soft);font:800 18px ui-monospace,monospace}
 .detail-empty h3{margin:6px 0;font-size:17px}.detail-empty p:last-child{max-width:330px;color:var(--muted);font-size:13px;line-height:1.65}
 @media(max-width:1120px){.learn-workspace{grid-template-columns:minmax(220px,.7fr) minmax(0,1.5fr)}.exercise-workspace{grid-template-columns:minmax(240px,.9fr) minmax(300px,1fr)}.exercise-grid{grid-template-columns:1fr}.exercise-card{min-height:118px}}
-@media(max-width:800px){.learn-workspace{grid-template-columns:1fr}.lesson-catalog-panel,.exercise-detail-panel{position:static;max-height:none}.lesson-catalog{grid-template-columns:repeat(2,minmax(0,1fr));max-height:320px}.exercise-workspace{grid-template-columns:1fr}.exercise-detail-scroll{max-height:none}.exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.lesson-catalog{grid-template-columns:1fr}.lesson-detail-heading{display:block}.lesson-completion{display:inline-flex;margin-top:10px}.lesson-explanation-grid{grid-template-columns:1fr}.visual-track{gap:3px}.visual-stage-node{padding:7px 3px;min-height:88px}.visual-stage-node strong{font-size:13px}.visual-stage-node small{font-size:13px}.visual-track-arrow{font-size:14px}.exercise-grid{grid-template-columns:1fr}.exercise-card{min-height:105px}.exercise-io-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.learn-workspace{grid-template-columns:1fr}.lesson-catalog-panel,.exercise-detail-panel{position:static;max-height:none}.lesson-catalog{grid-template-columns:repeat(2,minmax(0,1fr));max-height:320px}.exercise-workspace{grid-template-columns:1fr}.exercise-detail-scroll{max-height:none}.exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-toolbar{grid-template-columns:1fr 1fr}.catalog-count{grid-column:1/-1;padding:0}}
+@media(max-width:520px){.lesson-catalog{grid-template-columns:1fr}.lesson-detail-heading{display:block}.lesson-completion{display:inline-flex;margin-top:10px}.lesson-explanation-grid{grid-template-columns:1fr}.visual-track{gap:3px}.visual-stage-node{padding:7px 3px;min-height:88px}.visual-stage-node strong{font-size:13px}.visual-stage-node small{font-size:13px}.visual-track-arrow{font-size:14px}.catalog-toolbar{grid-template-columns:1fr}.exercise-grid{grid-template-columns:1fr}.exercise-card{min-height:105px}.exercise-io-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.visual-stage-node,.exercise-card{transition:none}}
 
 .lesson-data-control{display:grid;gap:6px;margin-top:12px;color:var(--muted-strong);font-size:13px;font-weight:750}
@@ -92,12 +95,22 @@
 
 
 .level-expert{color:#7546b8;background:#f0eaff}
+.exercise-class-tag{align-self:flex-start;padding:3px 7px;border:1px solid var(--accent);border-radius:6px;color:var(--accent-strong);font-size:13px;font-weight:800}
+.catalog-class-filter{display:flex;align-items:center;gap:7px;color:var(--muted-strong);font-size:13px;font-weight:700;white-space:nowrap}
+.catalog-class-filter input{width:16px;height:16px;accent-color:var(--accent)}
 .exercise-pagination{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;color:var(--muted-strong);font-size:13px}
 .exercise-pagination button{padding:7px 11px;border:1px solid var(--line);border-radius:7px;color:var(--ink);background:var(--surface);font:inherit;cursor:pointer}
 .exercise-pagination button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:520px){.exercise-pagination{justify-content:space-between}}
 
 
+.catalog-toolbar{grid-template-columns:minmax(180px,1.4fr) minmax(140px,.7fr) minmax(160px,.9fr) auto auto}
+.catalog-toolbar .catalog-class-filter{display:flex;align-items:center;gap:7px;white-space:nowrap;padding-bottom:9px}
+.catalog-toolbar .catalog-class-filter span{text-transform:none;letter-spacing:0}
+.catalog-toolbar .catalog-class-filter input{width:16px;min-height:16px;accent-color:var(--accent)}
+.catalog-toolbar .catalog-category{min-width:0}
+@media(max-width:800px){.catalog-toolbar{grid-template-columns:1fr 1fr}.catalog-toolbar .catalog-count{grid-column:1/-1}.catalog-toolbar .catalog-class-filter{padding-bottom:0}}
+@media(max-width:520px){.catalog-toolbar{grid-template-columns:1fr}.catalog-toolbar .catalog-count{grid-column:auto}}
 
 
 .exercise-home-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,.8fr);gap:14px;margin:0 0 18px;padding:clamp(18px,2.4vw,28px);border:1px solid var(--line);border-radius:16px;background:linear-gradient(125deg,var(--surface-soft),var(--surface))}
@@ -117,12 +130,14 @@
 #view-exercises .catalog-intro{margin:7px 0 16px}
 #view-exercises .catalog-intro h2{font-size:clamp(23px,2.5vw,32px)}
 .catalog-filter-panel{
-  display:grid;grid-template-columns:minmax(0,1.45fr) minmax(150px,.65fr);
+  display:grid;grid-template-columns:minmax(220px,1.3fr) minmax(150px,.6fr) auto;
   gap:12px 16px;margin:0 0 14px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--surface)
 }
 .catalog-search,.catalog-level{display:grid;gap:5px;min-width:0}
 .catalog-search>span,.catalog-level>span{color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
 .catalog-search input,.catalog-level select{width:100%;min-width:0;min-height:38px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:7px;color:var(--ink);background:var(--surface-raised);font-size:13px}
+.catalog-class-filter{display:flex;align-items:center;gap:7px;color:var(--muted-strong);font-size:12px;font-weight:700;white-space:nowrap}
+.catalog-class-filter input{width:16px;height:16px;accent-color:var(--accent)}
 .catalog-concept-filter{grid-column:1/-1;display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
 .catalog-filter-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--ink-soft);font-size:12px;font-weight:800}
 .catalog-match-mode{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
@@ -226,6 +241,7 @@
 @media(max-width:950px){
  .exercise-workspace-catalog{grid-template-columns:minmax(0,1fr) minmax(280px,.9fr)}
  .catalog-filter-panel{grid-template-columns:minmax(170px,1fr) minmax(140px,.7fr)}
+ .catalog-class-filter{grid-column:1/-1}
 }
 @media(max-width:700px){
  .exercise-workspace-catalog{grid-template-columns:1fr}
@@ -241,6 +257,7 @@
  .exercise-try-actions{flex-direction:column-reverse}
  .exercise-try-actions button{width:100%}
  .catalog-filter-panel{grid-template-columns:1fr}
+ .catalog-class-filter{grid-column:auto}
  .catalog-filter-heading{align-items:flex-start;flex-direction:column}
  .lesson-phase-rail{grid-template-columns:1fr 1fr}
  .lesson-visual{padding:10px}

@@ -2,6 +2,7 @@ import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
 import { renderScene } from "./scenes/index.js";
+import { parsePseudocode } from "../core/parser.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -24,15 +25,49 @@ let selectedExercise = null;
 let selectedMethod = 0;
 let exerciseQuery = "";
 let exerciseLevel = "all";
+let exerciseClassOnly = false;
 let selectedConcepts = new Set();
 let conceptMatchMode = "all";
 let exercisePage = 0;
 let modalExercise = null;
 const PAGE_SIZE = 12;
-let modalReturnFocus = null;
+const CLASS_EXERCISES = new Set([22,23,24,28]);
 
 function exerciseConceptLabels(item){
-  return Array.isArray(item?.conceptTags)?item.conceptTags:[];
+  const labels=new Set();
+  const map={input:"Entrada de datos",assignment:"Asignación",output:"Imprimir",if:"Decisiones",for:"Ciclo Para",while:"Ciclo Mientras",doWhile:"Ciclo Hacer–Mientras"};
+  let nestedLoop=false;
+  for(const method of item.methods){
+    try{
+      const root=parsePseudocode(method.pseudocode);
+      const walk=(nodes,depth=0)=>{
+        for(const node of nodes??[]){
+          if(map[node.type])labels.add(map[node.type]);
+          if(["for","while","doWhile"].includes(node.type)){
+            if(depth>0)nestedLoop=true;
+            walk(node.body,depth+1);
+          }
+          if(node.type==="if"){
+            walk(node.thenBody,depth);walk(node.elseBody,depth);
+          }
+        }
+      };
+      walk(root.body);
+      const source=method.pseudocode.toLocaleLowerCase("es");
+      if(/(?:\+|-|\*|\/)/.test(source))labels.add("Operaciones aritméticas");
+      if(/(?:<=|>=|<>|!=|==|<|>)/.test(source))labels.add("Comparaciones");
+    }catch{}
+  }
+  const concepts=(item.concepts??[]).join(" ").toLocaleLowerCase("es");
+  if(/acumulador|sumatoria|suma acumul/.test(concepts))labels.add("Acumuladores");
+  if(/contador|contar|cantidad|intento/.test(concepts))labels.add("Contadores");
+  if(/promedio|media|notas/.test(concepts)||/promedio/.test(item.title.toLocaleLowerCase("es")))labels.add("Promedios");
+  if(/máximo|mayor|mínimo|menor/.test(concepts+" "+item.title.toLocaleLowerCase("es")))labels.add("Máximo y mínimo");
+  if(/centinela/.test(concepts+" "+item.statement.toLocaleLowerCase("es")))labels.add("Centinelas");
+  if(/validar|validación|rango/.test(concepts+" "+item.title.toLocaleLowerCase("es")))labels.add("Validación");
+  if(/factorial|potencia|exponente|fibonacci|serie/.test((item.title+" "+concepts).toLocaleLowerCase("es")))labels.add("Series y potencias");
+  if(nestedLoop||/anidados/.test(concepts))labels.add("Ciclos anidados");
+  return [...labels];
 }
 function exerciseConceptUniverse(){
   return [...new Set(exercises.flatMap(exerciseConceptLabels))].sort((a,b)=>a.localeCompare(b,"es"));
@@ -42,12 +77,14 @@ function renderConceptFilters(){
   host.innerHTML=exerciseConceptUniverse().map(label=>
     '<button type="button" class="concept-filter-chip '+(selectedConcepts.has(label)?"is-selected":"")+'" data-concept-filter="'+escapeHTML(label)+'" aria-pressed="'+String(selectedConcepts.has(label))+'">'+escapeHTML(label)+'</button>'
   ).join("");
-  $("[data-concept-mode]").forEach(button=>{
+  $$("[data-concept-mode]").forEach(button=>{
     button.setAttribute("aria-pressed",String(button.dataset.conceptMode===conceptMatchMode));
   });
   const summary=$("#exercise-filter-summary");
   if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · "+(conceptMatchMode==="all"?"deben aparecer todos":"al menos uno"):"Todos los conceptos";
 }
+
+
 
 function readLearnProgress(){
   try{
@@ -283,16 +320,13 @@ function renderExerciseCards(){
   const filtered=exercises.filter(item=>{
     const concepts=exerciseConceptLabels(item);
     const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
+    const matchesClass=!exerciseClassOnly||CLASS_EXERCISES.has(item.id);
     const matchesConcepts=!selectedConcepts.size||(conceptMatchMode==="all"
       ?[...selectedConcepts].every(tag=>concepts.includes(tag))
       :[...selectedConcepts].some(tag=>concepts.includes(tag)));
     const searchable=[item.title,item.statement,item.purpose,...item.concepts,...concepts].join(" ").toLocaleLowerCase("es");
-    return matchesLevel&&matchesConcepts&&(!query||searchable.includes(query)||String(item.id)===query);
+    return matchesLevel&&matchesClass&&matchesConcepts&&(!query||searchable.includes(query)||String(item.id)===query);
   });
-  if(selectedExercise&&!filtered.some(item=>item.id===selectedExercise.id)){
-    selectedExercise=null;
-    renderExerciseDetail();
-  }
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   exercisePage=Math.min(exercisePage,pages-1);
   const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
@@ -302,6 +336,7 @@ function renderExerciseCards(){
     const labels=exerciseConceptLabels(item);
     return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?"is-selected":"")+'" data-select-exercise="'+item.id+'" aria-pressed="'+String(selectedExercise?.id===item.id)+'">'+
       '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
+      (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+
       '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.statement)+'</small>'+
       '<span class="exercise-card-concepts">'+labels.slice(0,4).map(label=>'<i>'+escapeHTML(label)+'</i>').join("")+'</span>'+
       '<span class="exercise-card-footer">Ver enunciado y requisitos <span aria-hidden="true">↗</span></span></button>';
@@ -336,7 +371,6 @@ function openExerciseTryModal(){
   const item=selectedExercise,modal=$("#exercise-try-modal");
   if(!item||!modal)return;
   modalExercise=item;
-  modalReturnFocus=document.activeElement;
   const level=LEVELS[item.level];
   $("#exercise-try-level").textContent=level.label;
   $("#exercise-try-level").className="exercise-level "+level.className;
@@ -355,9 +389,6 @@ function closeExerciseTryModal(){
   if(modal)modal.hidden=true;
   document.body.classList.remove("has-exercise-modal");
   modalExercise=null;
-  const returnFocus=modalReturnFocus;
-  modalReturnFocus=null;
-  if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true});
 }
 function confirmExerciseInSimulator(){
   const item=modalExercise;if(!item)return;
@@ -438,6 +469,7 @@ function bindContentEvents(){
   });
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
+  $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});
   $("#exercise-concepts")?.addEventListener("click",event=>{
     const chip=event.target.closest("[data-concept-filter]");if(!chip)return;
     const label=chip.dataset.conceptFilter;
@@ -448,9 +480,10 @@ function bindContentEvents(){
     const mode=event.target.closest("[data-concept-mode]");
     if(mode){conceptMatchMode=mode.dataset.conceptMode==="any"?"any":"all";exercisePage=0;renderExerciseCards();return;}
     if(event.target.closest("#exercise-filters-clear")){
-      exerciseQuery="";exerciseLevel="all";selectedConcepts.clear();conceptMatchMode="all";exercisePage=0;
+      exerciseQuery="";exerciseLevel="all";exerciseClassOnly=false;selectedConcepts.clear();conceptMatchMode="all";exercisePage=0;
       if($("#exercise-search"))$("#exercise-search").value="";
       if($("#exercise-level"))$("#exercise-level").value="all";
+      if($("#exercise-class-only"))$("#exercise-class-only").checked=false;
       renderExerciseCards();return;
     }
     if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}
@@ -479,6 +512,6 @@ export function initContentViews(){
   const homeProgress=$("#home-learn-progress");if(homeProgress)homeProgress.textContent=learnProgress.completed.length+" completadas";
   const mark=$("#view-learn .detail-empty-mark");if(mark)mark.textContent="17";
   lessonList();renderLesson();
-  renderExerciseCards();renderExerciseDetail();
+  renderConceptFilters();renderExerciseCards();renderExerciseDetail();
   bindContentEvents();
 }
