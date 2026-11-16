@@ -650,7 +650,8 @@ function animateTokenRoute(route,event,animate=choreographyPlayback){
         ring.classList.remove("is-expanding");void ring.getBoundingClientRect();ring.classList.add("is-expanding");
       }
       token.classList.remove("is-bouncing");void token.getBoundingClientRect();token.classList.add("is-bouncing");
-      const timer=setTimeout(()=>{if(trail)trail.setAttribute("points","");token.classList.remove("is-bouncing");},420);
+      const pulseDuration=Math.max(100,Math.min(5000,500/speed));
+      const timer=setTimeout(()=>{if(trail)trail.setAttribute("points","");token.classList.remove("is-bouncing");},pulseDuration);
       pulseTimeouts.push(timer);
     }
   };
