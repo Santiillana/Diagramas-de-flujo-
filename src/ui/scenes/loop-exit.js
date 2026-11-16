@@ -5,10 +5,11 @@ export function render(event) {
   const type=event.loop?.type??"while";
   const condition=event.condition?.substituted??event.condition?.expression??"La condición del ciclo";
   const completed=type==="while"&&Number(round)===0?[0]:null;
-  const stages=type==="doWhile"?["Cuerpo","Comprobar","Repetir / salir"]:
+  const stages=type==="doWhile"?["Cuerpo","Comprobar","Repetir"]:
     type==="for"?["Preparar","Comprobar","Cuerpo","Avanzar","Salir"]:
-    ["Comprobar","Cuerpo","Volver a preguntar","Salir"];
-  return '<div class="scene-figure scene-loop scene-loop-exit">'+
+    ["Comprobar","Cuerpo","Repetir","Salir"];
+  const style=type==="doWhile"?"doWhile":type==="for"?"for":"while";
+  return '<div class="scene-figure scene-loop scene-loop-exit scene-loop-exit-'+style+'">'+
     '<div class="scene-loop-heading"><span class="scene-loop-round">Ciclo finalizado</span><strong>'+displayValue(round)+' vueltas</strong></div>'+
     loopTrack(stages,stages.length-1,completed)+
     '<div class="scene-loop-condition"><span class="scene-caption">ÚLTIMA COMPROBACIÓN</span><strong>'+displayValue(condition)+'</strong></div>'+
