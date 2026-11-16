@@ -209,7 +209,8 @@ function appendEvent(activity, type, description, from = null, to = null, source
 export function createActivity(input, current = readFichaData()) {
   const title = cleanText(input?.title, 240);
   if (!title) return { ok: false, reason: "title_required" };
-  if (!validNullableDate(input?.assignedOn) || !validNullableDate(input?.dueOn)) {
+  if (!validNullableDate(input?.assignedOn) || !validNullableDate(input?.dueOn) ||
+      (input?.assignedOn && input?.dueOn && input.assignedOn > input.dueOn)) {
     return { ok: false, reason: "invalid_date" };
   }
   if (input?.classId && !CLASS_IDS.has(input.classId)) {
@@ -252,6 +253,11 @@ export function updateActivity(id, changes, current = readFichaData()) {
   if (Object.hasOwn(changes, "dueOn") && !validNullableDate(changes.dueOn)) {
     return { ok: false, reason: "invalid_date" };
   }
+  const nextAssigned = Object.hasOwn(changes, "assignedOn") ? changes.assignedOn : activity.assignedOn;
+  const nextDue = Object.hasOwn(changes, "dueOn") ? changes.dueOn : activity.dueOn;
+  if (nextAssigned && nextDue && nextAssigned > nextDue) {
+    return { ok: false, reason: "invalid_date_order" };
+  }
   if (Object.hasOwn(changes, "classId") && changes.classId && !CLASS_IDS.has(changes.classId)) {
     return { ok: false, reason: "invalid_class" };
   }
@@ -274,7 +280,13 @@ export function updateActivity(id, changes, current = readFichaData()) {
     dueOn: activity.dueOn, notes: activity.notes
   };
   if (JSON.stringify(before) !== JSON.stringify(after)) {
-    appendEvent(activity, "edited", "Se actualizaron datos de la actividad.", before, after);
+    const noteOnly = before.notes !== after.notes &&
+      before.title === after.title && before.description === after.description &&
+      before.classId === after.classId && before.assignedOn === after.assignedOn &&
+      before.dueOn === after.dueOn;
+    appendEvent(activity, noteOnly ? "note" : "edited",
+      noteOnly ? "Se actualizaron las notas personales." : "Se actualizaron datos de la actividad.",
+      before, after);
   }
   return { ok: true, data, activity };
 }
@@ -393,12 +405,32 @@ export function validateFichaBackup(value) {
       !Array.isArray(value.data.activities)) {
     return { ok: false, reason: "invalid_backup" };
   }
+  const source = value.data.activities;
   const normalized = normalizeFichaData(value.data);
-  if (normalized.activities.length !== value.data.activities.length) {
+  if (normalized.activities.length !== source.length) {
     return { ok: false, reason: "invalid_records" };
   }
-  const ids = normalized.activities.map(item => item.id);
+  const ids = source.map(item => item?.id);
   if (new Set(ids).size !== ids.length) return { ok: false, reason: "duplicate_ids" };
+  for (const item of source) {
+    if (!item || !CLASS_IDS.has(item.classId) && item.classId != null ||
+        !validNullableDate(item.assignedOn) || !validNullableDate(item.dueOn) ||
+        (item.assignedOn && item.dueOn && item.assignedOn > item.dueOn) ||
+        !ACTIVITY_STATUSES.includes(item.status)) {
+      return { ok: false, reason: "invalid_records" };
+    }
+    if (Array.isArray(item.attempts) && item.attempts.some(attempt =>
+      !attempt || !validTimestamp(attempt.submittedAt) ||
+      (attempt.activityId && attempt.activityId !== item.id))) {
+      return { ok: false, reason: "invalid_records" };
+    }
+    if (Array.isArray(item.feedbackEntries) && item.feedbackEntries.some(entry =>
+      !entry || !validTimestamp(entry.recordedAt) ||
+      (entry.activityId && entry.activityId !== item.id) ||
+      (entry.submissionId && !(item.attempts || []).some(attempt => attempt.id === entry.submissionId)))) {
+      return { ok: false, reason: "invalid_records" };
+    }
+  }
   return { ok: true, data: normalized };
 }
 
