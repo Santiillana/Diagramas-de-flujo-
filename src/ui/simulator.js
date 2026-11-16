@@ -296,7 +296,6 @@ function pulseWindow(id){
   target.classList.remove("is-pulsing");
   void target.offsetWidth;
   target.classList.add("is-pulsing");
-  target.dataset.pulse=String((Number(target.dataset.pulse)||0)+1);
   const duration=Math.max(100,Math.min(5000,500/currentSpeedFactor()));
   const timeout=setTimeout(()=>target.classList.remove("is-pulsing"),duration);
   pulseTimeouts.push(timeout);
