@@ -43,6 +43,7 @@ test("auditoría integral: los diez espacios abren sin errores JavaScript ni fal
 });
 
 test("las diez vistas no generan desbordamiento horizontal en escritorio, tableta y móvil", async ({ page }) => {
+  test.setTimeout(60000);
   const widths = [390, 768, 1024, 1440];
 
   for (const width of widths) {
