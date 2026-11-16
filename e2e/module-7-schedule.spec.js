@@ -74,3 +74,51 @@ test("el horario conserva los dos bloques del sábado y el domingo libre", async
   await expect(saturday).toContainText("Clase del sábado");
   await expect(sunday).toContainText("No tienes clases programadas este día.");
 });
+
+
+test("el respaldo se descarga y la importación válida reemplaza con confirmación", async ({ page }) => {
+  await openFicha(page);
+  await page.getByRole("button", { name: "Hoy", exact: true }).click();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.locator("#ficha-backup-export").click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^traza-mi-ficha-\d{4}-\d{2}-\d{2}\.json$/);
+  await expect(page.locator("#ficha-backup-status")).toContainText("Respaldo descargado");
+
+  const timestamp = new Date().toISOString();
+  const backup = {
+    format: "traza-ficha-backup",
+    version: 1,
+    exportedAt: timestamp,
+    data: {
+      version: 1,
+      activities: [{
+        id: "activity-imported",
+        title: "Actividad restaurada",
+        description: "",
+        classId: null,
+        competencyId: null,
+        assignedOn: null,
+        dueOn: null,
+        status: "pending",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        attempts: [],
+        feedbackEntries: [],
+        notes: "",
+        archivedAt: null,
+        events: []
+      }]
+    }
+  };
+  page.once("dialog", dialog => dialog.accept());
+  await page.locator("#ficha-backup-file").setInputFiles({
+    name: "respaldo.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup))
+  });
+  await expect(page.locator("#ficha-backup-status")).toContainText("Respaldo restaurado");
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("traza:v4:ficha")));
+  expect(stored.activities[0].title).toBe("Actividad restaurada");
+});
