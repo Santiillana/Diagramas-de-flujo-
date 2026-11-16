@@ -330,7 +330,7 @@ function animateFlight(event,targetId){
   const chip=document.createElement("span");
   chip.className="sim-flight-chip";
   chip.dataset.destination=targetId;
-  chip.textContent=fmt(event.change?.value??event.value??event.variables?.[event.change?.name]??"");
+  chip.setAttribute("aria-hidden","true");
   chip.style.transform="translate3d("+start.x+"px,"+start.y+"px,0)";
   layer.append(chip);
   const control={x:(start.x+finish.x)/2,y:Math.min(start.y,finish.y)-52};
