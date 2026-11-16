@@ -1,7 +1,8 @@
 import { displayValue } from "./common.js";
 
 export function render(event) {
-  const expression=event.substituted||event.expression||event.sourceText||"Operación";
+  const rawExpression=event.substituted||event.expression||event.sourceText||"Operación";
+  const expression=String(rawExpression).replace(/\\s*(>=|<=|<>|!=|==|[+*/<>=])\\s*/g," $1 ").replace(/\\s+/g," ").trim();
   const variable=event.variable??"RESULTADO";
   const previous=event.previous;
   const next=event.next;
