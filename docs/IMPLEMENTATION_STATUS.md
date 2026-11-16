@@ -19,7 +19,7 @@ Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. L
 | Laboratorio y constructor | Integrados y revalidados | Ocho actividades; Constructor estructurado sobre el motor común |
 | M5 · auditoría y release | **Integrado en main** | PR #20 fusionada; 267 Node y 99 Chromium aprobadas en el SHA de auditoría |
 | M5 · publicación pública | Pendiente externo | Falta origen HTTPS real y smoke test posterior al despliegue |
-| M6 · Inicio y Constructor | **Integrado en main** | PR #21 fusionada; 267/267 Node y 103/103 Playwright aprobadas |
+| M6 · Inicio y Constructor (Fase 6 mejoras v2) | **Integrado en main** | PR #21 fusionada; 267/267 Node y 103/103 Playwright aprobadas |
 
 ## Secuencia y alcance
 
@@ -60,12 +60,29 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - Playwright/Chromium: **103/103**, cero fallos.
 - Artefacto visual: `ui-audit-7ff31ec21cce8e9256bd5be23ce0f204181c52ca`, ID `14274866581`, 18 capturas.
 
+### Auditoría de la secuencia v4 · Mi ficha
+La existencia de rutas de navegación no equivale a la implementación de las vistas. En `main`, `index.html` contiene los contenedores de Hoy, Semana, Calendario, Actividades y Biblioteca, pero todos siguen siendo placeholders (`shell-placeholder`). `src/app.js` no inicializa un módulo de Mi ficha y no existe `src/content/ficha.js` en `main`.
+
+- **Paso 5 v4 · Núcleo y persistencia:** no implementado en `main`; no se encontró repositorio académico ni modelo de datos de Mi ficha.
+- **Paso 6 v4 · Hoy, Semana y Calendario:** no implementado en `main`; las tres vistas muestran mensajes de construcción pendiente.
+- **Paso 7 v4 · Actividades:** no implementado en `main`; la vista es un placeholder.
+- **Biblioteca y puente Clases ↔ Aprende:** no implementados.
+
+No confundir el M6 de la Fase 6 del informe de mejoras v2 (Inicio/Constructor, ya integrado) con el paso 6 de la secuencia v4 de Mi ficha (Hoy/Semana/Calendario, pendiente).
+
+### Horario oficial de clases
+- Fuente de contenido creada en `src/content/ficha.js`, con ocho bloques y zona `America/Bogota`.
+- El horario es contenido oficial editable del proyecto, no dato personal del navegador.
+- Supuestos y reglas documentados en `docs/OFFICIAL_CLASS_SCHEDULE.md`.
+- La prueba `tests/ficha-schedule.test.js` valida la estructura, el cambio de lunes y las materias no informadas del sábado.
+- **Integración visual pendiente:** las vistas Hoy, Semana y Calendario aún son placeholders en `main`; no afirmar que el horario ya se muestra ni que calcula estados temporales.
+
 ### M7 · Actividades y detalle de Mi ficha
 - Rama de trabajo: `v4/module-7-activities`.
 - Especificación técnica creada en `docs/MODULE_7_ACTIVITY_DETAIL.md`.
 - La especificación define catálogo, detalle, entregas, devoluciones, estados, bitácora, persistencia, fechas, accesibilidad e integración.
 - **No implementado todavía:** la vista Actividades continúa siendo provisional.
-- Dependencia obligatoria: integrar primero los módulos 5 (núcleo y persistencia de Mi ficha) y 6 (Hoy, Semana y Calendario) de la secuencia v4. M7 debe consumir el repositorio común y no crear almacenamiento paralelo.
+- Dependencia obligatoria: implementar primero los pasos 5 (núcleo y persistencia de Mi ficha) y 6 (Hoy, Semana y Calendario) de la secuencia v4. M7 debe consumir el repositorio común y no crear almacenamiento paralelo.
 
 ## Arquitectura y comandos
 
@@ -90,5 +107,6 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`.
 - Informe M6: `docs/MODULE_6_HOME_BUILDER.md`.
 - Especificación M7: `docs/MODULE_7_ACTIVITY_DETAIL.md`.
+- Horario oficial: `docs/OFFICIAL_CLASS_SCHEDULE.md`.
 - Informe acumulado v2: `docs/INFORME_MEJORAS.md`.
 - Aceptación: `docs/FINAL_ACCEPTANCE.md`.
