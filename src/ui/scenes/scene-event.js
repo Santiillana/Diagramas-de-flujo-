@@ -1,4 +1,5 @@
 import { parseExpression, evaluateExpression, traceExpression } from "../../core/expression.js";
+import { substituteExpression } from "./common.js";
 
 const EVENT_KIND = {
   "program-start":"start",
@@ -111,6 +112,8 @@ export function toSceneEvent(event, context = {}) {
   const inputPosition = events.slice(0,stepIndex + 1).filter(item=>item.type === "input").length - 1;
   const loopStack = event?.loopStack ?? [];
   const expression = event?.condition ?? details.expression;
+  const completedRounds = events.slice(0,stepIndex).filter(item=>item.type==="loop-enter"&&String(item.nodeId)===String(event?.nodeId)).length;
+  const loopRound = Number.isFinite(event?.iteration) ? event.iteration : loopStack.at(-1)?.iteration ?? (event?.type==="loop-condition"&&event?.result&&nodeType!=="doWhile" ? completedRounds+1 : completedRounds || null);
   return {
     kind,stepIndex,stepCount:events.length || stepIndex + 1,
     line:event?.sourceLine ?? null,sourceText:event?.sourceText ?? "",
@@ -120,11 +123,12 @@ export function toSceneEvent(event, context = {}) {
     expression,substituted:details.substituted,
     partials:details.partials,
     condition:expression ? {
-      expression,parts:conditionParts(expression,event?.variables ?? {}),
+      expression,substituted:substituteExpression(expression,event?.variables ?? {}),parts:conditionParts(expression,event?.variables ?? {}),
       result:typeof event?.result === "boolean" ? event.result : null
     } : null,
     loop:{
-      round:event?.iteration ?? loopStack.at(-1)?.iteration ?? null,
+      round:loopRound,
+      type:nodeType,
       values:event?.variables ?? {},
       limit:null,
       exited:event?.type === "loop-exit" || (event?.type === "loop-condition" && event?.result === false)
