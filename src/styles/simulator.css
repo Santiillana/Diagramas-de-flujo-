@@ -2212,3 +2212,22 @@ body[data-active-space="simulator"] .simulator-statusbar{z-index:20!important}
   body[data-active-space="simulator"] .simulator-mobile-tabs{top:43px!important;left:4px!important;right:4px!important;padding:3px!important}
   body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:8px!important;padding:0 2px!important}
 }
+
+/* Aislar el simulador del ancho intrínseco del resto de las vistas. */
+body[data-active-space="simulator"] #view-simulator.simulator-view{
+  position:fixed!important;inset:54px 0 0!important;z-index:1!important;
+  display:block!important;width:100vw!important;height:auto!important;min-width:0!important;min-height:0!important;
+  max-width:100vw!important;margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] #view-simulator .simulator-grid.simulator-grid-four{
+  left:0!important;right:0!important;width:100%!important;max-width:none!important;min-width:0!important
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] #view-simulator.simulator-view{
+    position:fixed!important;inset:94px 0 0!important;width:100vw!important;height:auto!important;
+    min-width:0!important;min-height:0!important;max-width:100vw!important;overflow:hidden!important
+  }
+  body[data-active-space="simulator"] #view-simulator .simulator-grid.simulator-grid-four{
+    position:absolute!important;inset:40px 0 0!important;width:100%!important;max-width:none!important;min-width:0!important
+  }
+}
