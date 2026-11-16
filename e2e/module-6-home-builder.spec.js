@@ -28,7 +28,7 @@ test("Inicio muestra el progreso real de Aprende y lo conserva después de recar
 
   await page.locator("#home-learn-continue").click();
   await expect(page.locator('[data-view="learn"]')).toBeVisible();
-  await expect(page.locator("#lesson-catalog [data-lesson-id="terminals"]')).toBeVisible();
+  await expect(page.locator('#lesson-catalog [data-lesson-id="terminals"]')).toBeVisible();
 
   for (let step = 0; step < 5; step++) {
     await page.locator("#lesson-detail [data-lesson-next]").click();
