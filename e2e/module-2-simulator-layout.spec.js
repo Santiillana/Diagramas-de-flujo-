@@ -127,7 +127,7 @@ test("la navegación de Aprende conserva cuatro etiquetas legibles a 390 px",asy
  await expect(nav.locator('[data-subnav-section="aprende"] .nav-button')).toHaveCount(4);
  const report=await nav.evaluate(el=>{
   const box=el.getBoundingClientRect();
-  const items=[...el.querySelectorAll(".nav-button")].map(node=>{
+  const items=[...el.querySelectorAll('[data-subnav-section="aprende"] .nav-button')].map(node=>{
    const r=node.getBoundingClientRect(),style=getComputedStyle(node);
    return {left:r.left,right:r.right,width:r.width,fontSize:parseFloat(style.fontSize),scrollWidth:node.scrollWidth,clientWidth:node.clientWidth};
   });
