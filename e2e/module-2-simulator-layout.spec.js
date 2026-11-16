@@ -17,7 +17,10 @@ for(const viewport of [
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
   const stage=await page.locator("#diagram-stage").boundingBox(),dock=await page.locator("#dock").boundingBox();
-  expect(stage?.width??0).toBeGreaterThan(viewport.mobile?250:360);
+  expect(stage?.width??0,JSON.stringify(await page.evaluate(()=>{
+    const rect=selector=>{const el=document.querySelector(selector),box=el.getBoundingClientRect(),style=getComputedStyle(el);return {rect:{x:box.x,y:box.y,w:box.width,h:box.height},display:style.display,position:style.position,width:style.width,minWidth:style.minWidth};};
+    return {view:rect("#view-simulator"),grid:rect(".simulator-grid-four"),panel:rect(".diagram-panel"),wrap:rect("#wrap"),stage:rect("#diagram-stage")};
+  }))).toBeGreaterThan(viewport.mobile?250:360);
   expect(stage?.height??0).toBeGreaterThan(viewport.mobile?160:300);
   expect(dock).not.toBeNull();
   expect(dock.x).toBeGreaterThanOrEqual(0);
@@ -52,6 +55,7 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
  await page.setViewportSize({width:1440,height:900});
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
+ await page.locator("#simulator-next").click();
  const centered=async()=>await expect.poll(()=>page.evaluate(()=>{
   const s=document.querySelector("#diagram-stage").getBoundingClientRect();
   const n=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();
