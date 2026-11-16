@@ -205,7 +205,16 @@ Si una actividad no tiene fecha, no debe inventarse una para ubicarla en calenda
 20. E2E a 390, 768, 1024 y 1440 px, sin desbordamiento horizontal.
 21. Las vistas existentes de Aprende, Ejercicios, Simulador y Laboratorio mantienen su funcionamiento.
 
-## 10. Condiciones para declarar M7 terminado
+## 10. Horario oficial y puente Clases ↔ Aprende
+El horario oficial se define en `src/content/ficha.js` y se documenta en `docs/OFFICIAL_CLASS_SCHEDULE.md`. Es contenido editable del proyecto, separado de la persistencia personal.
+
+- M7 debe asociar las actividades con los bloques de clase mediante identificadores estables cuando el modelo de clases del paso 5 esté disponible.
+- No duplicar ni convertir el horario oficial en datos del navegador.
+- No inventar relaciones entre materias y las 17 lecciones o 45 ejercicios. Solo se añaden enlaces cuando una relación está demostrada por el contenido real.
+- El cambio de lunes y las materias no informadas del sábado son supuestos expresos pendientes de confirmación; respetar el documento del horario.
+- La zona horaria de las vistas es `America/Bogota`.
+
+## 11. Condiciones para declarar M7 terminado
 
 M7 no se acepta por mostrar tarjetas o formularios. Debe existir modelo integrado, persistencia común, transiciones verificadas, historial íntegro, pruebas unitarias y E2E aprobadas, accesibilidad comprobada y regresión completa.
 
