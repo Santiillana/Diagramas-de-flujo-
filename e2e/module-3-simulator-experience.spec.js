@@ -61,10 +61,10 @@ test("Variables e Historial se reconstruyen exactamente al avanzar y retroceder"
   await page.locator(".variable-history-details").evaluate(el=>{el.open=true;});
   await expect(page.locator("#variable-history")).toContainText("Historial · a");
   await expect(page.locator("#variable-history [data-variable-step]")).not.toHaveCount(0);
-  await page.locator("#simulator-timeline").fill("1");
+  await page.locator("#simulator-timeline").evaluate(input=>{input.value="1";input.dispatchEvent(new Event("input",{bubbles:true}));});
   await expect(page.locator("#variables-content")).toContainText("a");
   await expect(page.locator("#variables-content")).not.toContainText("13");
-  await page.locator("#simulator-timeline").fill("0");
+  await page.locator("#simulator-timeline").evaluate(input=>{input.value="0";input.dispatchEvent(new Event("input",{bubbles:true}));});
   await expect(page.locator("#variables-content")).toContainText("La memoria aún está vacía");
   await expect(page.locator("#variable-history")).toContainText("todavía no cambia");
 });
