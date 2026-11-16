@@ -25,8 +25,9 @@ export function substituteExpression(expression,variables={}) {
   return result;
 }
 
-export function loopTrack(stages,activeIndex) {
+export function loopTrack(stages,activeIndex,completedIndices=null) {
+  const completed=new Set(completedIndices??stages.map((_,index)=>index).filter(index=>index<activeIndex));
   return '<div class="scene-loop-track" role="img" aria-label="Fases del ciclo">'+
-    stages.map((label,index)=>'<div class="scene-loop-step '+(index===activeIndex?'is-active':index<activeIndex?'is-complete':'')+'"><i aria-hidden="true"></i><span>'+escapeHTML(label)+'</span></div>').join('')+
+    stages.map((label,index)=>'<div class="scene-loop-step '+(index===activeIndex?'is-active':completed.has(index)?'is-complete':'')+'"><i aria-hidden="true"></i><span>'+escapeHTML(label)+'</span></div>').join('')+
     '</div>';
 }
