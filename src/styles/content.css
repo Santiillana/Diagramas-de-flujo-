@@ -316,3 +316,70 @@ body.has-exercise-modal{overflow:hidden}
 .lesson-visual[data-visual-kind="for"] .scene-figure-host,
 .lesson-visual[data-visual-kind="while"] .scene-figure-host,
 .lesson-visual[data-visual-kind="do-while"] .scene-figure-host{--scene-pulse-color:#ba8250}
+
+
+/* Módulo 4 · Aprende */
+.lesson-catalog-group{display:grid;gap:3px;margin:4px 0 11px}
+.lesson-catalog-group-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 9px 6px;border-bottom:1px solid var(--line)}
+.lesson-catalog-group-title{margin:0;color:var(--ink);font-size:11px;font-weight:900}
+.lesson-catalog-group-heading small{display:block;margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}
+.lesson-group-progress{flex:0 0 auto;padding:3px 6px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font:700 10px ui-monospace,monospace}
+.lesson-list-item{min-height:54px}
+.lesson-list-state{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;color:var(--positive);font-size:11px;font-weight:900}
+.lesson-when-to-use{display:grid;grid-template-columns:auto 1fr;gap:8px 13px;align-items:start;margin:14px 0;padding:12px 14px;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;background:var(--surface-soft)}
+.lesson-when-to-use strong{color:var(--accent-strong);font-size:11px}
+.lesson-when-to-use p{margin:0;color:var(--ink-soft);font-size:13px;line-height:1.55}
+.lesson-screen-example{display:grid;gap:12px}
+.lesson-worked-example{padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.lesson-worked-example>.eyebrow{margin:0 0 9px;color:var(--accent-strong)}
+.lesson-worked-steps{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.lesson-worked-steps li{display:grid;grid-template-columns:25px minmax(0,1fr);gap:9px;align-items:start}
+.lesson-worked-steps li>span{display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--line-strong);border-radius:7px;color:var(--accent-strong);background:var(--surface-soft);font:800 10px ui-monospace,monospace}
+.lesson-worked-steps p{margin:2px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.55}
+.lesson-interactive-test{padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
+.lesson-interactive-test>summary{cursor:pointer;color:var(--ink);font-size:12px;font-weight:800}
+.lesson-interactive-copy{margin:9px 0;color:var(--muted-strong);font-size:12px;line-height:1.5}
+.lesson-code-compact{font-size:12px;max-height:140px}
+.lesson-visual{--lesson-scene-accent:var(--accent);background:var(--surface)}
+.lesson-visual .lesson-scene-host,.lesson-idea-scene .lesson-scene-host{min-height:176px;overflow:hidden;background:color-mix(in srgb,var(--lesson-scene-accent) 7%,var(--surface))}
+.lesson-visual .scene-figure{width:min(100%,620px)}
+.lesson-visual .scene-figure-host{width:100%;max-width:620px}
+.lesson-visual .scene-figure strong,.lesson-visual .scene-figure code{overflow-wrap:anywhere}
+.lesson-visual-sequence{--lesson-scene-accent:var(--teal)}
+.lesson-visual-terminals{--lesson-scene-accent:var(--positive)}
+.lesson-visual-input{--lesson-scene-accent:var(--fig-input)}
+.lesson-visual-process,.lesson-visual-variable,.lesson-visual-counter{--lesson-scene-accent:var(--accent)}
+.lesson-visual-output{--lesson-scene-accent:var(--positive)}
+.lesson-visual-comparison,.lesson-visual-decision,.lesson-visual-decision-nested{--lesson-scene-accent:var(--warning)}
+.lesson-visual-for,.lesson-visual-while,.lesson-visual-do-while,.lesson-visual-nested{--lesson-scene-accent:var(--teal)}
+.lesson-visual-validation{--lesson-scene-accent:var(--danger)}
+.lesson-visual-input .scene-data-tape{animation:lesson-input-arrive 700ms ease-out both}
+.lesson-visual-input .scene-transfer-lane{animation:lesson-input-flow 900ms ease-in-out infinite}
+.lesson-visual-input .scene-variable-box{animation:lesson-value-land 480ms 220ms ease-out both}
+.lesson-visual-process .scene-operation-breakdown{animation:lesson-process-focus 850ms ease-out both}
+.lesson-visual-process .scene-process-result,.lesson-visual-variable .scene-process-result{animation:lesson-value-land 520ms 180ms ease-out both}
+.lesson-visual-output .scene-output-paper{animation:lesson-paper-print 700ms cubic-bezier(.2,.8,.2,1) both}
+.lesson-visual-comparison .scene-question-card,.lesson-visual-decision .scene-question-card,.lesson-visual-decision-nested .scene-question-card{animation:lesson-decision-ask 650ms ease-out both}
+.lesson-visual-decision .scene-path.is-active,.lesson-visual-decision-nested .scene-path.is-active,.lesson-visual-comparison .scene-path.is-active{animation:lesson-route-picked 850ms ease-in-out infinite}
+.lesson-visual-for .scene-loop-step.is-active,.lesson-visual-while .scene-loop-step.is-active,.lesson-visual-do-while .scene-loop-step.is-active,.lesson-visual-nested .scene-loop-step.is-active{animation:lesson-loop-step 900ms ease-in-out infinite}
+.lesson-visual-while .scene-loop-question{animation:lesson-condition-check 1.1s ease-in-out infinite}
+.lesson-visual-do-while .scene-loop-body{animation:lesson-body-first 850ms ease-out both}
+.lesson-visual-counter .scene-process-result,.lesson-visual-counter .scene-loop-round{animation:lesson-value-land 550ms ease-out both}
+.lesson-visual-validation .scene-loop-answer.is-false{border-color:var(--danger);color:var(--danger)}
+.lesson-visual-validation .scene-loop-answer.is-true{border-color:var(--positive);color:var(--positive)}
+.lesson-visual .scene-terminal-shape{animation:lesson-terminal-pulse 1.8s ease-in-out infinite}
+@keyframes lesson-input-arrive{from{opacity:.45;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes lesson-input-flow{0%,100%{transform:translateY(-2px);opacity:.55}50%{transform:translateY(3px);opacity:1}}
+@keyframes lesson-value-land{from{opacity:.3;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes lesson-process-focus{0%{opacity:.55;transform:scale(.97)}60%{opacity:1;transform:scale(1.015)}100%{transform:scale(1)}}
+@keyframes lesson-paper-print{from{opacity:.35;transform:translateY(12px) rotate(-1deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes lesson-decision-ask{from{opacity:.55;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+@keyframes lesson-route-picked{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--lesson-scene-accent) 18%,transparent)}}
+@keyframes lesson-loop-step{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lesson-condition-check{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--lesson-scene-accent) 18%,transparent)}}
+@keyframes lesson-body-first{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lesson-terminal-pulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--positive) 14%,transparent)}}
+@media(max-width:800px){.lesson-catalog{grid-template-columns:1fr 1fr;max-height:400px}.lesson-catalog-group-heading small{font-size:9px}.lesson-detail-panel{padding:16px}}
+@media(max-width:520px){.lesson-catalog{grid-template-columns:1fr;max-height:390px}.lesson-when-to-use{grid-template-columns:1fr;gap:4px}.lesson-worked-example{padding:10px}.lesson-visual .lesson-scene-host{min-height:155px;padding:10px}.lesson-visual .visual-controls{justify-content:stretch}.lesson-visual .visual-controls button{flex:1 1 42%}}
+@media(prefers-reduced-motion:reduce){.lesson-visual .scene-data-tape,.lesson-visual .scene-transfer-lane,.lesson-visual .scene-variable-box,.lesson-visual .scene-operation-breakdown,.lesson-visual .scene-process-result,.lesson-visual .scene-output-paper,.lesson-visual .scene-question-card,.lesson-visual .scene-path.is-active,.lesson-visual .scene-loop-step.is-active,.lesson-visual .scene-loop-question,.lesson-visual .scene-loop-body,.lesson-visual .scene-terminal-shape{animation:none!important;transition:none!important}}
+:root[data-motion="reduced"] .lesson-visual *{animation:none!important;transition:none!important}

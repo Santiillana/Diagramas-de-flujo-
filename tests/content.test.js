@@ -16,6 +16,20 @@ test("existen las 17 lecciones progresivas del temario oficial",()=>{
   }
 });
 
+test("las 17 lecciones indican cuándo se usan y contienen un ejemplo resuelto en pasos",()=>{
+  assert.equal(lessons.length,17);
+  const ids=new Set();
+  for(const lesson of lessons){
+    assert.equal(ids.has(lesson.id),false,"ID repetido: "+lesson.id);
+    ids.add(lesson.id);
+    assert.ok(lesson.whenToUse?.length>20,lesson.id+" debe indicar cuándo se utiliza");
+    assert.ok(Array.isArray(lesson.example?.steps)&&lesson.example.steps.length>=3,lesson.id+" debe tener al menos tres pasos resueltos");
+    assert.ok(lesson.visual?.steps?.length>=3,lesson.id+" debe conservar secuencia visual");
+    assert.ok(lesson.commonError?.length>10,lesson.id+" debe explicar un error común");
+    assert.ok(lesson.check?.question&&lesson.check.options.length===3,lesson.id+" debe incluir una comprobación breve");
+  }
+});
+
 test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
   assert.equal(exercises.length,45);
   assert.equal(exercises.filter(x=>x.level==="basic").length,20);

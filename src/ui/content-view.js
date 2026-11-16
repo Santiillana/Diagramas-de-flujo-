@@ -107,26 +107,29 @@ function completeLesson(){
   renderLesson();
 }
 const lessonBlocks=[
-  {title:"Fundamentos",ids:["algorithm","reading"]},
-  {title:"Figuras",ids:["terminals","input","process","output"]},
-  {title:"Variables y cuentas",ids:["variables","arithmetic"]},
-  {title:"Decisiones",ids:["comparisons","decisions","nested-decisions"]},
-  {title:"Repeticiones",ids:["counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"]}
+  {title:"01 · Fundamentos",description:"Entender qué es un algoritmo y cómo se lee el recorrido.",ids:["algorithm","reading"]},
+  {title:"02 · Figuras básicas",description:"Reconocer Inicio/Fin, Entrada, Proceso y Salida.",ids:["terminals","input","process","output"]},
+  {title:"03 · Variables y operaciones",description:"Guardar datos y resolver cálculos en orden.",ids:["variables","arithmetic"]},
+  {title:"04 · Decisiones y rutas",description:"Comparar valores, evaluar condiciones y elegir caminos.",ids:["comparisons","decisions","nested-decisions"]},
+  {title:"05 · Ciclos",description:"Contar, acumular, repetir, anidar y validar.",ids:["counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"]}
 ];
 function lessonList(){
   const host=$("#lesson-catalog");
   if(!host)return;
-  host.innerHTML=lessonBlocks.map(group=>
-    '<div class="lesson-catalog-group"><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p>'+
-    lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
+  host.innerHTML=lessonBlocks.map(group=>{
+    const done=group.ids.filter(id=>learnProgress.completed.includes(id)).length;
+    const items=lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
       const index=lessons.findIndex(item=>item.id===lesson.id);
-      const done=learnProgress.completed.includes(lesson.id);
+      const completed=learnProgress.completed.includes(lesson.id);
       return '<button class="lesson-list-item '+(lesson.id===selectedLesson?"is-selected":"")+'" type="button" data-lesson-id="'+escapeHTML(lesson.id)+'" aria-current="'+(lesson.id===selectedLesson?"true":"false")+'">'+
         '<span class="lesson-list-number">'+String(index+1).padStart(2,"0")+'</span>'+
         '<span class="lesson-list-copy"><strong>'+escapeHTML(lesson.title)+'</strong><small>'+escapeHTML(lesson.duration)+'</small></span>'+
-        '<span class="lesson-list-state" aria-label="'+(done?"Completada":"Pendiente")+'">'+(done?"✓":"")+'</span></button>';
-    }).join("")+'</div>'
-  ).join("");
+        '<span class="lesson-list-state" aria-label="'+(completed?"Completada":"Pendiente")+'">'+(completed?"✓":"")+'</span></button>';
+    }).join("");
+    return '<section class="lesson-catalog-group" aria-label="'+escapeHTML(group.title)+'">'+
+      '<div class="lesson-catalog-group-heading"><div><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p><small>'+escapeHTML(group.description)+'</small></div>'+
+      '<span class="lesson-group-progress">'+done+'/'+group.ids.length+'</span></div>'+items+'</section>';
+  }).join("");
 }
 function lessonInputs(value){
   return String(value??"").split(/[;,]/).map(part=>part.trim()).filter(Boolean).map(Number);
@@ -137,14 +140,16 @@ function runLesson(lesson,values=lesson.miniProgram.sample){
 }
 function relevantLessonEvents(lesson,execution){
   const targets={
-    terminals:["program-start","program-end"],input:["input"],process:["assignment"],output:["output"],
     comparisons:["decision"],decisions:["decision","branch"],"nested-decisions":["decision","branch"],
-    for:["loop-init","loop-condition","loop-update"],while:["loop-condition","loop-enter"],
-    "do-while":["loop-enter","loop-condition"],"nested-loops":["loop-init","loop-enter","loop-condition"],
-    "validation-sentinel":["input","loop-condition","assignment"]
+    for:["loop-init","loop-condition","loop-enter","loop-update","loop-exit"],
+    while:["loop-condition","loop-enter","loop-exit"],
+    "do-while":["loop-enter","loop-condition","loop-exit"],
+    "nested-loops":["loop-init","loop-enter","loop-update","loop-condition","loop-exit"],
+    "validation-sentinel":["input","loop-condition","assignment","loop-exit"]
   };
   const selected=targets[lesson.id];
-  const events=selected?execution.events.filter(event=>selected.includes(event.type)):execution.events.filter(event=>!["program-start","program-end"].includes(event.type));
+  const events=selected?execution.events.filter(event=>selected.includes(event.type)):
+    execution.events.filter(event=>lesson.id==="terminals"||!["program-start","program-end"].includes(event.type));
   return events.length?events:execution.events;
 }
 function lessonScene(lesson,position=0){
@@ -186,7 +191,9 @@ function visualMarkup(lesson){
   let phases,phaseIndex;
   if(declared){
     phases=lesson.visual.steps.map(([title,description],position)=>({key:"lesson-"+position,title,description}));
-    phaseIndex=Math.min(phases.length-1,Math.floor(index/Math.max(1,events.length)*phases.length));
+    const phaseMap={algorithm:{input:0,assignment:1,output:2},reading:{input:0,assignment:1,decision:1,branch:1,output:2},terminals:{"program-start":0,input:1,assignment:1,decision:1,output:1,"program-end":2},input:{input:1},process:{assignment:1},output:{output:1},variables:{assignment:1},arithmetic:{assignment:1},comparisons:{decision:1},decisions:{decision:0,branch:1},"nested-decisions":{decision:0,branch:1},"counters-accumulators":{"loop-init":0,input:1,assignment:1,"loop-update":2},for:{"loop-init":0,"loop-condition":1,"loop-enter":2,"loop-update":3,"loop-exit":4},while:{"loop-condition":0,"loop-enter":1,"loop-exit":2},"do-while":{"loop-enter":0,"loop-condition":1,"loop-exit":2},"nested-loops":{"loop-init":0,"loop-enter":1,"loop-update":2,"loop-exit":2},"validation-sentinel":{input:0,"loop-condition":1,assignment:2,"loop-exit":2}};
+    const matched=phaseMap[lesson.id]?.[event?.type];
+    phaseIndex=Number.isInteger(matched)?Math.min(phases.length-1,matched):Math.min(phases.length-1,Math.floor(index/Math.max(1,events.length)*phases.length));
   }else{
     const unique=new Map();
     for(const item of events){
@@ -202,7 +209,7 @@ function visualMarkup(lesson){
     '<div class="lesson-phase '+(position===phaseIndex?"is-current":position<phaseIndex?"is-complete":"")+'" data-phase-key="'+escapeHTML(phase.key)+'">'+
     '<span>'+String(position+1).padStart(2,"0")+'</span><strong>'+escapeHTML(phase.title)+'</strong><small>'+escapeHTML(phase.description)+'</small></div>'
   ).join("");
-  return '<section class="lesson-visual lesson-visual-'+escapeHTML(lesson.visual.kind)+'" data-visual-kind="'+escapeHTML(lesson.visual.kind)+'" data-phase-source="'+(declared?"lesson":"events")+'" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
+  return '<section class="lesson-visual lesson-visual-'+escapeHTML(lesson.visual.kind)+'" data-lesson-id="'+escapeHTML(lesson.id)+'" data-visual-kind="'+escapeHTML(lesson.visual.kind)+'" data-phase-source="'+(declared?"lesson":"events")+'" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
     '<div class="lesson-visual-head"><div><p class="eyebrow">EXPERIMENTO VISUAL</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
     '<span class="visual-step-count">Paso '+(events.length?index+1:0)+' / '+events.length+'</span></div>'+
     '<div class="lesson-phase-rail">'+phaseRail+'</div>'+
@@ -218,7 +225,7 @@ function stopLessonPlayback(){
   lessonPlaybackTimer=0;lessonPlaying=false;
 }
 function startLessonPlayback(){
-  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches||document.documentElement.dataset.motion==="reduced")return;
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
   const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
   if(!events.length)return;
@@ -231,7 +238,7 @@ function startLessonPlayback(){
       lessonVisualStep++;
       renderLesson();
       next();
-    },1650);
+    },1300);
   };
   next();
 }
@@ -244,18 +251,25 @@ function renderLesson(){
   let body="";
   if(screen===0){
     body='<section class="lesson-screen lesson-screen-idea"><p class="eyebrow">¿PARA QUÉ SIRVE?</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p>'+
+      '<aside class="lesson-when-to-use" data-when-to-use><strong>Cuándo se utiliza</strong><p>'+escapeHTML(lesson.whenToUse??lesson.objective)+'</p></aside>'+
       '<details class="lesson-technical"><summary>Versión técnica</summary><p>'+escapeHTML(lesson.technical)+'</p></details>'+
-      '<div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+
+      '<div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-id="'+escapeHTML(lesson.id)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+
       '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p></section>';
   }else if(screen===1){
     body=visualMarkup(lesson);
   }else if(screen===2){
     body='<section class="lesson-screen lesson-screen-example"><div class="lesson-section-heading"><div><p class="eyebrow">EJEMPLO CON VALORES</p><h4>'+escapeHTML(lesson.miniProgram.title)+'</h4></div></div>'+
       '<label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label>'+
-      '<pre class="lesson-code"><code>'+escapeHTML(lesson.miniProgram.code.split("|").join("\n"))+'</code></pre>'+
+      '<pre class="lesson-code"><code>'+escapeHTML(lesson.example.code.split("|").join("\n"))+'</code></pre>'+
+      '<div class="lesson-worked-example"><p class="eyebrow">RESOLUCIÓN PASO A PASO</p><ol class="lesson-worked-steps">'+
+        (lesson.example.steps??lesson.manipulation.steps).map((step,index)=>'<li><span>'+String(index+1).padStart(2,"0")+'</span><p>'+escapeHTML(step)+'</p></li>').join("")+
+      '</ol><p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p></div>'+
+      '<details class="lesson-interactive-test"><summary>Probar el concepto con otros datos</summary>'+
+      '<p class="lesson-interactive-copy">'+escapeHTML(lesson.miniProgram.title)+'. Este ensayo ejecuta el pseudocódigo real de la lección.</p>'+
+      '<pre class="lesson-code lesson-code-compact"><code>'+escapeHTML(lesson.miniProgram.code.split("|").join("\n"))+'</code></pre>'+
+      '<label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label>'+
       '<div class="lesson-example-output" id="lesson-data-result" role="status"></div>'+
-      '<button type="button" class="button button-primary" data-run-mini-program>Ejecutar con estos datos</button>'+
-      '<p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p></section>';
+      '<button type="button" class="button button-primary" data-run-mini-program>Ejecutar prueba</button></details></section>';
   }else if(screen===3){
     body='<section class="lesson-screen lesson-screen-try"><p class="eyebrow">INTÉNTALO</p><h4>'+escapeHTML(lesson.tryIt?.prompt??"Predice antes de ver la respuesta.")+'</h4>'+
       '<p class="lesson-common-error"><b>Error común:</b> '+escapeHTML(lesson.commonError??"Revisa el orden de las instrucciones.")+'</p>'+
