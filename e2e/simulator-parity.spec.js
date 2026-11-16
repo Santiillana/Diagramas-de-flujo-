@@ -15,7 +15,7 @@ test("la referencia conserva su archivo y Traza conserva el significado del ejer
   await expect(page.locator("#scene-content .scene-symbol-explanation")).toBeVisible();
 });
 
-test("el escenario usa toda la anchura disponible sin scroll interno",async({page})=>{
+test("el escenario ocupa el espacio central sin scroll interno",async({page})=>{
   await page.setViewportSize({width:1280,height:900});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
@@ -28,9 +28,10 @@ test("el escenario usa toda la anchura disponible sin scroll interno",async({pag
       headerHeight:header.height,app:{x:app.x,y:app.y,width:app.width,height:app.height},
       overflowX:grid.overflowX,overflowY:grid.overflowY};
   });
-  expect(state.stage.x).toBe(0);
+  expect(state.stage.x).toBeGreaterThan(0);
   expect(state.stage.y).toBeGreaterThanOrEqual(state.headerHeight-1);
-  expect(state.stage.width).toBe(1280);
-  expect(state.stage.height).toBeGreaterThan(400);
+  expect(state.stage.width).toBeGreaterThan(400);
+  expect(state.stage.x+state.stage.width).toBeLessThan(1100);
+  expect(state.stage.height).toBeGreaterThan(500);
   expect(state.overflowX).toBe("hidden");
 });
