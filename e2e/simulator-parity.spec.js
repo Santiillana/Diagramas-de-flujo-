@@ -1,10 +1,10 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("la referencia conserva su archivo y Traza conserva el significado del ejercicio",async({page})=>{
   const response=await page.request.get("/reference/diagramas_de_flujo_original.html");
   expect(response.ok()).toBeTruthy();
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("24");
   await expect(page.locator("#simulator-exercise-title")).toContainText("Encontrar el mayor de diez números");
@@ -18,7 +18,7 @@ test("la referencia conserva su archivo y Traza conserva el significado del ejer
 test("el escenario ocupa el espacio central sin scroll interno",async({page})=>{
   await page.setViewportSize({width:1280,height:900});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const state=await page.evaluate(()=>{
     const stage=document.querySelector("#wrap").getBoundingClientRect();
     const app=document.querySelector(".page-shell").getBoundingClientRect();

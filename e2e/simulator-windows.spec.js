@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("las cuatro ventanas tienen controles de visibilidad y no botones de minimizar",async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   for(const selector of ["#sim-window-context","#sim-window-code","#PV","#PR"])await expect(page.locator(selector)).toBeVisible();
   await expect(page.locator("[data-window-minimize]")).toHaveCount(0);
   await expect(page.locator("[data-window-pin]")).toHaveCount(0);
@@ -22,7 +22,7 @@ test("las cuatro ventanas tienen controles de visibilidad y no botones de minimi
 test("la ficha contextual aparece asociada al paso y se mantiene dentro del escenario",async({page})=>{
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("24");
   await page.locator("#simulator-timeline").evaluate(input=>{

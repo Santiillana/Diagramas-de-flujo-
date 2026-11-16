@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("humo de producción: Factorial, Mayor de 10 números, Concentración y Predice",async({page},testInfo)=>{
   const consoleErrors=[];
@@ -7,7 +7,7 @@ test("humo de producción: Factorial, Mayor de 10 números, Concentración y Pre
   await page.setViewportSize({width:1920,height:1080});
   await page.goto("/");
   await expect(page.locator('meta[name="traza-release"]')).toHaveAttribute("content",/^simulador-v3-/);
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await expect(page.locator("#flow-svg")).toBeVisible();
 
@@ -42,7 +42,7 @@ test("humo de producción: Factorial, Mayor de 10 números, Concentración y Pre
 
   await page.setViewportSize({width:390,height:844});
   await page.reload();
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("21");
   await page.screenshot({path:testInfo.outputPath("production-mobile-normal-390.png"),fullPage:true,animations:"disabled"});

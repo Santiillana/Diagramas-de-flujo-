@@ -1,8 +1,8 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el simulador ofrece los 45 ejercicios y filtra por texto y nivel",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await expect(page.locator("#sim-exercise-select option")).toHaveCount(45);
   await expect(page.locator("#simulator-exercise-nav [data-exercise-shortcut]")).toHaveCount(45);
@@ -16,7 +16,7 @@ test("el simulador ofrece los 45 ejercicios y filtra por texto y nivel",async({p
 
 test("los métodos se presentan como opciones y cambian el pseudocódigo del motor",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const methods=page.locator("#simulator-method-tabs [data-method-index]");
   await expect(methods).toHaveCount(2);
   await expect(methods.nth(0)).toHaveAttribute("aria-pressed","true");
@@ -32,7 +32,7 @@ test("los métodos se presentan como opciones y cambian el pseudocódigo del mot
 
 test("cada paso explica el símbolo y el orden de ejecución",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-history-details").evaluate(el=>el.open=true);
   await expect(page.locator(".scene-symbol-explanation")).toContainText("Óvalo · Inicio");
   const input=page.locator("#trace-history li").filter({hasText:"ENTRADA"}).first();

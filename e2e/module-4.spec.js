@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 async function openLab(page){
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
+  await goToSpace(page, "simulator");
+  await goToSpace(page, "lab");
 }
 
 test("Laboratorio presenta exactamente tres formas de practicar",async({page})=>{

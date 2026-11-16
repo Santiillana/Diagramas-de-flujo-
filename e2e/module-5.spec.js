@@ -1,8 +1,8 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("restaurar ejemplo recupera los datos originales del método",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-inputs").fill("2,3");
   await page.locator("#simulator-run").click();
   await page.locator("#simulator-last").click();
@@ -15,7 +15,7 @@ test("restaurar ejemplo recupera los datos originales del método",async({page})
 
 test("las variables se muestran como cajitas y su historial se reconstruye por traza",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-last").click();
   const card=page.locator('#variables-content [data-variable-history="a"]');
   await expect(card).toBeVisible();
@@ -34,7 +34,7 @@ test("las variables se muestran como cajitas y su historial se reconstruye por t
 test("cámara automática, tamaño de texto y modo Concentración funcionan",async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   const camera=page.locator("#diagram-camera-toggle");
   await expect(camera).toHaveAttribute("aria-pressed","true");
@@ -59,7 +59,7 @@ test("cámara automática, tamaño de texto y modo Concentración funcionan",asy
 test("arrastrar el escenario libera la cámara y avanzar la reactiva",async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#diagram-camera-toggle").click();
   const stage=page.locator("#diagram-stage"),rect=await stage.boundingBox();
@@ -75,7 +75,7 @@ test("arrastrar el escenario libera la cámara y avanzar la reactiva",async({pag
 test("tema y movimiento reducido no alteran la traza",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-next").click();
   const before=await page.locator("#timeline-count").textContent();
   await page.locator('[data-action="toggle-theme"]').click();
@@ -86,7 +86,7 @@ test("tema y movimiento reducido no alteran la traza",async({page})=>{
 
 test("el token sigue una conexión y la rama activa corresponde a la decisión",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("7");
   await page.locator("#simulator-history-details").evaluate(el=>el.open=true);
@@ -99,7 +99,7 @@ test("el token sigue una conexión y la rama activa corresponde a la decisión",
 test("la escena desglosa una operación y explica el símbolo activo",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-history-details").evaluate(el=>el.open=true);
   const assignment=page.locator("#trace-history li").filter({hasText:"ASIGNACIÓN"}).first();
   await assignment.click();
@@ -111,7 +111,7 @@ test("la escena desglosa una operación y explica el símbolo activo",async({pag
 test("en móvil se cambia entre Problema, Diagrama, En escena y Variables sin reiniciar",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-last").click();
   const finalStep=await page.locator("#timeline-count").textContent();
   for(const panel of ["problem","diagram","scene","variables"]){
@@ -122,7 +122,7 @@ test("en móvil se cambia entre Problema, Diagrama, En escena y Variables sin re
 
 test("Ejercicios sigue mostrando todos los 45 retos en su catálogo",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="exercises"]').click();
+  await goToSpace(page, "exercises");
   await expect(page.locator("#exercise-count")).toContainText("45");
   await page.locator("#exercise-search").fill("Fibonacci");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(1);

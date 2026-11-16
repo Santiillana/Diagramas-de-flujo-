@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("captura el ejercicio 24 en pasos 1, 3 y 7 en escritorio y móvil",async({page},testInfo)=>{
   const sizes=[
@@ -8,7 +8,7 @@ test("captura el ejercicio 24 en pasos 1, 3 y 7 en escritorio y móvil",async({p
   for(const size of sizes){
     await page.setViewportSize({width:size.width,height:size.height});
     await page.goto("/");
-    await page.locator('[data-space="simulator"]').click();
+    await goToSpace(page, "simulator");
     await page.locator("#simulator-controls-toggle").click();
     await page.locator("#sim-exercise-select").selectOption("24");
     await expect(page.locator("#flow-svg")).toBeVisible();

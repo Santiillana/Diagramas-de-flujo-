@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-theme="dark" data-motion="full">
+<html lang="es" data-section="home" data-theme="dark" data-motion="full">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Laboratorio visual e interactivo para aprender a resolver problemas mediante diagramas de flujo.">
@@ -7,32 +7,47 @@
   <meta name="theme-color" content="#101e23"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/shell.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 <div class="app-shell">
-  <header class="topbar" id="hd">
-    <a class="brand" href="#main-content" aria-label="Traza, aprendizaje de diagramas de flujo">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none"><path d="M9 40V28H22V16H34" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="40" r="3.2" fill="currentColor"/><circle cx="38" cy="16" r="11" fill="#FFC400" opacity=".28"/><circle cx="38" cy="16" r="6.2" fill="#FFC400"/></svg>
-      </span>
-      <span class="brand-copy"><strong>traza<span>.</span></strong></span>
-    </a>
-    <nav class="primary-nav" id="primary-nav" aria-label="Espacios de aprendizaje">
-      <button class="nav-button" type="button" data-space="learn" aria-current="false">Aprende</button>
-      <button class="nav-button is-active" type="button" data-space="exercises" aria-current="page">Ejercicios</button>
-      <button class="nav-button" type="button" data-space="simulator" aria-current="false">Simulador</button>
-      <button class="nav-button" type="button" data-space="lab" aria-current="false">Laboratorio</button>
-    </nav>
-    <div class="topbar-actions">
-      <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema oscuro" aria-pressed="false" title="Activar tema oscuro">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.2A8 8 0 0 1 8.8 4.5 8 8 0 1 0 19.5 15.2Z"/></svg>
-      </button>
-      <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.2-5 4.1 10 2.1-5H21"/></svg>
-      </button>
+  <header class="topbar" id="hd" data-section-switcher-hidden="false">
+    <div class="topbar-main">
+      <a class="brand" href="#main-content" data-go="home" data-space="home" aria-label="Traza, volver a la portada">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M9 40V28H22V16H34" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="40" r="3.2" fill="currentColor"/><circle cx="38" cy="16" r="11" fill="#FFC400" opacity=".28"/><circle cx="38" cy="16" r="6.2" fill="#FFC400"/></svg>
+        </span>
+        <span class="brand-copy"><strong>traza<span>.</span></strong></span>
+      </a>
+      <nav class="section-switch" aria-label="Sección principal">
+        <button type="button" data-section-switch="ficha" aria-pressed="false">Mi ficha</button>
+        <button type="button" data-section-switch="aprende" aria-pressed="false">Aprende</button>
+      </nav>
+      <div class="topbar-actions">
+        <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Activar tema claro" aria-pressed="false" title="Activar tema claro">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42m-9.88 9.88-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-action="toggle-motion" aria-label="Reducir movimiento" aria-pressed="false" title="Reducir movimiento">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.2-5 4.1 10 2.1-5H21"/></svg>
+        </button>
+      </div>
     </div>
+    <nav class="primary-nav" id="primary-nav" aria-label="Navegación de la sección">
+      <div class="subnav-group" data-subnav-section="ficha" hidden>
+        <button class="nav-button" type="button" data-space="hoy" aria-current="false"><span class="subnav-icon" aria-hidden="true">⌂</span><span>Hoy</span></button>
+        <button class="nav-button" type="button" data-space="semana" aria-current="false"><span class="subnav-icon" aria-hidden="true">▦</span><span>Semana</span></button>
+        <button class="nav-button" type="button" data-space="calendario" aria-current="false"><span class="subnav-icon" aria-hidden="true">▣</span><span>Calendario</span></button>
+        <button class="nav-button" type="button" data-space="actividades" aria-current="false"><span class="subnav-icon" aria-hidden="true">✓</span><span>Actividades</span></button>
+        <button class="nav-button" type="button" data-space="biblioteca" aria-current="false"><span class="subnav-icon" aria-hidden="true">▤</span><span>Biblioteca</span></button>
+      </div>
+      <div class="subnav-group" data-subnav-section="aprende" hidden>
+        <button class="nav-button" type="button" data-space="learn" aria-current="false"><span class="subnav-icon" aria-hidden="true">◉</span><span>Aprende</span></button>
+        <button class="nav-button" type="button" data-space="exercises" aria-current="false"><span class="subnav-icon" aria-hidden="true">▤</span><span>Ejercicios</span></button>
+        <button class="nav-button" type="button" data-space="simulator" aria-current="false"><span class="subnav-icon" aria-hidden="true">⌘</span><span>Simulador</span></button>
+        <button class="nav-button" type="button" data-space="lab" aria-current="false"><span class="subnav-icon" aria-hidden="true">⌑</span><span>Laboratorio</span></button>
+      </div>
+    </nav>
   </header>
 
   <main class="page-shell" id="main-content">
@@ -41,6 +56,38 @@
         <h1 id="space-heading">Piensa el problema. Después, dibuja el camino.</h1>
         <p class="page-subtitle" id="space-description">Un entorno para entender cómo se transforma una idea en instrucciones claras y verificables.</p>
       </div>
+    </section>
+
+    <section class="space-view home-view" id="view-home" data-view="home" aria-labelledby="home-title" hidden>
+      <header class="home-intro">
+        <p class="eyebrow">TRAZA · TU ESPACIO</p>
+        <h1 id="home-title">Tu ficha y tu aprendizaje, en un solo lugar.</h1>
+        <p>Organiza tu formación y desarrolla tus habilidades con un entorno conectado.</p>
+      </header>
+      <div class="home-grid">
+        <article class="home-card" data-home-section="ficha">
+          <div class="home-card-kicker"><span>MI FICHA</span><span class="home-card-mark" aria-hidden="true">01</span></div>
+          <h2>Qué me piden y cuándo.</h2>
+          <p>Organiza tus clases, actividades, entregas y materiales de estudio en un solo lugar.</p>
+          <div class="home-card-meta"><span>Horario y calendario</span><span>Seguimiento académico</span><span>Biblioteca</span></div>
+          <button class="button button-primary home-card-action" id="home-open-ficha" type="button" data-go="hoy"><span>Abrir mi ficha</span><span aria-hidden="true">→</span></button>
+        </article>
+        <article class="home-card" data-home-section="aprende">
+          <div class="home-card-kicker"><span>APRENDE</span><span class="home-card-mark" aria-hidden="true">02</span></div>
+          <h2>Cómo se entiende y se practica.</h2>
+          <p>Aprende lógica de programación, resuelve retos, ejecuta algoritmos y experimenta.</p>
+          <div class="home-card-stats">
+            <div><strong>17</strong><span>Lecciones</span></div>
+            <div><strong>45</strong><span>Ejercicios</span></div>
+            <div><strong>4</strong><span>Espacios</span></div>
+          </div>
+          <button class="button button-primary home-card-action" id="home-learn-continue" type="button" data-go="learn"><span>Continuar en Aprende</span><span aria-hidden="true">→</span></button>
+        </article>
+      </div>
+      <section class="home-continue" aria-label="Continuar actividad">
+        <div><p class="eyebrow">CONTINUAR DONDE QUEDASTE</p><p id="home-continue-description">Elige un espacio para empezar tu recorrido.</p></div>
+        <button class="button button-secondary" id="home-continue-button" type="button" data-go="learn"><span>Ir a Aprende</span><span aria-hidden="true">↗</span></button>
+      </section>
     </section>
 
     <section class="space-view exercises-view" id="view-exercises" data-view="exercises" aria-labelledby="exercise-title" hidden>
@@ -82,10 +129,18 @@
     </section>
 
     <section class="space-view learn-view" id="view-learn" data-view="learn" aria-labelledby="learn-title" hidden>
-      <div class="section-intro"><div><p class="eyebrow">01 / APRENDE</p><h2 id="learn-title">Una idea a la vez. Una explicación que puedes seguir.</h2></div><span class="phase-chip">17 LECCIONES · RUTA PROGRESIVA</span></div>
+      <header class="section-intro learn-intro">
+        <div><p class="eyebrow">01 / APRENDE · RUTA PROGRESIVA</p><h2 id="learn-title">Construye tu lógica, una idea a la vez.</h2><p>Avanza por fundamentos, datos, decisiones y ciclos. Cada lección conecta explicación, escena y práctica real.</p></div>
+        <button type="button" class="button button-primary learn-continue-button" id="learn-continue-current" data-lesson-continue="algorithm"><span id="learn-continue-label">Continuar: lección 01</span><span aria-hidden="true">→</span></button>
+      </header>
+      <section class="learn-progress-overview" aria-label="Progreso general de Aprende">
+        <div class="learn-progress-ring" id="learn-progress-ring" role="progressbar" aria-label="Progreso de las 17 lecciones" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0"><span id="learn-progress-percent">0%</span></div>
+        <div class="learn-progress-copy"><p class="eyebrow">TU PROGRESO</p><strong id="learn-progress-total">0 de 17 lecciones completadas</strong><p id="learn-progress-next">Tu siguiente paso es Algoritmos y diagramas de flujo.</p><div class="learn-progress-track" aria-hidden="true"><span id="learn-progress-fill"></span></div></div>
+        <span class="learn-progress-count">17 <small>LECCIONES</small></span>
+      </section>
       <div class="learn-workspace">
         <aside class="panel lesson-catalog-panel">
-          <div class="panel-heading"><div><p class="eyebrow">RUTA DE APRENDIZAJE</p><h3>17 lecciones</h3></div><span class="panel-index">01</span></div>
+          <div class="panel-heading"><div><p class="eyebrow">RUTA DE APRENDIZAJE</p><h3 id="learn-catalog-count">17 lecciones</h3></div><span class="panel-index">01</span></div>
           <div class="lesson-catalog" id="lesson-catalog"></div>
         </aside>
         <article class="panel lesson-detail-panel" id="lesson-detail" aria-live="polite">
@@ -208,12 +263,16 @@
     </section>
 
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
-      <header class="section-intro"><div><p class="eyebrow">LABORATORIO</p><h2 id="lab-title">Aprende haciendo: lee, construye y depura.</h2><p>Tres formas de practicar con la misma lógica y los mismos diagramas del Simulador.</p></div></header>
-      <section class="lab-mode-cards" id="lab-mode-cards" aria-label="Formas de practicar">
-        <button type="button" class="lab-mode-card is-active" data-lab-mode="read" aria-pressed="true"><span class="lab-mode-number">01</span><span class="lab-mode-illustration lab-mode-read" aria-hidden="true"><i></i><b></b><em></em></span><strong>Sigue la ficha</strong><small>Lee el recorrido, predice qué ocurre y observa cómo cambian los valores</small><span class="lab-mode-action">Practicar lectura ↗</span></button>
-        <button type="button" class="lab-mode-card" data-lab-mode="build" aria-pressed="false"><span class="lab-mode-number">02</span><span class="lab-mode-illustration lab-mode-build" aria-hidden="true"><i></i><b></b><em></em></span><strong>Arma el diagrama</strong><small>Organiza instrucciones y símbolos hasta formar un flujo correcto</small><span class="lab-mode-action">Construir un flujo ↗</span></button>
-        <button type="button" class="lab-mode-card" data-lab-mode="debug" aria-pressed="false"><span class="lab-mode-number">03</span><span class="lab-mode-illustration lab-mode-debug" aria-hidden="true"><i></i><b></b><em></em></span><strong>Caza el error</strong><small>Encuentra qué instrucción falla y compara el resultado antes y después</small><span class="lab-mode-action">Depurar ↗</span></button>
+      <header class="section-intro lab-intro">
+        <div><p class="eyebrow">LABORATORIO · PRÁCTICA ACTIVA</p><h2 id="lab-title">Aprende haciendo: lee, construye y depura.</h2><p>Tres maneras de experimentar con la misma lógica, los diagramas reales y las variables de la ejecución.</p></div>
+        <span class="lab-intro-meta"><strong>3</strong><span>MODOS</span><i aria-hidden="true">·</i><strong>8</strong><span>ACTIVIDADES</span></span>
+      </header>
+      <section class="lab-mode-cards" id="lab-mode-cards" aria-label="Elige una forma de practicar">
+        <button type="button" class="lab-mode-card is-active" data-lab-mode="read" aria-pressed="true"><span class="lab-mode-number">01 <small>OBSERVA</small></span><span class="lab-mode-illustration lab-mode-read" aria-hidden="true"><i></i><b></b><em></em></span><strong>Sigue la ficha</strong><small>Lee el recorrido, anticipa decisiones y observa cómo cambian los valores.</small><span class="lab-mode-action">Practicar lectura <span aria-hidden="true">↗</span></span></button>
+        <button type="button" class="lab-mode-card" data-lab-mode="build" aria-pressed="false"><span class="lab-mode-number">02 <small>CONSTRUYE</small></span><span class="lab-mode-illustration lab-mode-build" aria-hidden="true"><i></i><b></b><em></em></span><strong>Arma el diagrama</strong><small>Organiza instrucciones y símbolos para formar un flujo correcto.</small><span class="lab-mode-action">Construir un flujo <span aria-hidden="true">↗</span></span></button>
+        <button type="button" class="lab-mode-card" data-lab-mode="debug" aria-pressed="false"><span class="lab-mode-number">03 <small>INVESTIGA</small></span><span class="lab-mode-illustration lab-mode-debug" aria-hidden="true"><i></i><b></b><em></em></span><strong>Caza el error</strong><small>Localiza el paso que falla y compara el resultado antes y después.</small><span class="lab-mode-action">Depurar un algoritmo <span aria-hidden="true">↗</span></span></button>
       </section>
+      <p class="lab-mode-footnote"><span aria-hidden="true">⌁</span> Las tres modalidades comparten la traza del Simulador: diagrama, escena y variables siempre cuentan la misma ejecución.</p>
       <div class="lab-practice-workspace" id="lab-practice-workspace" hidden>
         <div class="lab-practice-heading"><button type="button" class="text-link" id="lab-back-to-modes">← Las tres formas de practicar</button><div><p class="eyebrow" id="lab-mode-kicker">01 · LEER</p><h3 id="lab-mode-title">Sigue la ficha</h3><p id="lab-mode-description">Tú decides el siguiente movimiento; el programa te explica el porqué.</p></div></div>
         <div class="lab-layout lab-layout-live">
@@ -251,6 +310,27 @@
       </section>
     </section>
 
+
+    <section class="space-view ficha-placeholder" id="view-hoy" data-view="hoy" aria-labelledby="hoy-title" hidden>
+      <header class="section-intro"><div><p class="eyebrow">MI FICHA · HOY</p><h2 id="hoy-title">Hoy</h2><p>Tu agenda académica y lo que requiere tu atención.</p></div></header>
+      <div class="shell-placeholder"><span aria-hidden="true">⌂</span><h3>Tu resumen diario se construirá aquí.</h3><p>La vista está preparada. Los datos académicos y su seguimiento llegarán en el módulo de Mi ficha.</p></div>
+    </section>
+    <section class="space-view ficha-placeholder" id="view-semana" data-view="semana" aria-labelledby="semana-title" hidden>
+      <header class="section-intro"><div><p class="eyebrow">MI FICHA · SEMANA</p><h2 id="semana-title">Semana</h2><p>Horario de clases y fechas de entrega.</p></div></header>
+      <div class="shell-placeholder"><span aria-hidden="true">▦</span><h3>Tu horario semanal se construirá aquí.</h3><p>La estructura está preparada para organizar tus clases de lunes a sábado.</p></div>
+    </section>
+    <section class="space-view ficha-placeholder" id="view-calendario" data-view="calendario" aria-labelledby="calendario-title" hidden>
+      <header class="section-intro"><div><p class="eyebrow">MI FICHA · CALENDARIO</p><h2 id="calendario-title">Calendario</h2><p>Fechas, actividades y clases en una vista mensual.</p></div></header>
+      <div class="shell-placeholder"><span aria-hidden="true">▣</span><h3>Tu calendario se construirá aquí.</h3><p>La estructura está preparada para reunir fechas académicas y actividades.</p></div>
+    </section>
+    <section class="space-view ficha-placeholder" id="view-actividades" data-view="actividades" aria-labelledby="actividades-title" hidden>
+      <header class="section-intro"><div><p class="eyebrow">MI FICHA · SEGUIMIENTO</p><h2 id="actividades-title">Actividades</h2><p>Entregas, estados, intentos y retroalimentación.</p></div></header>
+      <div class="shell-placeholder"><span aria-hidden="true">✓</span><h3>Tu seguimiento de actividades se construirá aquí.</h3><p>La estructura está preparada para registrar entregas y resultados del instructor.</p></div>
+    </section>
+    <section class="space-view ficha-placeholder" id="view-biblioteca" data-view="biblioteca" aria-labelledby="biblioteca-title" hidden>
+      <header class="section-intro"><div><p class="eyebrow">MI FICHA · RECURSOS</p><h2 id="biblioteca-title">Biblioteca</h2><p>Materiales, guías y recursos relacionados con tus temas.</p></div></header>
+      <div class="shell-placeholder"><span aria-hidden="true">▤</span><h3>Tu biblioteca se construirá aquí.</h3><p>La estructura está preparada para reunir materiales del SENA, recursos extra y contenidos de Traza.</p></div>
+    </section>
     <footer class="page-footer"><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Consultar el prototipo original ↗</a><small>Traza · Pizarra de algoritmos</small></footer>
   </main>
 </div>

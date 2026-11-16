@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el panel flotante reúne los controles y se cierra con Escape",async({page})=>{
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await expect(page.locator("#simulator-controls-toggle")).toBeVisible();
   await expect(page.locator("#simulator-controls-panel")).toBeHidden();
   await page.locator("#simulator-controls-toggle").click();
@@ -17,7 +17,7 @@ test("el panel flotante reúne los controles y se cierra con Escape",async({page
 
 test("los nueve intervalos de velocidad son reales y afectan la reproducción",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const speeds=["0.1","0.25","0.5","0.75","1","1.5","2","4","8"];
   await expect(page.locator("#simulator-speed option")).toHaveCount(9);
   for(const speed of speeds){
@@ -29,7 +29,7 @@ test("los nueve intervalos de velocidad son reales y afectan la reproducción",a
 
 test("el zoom solo cambia con los botones y la cámara recentra el paso",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   const svg=page.locator("#flow-svg");
   const before=await svg.evaluate(el=>el.getBoundingClientRect().width);
@@ -46,7 +46,7 @@ test("el zoom solo cambia con los botones y la cámara recentra el paso",async({
 
 test("el modo Aparecer y Mostrar completo son seleccionables",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#simulator-presentation-mode").selectOption("complete");
   await expect(page.locator("body")).toHaveAttribute("data-presentation-mode","complete");
@@ -56,7 +56,7 @@ test("el modo Aparecer y Mostrar completo son seleccionables",async({page})=>{
 
 test("los cuatro paneles se pueden ocultar y volver a mostrar",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator('[data-window-toggle="pseudocode"]').uncheck();
   await expect(page.locator("#sim-window-code")).toBeHidden();

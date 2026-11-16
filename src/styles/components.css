@@ -99,3 +99,126 @@ button:disabled { cursor:not-allowed; opacity:.46; } .diagram-stage { position:r
 .nav-button{border-radius:8px}
 .nav-button.is-active{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
 .panel{border-radius:10px;box-shadow:var(--shadow-sm)}
+
+
+/* Componentes compartidos de Traza v4. Todos consumen los tokens de sección. */
+.pill{
+  display:inline-flex;align-items:center;gap:7px;min-height:26px;
+  padding:3px 10px;border:1px solid var(--border);border-radius:999px;
+  color:var(--text-muted);background:var(--surface-2);
+  font-size:12px;font-weight:760;line-height:1.3;white-space:nowrap;
+}
+.pill::before{display:inline-grid;place-items:center;flex:none;font-size:13px;font-weight:900;line-height:1}
+.pill[data-status="pending"]{color:var(--status-pending)}
+.pill[data-status="pending"]::before{content:"○"}
+.pill[data-status="in-progress"]{color:var(--status-progress)}
+.pill[data-status="in-progress"]::before{content:"◐"}
+.pill[data-status="submitted"]{color:var(--status-submitted)}
+.pill[data-status="submitted"]::before{content:"✓"}
+.pill[data-status="correction"]{color:var(--status-correction)}
+.pill[data-status="correction"]::before{content:"⚠"}
+.pill[data-status="approved"]{color:var(--status-approved)}
+.pill[data-status="approved"]::before{content:"●"}
+.pill[data-status="overdue"]{color:var(--status-overdue)}
+.pill[data-status="overdue"]::before{content:"!"}
+
+.chip{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:32px;padding:5px 11px;border:1px solid var(--border);border-radius:999px;
+  color:var(--text-muted);background:var(--surface);font-size:13px;font-weight:680;
+  line-height:1.25;cursor:pointer;
+}
+.chip:hover{border-color:var(--line-strong);color:var(--text);background:var(--surface-2)}
+.chip[aria-pressed="true"],.chip.is-active{
+  border-color:var(--accent);color:var(--accent-text);background:var(--accent-soft);
+}
+.chip__remove{
+  display:inline-grid;place-items:center;width:18px;height:18px;padding:0;
+  border:0;border-radius:50%;color:inherit;background:transparent;cursor:pointer;
+}
+.chip__remove:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 16%,transparent)}
+
+.card{
+  min-width:0;border:1px solid var(--border);border-radius:14px;
+  color:var(--text);background:var(--surface);box-shadow:var(--shadow-sm);
+  transition:transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease);
+}
+.card:hover{transform:translateY(-2px);border-color:var(--line-strong);box-shadow:var(--shadow-md)}
+
+.progress{
+  display:block;position:relative;width:100%;height:6px;overflow:hidden;
+  border-radius:999px;background:var(--line);
+}
+.progress__bar{
+  display:block;width:var(--progress,0%);height:100%;border-radius:inherit;
+  background:var(--accent);transition:width var(--dur-3) var(--ease);
+}
+.progress[aria-valuenow="100"] .progress__bar{background:var(--positive)}
+
+.seg{
+  display:inline-flex;align-items:center;gap:3px;max-width:100%;padding:3px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface-2);
+}
+.seg>button,.seg>[role="button"]{
+  display:inline-flex;align-items:center;justify-content:center;min-height:34px;
+  padding:5px 12px;border:1px solid transparent;border-radius:999px;
+  color:var(--text-muted);background:transparent;font-size:13px;font-weight:720;
+  cursor:pointer;
+}
+.seg>button:hover,.seg>[role="button"]:hover{color:var(--text);background:var(--surface)}
+.seg>button[aria-pressed="true"],.seg>[role="button"][aria-pressed="true"],
+.seg>button.is-active,.seg>[role="button"].is-active{
+  border-color:var(--border);color:var(--text);background:var(--surface);
+  box-shadow:var(--shadow-sm);
+}
+
+.empty{
+  display:grid;justify-items:center;gap:9px;min-width:0;padding:30px 20px;
+  border:1px dashed var(--line-strong);border-radius:14px;color:var(--text);
+  background:var(--surface);
+  text-align:center;
+}
+.empty__icon{
+  display:grid;place-items:center;width:44px;height:44px;border-radius:13px;
+  color:var(--accent-text);background:var(--accent-soft);font-size:20px;
+}
+.empty__copy{max-width:420px;margin:0;color:var(--text-muted);font-size:14px}
+.empty__action{margin-top:4px}
+
+.row{
+  display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;
+  border:1px solid transparent;border-bottom-color:var(--border);
+  color:var(--text);background:transparent;text-align:left;text-decoration:none;
+}
+.row[role="button"],button.row,a.row{width:100%;cursor:pointer}
+.row:hover{border-color:var(--border);border-radius:10px;background:var(--surface-2)}
+.row:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row__main{flex:1;min-width:0}
+.row__meta{color:var(--text-muted);font-size:12px}
+
+dialog.modal{
+  width:min(560px,calc(100% - 32px));max-width:none;max-height:min(88vh,760px);
+  overflow:auto;padding:0;border:1px solid var(--border);border-radius:16px;
+  color:var(--text);background:var(--surface);box-shadow:var(--shadow-lg);
+}
+dialog.modal::backdrop{background:rgba(5,12,18,.58);backdrop-filter:blur(3px)}
+dialog.modal[open]{animation:traza-modal-in var(--dur-2) var(--ease) both}
+.modal__header,.modal__body,.modal__footer{padding:18px 22px}
+.modal__header{border-bottom:1px solid var(--border)}
+.modal__footer{display:flex;justify-content:flex-end;gap:9px;border-top:1px solid var(--border)}
+@keyframes traza-modal-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.kpi{
+  display:grid;gap:4px;min-width:0;padding:16px;border:1px solid var(--border);
+  border-radius:14px;color:var(--text);background:var(--surface);
+}
+.kpi__value{font-size:clamp(24px,3vw,32px);font-weight:820;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi__label{color:var(--text-muted);font-size:13px;font-weight:650}
+.kpi__detail{color:var(--accent-text);font-size:12px;font-weight:750}
+
+@media(max-width:440px){
+  .chip{min-height:36px}
+  .seg{max-width:100%;overflow-x:auto}
+  .seg>button,.seg>[role="button"]{flex:1 0 auto}
+  .modal__header,.modal__body,.modal__footer{padding:15px}
+}

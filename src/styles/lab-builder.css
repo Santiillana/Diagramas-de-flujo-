@@ -330,3 +330,44 @@
 @media(prefers-reduced-motion:reduce){
  .lab-sort-list li[draggable="true"],#lab-builder-stage .builder-node-card{transition:none}
 }
+
+
+/* Traza v4 · refinamiento visual del Laboratorio, sin alterar sus actividades. */
+#view-lab>.lab-intro{max-width:1280px;align-items:center;margin:9px auto 20px}
+#view-lab>.lab-intro h2{max-width:800px;font-size:clamp(28px,3.2vw,40px)}
+#view-lab>.lab-intro p:not(.eyebrow){max-width:760px;font-size:14px;line-height:1.6}
+.lab-intro-meta{
+  display:flex;align-items:baseline;gap:6px;flex:none;padding:10px 13px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface);
+  color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.9px;white-space:nowrap
+}
+.lab-intro-meta strong{color:var(--accent-text);font:800 18px/1 ui-monospace,monospace;letter-spacing:0}
+.lab-intro-meta i{margin:0 3px;color:var(--line-strong);font-style:normal}
+.lab-mode-cards{max-width:1280px;gap:16px}
+.lab-mode-card{
+  min-height:320px;padding:20px;border-radius:16px;border-color:var(--line);
+  background:var(--surface);box-shadow:var(--shadow-sm);
+  transition:transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease)
+}
+.lab-mode-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow-md)}
+.lab-mode-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.lab-mode-number{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 8px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface-soft);
+  font-size:10px;letter-spacing:.7px
+}
+.lab-mode-number small{color:var(--muted);font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.9px}
+.lab-mode-card>strong{font-size:clamp(21px,2vw,25px)}
+.lab-mode-card>small{font-size:13px;line-height:1.65}
+.lab-mode-action{display:flex;align-items:center;justify-content:space-between;width:100%;padding-top:11px;border-top:1px solid var(--line);font-size:12px}
+.lab-mode-action>span{font-size:17px}
+.lab-mode-illustration{height:118px;margin:7px 0 6px;border-radius:12px}
+.lab-mode-footnote{
+  display:flex;align-items:center;gap:9px;max-width:1280px;margin:13px auto 0;
+  padding:11px 14px;border:1px solid var(--line);border-radius:11px;
+  color:var(--muted-strong);background:var(--surface);font-size:12px;line-height:1.5
+}
+.lab-mode-footnote>span{color:var(--accent-text);font-size:19px;font-weight:900}
+@media(max-width:850px){.lab-mode-card{min-height:210px}.lab-mode-illustration{height:132px}}
+@media(max-width:520px){#view-lab>.lab-intro{align-items:flex-start}.lab-intro-meta{align-self:flex-start}.lab-mode-footnote{align-items:flex-start}}
+:root[data-motion="reduced"] .lab-mode-card{transition:none!important}

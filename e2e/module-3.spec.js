@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el simulador ejecuta la suma y sincroniza diagrama, salida y variables",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Suma de dos números");
   await expect(page.locator("#simulator-status")).toContainText("Simulación lista");
   await page.locator("#simulator-last").click();
@@ -17,7 +17,7 @@ test("el simulador ejecuta la suma y sincroniza diagrama, salida y variables",as
 
 test("avanzar y retroceder reconstruye el estado del paso",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const first=await page.locator("#dock-step-title").textContent();
   await expect(page.locator("body")).toHaveAttribute("data-simulator-step","0");
   await page.locator("#simulator-next").click();
@@ -30,7 +30,7 @@ test("avanzar y retroceder reconstruye el estado del paso",async({page})=>{
 
 test("el catálogo abre el ejercicio en el simulador solo tras confirmar",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="exercises"]').click();
+  await goToSpace(page, "exercises");
   await page.locator("[data-page-next]").click();
   await page.locator('[data-select-exercise="14"]').click();
   await page.locator("[data-start-exercise]").click();
@@ -48,7 +48,7 @@ test("el catálogo abre el ejercicio en el simulador solo tras confirmar",async(
 
 test("el motor detiene entradas incompletas sin inventar valores",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-inputs").fill("8");
   await page.locator("#simulator-run").click();
   await expect(page.locator("#simulator-status")).toContainText("Ejecución detenida");
@@ -59,7 +59,7 @@ test("el motor detiene entradas incompletas sin inventar valores",async({page})=
 test("el simulador permite abrir las cuatro vistas en móvil sin reiniciar la traza",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-last").click();
   const finalStep=await page.locator("#timeline-count").textContent();
   for(const panel of ["problem","scene","variables","diagram"]){

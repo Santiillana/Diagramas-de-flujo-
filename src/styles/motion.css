@@ -1,4 +1,4 @@
-button,a,.panel,.learning-card,.activity-card,.palette-item,.diagram-empty-icon { transition:color 160ms ease,background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease,transform 160ms ease; }
+button,a,.panel,.learning-card,.activity-card,.palette-item,.diagram-empty-icon { transition:color var(--dur-2) var(--ease),background-color var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),transform var(--dur-2) var(--ease); }
 .learning-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); } .activity-card:hover { border-color:var(--line-strong); }
 button:focus-visible,a:focus-visible,summary:focus-visible { outline:none; box-shadow:var(--focus-ring); }
 :root[data-motion="reduced"] *,:root[data-motion="reduced"] *::before,:root[data-motion="reduced"] *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
@@ -9,3 +9,5 @@ button:focus-visible,a:focus-visible,summary:focus-visible { outline:none; box-s
 @keyframes scene-appear{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.scene-figure-host,.scene-memory-value,.scene-tape-item,.scene-path,.scene-loop-cell{animation:none!important;transition:none!important}}
 :root[data-motion="reduced"] .scene-figure-host{animation:none}
+
+/* Tiempos comunes para la identidad visual y sus componentes. */

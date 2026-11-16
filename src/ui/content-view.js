@@ -1,4 +1,5 @@
 import { lessons } from "../content/lessons.js";
+import { rutas } from "../content/rutas.js";
 import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
 import { renderScene } from "./scenes/index.js";
@@ -106,29 +107,44 @@ function completeLesson(){
   lessonList();
   renderLesson();
 }
-const lessonBlocks=[
-  {title:"01 · Fundamentos",description:"Entender qué es un algoritmo y cómo se lee el recorrido.",ids:["algorithm","reading"]},
-  {title:"02 · Figuras básicas",description:"Reconocer Inicio/Fin, Entrada, Proceso y Salida.",ids:["terminals","input","process","output"]},
-  {title:"03 · Variables y operaciones",description:"Guardar datos y resolver cálculos en orden.",ids:["variables","arithmetic"]},
-  {title:"04 · Decisiones y rutas",description:"Comparar valores, evaluar condiciones y elegir caminos.",ids:["comparisons","decisions","nested-decisions"]},
-  {title:"05 · Ciclos",description:"Contar, acumular, repetir, anidar y validar.",ids:["counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"]}
-];
 function lessonList(){
   const host=$("#lesson-catalog");
   if(!host)return;
-  host.innerHTML=lessonBlocks.map(group=>{
+  const completed=learnProgress.completed.length;
+  const percent=Math.round(completed/lessons.length*100);
+  const ring=$("#learn-progress-ring");
+  const ringText=$("#learn-progress-percent");
+  const total=$("#learn-progress-total");
+  const nextCopy=$("#learn-progress-next");
+  const progressFill=$("#learn-progress-fill");
+  const continueButton=$("#learn-continue-current");
+  const nextLesson=lessons.find(lesson=>!learnProgress.completed.includes(lesson.id))??lessons[lessons.length-1];
+  if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(completed));}
+  if(ringText)ringText.textContent=percent+"%";
+  if(total)total.textContent=completed+" de "+lessons.length+" lecciones completadas";
+  if(nextCopy)nextCopy.textContent=completed===lessons.length
+    ?"Has completado la ruta. Puedes repasar cualquier concepto."
+    :"Tu siguiente paso es "+nextLesson.title+".";
+  if(progressFill)progressFill.style.width=percent+"%";
+  if(continueButton)continueButton.dataset.lessonContinue=nextLesson.id;
+  const continueLabel=$("#learn-continue-label");
+  if(continueLabel)continueLabel.textContent=completed===lessons.length
+    ?"Repasar última lección"
+    :"Continuar: lección "+String(nextLesson.order).padStart(2,"0");
+  host.innerHTML=rutas.map(group=>{
     const done=group.ids.filter(id=>learnProgress.completed.includes(id)).length;
     const items=lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
       const index=lessons.findIndex(item=>item.id===lesson.id);
-      const completed=learnProgress.completed.includes(lesson.id);
-      return '<button class="lesson-list-item '+(lesson.id===selectedLesson?"is-selected":"")+'" type="button" data-lesson-id="'+escapeHTML(lesson.id)+'" aria-current="'+(lesson.id===selectedLesson?"true":"false")+'">'+
+      const completedLesson=learnProgress.completed.includes(lesson.id);
+      return '<button class="lesson-list-item '+(lesson.id===selectedLesson?"is-selected":"")+'" type="button" data-lesson-id="'+escapeHTML(lesson.id)+'" aria-current="'+(lesson.id===selectedLesson?"true":"false")+'" aria-label="Lección '+String(index+1)+': '+escapeHTML(lesson.title)+(completedLesson?", completada":", pendiente")+'">'+
         '<span class="lesson-list-number">'+String(index+1).padStart(2,"0")+'</span>'+
         '<span class="lesson-list-copy"><strong>'+escapeHTML(lesson.title)+'</strong><small>'+escapeHTML(lesson.duration)+'</small></span>'+
-        '<span class="lesson-list-state" aria-label="'+(completed?"Completada":"Pendiente")+'">'+(completed?"✓":"")+'</span></button>';
+        '<span class="lesson-list-state" aria-hidden="true">'+(completedLesson?"✓":"○")+'</span></button>';
     }).join("");
-    return '<section class="lesson-catalog-group" aria-label="'+escapeHTML(group.title)+'">'+
+    return '<section class="lesson-catalog-group" data-route-id="'+escapeHTML(group.id)+'" aria-label="'+escapeHTML(group.title)+'">'+
       '<div class="lesson-catalog-group-heading"><div><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p><small>'+escapeHTML(group.description)+'</small></div>'+
-      '<span class="lesson-group-progress">'+done+'/'+group.ids.length+'</span></div>'+items+'</section>';
+      '<span class="lesson-group-progress" aria-label="'+done+' de '+group.ids.length+' lecciones completadas">'+done+'/'+group.ids.length+'</span></div>'+
+      '<div class="lesson-catalog-items">'+items+'</div></section>';
   }).join("");
 }
 function lessonInputs(value){
@@ -248,6 +264,8 @@ function renderLesson(){
   if(!host)return;
   const screen=lessonScreenStep;
   const stepNames=["Idea","Escena","Ejemplo","Inténtalo","Resumen"];
+  const route=rutas.find(group=>group.ids.includes(lesson.id));
+  const progressValue=learnProgress.completed.includes(lesson.id)?5:screen+1;
   let body="";
   if(screen===0){
     body='<section class="lesson-screen lesson-screen-idea"><p class="eyebrow">¿PARA QUÉ SIRVE?</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p>'+
@@ -283,15 +301,18 @@ function renderLesson(){
       '<button type="button" class="button button-primary" data-lesson-complete>'+(learnProgress.completed.includes(lesson.id)?"Lección completada":"Marcar lección completada")+'</button></section>';
   }
   const currentIndex=lessons.findIndex(item=>item.id===lesson.id);
-  host.innerHTML='<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / 17 · '+escapeHTML(lesson.duration.toUpperCase())+'</p>'+
+  host.innerHTML='<div class="lesson-reader">'+
+    '<nav class="lesson-breadcrumb" aria-label="Ubicación de la lección"><span>Aprende</span><span aria-hidden="true">›</span><span>'+escapeHTML(route?.title??"Ruta de aprendizaje")+'</span><span aria-hidden="true">›</span><strong>Lección '+String(lesson.order).padStart(2,"0")+'</strong></nav>'+
+    '<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / 17 · '+escapeHTML(lesson.duration.toUpperCase())+'</p>'+
     '<h3>'+escapeHTML(lesson.title)+'</h3><p>'+escapeHTML(lesson.objective)+'</p></div><span class="lesson-completion">'+(learnProgress.completed.includes(lesson.id)?"COMPLETADA":"PANTALLA "+(screen+1)+" DE 5")+'</span></header>'+
+    '<div class="lesson-reading-progress" role="progressbar" aria-label="Progreso de esta lección" aria-valuemin="0" aria-valuemax="5" aria-valuenow="'+progressValue+'"><span style="width:'+(progressValue*20)+'%"></span></div>'+
     '<nav class="lesson-screen-tabs" aria-label="Pantallas de la lección">'+stepNames.map((name,index)=>
       '<span class="lesson-screen-step '+(index===screen?"is-current":index<screen?"is-past":"")+'">'+(index+1)+". "+name+'</span>'
     ).join("")+'</nav>'+body+
     '<nav class="lesson-screen-navigation" aria-label="Navegación de la lección">'+
-      '<button type="button" class="button button-secondary" data-lesson-prev '+(screen===0?"disabled":"")+'>Anterior</button>'+
+      '<button type="button" class="button button-secondary" data-lesson-prev '+(screen===0?"disabled":"")+'>← Anterior</button>'+
       '<span class="lesson-screen-count">'+(screen+1)+' de 5</span>'+
-      '<button type="button" class="button button-primary" data-lesson-next>'+(screen===4?(currentIndex<lessons.length-1?"Siguiente lección":"Terminar ruta"):"Siguiente")+' <span aria-hidden="true">→</span></button></nav>';
+      '<button type="button" class="button button-primary" data-lesson-next>'+(screen===4?(currentIndex<lessons.length-1?"Siguiente lección":"Terminar ruta"):"Siguiente")+' <span aria-hidden="true">→</span></button></nav></div>';
   if(screen===2)updateLessonData();
   saveLearnProgress();
 }
@@ -408,14 +429,21 @@ function selectExercise(id){
   }
 }
 
+function selectLesson(id){
+  if(!lessons.some(lesson=>lesson.id===id))return;
+  stopLessonPlayback();selectedLesson=id;lessonVisualStep=0;lessonScreenStep=0;
+  saveLearnProgress();lessonList();renderLesson();
+}
 function bindContentEvents(){
+  $("#learn-continue-current")?.addEventListener("click",event=>{
+    const id=event.currentTarget.dataset.lessonContinue;
+    if(id)selectLesson(id);
+  });
+
   $("#lesson-catalog")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-lesson-id]");
     if(!button)return;
-    stopLessonPlayback();
-    selectedLesson=button.dataset.lessonId;
-    lessonVisualStep=0;lessonScreenStep=0;
-    saveLearnProgress();lessonList();renderLesson();
+    selectLesson(button.dataset.lessonId);
   });
   $("#lesson-detail")?.addEventListener("input",event=>{
     if(event.target.id==="lesson-data-input")updateLessonData();
