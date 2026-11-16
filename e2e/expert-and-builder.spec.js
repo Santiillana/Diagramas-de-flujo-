@@ -50,10 +50,13 @@ test("el catálogo busca por número y pagina sin perder los filtros",async({pag
   await expect(page.locator(".exercise-pagination")).toContainText("Página 2");
 });
 
-test("el acceso rápido a Construir abre el Laboratorio",async({page})=>{
-  await page.locator('[data-go="builder"]').click();
+test("Arma el diagrama ofrece el acceso al Lienzo libre dentro del Laboratorio",async({page})=>{
+  await page.locator('[data-space="lab"]').click();
+  await page.locator('[data-lab-mode="build"]').click();
+  await expect(page.locator("#lab-open-builder")).toBeVisible();
+  await page.locator("#lab-open-builder").click();
+  await expect(page.locator("#lab-builder-stage")).toBeVisible();
   await expect(page.locator("#view-lab")).toBeVisible();
-  await expect(page.locator('[data-space="lab"]')).toHaveAttribute("aria-current","page");
   await expect(page.locator("#view-builder")).toHaveCount(0);
 });
 
