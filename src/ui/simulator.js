@@ -903,6 +903,7 @@ function zoomAt(nextZoom,clientX,clientY){
 function zoomDiagram(direction){
   if(!diagramFitWidth)fitDiagram();
   const free=freeCanvasRect();
+  setCameraFree();
   zoomAt(zoom*(direction>0?1.18:1/1.18),free.left+free.width/2,free.top+free.height/2);
 }
 
@@ -1191,7 +1192,9 @@ function run(){
 }
 function seek(index){
   if(!timeline)return;
-  stop();timeline.seek(index);render();
+  stop();timeline.seek(index);
+  cameraAuto=true;updateCameraButton();
+  render();
 }
 function move(delta){
   if(!timeline||predictionPending)return;
@@ -1200,7 +1203,8 @@ function move(delta){
   if(delta>0&&predictEnabled&&eventAskable(execution.events[destination])){
     predictionResume=timer!==null;stop();showPredictionQuestion(destination);return;
   }
-  stop();timeline.seek(destination);choreographyPlayback=true;
+  stop();timeline.seek(destination);
+  cameraAuto=true;updateCameraButton();choreographyPlayback=true;
   try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
@@ -1216,6 +1220,7 @@ function play(){
     }
     cancelChoreography();
     timeline.next();
+    cameraAuto=true;updateCameraButton();
     choreographyPlayback=true;
     try{render();}finally{choreographyPlayback=false;}
     if(timeline.index>=timeline.length-1)stop();
@@ -1305,7 +1310,11 @@ function bindDiagramPan(){
   const onMove=event=>{
     if(!drag||drag.id!==event.pointerId)return;
     const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
-    if(Math.abs(dx)+Math.abs(dy)>2)drag.moved=true;
+    if(Math.abs(dx)+Math.abs(dy)>2&&!drag.moved){
+      drag.moved=true;
+      stage.dataset.panStart=String((Number(stage.dataset.panStart)||0)+1);
+      setCameraFree();
+    }
     if(!drag.moved)return;
     panOffset={x:drag.originX+dx,y:drag.originY+dy};
     applyCanvasTransform();
