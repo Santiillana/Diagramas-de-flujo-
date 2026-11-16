@@ -36,7 +36,7 @@
 @media(max-width:1080px){
  .topbar{grid-template-columns:150px minmax(0,1fr) auto;gap:12px;padding-inline:16px}
  .primary-nav{justify-content:flex-end;gap:3px}
- .nav-button{padding-inline:8px}
+ .nav-button{padding-inline:4px}
 }
 @media(max-width:760px){
  .topbar{grid-template-columns:34px minmax(0,1fr) 64px;gap:6px;min-height:52px;padding:6px 8px}

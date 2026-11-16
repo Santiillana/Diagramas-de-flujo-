@@ -409,6 +409,9 @@ function freeCanvasRect(){
 function applyCanvasTransform(){
   const canvas=$("#flow-diagram-container"),wrap=$("#wrap");
   if(!canvas)return;
+  if(!Number.isFinite(zoom)||zoom<=0)zoom=1;
+  if(!Number.isFinite(panOffset.x))panOffset.x=0;
+  if(!Number.isFinite(panOffset.y))panOffset.y=0;
   canvas.style.transformOrigin="0 0";
   canvas.style.transform="translate3d("+panOffset.x+"px,"+panOffset.y+"px,0) scale("+zoom+")";
   canvas.dataset.cameraX=String(panOffset.x);
@@ -1329,6 +1332,11 @@ async function toggleDiagramFullscreen(){
     requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
     return;
   }
+  /* Concentración debe salir del panel flotante antes de ocultarlo:
+     así Escape siempre queda asociado a salir del modo, no a cerrar un menú invisible. */
+  const controls=$("#simulator-controls-panel");
+  if(controls&&!controls.hidden)toggleControls(false);
+  body.classList.remove("sim-controls-open");
   body.classList.add("focus");
   if(document.documentElement.requestFullscreen){
     document.documentElement.dataset.fullscreenRequested="true";
