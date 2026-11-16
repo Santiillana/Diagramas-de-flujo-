@@ -363,7 +363,10 @@ function freeCanvasRect(){
   if(!mobile&&rightVisible)right=Math.min(right,rightPanel.getBoundingClientRect().left-16);
   if(mobile){
     const tabs=$("#simulator-mobile-tabs");
-    if(tabs&&getComputedStyle(tabs).display!=="none")bottom=Math.min(bottom,tabs.getBoundingClientRect().top-10);
+    if(tabs&&getComputedStyle(tabs).display!=="none"){
+      const tabRect=tabs.getBoundingClientRect();
+      top=Math.max(top,tabRect.bottom+10);
+    }
     if(document.body.dataset.simulatorMobilePanel!=="diagram")bottom=Math.min(bottom,box.bottom-210);
   }
   if(right-left<120){left=box.left+16;right=box.right-16;}
