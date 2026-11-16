@@ -4,7 +4,7 @@
 **Repositorio:** `Santiillana/Traza`  
 **Rama:** `v4/module-7-activities`  
 **Base:** integración del Módulo 6, commit `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
-**Estado:** especificación técnica preparada; implementación funcional bloqueada hasta integrar los módulos 5 y 6 de Mi ficha.
+**Estado:** especificación técnica preparada; el repositorio común M5 y el horario de M6 tienen una primera implementación en esta rama. La interfaz M7 permanece pendiente hasta cerrar la aceptación de M5/M6.
 
 ## 1. Objetivo
 
@@ -16,7 +16,7 @@ La vista no será un sistema de calificación oficial ni una integración con Za
 
 El Módulo 7 depende de contratos que pertenecen a los módulos anteriores:
 
-- **Módulo 5:** modelo académico común, identificadores, persistencia, validación, migración y respaldo.
+- **Módulo 5:** modelo académico común, identificadores, persistencia, validación, migración y respaldo. Primera base disponible en `src/ui/ficha-store.js`; faltan integración de interfaz y E2E.
 - **Módulo 6:** vistas Hoy, Semana y Calendario que consumirán el mismo repositorio de actividades.
 
 Por tanto, este módulo no debe inventar una segunda base de datos ni implementar almacenamiento paralelo. Antes de integrar la interfaz, se debe importar el repositorio y los tipos definidos por M5. La rama se prepara desde el main actualizado y no altera la rama principal.
