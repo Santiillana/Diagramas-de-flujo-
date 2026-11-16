@@ -630,6 +630,29 @@ function currentSpeedFactor(){
   const value=Number($("#simulator-speed")?.value??1);
   return Number.isFinite(value)&&value>0?Math.max(.1,Math.min(8,value)):1;
 }
+function updateCameraButton(){
+  const button=$("#diagram-camera-toggle");
+  if(!button)return;
+  button.setAttribute("aria-pressed",String(cameraAuto));
+  button.setAttribute("aria-label",cameraAuto?"Desactivar cámara automática":"Activar cámara automática");
+  button.title=cameraAuto?"Cámara automática":"Seguir el proceso";
+  button.textContent=cameraAuto?"Cámara automática":"Seguir el proceso";
+}
+function setCameraFree(){
+  cameraAuto=false;
+  if(cameraRaf)cancelAnimationFrame(cameraRaf);
+  cameraRaf=0;
+  updateCameraButton();
+  const stage=$("#diagram-stage");
+  if(stage)stage.dataset.cameraMode="manual";
+}
+function setCameraFollowing(){
+  cameraAuto=true;
+  updateCameraButton();
+  const stage=$("#diagram-stage");
+  if(stage)stage.dataset.cameraMode="automatic";
+  if(timeline)centerActiveNode(timeline.current,"auto");
+}
 function zoomAt(nextZoom,clientX,clientY){
   const stage=$("#diagram-stage");
   if(!stage)return;
