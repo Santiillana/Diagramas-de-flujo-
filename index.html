@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#101e23"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/shell.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/shell.css"><link rel="stylesheet" href="./src/styles/ficha-schedule.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -399,18 +399,9 @@
     </section>
 
 
-    <section class="space-view ficha-placeholder" id="view-hoy" data-view="hoy" aria-labelledby="hoy-title" hidden>
-      <header class="section-intro"><div><p class="eyebrow">MI FICHA · HOY</p><h2 id="hoy-title">Hoy</h2><p>Tu agenda académica y lo que requiere tu atención.</p></div></header>
-      <div class="shell-placeholder"><span aria-hidden="true">⌂</span><h3>Tu resumen diario se construirá aquí.</h3><p>La vista está preparada. Los datos académicos y su seguimiento llegarán en el módulo de Mi ficha.</p></div>
-    </section>
-    <section class="space-view ficha-placeholder" id="view-semana" data-view="semana" aria-labelledby="semana-title" hidden>
-      <header class="section-intro"><div><p class="eyebrow">MI FICHA · SEMANA</p><h2 id="semana-title">Semana</h2><p>Horario de clases y fechas de entrega.</p></div></header>
-      <div class="shell-placeholder"><span aria-hidden="true">▦</span><h3>Tu horario semanal se construirá aquí.</h3><p>La estructura está preparada para organizar tus clases de lunes a sábado.</p></div>
-    </section>
-    <section class="space-view ficha-placeholder" id="view-calendario" data-view="calendario" aria-labelledby="calendario-title" hidden>
-      <header class="section-intro"><div><p class="eyebrow">MI FICHA · CALENDARIO</p><h2 id="calendario-title">Calendario</h2><p>Fechas, actividades y clases en una vista mensual.</p></div></header>
-      <div class="shell-placeholder"><span aria-hidden="true">▣</span><h3>Tu calendario se construirá aquí.</h3><p>La estructura está preparada para reunir fechas académicas y actividades.</p></div>
-    </section>
+    <section class="space-view ficha-schedule-view" id="view-hoy" data-view="hoy" aria-labelledby="hoy-title" hidden><div id="ficha-hoy" aria-live="polite"></div></section>
+    <section class="space-view ficha-schedule-view" id="view-semana" data-view="semana" aria-labelledby="semana-title" hidden><div id="ficha-semana" aria-live="polite"></div></section>
+    <section class="space-view ficha-schedule-view" id="view-calendario" data-view="calendario" aria-labelledby="calendario-title" hidden><div id="ficha-calendario" aria-live="polite"></div></section>
     <section class="space-view ficha-placeholder" id="view-actividades" data-view="actividades" aria-labelledby="actividades-title" hidden>
       <header class="section-intro"><div><p class="eyebrow">MI FICHA · SEGUIMIENTO</p><h2 id="actividades-title">Actividades</h2><p>Entregas, estados, intentos y retroalimentación.</p></div></header>
       <div class="shell-placeholder"><span aria-hidden="true">✓</span><h3>Tu seguimiento de actividades se construirá aquí.</h3><p>La estructura está preparada para registrar entregas y resultados del instructor.</p></div>
