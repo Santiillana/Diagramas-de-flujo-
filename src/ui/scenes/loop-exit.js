@@ -11,7 +11,8 @@ export function render(event) {
   return '<div class="scene-figure scene-loop scene-loop-exit">'+
     '<div class="scene-loop-heading"><span class="scene-loop-round">Ciclo finalizado</span><strong>'+displayValue(round)+' vueltas</strong></div>'+
     loopTrack(stages,stages.length-1,completed)+
-    '<div class="scene-loop-condition"><span class="scene-caption">ÚLTIMA COMPROBACIÓN</span><strong>'+displayValue(condition)+'</strong></div>'+\n    '<div class="scene-loop-detail">La condición fue falsa. La ficha sale del ciclo y continúa con la siguiente instrucción.</div>'+
+    '<div class="scene-loop-condition"><span class="scene-caption">ÚLTIMA COMPROBACIÓN</span><strong>'+displayValue(condition)+'</strong></div>'+
+    '<div class="scene-loop-detail">La condición fue falsa. La ficha sale del ciclo y continúa con la siguiente instrucción.</div>'+
     '<div class="scene-loop-answer is-false">F · Salir del ciclo</div>'+
     '</div>';
 }
