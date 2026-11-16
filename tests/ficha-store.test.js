@@ -39,6 +39,7 @@ test("crear actividad aplica valores iniciales y conserva referencia de clase v�
   assert.equal(created.activity.events[0].type, "created");
   assert.equal(createActivity({ title: " " }).reason, "title_required");
   assert.equal(createActivity({ title: "X", dueOn: "2026-02-30" }).reason, "invalid_date");
+  assert.equal(createActivity({ title: "X", assignedOn: "2026-11-21", dueOn: "2026-11-20" }).reason, "invalid_date");
   assert.equal(createActivity({ title: "X", classId: "clase-inventada" }).reason, "invalid_class");
 });
 
@@ -132,6 +133,9 @@ test("respaldo versionado se valida e importa sin destruir el estado ante error"
   assert.equal(readFichaData(storage).activities[0].title, "Resolver guía");
   const invalid = { ...backup, version: 99 };
   assert.equal(importFichaBackup(invalid, storage).reason, "invalid_backup");
+  const brokenReference = structuredClone(backup);
+  brokenReference.data.activities[0].classId = "clase-que-no-existe";
+  assert.equal(validateFichaBackup(brokenReference).reason, "invalid_records");
   assert.equal(readFichaData(storage).activities[0].title, "Resolver guía");
 });
 
