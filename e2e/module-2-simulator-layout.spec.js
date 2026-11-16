@@ -27,9 +27,25 @@ for(const viewport of [
    for(const panel of ["problem","scene","variables","diagram"]){
     await page.locator('#simulator-mobile-tabs [data-mobile-panel="'+panel+'"]').click();
     await expect(page.locator("body")).toHaveAttribute("data-simulator-mobile-panel",panel);
-    if(panel==="problem")await expect(page.locator("#sim-window-context")).toBeVisible();
-    if(panel==="scene")await expect(page.locator("#PV")).toBeVisible();
-    if(panel==="variables")await expect(page.locator("#PR")).toBeVisible();
+    if(panel==="problem"){
+     await expect(page.locator("#PL")).toBeVisible();
+     await expect(page.locator("#sim-window-context")).toBeVisible();
+     await expect(page.locator("#RC")).toBeHidden();
+    }
+    if(panel==="scene"){
+     await expect(page.locator("#PV")).toBeVisible();
+     await expect(page.locator("#PR")).toBeHidden();
+     await expect(page.locator("#PL")).toBeHidden();
+    }
+    if(panel==="variables"){
+     await expect(page.locator("#PR")).toBeVisible();
+     await expect(page.locator("#PV")).toBeHidden();
+     await expect(page.locator("#PL")).toBeHidden();
+    }
+    if(panel==="diagram"){
+     await expect(page.locator("#PL")).toBeHidden();
+     await expect(page.locator("#RC")).toBeHidden();
+    }
     const xOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(xOverflow).toBeLessThanOrEqual(1);
    }
@@ -101,4 +117,35 @@ test("Ctrl/Meta+rueda no modifica el zoom y el panel flotante evita el nodo acti
  expect(overlap).toBe(false);
  await page.keyboard.press("Escape");
  await expect(page.locator("#simulator-controls-panel")).toBeHidden();
+});
+
+test("la navegación superior conserva cuatro etiquetas legibles a 390 px",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/");
+ const nav=page.locator("#primary-nav");
+ await expect(nav.locator(".nav-button")).toHaveCount(4);
+ const report=await nav.evaluate(el=>{
+  const box=el.getBoundingClientRect();
+  const items=[...el.querySelectorAll(".nav-button")].map(node=>{
+   const r=node.getBoundingClientRect(),style=getComputedStyle(node);
+   return {left:r.left,right:r.right,width:r.width,fontSize:parseFloat(style.fontSize),scrollWidth:node.scrollWidth,clientWidth:node.clientWidth};
+  });
+  return {box:{left:box.left,right:box.right},items};
+ });
+ expect(report.items.every(item=>item.width>55&&item.fontSize>=11&&item.scrollWidth<=item.clientWidth+1)).toBe(true);
+ expect(report.items.every((item,index)=>index===0||item.left>=report.items[index-1].right-1)).toBe(true);
+ await page.locator('[data-space="simulator"]').click();
+ await expect(page.locator("#primary-nav .nav-button")).toHaveCount(4);
+ const dock=page.locator("#dock");
+ const transport=dock.locator(".dock-controls .transport-button");
+ await expect(transport).toHaveCount(5);
+ const geometry=await dock.evaluate(el=>{
+  const box=el.getBoundingClientRect();
+  const buttons=[...el.querySelectorAll(".dock-controls .transport-button")].map(node=>node.getBoundingClientRect());
+  const speed=el.querySelector(".dock-speed>span");
+  return {box:{left:box.left,right:box.right},buttons:buttons.map(r=>({left:r.left,right:r.right,width:r.width})),
+    speed:speed?{scrollWidth:speed.scrollWidth,clientWidth:speed.clientWidth}:null};
+ });
+ expect(geometry.buttons.every(button=>button.width>=16&&button.left>=geometry.box.left-1&&button.right<=geometry.box.right+1)).toBe(true);
+ expect(geometry.speed===null||geometry.speed.scrollWidth<=geometry.speed.clientWidth+2).toBe(true);
 });

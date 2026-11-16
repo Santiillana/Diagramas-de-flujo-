@@ -32,9 +32,13 @@ function edgePath(edge,diagram){
     return "M "+(from.x+from.width/2)+" "+y+" L "+tx+" "+y+" L "+tx+" "+to.y;
   }
   if (edge.kind==="back") {
-    const bendX=Math.min(fx,tx)-95;
-    const top=Math.min(from.y,to.y)-25;
-    return "M "+fx+" "+(from.y+from.height/2)+" L "+bendX+" "+(from.y+from.height/2)+" L "+bendX+" "+(to.y+to.height/2)+" L "+tx+" "+(to.y+to.height/2);
+    // El retorno sale por el borde izquierdo de ambas figuras; nunca atraviesa sus símbolos.
+    const startX=from.x-from.width/2;
+    const endX=to.x-to.width/2;
+    const bendX=Math.min(startX,endX)-42;
+    const startY=from.y+from.height/2;
+    const endY=to.y+to.height/2;
+    return "M "+startX+" "+startY+" L "+bendX+" "+startY+" L "+bendX+" "+endY+" L "+endX+" "+endY;
   }
   if (Math.abs(fx-tx)<4) {
     return "M "+fx+" "+(from.y+from.height)+" L "+tx+" "+to.y;
@@ -68,7 +72,7 @@ export function renderDiagram(container,diagram,options={}){
     '<polyline id="flow-trail" class="flow-trail" points=""/><polyline id="flow-active-trail" class="flow-active-trail" points=""/><g class="flow-edges">'+edgeMarkup+'</g><g class="flow-nodes">'+nodeMarkup+'</g>'+
     '<circle id="flow-token-ring" class="flow-token-ring" cx="520" cy="20" r="10" visibility="hidden" aria-hidden="true"/>'+
     '<circle class="flow-token" cx="520" cy="20" r="9" visibility="hidden" aria-hidden="true"/>'+
-    '<text id="flow-token-label" class="flow-token-label" x="535" y="10" visibility="hidden" aria-hidden="true"></text></svg>';
+    '</svg>';
   container.innerHTML=svg;
 }
 export function highlightDiagram(container,diagram,options={}) {

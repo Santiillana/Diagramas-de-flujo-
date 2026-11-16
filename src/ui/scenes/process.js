@@ -1,17 +1,19 @@
-import { displayValue, variableCards } from "./common.js";
+import { displayValue } from "./common.js";
 
 export function render(event) {
-  const role = event.role ? '<span class="scene-role">'+displayValue(event.role)+'</span>' : "";
-  const expression = event.substituted || event.expression || event.sourceText || "Proceso";
-  const partials = (event.partials ?? []).map(step =>
-    '<li><code>'+displayValue(step.left)+' '+displayValue(step.operator)+' '+displayValue(step.right)+' = <b>'+displayValue(step.result)+'</b></code></li>'
-  ).join("");
+  const rawExpression=event.substituted||event.expression||event.sourceText||"Operación";
+  const expression=String(rawExpression).replace(/(?<=[A-Za-z0-9)\]])\s*([+*/-])\s*(?=[A-Za-z0-9(\[])/g," $1 ").replace(/\s+/g," ").trim();
+  const variable=event.variable??"RESULTADO";
+  const previous=event.previous;
+  const next=event.next;
+  const result=previous===undefined
+    ?displayValue(variable)+" = "+displayValue(next)
+    :displayValue(variable)+": "+displayValue(previous)+" → "+displayValue(next);
   return '<div class="scene-figure scene-process">'+
-    '<div class="scene-process-input"><span class="scene-caption">VALORES ANTERIORES</span>'+variableCards(event.previousVariables)+'</div>'+
-    '<div class="scene-process-bubble"><span class="scene-caption">CUENTA</span><strong>'+displayValue(expression)+'</strong>'+role+'</div>'+
-    '<div class="scene-process-result"><span class="scene-caption">'+displayValue(event.variable ?? "RESULTADO")+'</span>'+
-      (event.previous === undefined ? "" : '<del>'+displayValue(event.previous)+'</del><span class="scene-arrow">→</span>')+
-      '<strong>'+displayValue(event.next)+'</strong></div>'+
-    (partials ? '<ol class="scene-partials">'+partials+'</ol>' : "")+
+    '<div class="scene-operation-breakdown">'+
+      '<span class="scene-caption">OPERACIÓN</span>'+
+      '<strong>'+displayValue(expression)+' = '+displayValue(next)+'</strong>'+
+    '</div>'+
+    '<div class="scene-process-result"><span class="scene-caption">VALOR GUARDADO</span><strong>'+result+'</strong></div>'+
     '</div>';
 }

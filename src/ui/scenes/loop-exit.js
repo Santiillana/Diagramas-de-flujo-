@@ -1,10 +1,19 @@
-import { displayValue } from "./common.js";
+import { displayValue, loopTrack } from "./common.js";
 
 export function render(event) {
-  const round = event.loop?.round ?? "—";
-  return '<div class="scene-figure scene-loop scene-loop-exit">'+
-    '<span class="scene-loop-order">FIN DEL CICLO</span>'+
-    '<div class="scene-loop-answer is-false">F · La condición ya no se cumple</div>'+
-    '<p class="scene-loop-note">Se completaron '+displayValue(round)+' vueltas. El recorrido continúa fuera del ciclo.</p>'+
+  const round=event.loop?.round??event.raw?.iteration??0;
+  const type=event.loop?.type??"while";
+  const condition=event.condition?.substituted??event.condition?.expression??"La condición del ciclo";
+  const completed=type==="while"&&Number(round)===0?[0]:null;
+  const stages=type==="doWhile"?["Cuerpo","Comprobar","Repetir"]:
+    type==="for"?["Preparar","Comprobar","Cuerpo","Avanzar","Salir"]:
+    ["Comprobar","Cuerpo","Repetir","Salir"];
+  const style=type==="doWhile"?"doWhile":type==="for"?"for":"while";
+  return '<div class="scene-figure scene-loop scene-loop-exit scene-loop-exit-'+style+'">'+
+    '<div class="scene-loop-heading"><span class="scene-loop-round">Ciclo finalizado</span><strong>'+displayValue(round)+' vueltas</strong></div>'+
+    loopTrack(stages,stages.length-1,completed)+
+    '<div class="scene-loop-condition"><span class="scene-caption">ÚLTIMA COMPROBACIÓN</span><strong>'+displayValue(condition)+'</strong></div>'+
+    '<div class="scene-loop-detail">La condición fue falsa. La ficha sale del ciclo y continúa con la siguiente instrucción.</div>'+
+    '<div class="scene-loop-answer is-false">F · Salir del ciclo</div>'+
     '</div>';
 }
