@@ -29,8 +29,8 @@ test("los dos bloques del sábado conservan instructor y materia sin inventar", 
 
 test("los días lectivos y horarios usan formato 24 horas", () => {
   for (const item of HORARIO_CLASES) {
-    assert.match(item.horaInicio, /^(?:[01]\\d|2[0-3]):[0-5]\\d$/);
-    assert.match(item.horaFin, /^(?:[01]\\d|2[0-3]):[0-5]\\d$/);
+    assert.match(item.horaInicio, /^(?:[01]\d|2[0-3]):[0-5]\d$/);
+    assert.match(item.horaFin, /^(?:[01]\d|2[0-3]):[0-5]\d$/);
     assert.ok(item.diaSemana >= 1 && item.diaSemana <= 6);
   }
 });
