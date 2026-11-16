@@ -1,4 +1,5 @@
 import { DIAS_SIN_CLASES, FICHA_TIME_ZONE, HORARIO_CLASES } from "../content/ficha.js";
+import { isActivityOverdue, readFichaData } from "./ficha-store.js";
 
 const pad = value => String(value).padStart(2, "0");
 const toKey = ({ year, month, day }) => `${year}-${pad(month)}-${pad(day)}`;
@@ -74,6 +75,46 @@ function statusFor(dateKey, item, now) {
   return ["ended", "Ya terminó"];
 }
 
+function activitiesForDate(key) {
+  return readFichaData().activities.filter(activity =>
+    !activity.archivedAt && (activity.assignedOn === key || activity.dueOn === key)
+  );
+}
+
+function activityLabel(activity, key, todayKey) {
+  if (activity.dueOn === key && activity.assignedOn === key) return "Asignada y vence hoy";
+  if (activity.dueOn === key) return key < todayKey ? "Vencía este día" : "Fecha límite";
+  return "Asignada este día";
+}
+
+function renderActivityCard(activity, key, now) {
+  const todayKey = toKey(now);
+  const overdue = isActivityOverdue(activity, todayKey);
+  const label = overdue ? "Atrasada" : activity.dueOn === key ? "Fecha límite" : "Asignada";
+  const status = ({
+    pending: "Pendiente",
+    in_progress: "En curso",
+    submitted: "Entregada",
+    needs_correction: "Por corregir",
+    approved: "Aprobada"
+  })[activity.status] || "Pendiente";
+  return `<article class="ficha-activity-card" data-overdue="${overdue}">
+    <div class="ficha-activity-main"><h4>${escapeHtml(activity.title)}</h4>
+      <p>${escapeHtml(activityLabel(activity, key, todayKey))}${activity.classId ? " · " + escapeHtml(HORARIO_CLASES.find(item => item.id === activity.classId)?.materia || "Clase del sábado") : ""}</p>
+    </div>
+    <span class="ficha-activity-status">${label} · ${status}</span>
+  </article>`;
+}
+
+function renderActivityDay(key, now) {
+  const activities = activitiesForDate(key);
+  if (!activities.length) return "";
+  return `<section class="ficha-activities-day" aria-label="Actividades de ${escapeHtml(formatDate(key))}">
+    <h4>Actividades y entregas</h4>
+    <div class="ficha-activity-list">${activities.map(item => renderActivityCard(item, key, now)).join("")}</div>
+  </section>`;
+}
+
 function renderClassCard(dateKey, item, now) {
   const [statusClass, statusLabel] = statusFor(dateKey, item, now);
   const title = item.materia || "Clase del sábado";
@@ -90,7 +131,7 @@ function renderDay(dateKey, now, options = {}) {
   const body = classes.length
     ? classes.map(item => renderClassCard(dateKey, item, now)).join("")
     : '<p class="ficha-empty-day">No tienes clases programadas este día.</p>';
-  return `<section class="ficha-day-block"><header><h3>${escapeHtml(label)}</h3>${options.badge ? `<span>${options.badge}</span>` : ""}</header><div class="ficha-class-list">${body}</div></section>`;
+  return `<section class="ficha-day-block"><header><h3>${escapeHtml(label)}</h3>${options.badge ? `<span>${options.badge}</span>` : ""}</header><div class="ficha-class-list">${body}</div>${renderActivityDay(dateKey, now)}</section>`;
 }
 
 function weekStart(key) {
@@ -123,15 +164,30 @@ export function initFichaSchedule() {
   if (!views.hoy || !views.semana || !views.calendario) return;
 
   let weekAnchor = toKey(localParts());
-  let calendarAnchor = toKey(localParts());
+  let calendarAnchor = monthStart(toKey(localParts()));
   let selectedCalendarDate = toKey(localParts());
+  let weekFollowsToday = true;
+  let monthFollowsToday = true;
 
   function renderToday(now = localParts()) {
     const key = toKey(now);
-    views.hoy.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO OFICIAL · COLOMBIA</p><h2 id="hoy-title">${escapeHtml(formatDate(key))}</h2><p>Zona horaria: America/Bogota</p></div><span class="ficha-source-label">Horario oficial</span></div>${renderDay(key, now, { badge: "Hoy" })}`;
+    const end = shiftDate(key, 7);
+    const attention = readFichaData().activities.filter(activity =>
+      !activity.archivedAt && activity.status !== "approved" && activity.dueOn &&
+      (activity.dueOn <= end)
+    ).sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+    const attentionMarkup = attention.length
+      ? `<section class="ficha-attention"><h3>Entregas que requieren atención</h3><div class="ficha-activity-list">${attention.map(activity => {
+          const overdue = isActivityOverdue(activity, key);
+          const label = overdue ? "Atrasada" : activity.dueOn === key ? "Vence hoy" : "Próxima";
+          return `<article class="ficha-activity-card" data-overdue="${overdue}"><div class="ficha-activity-main"><h4>${escapeHtml(activity.title)}</h4><p>${escapeHtml(label)} · ${escapeHtml(formatDate(activity.dueOn, { day: "numeric", month: "short" }))}</p></div><span class="ficha-activity-status">${escapeHtml(({pending:"Pendiente",in_progress:"En curso",submitted:"Entregada",needs_correction:"Por corregir",approved:"Aprobada"})[activity.status] || "Pendiente")}</span></article>`;
+        }).join("")}</div></section>`
+      : '<p class="ficha-empty-day">No tienes entregas próximas registradas.</p>';
+    views.hoy.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO OFICIAL · COLOMBIA</p><h2 id="hoy-title">${escapeHtml(formatDate(key))}</h2><p>Zona horaria: America/Bogota</p></div><span class="ficha-source-label">Horario oficial</span></div>${renderDay(key, now, { badge: "Hoy" })}<section class="ficha-attention-panel"><h3>Próximos siete días</h3>${attentionMarkup}</section>`;
   }
 
   function renderWeek(now = localParts()) {
+    if (weekFollowsToday) weekAnchor = toKey(now);
     const start = weekStart(weekAnchor);
     const days = Array.from({ length: 7 }, (_, index) => shiftDate(start, index));
     const end = days[6];
@@ -139,6 +195,7 @@ export function initFichaSchedule() {
   }
 
   function renderCalendar(now = localParts()) {
+    if (monthFollowsToday) calendarAnchor = monthStart(toKey(now));
     const { year, month } = parseCivilDate(calendarAnchor);
     const cells = monthDays(calendarAnchor);
     const monthLabel = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric", timeZone: "UTC" })
@@ -146,10 +203,11 @@ export function initFichaSchedule() {
     const weekdays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const grid = cells.map(key => {
       if (!key) return '<div class="ficha-calendar-cell is-empty" aria-hidden="true"></div>';
-      const count = classesForDate(key).length;
+      const classCount = classesForDate(key).length;
+      const activityCount = activitiesForDate(key).length;
       const selected = key === selectedCalendarDate;
       return `<button type="button" class="ficha-calendar-cell${selected ? " is-selected" : ""}${key === toKey(now) ? " is-today" : ""}" data-ficha-date="${key}" aria-pressed="${selected}">
-        <strong>${Number(key.slice(-2))}</strong><span>${count ? `${count} ${count === 1 ? "clase" : "clases"}` : "Sin clases"}</span>
+        <strong>${Number(key.slice(-2))}</strong><span>${classCount ? `${classCount} ${classCount === 1 ? "clase" : "clases"}` : "Sin clases"}</span>${activityCount ? `<small>${activityCount} ${activityCount === 1 ? "actividad" : "actividades"}</small>` : ""}
       </button>`;
     }).join("");
     views.calendario.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">CALENDARIO ACADÉMICO</p><h2 id="calendario-title">${escapeHtml(monthLabel)}</h2><p>Selecciona un día para consultar sus clases.</p></div><div class="ficha-schedule-actions"><button type="button" data-ficha-action="month-prev" aria-label="Mes anterior">←</button><button type="button" data-ficha-action="month-today">Este mes</button><button type="button" data-ficha-action="month-next" aria-label="Mes siguiente">→</button></div></div><div class="ficha-calendar-grid ficha-calendar-weekdays">${weekdays.map(day => `<span>${day}</span>`).join("")}</div><div class="ficha-calendar-grid">${grid}</div><div class="ficha-calendar-selected">${renderDay(selectedCalendarDate, now)}</div>`;
@@ -172,16 +230,17 @@ export function initFichaSchedule() {
     }
     if (!action) return;
     if (action.startsWith("week-")) {
-      if (action === "week-prev") weekAnchor = shiftDate(weekStart(weekAnchor), -7);
-      if (action === "week-next") weekAnchor = shiftDate(weekStart(weekAnchor), 7);
-      if (action === "week-today") weekAnchor = toKey(localParts());
+      if (action === "week-prev") { weekFollowsToday = false; weekAnchor = shiftDate(weekStart(weekAnchor), -7); }
+      if (action === "week-next") { weekFollowsToday = false; weekAnchor = shiftDate(weekStart(weekAnchor), 7); }
+      if (action === "week-today") { weekFollowsToday = true; weekAnchor = toKey(localParts()); }
       renderWeek();
     }
     if (action.startsWith("month-")) {
       const { year, month } = parseCivilDate(calendarAnchor);
       const delta = action === "month-prev" ? -1 : action === "month-next" ? 1 : 0;
-      if (action === "month-today") calendarAnchor = monthStart(toKey(localParts()));
+      if (action === "month-today") { monthFollowsToday = true; calendarAnchor = monthStart(toKey(localParts())); }
       else {
+        monthFollowsToday = false;
         const date = new Date(Date.UTC(year, month - 1 + delta, 1));
         calendarAnchor = toKey({ year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: 1 });
       }
@@ -190,6 +249,7 @@ export function initFichaSchedule() {
     }
   });
 
+  window.addEventListener("traza:ficha-change", render);
   render();
   window.addEventListener("focus", render);
   document.addEventListener("visibilitychange", () => {
