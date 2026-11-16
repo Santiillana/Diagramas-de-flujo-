@@ -156,7 +156,7 @@
   .primary-nav .nav-button{
     flex:1 1 0;flex-direction:column;gap:2px;min-width:0;min-height:58px;
     padding:5px 2px 3px;border-bottom:0;border-top:3px solid transparent;
-    font-size:10.5px;letter-spacing:-.1px;white-space:nowrap
+    font-size:11px;letter-spacing:-.1px;white-space:nowrap
   }
   .primary-nav .nav-button.is-active{border-top-color:var(--accent);border-bottom-color:transparent;background:transparent}
   .subnav-icon{display:block;font-size:16px;line-height:1.1}
@@ -180,7 +180,7 @@
   .brand-copy strong{font-size:20px}
   .section-switch button{padding-inline:7px;font-size:10.8px}
   .topbar-actions .icon-button{width:27px;height:27px}
-  .primary-nav .nav-button{font-size:10px}
+  .primary-nav .nav-button{font-size:11px}
   .home-card{min-height:260px;padding:19px}
   .home-card-stats{gap:20px}
 }
