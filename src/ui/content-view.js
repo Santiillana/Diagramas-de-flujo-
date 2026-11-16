@@ -259,7 +259,6 @@ function renderLesson(){
     body=visualMarkup(lesson);
   }else if(screen===2){
     body='<section class="lesson-screen lesson-screen-example"><div class="lesson-section-heading"><div><p class="eyebrow">EJEMPLO CON VALORES</p><h4>'+escapeHTML(lesson.miniProgram.title)+'</h4></div></div>'+
-      '<label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label>'+
       '<pre class="lesson-code"><code>'+escapeHTML(lesson.example.code.split("|").join("\n"))+'</code></pre>'+
       '<div class="lesson-worked-example"><p class="eyebrow">RESOLUCIÓN PASO A PASO</p><ol class="lesson-worked-steps">'+
         (lesson.example.steps??lesson.manipulation.steps).map((step,index)=>'<li><span>'+String(index+1).padStart(2,"0")+'</span><p>'+escapeHTML(step)+'</p></li>').join("")+
