@@ -158,27 +158,60 @@ function lessonScene(lesson,position=0){
   return '<div class="lesson-scene-host" role="img" aria-label="'+rendered.alt+'">'+rendered.markup+'</div>'+
     (body?'<p class="lesson-scene-caption">'+escapeHTML(body)+'</p>':"");
 }
+function lessonPhaseForEvent(event){
+  const map={
+    "program-start":["start","Inicio","Preparar el recorrido"],
+    input:["input","Entrada","Leer los datos necesarios"],
+    assignment:["process","Proceso","Transformar o actualizar un valor"],
+    decision:["decision","Decisión","Evaluar una condición y elegir ruta"],
+    branch:["route","Ruta","Seguir la rama verdadera o falsa"],
+    "loop-init":["loop-init","Preparación del ciclo","Inicializar el contador o acumulador"],
+    "loop-condition":["loop-condition","Condición del ciclo","Comprobar si la repetición continúa"],
+    "loop-enter":["loop-body","Cuerpo del ciclo","Ejecutar las instrucciones repetidas"],
+    "loop-update":["loop-update","Avance del ciclo","Actualizar el contador"],
+    "loop-exit":["loop-exit","Fin del ciclo","Salir de la repetición"],
+    output:["output","Salida","Mostrar el resultado"],
+    "program-end":["end","Fin","Completar el algoritmo"],
+    error:["error","Error","Revisar el dato o la instrucción que detuvo el recorrido"]
+  };
+  return map[event?.type]??["other","Ejecución","Seguir el siguiente evento del algoritmo"];
+}
 function visualMarkup(lesson){
   const execution=runLesson(lesson);
   const events=execution.ok?relevantLessonEvents(lesson,execution):[];
   const index=Math.min(lessonVisualStep,Math.max(0,events.length-1));
   const event=events[index];
   const scene=event?renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample}):null;
-  const phases=lesson.visual.steps??[];
-  const phaseIndex=phases.length?Math.min(phases.length-1,Math.floor(index/Math.max(1,events.length)*phases.length)):0;
-  const phaseRail=phases.map(([title,description],position)=>
-    '<div class="lesson-phase '+(position===phaseIndex?"is-current":position<phaseIndex?"is-complete":"")+'"><span>'+String(position+1).padStart(2,"0")+'</span><strong>'+escapeHTML(title)+'</strong><small>'+escapeHTML(description)+'</small></div>'
+  const declared=Array.isArray(lesson.visual.steps)&&lesson.visual.steps.length>0;
+  let phases,phaseIndex;
+  if(declared){
+    phases=lesson.visual.steps.map(([title,description],position)=>({key:"lesson-"+position,title,description}));
+    phaseIndex=Math.min(phases.length-1,Math.floor(index/Math.max(1,events.length)*phases.length));
+  }else{
+    const unique=new Map();
+    for(const item of events){
+      const [key,title,description]=lessonPhaseForEvent(item);
+      if(!unique.has(key))unique.set(key,{key,title,description});
+    }
+    phases=[...unique.values()];
+    if(!phases.length)phases=[{key:"waiting",title:"Preparación",description:"El ejemplo todavía no produjo eventos para recorrer"}];
+    const activeKey=event?lessonPhaseForEvent(event)[0]:phases[0].key;
+    phaseIndex=Math.max(0,phases.findIndex(phase=>phase.key===activeKey));
+  }
+  const phaseRail=phases.map((phase,position)=>
+    '<div class="lesson-phase '+(position===phaseIndex?"is-current":position<phaseIndex?"is-complete":"")+'" data-phase-key="'+escapeHTML(phase.key)+'">'+
+    '<span>'+String(position+1).padStart(2,"0")+'</span><strong>'+escapeHTML(phase.title)+'</strong><small>'+escapeHTML(phase.description)+'</small></div>'
   ).join("");
-  return '<section class="lesson-visual lesson-visual-'+escapeHTML(lesson.visual.kind)+'" data-visual-kind="'+escapeHTML(lesson.visual.kind)+'" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
+  return '<section class="lesson-visual lesson-visual-'+escapeHTML(lesson.visual.kind)+'" data-visual-kind="'+escapeHTML(lesson.visual.kind)+'" data-phase-source="'+(declared?"lesson":"events")+'" aria-label="Escena de '+escapeHTML(lesson.title)+'">'+
     '<div class="lesson-visual-head"><div><p class="eyebrow">EXPERIMENTO VISUAL</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
-    '<span class="visual-step-count">Paso '+(index+1)+' / '+events.length+'</span></div>'+
+    '<span class="visual-step-count">Paso '+(events.length?index+1:0)+' / '+events.length+'</span></div>'+
     '<div class="lesson-phase-rail">'+phaseRail+'</div>'+
     (scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
     '<p class="lesson-scene-caption">'+escapeHTML(event?.scene?.body??event?.message??event?.sourceText??"")+'</p>'+
     '<div class="visual-controls"><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
     '<button type="button" class="button button-secondary" data-visual-prev '+(index<=0?"disabled":"")+'>← Anterior</button>'+
     '<button type="button" class="button button-secondary" data-visual-play aria-pressed="'+String(lessonPlaying)+'">'+(lessonPlaying?"Ⅱ Pausar":"▶ Reproducir")+'</button>'+
-    '<button type="button" class="button button-primary" data-visual-next '+(index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button></div></section>';
+    '<button type="button" class="button button-primary" data-visual-next '+(!events.length||index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button></div></section>';
 }
 function stopLessonPlayback(){
   if(lessonPlaybackTimer)clearTimeout(lessonPlaybackTimer);
