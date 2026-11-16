@@ -60,9 +60,9 @@ test("En escena muestra una ilustración y una explicación concreta sin repetir
   for(let i=0;i<3;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","assignment");
   await expect(page.locator("#scene-content .scene-figure-host")).toBeVisible();
-  await expect(page.locator("#scene-content .scene-event-body")).toContainText("8 + 5 = 13");
-  await expect(page.locator("#scene-content .scene-operation-breakdown")).toHaveCount(0);
-  await expect(page.locator("#scene-content .scene-symbol-explanation")).toHaveCount(0);
+  await expect(page.locator("#scene-content .scene-event-body")).toContainText("13");
+  await expect(page.locator("#scene-content .scene-operation-breakdown")).toContainText("8 + 5 = 13");
+  await expect(page.locator("#scene-content .scene-symbol-explanation")).toContainText("Rectángulo · Proceso");
   await expect(page.locator("#scene-content .scene-event-technical")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
@@ -130,18 +130,19 @@ test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",as
   await page.locator('[data-space="simulator"]').click();
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("10");
-  const iteration=page.locator('#trace-history [data-history-step]').filter({hasText:"ITERACIÓN"}).first();
+  await page.locator("#simulator-history-details").evaluate(el=>{el.open=true;});
+  const iteration=page.locator('#trace-history [data-history-step]').filter({hasText:"Vuelta 1"}).first();
   await expect(iteration).toBeVisible();
   await iteration.click();
   await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
   await expect(page.locator("#scene-content .scene-loop-round")).toContainText("Vuelta 1");
   await expect(page.locator("#scene-content .scene-loop-track .scene-loop-step.is-active")).toContainText("Cuerpo");
   const geometry=await page.evaluate(()=>{
-    const paths=[...document.querySelectorAll("#flow-svg .diagram-edge.is-back path")];
+    const paths=[...document.querySelectorAll("#flow-diagram-container .diagram-edge.is-back path")];
     return paths.map(path=>{
       const values=(path.getAttribute("d").match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
       const [startX,startY,bendX,,bendX2,endY,endX,endY2]=values;
-      const boxes=[...document.querySelectorAll("#flow-svg .diagram-node")].map(node=>node.getBBox());
+      const boxes=[...document.querySelectorAll("#flow-diagram-container .diagram-node")].map(node=>node.getBBox());
       const startMatches=boxes.some(box=>Math.abs(box.x-startX)<1&&Math.abs(box.y+box.height/2-startY)<1);
       const endMatches=boxes.some(box=>Math.abs(box.x-endX)<1&&Math.abs(box.y+box.height/2-endY2)<1);
       return {outside:bendX<Math.min(startX,endX)-30&&bendX2===bendX,startMatches,endMatches};
