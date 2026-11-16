@@ -630,6 +630,243 @@ function currentSpeedFactor(){
   const value=Number($("#simulator-speed")?.value??1);
   return Number.isFinite(value)&&value>0?Math.max(.1,Math.min(8,value)):1;
 }
+function publishTrace(){
+  if(!execution||!timeline)return;
+  document.dispatchEvent(new CustomEvent("traza:execution-updated",{detail:{
+    exercise,exerciseId,methodIndex,method:method(),execution,
+    event:timeline.current,index:timeline.index,length:timeline.length,
+    diagram,source:method()?.pseudocode??""
+  }}));
+}
+function parseInputs(){
+  const raw=$("#simulator-inputs").value.trim();
+  return raw?raw.split(/[\s,;]+/).filter(Boolean):[];
+}
+function pseudocode(source,active=null,visited=[]){
+  const host=$("#pseudocode-lines");
+  const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
+  const seen=new Set(visited);
+  $("#pseudocode-line-count").textContent=rows.length+" líneas";
+  host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+esc(row.text)+'</code></li>').join("");
+  if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
+}
+function prepare(){
+  exercise=getExercise(exerciseId)??exercises[0];
+  exerciseId=exercise.id;
+  methodIndex=Math.max(0,Math.min(methodIndex,exercise.methods.length-1));
+  paintExerciseSelector();
+  $("#simulator-exercise-number").textContent=String(exercise.id).padStart(2,"0");
+  $("#simulator-exercise-level").textContent=labels[exercise.level]??exercise.level;
+  $("#simulator-exercise-level").className="exercise-level "+(exercise.level==="basic"?"level-basic":exercise.level==="intermediate"?"level-intermediate":"level-advanced");
+  $("#simulator-exercise-title").textContent=exercise.title;
+  $("#simulator-exercise-statement").textContent=exercise.statement;
+  $("#simulator-purpose").textContent=exercise.purpose??exercise.objective??"Comprender qué resuelve el algoritmo.";
+  $("#simulator-idea").textContent=exercise.analysis??(exercise.concepts??[]).join(" · ");
+  const sourceForCycle=method().pseudocode.toLowerCase();
+  const cycles=[];
+  if(sourceForCycle.includes("para "))cycles.push("Para");
+  if(sourceForCycle.includes("mientras "))cycles.push("Mientras");
+  if(sourceForCycle.includes("hacer"))cycles.push("Hacer–Mientras");
+  $("#simulator-cycle").textContent=cycles.length?[...new Set(cycles)].join(" · "):"Este algoritmo no necesita ciclos.";
+  $("#simulator-exercise-spec").innerHTML=[
+    ["Entradas",exercise.inputs],["Salidas",exercise.outputs],["Restricciones",exercise.constraints]
+  ].map(([name,items])=>'<p class="eyebrow">'+name.toUpperCase()+'</p><ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>').join("");
+  $("#simulator-method").innerHTML=exercise.methods.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join("");
+  $("#simulator-method").value=String(methodIndex);
+  paintMethodTabs();
+  defaultInputSample=[...(method().sample??[])];
+  $("#simulator-inputs").value=defaultInputSample.join(", ");
+  pseudocode(method().pseudocode);
+  try{
+    const ast=parsePseudocode(method().pseudocode);
+    diagram=layoutFlow(ast);
+    renderDiagram($("#flow-diagram-container"),diagram);
+    buildRouteGraph();
+    clearDiagramTrail();
+    $("#diagram-empty").hidden=true;
+    requestAnimationFrame(()=>fitDiagram());
+    $("#diagram-dimensions").textContent=diagram.width+" × "+diagram.height;
+    const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}
+  }catch(error){
+    diagram=null;routeGraph.clear();routeWeights.clear();routeCache.clear();clearDiagramTrail();
+    $("#flow-diagram-container").innerHTML="";
+    $("#diagram-empty").hidden=false;$("#diagram-empty h4").textContent="No se pudo construir el diagrama";
+    $("#diagram-empty p").textContent=error.message;
+  }
+  run();
+}
+function typeName(type){
+  return ({ "program-start":"INICIO",input:"ENTRADA",assignment:"ASIGNACIÓN",output:"SALIDA",
+    decision:"DECISIÓN",branch:"RUTA","loop-init":"INICIALIZACIÓN","loop-condition":"CONDICIÓN DE CICLO",
+    "loop-enter":"ITERACIÓN","loop-update":"AVANCE","loop-exit":"SALIDA DE CICLO",
+    "program-end":"FIN",error:"ERROR"})[type]??String(type).toUpperCase();
+}
+function substituteValues(expression,values){
+  let result=String(expression??"");
+  for(const [name,value] of Object.entries(values??{}).sort((a,b)=>b[0].length-a[0].length)){
+    result=result.replace(new RegExp("\\b"+name+"\\b","g"),fmt(value));
+  }
+  return result;
+}
+function loopNodeType(event){
+  return diagram?.byId.get(String(event?.nodeId))?.type??null;
+}
+function symbolExplanation(event){
+  const loopType=loopNodeType(event);
+  if(event.type==="program-start")return {key:"terminal",name:"Óvalo · Inicio",text:"El óvalo señala dónde comienza la ejecución. Todavía no se han procesado datos."};
+  if(event.type==="program-end")return {key:"terminal",name:"Óvalo · Fin",text:"El óvalo marca el punto donde termina el algoritmo. La memoria conserva los últimos valores."};
+  if(event.type==="input")return {key:"input",name:"Paralelogramo · Entrada",text:"El paralelogramo representa Leer: un dato entra desde fuera y se guarda en la variable indicada."};
+  if(event.type==="assignment")return {key:"process",name:"Rectángulo · Proceso",text:"El rectángulo representa un cálculo o una asignación. El resultado sustituye o crea el valor de una variable."};
+  if(event.type==="output")return {key:"output",name:"Documento · Salida",text:"La figura de salida representa Imprimir: comunica un resultado en pantalla, sin modificar por sí misma las variables."};
+  if(event.type==="decision"||event.type==="branch")return {key:"decision",name:"Rombo · Decisión",text:"El rombo evalúa una condición y abre dos rutas excluyentes: Verdadera (V) o Falsa (F). La etiqueta muestra cuál se tomó."};
+  if(event.type==="loop-condition"){
+    if(loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"El hexágono reúne el ciclo definido: preparación del contador, evaluación de la condición y avance. Esta comprobación decide si entra otra vuelta."};
+    if(loopType==="doWhile")return {key:"decision",name:"Rombo · Hacer–Mientras",text:"El rombo aparece al final del cuerpo. La primera ejecución ya ocurrió; V repite y F termina."};
+    return {key:"decision",name:"Rombo · Mientras",text:"El rombo pregunta antes de entrar al cuerpo. Si la respuesta inicial es Falsa, el cuerpo puede ejecutarse cero veces."};
+  }
+  if(["loop-init","loop-update"].includes(event.type)&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"Esta es una de las tres partes del Para: primero se prepara el contador y después se avanza según el paso definido."};
+  if(event.type==="loop-enter"&&loopType==="for")return {key:"loop",name:"Hexágono · Ciclo Para",text:"La condición se cumplió y el flujo entra al cuerpo del Para. Al terminar sus instrucciones se realizará el avance."};
+  if(event.type==="loop-enter"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta verdadera",text:"La condición se cumplió. El flujo entra al cuerpo y ejecuta sus instrucciones antes de volver a comprobarla cuando corresponda."};
+  if(event.type==="loop-exit"&&loopType==="for")return {key:"loop",name:"Hexágono · Salida del Para",text:"La condición del Para resultó falsa. El flujo abandona el ciclo y continúa con la instrucción siguiente."};
+  if(event.type==="loop-exit"&&["while","doWhile"].includes(loopType))return {key:"decision",name:"Rombo · Ruta falsa",text:"La condición dejó de cumplirse. Se toma la salida del rombo y el algoritmo continúa después del ciclo."};
+  if(event.type==="loop-enter")return {key:"connector",name:"Conector · Entrada al ciclo",text:"La flecha conduce al cuerpo de la repetición. El número de vuelta identifica cuántas veces se ha ejecutado."};
+  if(event.type==="loop-exit")return {key:"connector",name:"Conector · Salida del ciclo",text:"La ruta abandona el cuerpo porque la condición dejó de cumplirse. La ejecución continúa después del ciclo."};
+  if(event.type==="loop-init")return {key:"process",name:"Rectángulo · Inicialización",text:"La variable de control recibe su valor inicial antes de comprobar la condición."};
+  if(event.type==="loop-update")return {key:"process",name:"Rectángulo · Avance",text:"El contador cambia al terminar la vuelta. Ese avance permite que la condición llegue a ser falsa y el ciclo termine."};
+  return {key:"connector",name:"Conector · Flujo",text:"Las flechas conectan las instrucciones y muestran el sentido en que se ejecuta el algoritmo."};
+}
+function symbolShapeMarkup(key){
+  const shapes={
+    terminal:'<rect x="7" y="12" width="86" height="36" rx="18"/>',
+    input:'<polygon points="20,10 96,10 80,50 4,50"/>',
+    process:'<rect x="7" y="10" width="86" height="40" rx="2"/>',
+    output:'<path d="M7 8H93V43Q70 34 50 43T7 43Z"/>',
+    decision:'<polygon points="50,3 98,30 50,57 2,30"/>',
+    loop:'<polygon points="20,8 80,8 98,30 80,52 20,52 2,30"/>',
+    connector:'<circle cx="50" cy="30" r="22"/>'
+  };
+  return '<svg viewBox="0 0 100 60" aria-hidden="true" focusable="false">'+(shapes[key]??shapes.connector)+'</svg>';
+}
+function orderExplanation(event){
+  const loopType=loopNodeType(event);
+  if(event.type==="program-start")return "El algoritmo debe iniciar antes de leer, calcular o decidir. Por eso el terminal aparece primero.";
+  if(event.type==="input")return "Primero se reciben los datos. Las operaciones posteriores necesitan que las variables ya tengan un valor.";
+  if(event.type==="assignment")return "El cálculo usa los valores que existían antes de esta línea; después guarda el nuevo resultado en la variable.";
+  if(event.type==="output")return "La salida se produce después de calcular. Imprimir muestra el valor, pero no cambia la memoria del programa.";
+  if(event.type==="decision"||event.type==="branch")return "La condición se evalúa antes de escoger una rama. Solo se recorre el camino que corresponde al resultado V o F.";
+  if(event.type==="loop-init")return "En un ciclo Para, la inicialización se ejecuta una sola vez antes de la primera comprobación.";
+  if(event.type==="loop-condition"){
+    if(loopType==="doWhile")return "Hacer–Mientras evalúa al final: primero ejecuta el cuerpo al menos una vez y después decide si repite.";
+    if(loopType==="for")return "Para comprueba la condición antes de cada vuelta. Si es verdadera ejecuta el cuerpo; después realiza el avance.";
+    return "Mientras pregunta antes de cada vuelta. Si la condición es falsa desde el inicio, el cuerpo no se ejecuta.";
+  }
+  if(event.type==="loop-enter")return "La condición permitió entrar. Ahora se ejecutan las instrucciones del cuerpo en el orden en que están escritas.";
+  if(event.type==="loop-update")return "El avance ocurre después del cuerpo y antes de la siguiente comprobación. Sin avance, un ciclo puede quedarse repitiéndose.";
+  if(event.type==="loop-exit")return "La condición ya es falsa. El flujo sale del ciclo y continúa con la primera instrucción posterior.";
+  if(event.type==="program-end")return "No quedan instrucciones por ejecutar. La salida y los valores finales quedan disponibles para revisar.";
+  return "Las flechas mantienen el orden de ejecución y enlazan cada bloque con el siguiente.";
+}
+function symbolExplanationMarkup(event){
+  const item=symbolExplanation(event);
+  return '<div class="scene-symbol-explanation" data-symbol="'+item.key+'"><div class="scene-symbol-graphic">'+symbolShapeMarkup(item.key)+'</div><div><span>POR QUÉ ESTA FIGURA</span><strong>'+esc(item.name)+'</strong><p>'+esc(item.text)+'</p></div></div>';
+}
+function loopCountBefore(event){
+  return execution?.events.slice(0,event.step).filter(item=>
+    item.type==="loop-enter"&&String(item.nodeId)===String(event.nodeId)
+  ).length??0;
+}
+function brief(e){
+  if(e.type==="input")return "Leer "+e.change?.name+" = "+fmt(e.value);
+  if(e.type==="loop-init")return (e.change?.name??"El contador")+" nace valiendo "+fmt(e.change?.value)+".";
+  if(e.type==="loop-update")return "Avanza "+e.change?.name+" de "+fmt(e.change?.previous)+" a "+fmt(e.change?.value)+".";
+  if(e.type==="assignment"){
+    const match=/^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)\s*(.+)$/.exec(e.expression??e.sourceText??"");
+    const before=execution?.events[e.step-1]?.variables??{};
+    const calculation=match?substituteValues(match[2],before):fmt(e.change?.value);
+    const previous=e.change?.previous===undefined?"nace":"pasa de "+fmt(e.change.previous);
+    const self=match&&new RegExp("\\b"+match[1]+"\\b").test(match[2]);
+    const role=self&&/[+-]\s*1\s*$/.test(match[2])?"contador":
+      self&&match[2].includes("*")?"acumulador de producto":
+      self&&match[2].includes("+")?"acumulador":
+      e.change?.previous===undefined?"valor inicial":
+      /^[A-Za-z_][A-Za-z0-9_]*$/.test(match?.[2]?.trim()??"")?"copia":"cálculo";
+    return e.change?.name+" "+previous+"; "+calculation+" = "+fmt(e.change?.value)+". "+role+".";
+  }
+  if(e.type==="output")return "Imprimir "+fmt(e.value);
+  if(e.type==="decision"||e.type==="branch"){
+    const substituted=substituteValues(e.condition,e.variables);
+    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+(e.result?"V (verdadero). Sigue el camino V.":"F (falso). Sigue el camino F.");
+  }
+  if(e.type==="loop-condition"){
+    const substituted=substituteValues(e.condition,e.variables);
+    const type=loopNodeType(e);
+    const completed=loopCountBefore(e);
+    const round=type==="doWhile"?completed:(e.result?completed+1:completed);
+    const outcome=e.result
+      ? (type==="doWhile"?"V. Se repite el cuerpo.":"V. Entra al cuerpo.")
+      : (type==="doWhile"?"F. Sale; el cuerpo ya se ejecutó.":"F. Sale del ciclo.");
+    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+outcome+(round>0?" Vuelta "+round+".":"");
+  }
+  if(e.type==="loop-enter")return "Vuelta "+e.iteration+". Entra al cuerpo del ciclo.";
+  if(e.type==="loop-exit")return "Ciclo terminado después de "+(e.iteration??0)+" vueltas.";
+  if(e.type==="program-start")return "Comienza el algoritmo. La memoria está vacía.";
+  if(e.type==="program-end")return "El algoritmo finalizó.";
+  return e.message||typeName(e.type);
+}
+function updateLoopBadge(event){
+  let badge=$("#simulator-loop-round");
+  if(!badge){
+    badge=document.createElement("span");
+    badge.id="simulator-loop-round";
+    badge.className="dock-loop-round";
+    badge.hidden=true;
+    $("#dock-step-title")?.insertAdjacentElement("afterend",badge);
+  }
+  const type=loopNodeType(event);
+  let round=null;
+  if(event.type==="loop-enter")round=event.iteration;
+  else if(event.type==="loop-exit")round=event.iteration;
+  else if(event.type==="loop-condition"&&type){
+    const completed=loopCountBefore(event);
+    round=type==="doWhile"?completed:(event.result?completed+1:completed);
+  }else if(event.loopStack?.length)round=event.loopStack.at(-1).iteration;
+  badge.hidden=!(Number(round)>0);
+  badge.textContent=Number(round)>0?"Vuelta "+round:"";
+}
+function history(){
+  $("#trace-history").innerHTML=execution.events.map(e=>'<li data-history-step="'+e.step+'" role="button" tabindex="0" class="'+(e.step===timeline.index?"is-active":"")+'"><span>PASO '+String(e.step+1).padStart(2,"0")+' · '+typeName(e.type)+'</span><strong>'+esc(brief(e))+'</strong></li>').join("");
+  $("#trace-count").textContent=String(execution.events.length);
+}
+function sceneSymbol(type){
+  return ({
+    input:"↓",assignment:"↦",output:"▣",decision:"◇",branch:"↗",
+    "loop-init":"◉","loop-condition":"◇","loop-enter":"↻",
+    "loop-update":"↑","loop-exit":"↘","program-start":"▶",
+    "program-end":"■",error:"!"
+  })[type]??"·";
+}
+function renderVariableHistory(){
+  const host=$("#variable-history");
+  if(!host)return;
+  if(!selectedVariable){
+    host.innerHTML='<span class="empty-state-copy">Selecciona una variable para inspeccionar su historial.</span>';
+    return;
+  }
+  if(!execution||!timeline){
+    host.textContent="Ejecuta un algoritmo para consultar el historial.";
+    return;
+  }
+  const changes=execution.events.filter(event=>
+    event.step<=timeline.index&&event.change?.name===selectedVariable
+  );
+  host.innerHTML='<div class="variable-history-heading"><strong>Historial · '+esc(selectedVariable)+'</strong><button type="button" class="text-link" id="variable-history-clear">Cerrar</button></div>'+
+    (changes.length?'<ol class="variable-history-list">'+changes.map(event=>{
+      const before=event.change.previous===undefined?"(primera asignación)":fmt(event.change.previous);
+      const after=fmt(event.change.value);
+      const loop=(event.loopStack??[]).map(item=>"vuelta "+item.iteration).join(" · ");
+      return '<li><button type="button" data-variable-step="'+event.step+'"><span>Paso '+(event.step+1)+(loop?" · "+esc(loop):"")+'</span><strong>'+esc(before)+" → "+esc(after)+'</strong><small>'+esc(event.sourceText||event.scene?.title||"")+'</small></button></li>';
+    }).join("")+'</ol>':'<span class="empty-state-copy">Esta variable todavía no cambia en los pasos recorridos.</span>');
+}
 function updateCameraButton(){
   const button=$("#diagram-camera-toggle");
   if(!button)return;
