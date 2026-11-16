@@ -642,12 +642,25 @@ function parseInputs(){
   const raw=$("#simulator-inputs").value.trim();
   return raw?raw.split(/[\s,;]+/).filter(Boolean):[];
 }
-function pseudocode(source,active=null,visited=[]){
+function pseudocode(source,active=null,visited=[],activeVariables=[]){
   const host=$("#pseudocode-lines");
   const rows=source.split("|").map((text,i)=>({line:i+1,text:text.trim()})).filter(x=>x.text);
   const seen=new Set(visited);
+  const names=[...new Set(activeVariables)].filter(name=>/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)).sort((a,b)=>b.length-a.length);
+  const matcher=names.length?new RegExp("\\b("+names.join("|")+")\\b","g"):null;
+  const highlight=text=>{
+    if(!matcher)return esc(text);
+    let output="",last=0;
+    matcher.lastIndex=0;
+    for(const match of text.matchAll(matcher)){
+      output+=esc(text.slice(last,match.index));
+      output+='<mark class="pseudocode-variable '+variableTone(match[0])+'" data-variable="'+esc(match[0])+'">'+esc(match[0])+'</mark>';
+      last=match.index+match[0].length;
+    }
+    return output+esc(text.slice(last));
+  };
   $("#pseudocode-line-count").textContent=rows.length+" líneas";
-  host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+esc(row.text)+'</code></li>').join("");
+  host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+highlight(row.text)+'</code></li>').join("");
   if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
 }
 function prepare(){
@@ -1016,11 +1029,8 @@ function render(){
   $("#output-count").textContent=String(out.length);
   $("#simulator-output").innerHTML=out.length?out.map((value,index)=>'<li><span class="output-index">'+(index+1)+'.</span> '+esc(fmt(value))+'</li>').join(""):"<li>El algoritmo todavía no ha producido una salida.</li>";
   if(choreographyPlayback){
-    tokenTravelDuration=tokenTravelDuration||0;
     choreographEvent(e);
-    const wait=Math.min(10000,Math.max(tokenTravelDuration,flightTravelDuration)+Math.max(100,120/currentSpeedFactor()));
-    const contextTimer=setTimeout(()=>showContextWindow(e),wait);
-    flightTimeouts.push(contextTimer);
+    showContextWindow(e);
   }else showContextWindow(e);
   $("#trace-history").querySelectorAll("[data-history-step]").forEach(item=>item.classList.toggle("is-active",Number(item.dataset.historyStep)===timeline.index));
   if($("#simulator-history-details")?.open)$("#trace-history").querySelector('[data-history-step="'+timeline.index+'"]')?.scrollIntoView({block:"nearest",inline:"nearest"});
@@ -1250,10 +1260,11 @@ function fitDiagram(){
   if(!viewBox?.width||!viewBox?.height)return;
   const free=freeCanvasRect();
   const focus=document.body.classList.contains("focus");
-  const widthScale=(free.width-48)/viewBox.width;
+  const widthScale=Math.max(.1,(free.width-36)/viewBox.width);
+  const heightScale=Math.max(.1,(free.height-30)/viewBox.height);
   fitScale=focus
-    ?Math.max(.9,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.88/Math.min(viewBox.height,700))))
-    :Math.max(.82,Math.min(1.95,widthScale));
+    ?Math.max(.32,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.88/viewBox.height)))
+    :Math.max(.32,Math.min(2.15,Math.min(widthScale,heightScale)));
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
   zoom=1;
   const stageBox=stage.getBoundingClientRect();
