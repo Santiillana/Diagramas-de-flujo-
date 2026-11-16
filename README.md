@@ -7,8 +7,12 @@ Traza es una plataforma educativa interactiva para analizar problemas, construir
 - Repositorio: [Santiillana/Traza](https://github.com/Santiillana/Traza)
 - Rama principal: `main`
 - Módulos funcionales M1–M5 y las mejoras v4 del catálogo integrados en `main`.
-- **Módulo 6 · Inicio y pulido del Constructor:** implementado en la rama `v4/module-6-home-builder`, PR #21 abierta y CI aprobada; todavía no fusionado.
+- **Módulo 6 · Inicio y pulido del Constructor:** integrado en `main` mediante PR #21 el 16 de noviembre de 2026.
 - Publicación: no se considera activa hasta comprobar el origen HTTPS real con el flujo de verificación posterior al despliegue.
+
+## Continuidad v4 · Mi ficha
+
+La rama `v4/module-7-activities` contiene la primera integración del horario oficial `America/Bogota` en Hoy, Semana y Calendario, además del repositorio local común para actividades y el respaldo versionado. Estos cambios siguen en revisión en la PR #22; no forman parte de `main` hasta su integración.
 
 ## Espacios
 
