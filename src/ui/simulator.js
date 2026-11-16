@@ -297,12 +297,8 @@ function pulseWindow(id){
   void target.offsetWidth;
   target.classList.add("is-pulsing");
   target.dataset.pulse=String((Number(target.dataset.pulse)||0)+1);
-  let mark=target.querySelector(":scope > .sim-pulse-count");
-  if(!mark){mark=document.createElement("span");mark.className="sim-pulse-count";target.append(mark);}
-  mark.textContent="+1";
-  const timeout=setTimeout(()=>{
-    target.classList.remove("is-pulsing");delete target.dataset.pulse;mark.remove();
-  },900);
+  const duration=Math.max(100,Math.min(5000,500/currentSpeedFactor()));
+  const timeout=setTimeout(()=>target.classList.remove("is-pulsing"),duration);
   pulseTimeouts.push(timeout);
 }
 function flightTargetFor(event,targetId){
