@@ -470,7 +470,6 @@ function buildRouteGraph(){
     if(!weight&&from&&to)weight=Math.hypot(to.x-from.x,to.y-from.y);
     routeWeights.set(edge.id,{path,weight});
     routeGraph.get(String(edge.from))?.push({to:String(edge.to),edgeId:edge.id,forward:true,weight});
-    routeGraph.get(String(edge.to))?.push({to:String(edge.from),edgeId:edge.id,forward:false,weight});
   }
 }
 function shortestRoute(fromId,toId){
@@ -525,13 +524,10 @@ function svgPathVertices(path){
   return points;
 }
 function routeBetweenNodes(fromId,toId){
-  const route=shortestRoute(fromId,toId);
-  if(route.length)return route;
-  const from=String(fromId),to=String(toId);
-  const direct=diagram?.edges.find(edge=>edge.from===from&&edge.to===to);
-  if(direct)return [{edgeId:direct.id,forward:true}];
-  const reverse=diagram?.edges.find(edge=>edge.from===to&&edge.to===from);
-  return reverse?[{edgeId:reverse.id,forward:false}]:[];
+  const start=String(fromId),finish=String(toId);
+  if(start===finish)return [];
+  // El recorrido respeta la dirección real de las flechas del diagrama.
+  return shortestRoute(start,finish);
 }
 function fallbackEdgeVertices(edge){
   if(!edge||!diagram)return [];
@@ -543,8 +539,9 @@ function fallbackEdgeVertices(edge){
     return [{x:from.x+from.width/2,y},{x:tx,y},{x:tx,y:to.y}];
   }
   if(edge.kind==="back"){
-    const bendX=Math.min(fx,tx)-95;
-    return [{x:fx,y:fy},{x:bendX,y:fy},{x:bendX,y:ty},{x:tx,y:ty}];
+    const startX=from.x-from.width/2,endX=to.x-to.width/2;
+    const bendX=Math.min(startX,endX)-42;
+    return [{x:startX,y:fy},{x:bendX,y:fy},{x:bendX,y:ty},{x:endX,y:ty}];
   }
   if(Math.abs(fx-tx)<4)return [{x:fx,y:from.y+from.height},{x:tx,y:to.y}];
   const mid=(fy+ty)/2;
@@ -553,21 +550,24 @@ function fallbackEdgeVertices(edge){
 function routeCoordinates(route){
   const points=[];
   for(const step of route){
-    const info=routeWeights.get(step.edgeId),path=info?.path;
+    const path=routeWeights.get(step.edgeId)?.path;
     const edge=diagram?.edges.find(item=>item.id===step.edgeId);
-    let vertices=svgPathVertices(path);
-    if(vertices.length<2)vertices=fallbackEdgeVertices(edge);
-    if(!step.forward)vertices=vertices.reverse();
-    if(vertices.length<2)continue;
-    for(let segment=1;segment<vertices.length;segment++){
-      const a=vertices[segment-1],b=vertices[segment];
-      const length=Math.hypot(b.x-a.x,b.y-a.y),count=Math.max(2,Math.ceil(length/12));
-      for(let index=0;index<=count;index++){
-        if(points.length&&segment===1&&index===0)continue;
-        const t=index/count;
-        points.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+    let sampled=[];
+    try{
+      const total=path?.getTotalLength?.()??0;
+      if(total>0&&path?.getPointAtLength){
+        const count=Math.max(3,Math.ceil(total/10));
+        for(let index=0;index<=count;index++){
+          const point=path.getPointAtLength(total*index/count);
+          sampled.push({x:point.x,y:point.y});
+        }
       }
-    }
+    }catch{sampled=[];}
+    if(sampled.length<2)sampled=fallbackEdgeVertices(edge);
+    if(!step.forward)sampled.reverse();
+    if(sampled.length<2)continue;
+    if(points.length&&Math.hypot(points.at(-1).x-sampled[0].x,points.at(-1).y-sampled[0].y)<2)sampled.shift();
+    points.push(...sampled);
   }
   return points;
 }
@@ -601,7 +601,7 @@ function drawExecutionTrail(events){
 function animateTokenRoute(route,event,animate=choreographyPlayback){
   tokenTravelDuration=0;
   const token=$("#flow-diagram-container .flow-token");
-  const trail=$("#flow-active-trail"),label=$("#flow-token-label"),ring=$("#flow-token-ring");
+  const trail=$("#flow-active-trail"),ring=$("#flow-token-ring");
   if(!token)return;
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   const points=routeCoordinates(route);
@@ -609,14 +609,9 @@ function animateTokenRoute(route,event,animate=choreographyPlayback){
   const target=points.length?points[points.length-1]:node?{x:node.x,y:Math.max(10,node.y-12)}:null;
   if(!target){token.setAttribute("visibility","hidden");return;}
   const reduced=reducedMotion(),speed=currentSpeedFactor();
-  const caption=event?.change?event.change.name+" ← "+fmt(event.change.value):
-    event?.condition?event.condition+" → "+(event.result?"V":"F"):
-    event?.type==="output"?"imprime "+fmt(event.value):typeName(event?.type??"paso");
   token.setAttribute("visibility","visible");
-  if(label){label.textContent=caption;label.setAttribute("x",String(target.x+16));label.setAttribute("y",String(target.y-14));label.setAttribute("visibility","visible");}
   const place=point=>{
     token.setAttribute("cx",String(point.x));token.setAttribute("cy",String(point.y));
-    if(label){label.setAttribute("x",String(point.x+16));label.setAttribute("y",String(point.y-14));}
   };
   if(points.length<2||!animate||reduced){
     place(target);if(trail)trail.setAttribute("points","");
@@ -731,7 +726,14 @@ function pseudocode(source,active=null,visited=[],activeVariables=[]){
   };
   $("#pseudocode-line-count").textContent=rows.length+" líneas";
   host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+highlight(row.text)+'</code></li>').join("");
-  if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
+  if(active){
+    const row=host.querySelector('[data-line="'+active+'"]');
+    if(row){
+      const top=row.offsetTop,bottom=top+row.offsetHeight;
+      if(top<host.scrollTop)host.scrollTop=top;
+      else if(bottom>host.scrollTop+host.clientHeight)host.scrollTop=bottom-host.clientHeight;
+    }
+  }
 }
 function fitDiagramWhenVisible(attempt=0){
   if(fitDiagram())return true;
@@ -752,6 +754,7 @@ function prepare(){
   $("#simulator-exercise-level").className="exercise-level "+(exercise.level==="basic"?"level-basic":exercise.level==="intermediate"?"level-intermediate":"level-advanced");
   $("#simulator-exercise-title").textContent=exercise.title;
   $("#simulator-exercise-statement").textContent=exercise.statement;
+  const problemBody=$("#sim-window-context .sim-window-body");if(problemBody)problemBody.scrollTop=0;
   $("#simulator-purpose").textContent=exercise.purpose??exercise.objective??"Comprender qué resuelve el algoritmo.";
   $("#simulator-idea").textContent=exercise.analysis??(exercise.concepts??[]).join(" · ");
   const sourceForCycle=method().pseudocode.toLowerCase();
@@ -769,6 +772,7 @@ function prepare(){
   defaultInputSample=[...(method().sample??[])];
   $("#simulator-inputs").value=defaultInputSample.join(", ");
   pseudocode(method().pseudocode);
+  const codeBody=$("#sim-window-code .sim-window-body");if(codeBody)codeBody.scrollTop=0;
   try{
     const ast=parsePseudocode(method().pseudocode);
     diagram=layoutFlow(ast);
@@ -869,41 +873,31 @@ function loopCountBefore(event){
   ).length??0;
 }
 function brief(e){
-  if(e.type==="input")return "Leer "+e.change?.name+" = "+fmt(e.value);
-  if(e.type==="loop-init")return (e.change?.name??"El contador")+" nace valiendo "+fmt(e.change?.value)+".";
-  if(e.type==="loop-update")return "Avanza "+e.change?.name+" de "+fmt(e.change?.previous)+" a "+fmt(e.change?.value)+".";
+  if(e.type==="input")return "Se leyó "+fmt(e.value)+" y se guardó en "+e.change?.name+".";
+  if(e.type==="loop-init")return (e.change?.name??"El contador")+" empieza en "+fmt(e.change?.value)+".";
+  if(e.type==="loop-update")return e.change?.name+" avanza de "+fmt(e.change?.previous)+" a "+fmt(e.change?.value)+".";
   if(e.type==="assignment"){
     const match=/^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)\s*(.+)$/.exec(e.expression??e.sourceText??"");
     const before=execution?.events[e.step-1]?.variables??{};
     const calculation=match?substituteValues(match[2],before):fmt(e.change?.value);
-    const previous=e.change?.previous===undefined?"nace":"pasa de "+fmt(e.change.previous);
-    const self=match&&new RegExp("\\b"+match[1]+"\\b").test(match[2]);
-    const role=self&&/[+-]\s*1\s*$/.test(match[2])?"contador":
-      self&&match[2].includes("*")?"acumulador de producto":
-      self&&match[2].includes("+")?"acumulador":
-      e.change?.previous===undefined?"valor inicial":
-      /^[A-Za-z_][A-Za-z0-9_]*$/.test(match?.[2]?.trim()??"")?"copia":"cálculo";
-    return e.change?.name+" "+previous+"; "+calculation+" = "+fmt(e.change?.value)+". "+role+".";
+    const previous=e.change?.previous===undefined?"empieza en":"pasa de "+fmt(e.change.previous)+" a";
+    return e.change?.name+" "+previous+" "+fmt(e.change?.value)+": "+calculation+" = "+fmt(e.change?.value)+".";
   }
-  if(e.type==="output")return "Imprimir "+fmt(e.value);
+  if(e.type==="output")return "El resultado "+fmt(e.value)+" se muestra en la pantalla.";
   if(e.type==="decision"||e.type==="branch"){
     const substituted=substituteValues(e.condition,e.variables);
-    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+(e.result?"V (verdadero). Sigue el camino V.":"F (falso). Sigue el camino F.");
+    return "Se comprueba "+e.condition+". Con los valores "+substituted+", la condición es "+(e.result?"verdadera: sigue la ruta V.":"falsa: sigue la ruta F.");
   }
   if(e.type==="loop-condition"){
     const substituted=substituteValues(e.condition,e.variables);
-    const type=loopNodeType(e);
-    const completed=loopCountBefore(e);
+    const type=loopNodeType(e),completed=loopCountBefore(e);
     const round=type==="doWhile"?completed:(e.result?completed+1:completed);
-    const outcome=e.result
-      ? (type==="doWhile"?"V. Se repite el cuerpo.":"V. Entra al cuerpo.")
-      : (type==="doWhile"?"F. Sale; el cuerpo ya se ejecutó.":"F. Sale del ciclo.");
-    return "¿"+e.condition+"? Con los valores: "+substituted+" → "+outcome+(round>0?" Vuelta "+round+".":"");
+    return "Se comprueba "+e.condition+" con "+substituted+". "+(e.result?"La condición es verdadera y el ciclo continúa.":"La condición es falsa y el ciclo termina.")+(round>0?" Vuelta "+round+".":"");
   }
-  if(e.type==="loop-enter")return "Vuelta "+e.iteration+". Entra al cuerpo del ciclo.";
-  if(e.type==="loop-exit")return "Ciclo terminado después de "+(e.iteration??0)+" vueltas.";
-  if(e.type==="program-start")return "Comienza el algoritmo. La memoria está vacía.";
-  if(e.type==="program-end")return "El algoritmo finalizó.";
+  if(e.type==="loop-enter")return "Vuelta "+e.iteration+". Se ejecutan las instrucciones del cuerpo.";
+  if(e.type==="loop-exit")return "El ciclo termina tras "+(e.iteration??0)+" vueltas. El flujo continúa después del ciclo.";
+  if(e.type==="program-start")return "El algoritmo comienza. La memoria está vacía.";
+  if(e.type==="program-end")return "El algoritmo terminó. Puedes revisar los valores y resultados finales.";
   return e.message||typeName(e.type);
 }
 function updateLoopBadge(event){
@@ -1064,39 +1058,26 @@ function render(){
   document.documentElement.style.setProperty("--sim-animation-duration",Math.round(Math.max(100,Math.min(5000,500/currentSpeedFactor())))+"ms");
   updateCameraButton();
   if(cameraAuto&&cameraReady)centerActiveNode(e);
-  /* La ficha contextual se presenta al terminar el movimiento de la ficha y del dato. */
-  const scene=e.scene??{title:typeName(e.type),body:e.message,technical:""};
+  /* La escena presenta una figura y una sola explicación del evento actual. */
+  const scene=e.scene??{title:typeName(e.type)};
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
-  $("#scene-content").dataset.eventType=e.type;
-  const loopStack=e.loopStack??[];
-  const loopExplanation=loopStack.length?'<div class="scene-loop-stack"><span>CONTEXTO DE REPETICIÓN</span>'+
-    loopStack.map((loop,index)=>'<div><b>'+(index===0?"Ciclo exterior":index===loopStack.length-1?"Ciclo actual":"Ciclo anidado")+'</b><strong>Vuelta '+loop.iteration+'</strong></div>').join("")+'</div>':"";
-  const transfer=e.change?
-    '<div class="scene-value-transfer"><span class="scene-transfer-name">'+esc(e.change.name)+'</span>'+
-    (e.change.previous===undefined?'':'<span class="scene-value-old">'+esc(fmt(e.change.previous))+'</span><span class="scene-transfer-arrow">→</span>')+
-    '<strong class="scene-value-new">'+esc(fmt(e.change.value))+'</strong></div>':
-    e.type==="output"?'<div class="scene-value-transfer"><span class="scene-transfer-name">SALIDA</span><strong class="scene-value-new">'+esc(fmt(e.value))+'</strong></div>':
-    e.condition?'<div class="scene-value-transfer '+(e.result?"is-true":"is-false")+'"><span class="scene-transfer-name">RUTA ELEGIDA</span><strong class="scene-route-chip">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"";
-  const sceneNarration=["assignment","decision","branch","loop-init","loop-condition","loop-update"].includes(e.type)?brief(e):scene.body;
-  $("#scene-content").innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
-    '<span class="scene-event-type">'+typeName(e.type)+'</span><h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
-    '<p class="scene-event-body">'+esc(sceneNarration)+'</p>'+transfer+
-    '<div class="scene-event-technical">'+esc(scene.technical)+'</div>'+
-    symbolExplanationMarkup(e)+
-    '<details class="scene-order-explanation"><summary>¿Por qué se ejecuta en este orden?</summary><p>'+esc(orderExplanation(e))+'</p></details>'+
-    loopExplanation+
-    renderOperationBreakdown(e)+
-    (e.condition?'<div class="scene-condition-result"><span>CONDICIÓN</span><code>'+esc(e.condition)+'</code><strong class="'+(e.result?"is-true":"is-false")+'">'+(e.result?"V · VERDADERA":"F · FALSA")+'</strong></div>':"");
+  const sceneContent=$("#scene-content");
+  sceneContent.dataset.eventType=e.type;
+  sceneContent.innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
+    '<span class="scene-event-type">'+typeName(e.type)+'</span>'+
+    '<h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
+    '<p class="scene-event-body">'+esc(brief(e))+'</p>';
+  sceneContent.scrollTop=0;
   const vars=e.variables??{},names=Object.keys(vars),change=e.change;
   const variableMarkup=names.map(name=>{
     const changed=change?.name===name,active=activeVariableNames.includes(name),tone=variableTone(name);
     const old=changed&&change.previous!==undefined?'<span class="variable-old-value">'+esc(fmt(change.previous))+'</span><span class="variable-value-arrow">→</span>':"";
-    const why=changed?'<small class="variable-why">'+esc(brief(e))+'</small>':"";
     return '<button type="button" class="variable-card '+tone+(changed?" is-changed":"")+(active?" is-active-variable":"")+'" data-variable-card="'+esc(name)+'" data-variable-history="'+esc(name)+'" aria-pressed="'+String(selectedVariable===name)+'">'+
-      '<span class="variable-card-name">'+esc(name)+'</span><span class="variable-card-values">'+old+'<strong>'+esc(fmt(vars[name]))+'</strong></span>'+why+'</button>';
+      '<span class="variable-card-name">'+esc(name)+'</span><span class="variable-card-values">'+old+'<strong>'+esc(fmt(vars[name]))+'</strong></span></button>';
   }).join("");
   $("#variables-content").innerHTML=names.length?'<div class="variable-cards">'+variableMarkup+'</div>':'<p class="empty-state-copy">La memoria aún está vacía. La primera asignación mostrará aquí cada cajita.</p>';
-  $("#variable-change").textContent=change?"Por qué cambia: "+brief(e):e.condition?"La decisión utiliza: "+activeVariableNames.join(", "):"Sin cambios de variable en este paso.";
+  $("#variable-change").textContent=change?"Por qué cambia: "+brief(e):e.condition?brief(e):"Sin cambios de variable en este paso.";
+  $("#variables-content").scrollTop=0;
   const activeModel=diagramNodeForEvent(e),activeNode=activeModel?document.getElementById("flow-node-"+activeModel.id):null;
   document.querySelectorAll("#flow-svg .diagram-node").forEach(node=>{node.classList.remove("has-active-variable");node.style.removeProperty("--active-variable-color");});
   if(activeNode&&activeVariableNames.length){
@@ -1349,8 +1330,8 @@ function fitDiagram(){
   const widthScale=Math.max(.1,(free.width-36)/viewBox.width);
   const heightScale=Math.max(.1,(free.height-30)/viewBox.height);
   fitScale=focus
-    ?Math.max(.32,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.88/viewBox.height)))
-    :Math.max(.32,Math.min(2.15,Math.min(widthScale,heightScale)));
+    ?Math.max(.42,Math.min(2.8,Math.min(innerWidth*.9/viewBox.width,innerHeight*.88/viewBox.height)))
+    :Math.max(.42,Math.min(1.6,Math.min(widthScale,Math.max(.42,heightScale))));
   diagramFitWidth=viewBox.width*fitScale;diagramFitHeight=viewBox.height*fitScale;
   zoom=1;
   panOffset={x:free.left-stageBox.left+(free.width-diagramFitWidth)/2,y:free.top-stageBox.top+(free.height-diagramFitHeight)/2};
