@@ -34,9 +34,9 @@
 .page-footer a:hover{text-decoration:underline}
 .noscript-message{margin:16px;padding:12px;background:var(--warning-soft);border:1px solid var(--warning);border-radius:var(--radius-sm)}
 @media(max-width:1080px){
- .topbar{grid-template-columns:150px minmax(0,1fr) auto;gap:12px;padding-inline:16px}
- .primary-nav{justify-content:flex-end;gap:3px}
- .nav-button{padding-inline:4px}
+ .topbar{grid-template-columns:142px minmax(0,1fr) auto;gap:8px;padding-inline:12px}
+ .primary-nav{display:flex;justify-content:space-between;gap:0;width:100%;min-width:0;overflow:hidden}
+ .nav-button{flex:1 1 0;min-width:0;justify-content:center;gap:3px;padding-inline:1px;font-size:11px;letter-spacing:-.2px}
 }
 @media(max-width:760px){
  .topbar{grid-template-columns:34px minmax(0,1fr) 64px;gap:6px;min-height:52px;padding:6px 8px}

@@ -109,6 +109,8 @@ function contextWindowMarkup(event){
 }
 function diagramNodeForEvent(event){
   if(!diagram||!event)return null;
+  if(event.type==="program-start")return diagram.byId.get(String(diagram.startId))??null;
+  if(event.type==="program-end")return diagram.byId.get(String(diagram.endId))??null;
   const sourceId=event.nodeId===null||event.nodeId===undefined?null:String(event.nodeId);
   return diagram.nodes.find(node=>sourceId!==null&&String(node.sourceId)===sourceId)
     ??diagram.nodes.find(node=>event.sourceLine!==null&&event.sourceLine!==undefined&&Number(node.line)===Number(event.sourceLine))
@@ -169,8 +171,25 @@ function placeContextWindow(event){
         right:Math.max(...xs)+padding,bottom:Math.max(...ys)+padding};
     }catch{return null;}
   };
-  const edgeObstacles=[...document.querySelectorAll("#flow-svg .diagram-edge")]
-    .map(element=>svgScreenBounds(element,10)).filter(Boolean);
+  /* Las aristas se comparan por puntos muestreados en pantalla.
+     Su bounding-box rectangular completo era demasiado conservador y podía
+     ocultar la ficha aunque la línea no cruzara realmente su superficie. */
+  const edgePoints=[...document.querySelectorAll("#flow-svg .diagram-edge path")].flatMap(path=>{
+    try{
+      const length=path.getTotalLength(),matrix=path.getScreenCTM(),svg=path.ownerSVGElement;
+      if(!matrix||!Number.isFinite(length)||length<=0)return [];
+      const interval=Math.max(5,Math.min(14,length/48)),points=[];
+      for(let distance=0;distance<=length;distance+=interval){
+        const local=path.getPointAtLength(Math.min(length,distance));
+        const point=svg.createSVGPoint();point.x=local.x;point.y=local.y;
+        const screen=point.matrixTransform(matrix);
+        points.push({x:screen.x,y:screen.y});
+      }
+      const local=path.getPointAtLength(length),end=svg.createSVGPoint();end.x=local.x;end.y=local.y;
+      const screen=end.matrixTransform(matrix);points.push({x:screen.x,y:screen.y});
+      return points;
+    }catch{return [];}
+  });
   const obstacleElements=[
     ...document.querySelectorAll("#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+CSS.escape(activeId)+")"),
     ...document.querySelectorAll(".simulator-control-dock,.simulator-controls-panel,.simulator-mobile-tabs,#simulator-question")
@@ -182,10 +201,15 @@ function placeContextWindow(event){
     const r=element.getBoundingClientRect(),pad=3;
     return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
   });
-  const obstacles=[...edgeObstacles,...otherObstacles];
+  const obstacles=otherObstacles;
+  const crossesEdge=rect=>edgePoints.some(point=>
+    point.x>=rect.left-10&&point.x<=rect.left+width+10&&
+    point.y>=rect.top-10&&point.y<=rect.top+height+10
+  );
   const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&
     rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&
-    !rectIntersects(rect,figure,10)&&!obstacles.some(other=>rectIntersects(rect,other,2));
+    !rectIntersects(rect,figure,10)&&!crossesEdge(rect)&&
+    !obstacles.some(other=>rectIntersects(rect,other,2));
   const chosen=candidates.find(fits);
   box.dataset.anchorNode=String(model?.id??"");
   box.dataset.anchorSourceLine=String(event.sourceLine??"");
@@ -699,6 +723,12 @@ function pseudocode(source,active=null,visited=[],activeVariables=[]){
   host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+highlight(row.text)+'</code></li>').join("");
   if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
 }
+function fitDiagramWhenVisible(attempt=0){
+  if(fitDiagram())return true;
+  if(attempt>=8)return false;
+  requestAnimationFrame(()=>fitDiagramWhenVisible(attempt+1));
+  return false;
+}
 function prepare(){
   stop();cameraReady=false;
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
@@ -738,6 +768,7 @@ function prepare(){
     $("#diagram-empty").hidden=true;
     $("#diagram-dimensions").textContent=diagram.width+" × "+diagram.height;
     const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}
+    zoom=1;panOffset={x:0,y:0};applyCanvasTransform();
   }catch(error){
     diagram=null;routeGraph.clear();routeWeights.clear();routeCache.clear();clearDiagramTrail();
     $("#flow-diagram-container").innerHTML="";
@@ -745,7 +776,7 @@ function prepare(){
     $("#diagram-empty p").textContent=error.message;
   }
   run();
-  requestAnimationFrame(()=>fitDiagram());
+  requestAnimationFrame(()=>fitDiagramWhenVisible());
 }
 function typeName(type){
   return ({ "program-start":"INICIO",input:"ENTRADA",assignment:"ASIGNACIÓN",output:"SALIDA",
@@ -1321,15 +1352,33 @@ function fitDiagram(){
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
   return true;
 }
+const FOCUS_LAYOUT=[
+  ["#main-content",{position:"fixed",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",maxWidth:"100vw",maxHeight:"100svh",margin:"0",padding:"0",overflow:"hidden"}],
+  ["#view-simulator",{position:"fixed",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",maxWidth:"100vw",maxHeight:"100svh",margin:"0",padding:"0",overflow:"hidden"}],
+  [".simulator-grid.simulator-grid-four",{position:"absolute",inset:"0",display:"block",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}],
+  [".diagram-panel.sim-world-panel",{position:"absolute",inset:"0",display:"block",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden",border:"0",borderRadius:"0"}],
+  ["#wrap.sim-wrap",{position:"absolute",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}],
+  ["#diagram-stage.simulator-diagram-stage",{position:"absolute",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}]
+];
+function setFocusLayout(enabled){
+  for(const [selector,properties] of FOCUS_LAYOUT){
+    const element=$(selector);if(!element)continue;
+    for(const [property,value] of Object.entries(properties)){
+      if(enabled)element.style.setProperty(property.replace(/[A-Z]/g,letter=>"-"+letter.toLowerCase()),value,"important");
+      else element.style.removeProperty(property.replace(/[A-Z]/g,letter=>"-"+letter.toLowerCase()));
+    }
+  }
+}
 async function toggleDiagramFullscreen(){
   const body=document.body;
   if(body.classList.contains("focus")){
+    setFocusLayout(false);
     body.classList.remove("focus");
     clearTimeout(focusIdleTimer);
     if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch{}}
     document.documentElement.dataset.fullscreenRequested="false";
     updateFullscreenButton();
-    requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    requestAnimationFrame(()=>{fitDiagramWhenVisible();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
     return;
   }
   /* Concentración debe salir del panel flotante antes de ocultarlo:
@@ -1338,6 +1387,7 @@ async function toggleDiagramFullscreen(){
   if(controls&&!controls.hidden)toggleControls(false);
   body.classList.remove("sim-controls-open");
   body.classList.add("focus");
+  setFocusLayout(true);
   if(document.documentElement.requestFullscreen){
     document.documentElement.dataset.fullscreenRequested="true";
     try{await document.documentElement.requestFullscreen();}
@@ -1536,6 +1586,7 @@ function bind(){
   document.addEventListener("fullscreenchange",()=>{
     if(document.body.classList.contains("focus")&&!document.fullscreenElement&&document.documentElement.dataset.fullscreenRequested==="true"){
       document.documentElement.dataset.fullscreenRequested="false";
+      setFocusLayout(false);
       document.body.classList.remove("focus");
       clearTimeout(focusIdleTimer);
       requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
@@ -1612,7 +1663,7 @@ function bind(){
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
-    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    requestAnimationFrame(()=>{syncDockHeight();fitDiagramWhenVisible();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
   });
   syncDockHeight();
   const dock=$("#dock");

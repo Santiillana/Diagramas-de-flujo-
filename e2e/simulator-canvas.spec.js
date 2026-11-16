@@ -29,6 +29,7 @@ test("arrastrar libera la cámara y el siguiente paso reanuda el seguimiento",as
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
   await page.locator("#diagram-camera-toggle").click();
   await page.locator("#diagram-zoom-in").click();
+  await page.locator("#simulator-controls-toggle").click();
   const stage=page.locator("#diagram-stage");
   const rect=await stage.boundingBox();
   await page.mouse.move(rect.x+rect.width*.5,rect.y+rect.height*.5);
