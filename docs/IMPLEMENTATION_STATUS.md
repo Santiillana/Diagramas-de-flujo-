@@ -75,7 +75,9 @@ No confundir el M6 de la Fase 6 del informe de mejoras v2 (Inicio/Constructor, y
 - El horario es contenido oficial editable del proyecto, no dato personal del navegador.
 - Supuestos y reglas documentados en `docs/OFFICIAL_CLASS_SCHEDULE.md`.
 - La prueba `tests/ficha-schedule.test.js` valida la estructura, el cambio de lunes y las materias no informadas del sábado.
-- **Integración visual pendiente:** las vistas Hoy, Semana y Calendario aún son placeholders en `main`; no afirmar que el horario ya se muestra ni que calcula estados temporales.
+- **En `main`:** las vistas Hoy, Semana y Calendario siguen siendo placeholders.
+- **En esta rama M7:** `src/ui/ficha-schedule.js` y `src/styles/ficha-schedule.css` conectan el horario a Hoy, Semana y Calendario; `index.html` y `src/app.js` inicializan estas vistas. La validación final de CI/navegador está pendiente.
+- Esto no completa el paso 5 v4 ni la persistencia personal, Actividades o Biblioteca.
 
 ### M7 · Actividades y detalle de Mi ficha
 - Rama de trabajo: `v4/module-7-activities`.
