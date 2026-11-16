@@ -138,7 +138,7 @@ test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",as
   const geometry=await page.evaluate(()=>{
     const paths=[...document.querySelectorAll("#flow-svg .diagram-edge.is-back path")];
     return paths.map(path=>{
-      const values=(path.getAttribute("d").match(/-?\\d+(?:\\.\\d+)?/g)||[]).map(Number);
+      const values=(path.getAttribute("d").match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);
       const [startX,startY,bendX,,bendX2,endY,endX,endY2]=values;
       const boxes=[...document.querySelectorAll("#flow-svg .diagram-node")].map(node=>node.getBBox());
       const startMatches=boxes.some(box=>Math.abs(box.x-startX)<1&&Math.abs(box.y+box.height/2-startY)<1);
