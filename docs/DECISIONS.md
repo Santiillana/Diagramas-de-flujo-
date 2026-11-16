@@ -125,3 +125,22 @@ La incapacidad de clonar el repositorio desde el entorno de trabajo no se sustit
 
 ## D-042 · No hay publicación implícita al fusionar
 La validación CI del PR no equivale a un despliegue. El workflow de humo post-deploy no se activa en cada push a `main`: exige ejecución manual con el origen público real. Si no se dispone de ese origen, se reporta como pendiente y no se declara producción verificada.
+
+
+## D-043 · Cuatro espacios y Constructor integrado en el Laboratorio
+La navegación principal de la entrega actual contiene Aprende, Ejercicios, Simulador y Laboratorio. El Constructor no es una quinta vista ni un destino de navegación: vive como «Lienzo libre» dentro de Laboratorio → «Arma el diagrama». Esta organización reemplaza para la experiencia actual la estructura de cinco espacios descrita en documentación anterior.
+
+## D-044 · Cuatro ventanas del Simulador, con salida e historial dentro de Variables
+El Simulador presenta Problema, Pseudocódigo, En escena y Variables como sus cuatro ventanas pedagógicas. Pantalla e Historial se muestran como elementos desplegables dentro de Variables. No se crean ventanas satélite adicionales, minimizadores ni railes de restauración. Los controles de visibilidad son centralizados y la cámara recalcula el área disponible.
+
+## D-045 · Selector de ejercicios contenido en el panel de controles
+El selector circular de ejercicios forma parte del panel flotante agrupado. No utiliza posicionamiento fijo ni se superpone a los botones de zoom, cámara o presentación. La lista debe permanecer desplazable dentro de su contenedor y no bloquear los demás controles.
+
+## D-046 · Cuatro vistas móviles del Simulador
+En pantallas de hasta 900 px, el Simulador muestra pestañas Problema, Diagrama, En escena y Variables. Las pestañas ocupan una altura acotada; el diagrama conserva una fila flexible y el dock otra fila inferior. Cambiar de pestaña no modifica ni vuelve a ejecutar la traza.
+
+## D-047 · Depuración con corrección ejecutable
+«Caza el error» distingue localizar la línea sospechosa de seleccionar la corrección. La corrección se ejecuta con los mismos datos de entrada y se compara con el resultado original y el esperado. La actividad «¿Y si…?» compara las secuencias de eventos y señala el primer punto en el que divergen. Ambas actividades operan sobre copias independientes de la ejecución base.
+
+## D-048 · Los tests siguen el contrato de la interfaz vigente
+Las pruebas de aceptación deben seleccionar los ejercicios respetando la paginación, abrir el panel de controles antes de interactuar con sus controles internos y validar los nombres y agrupaciones visibles actuales. No se conservan expectativas de una quinta vista, ventanas minimizables, selector flotante independiente ni valores de variables que no correspondan al algoritmo ejecutado.
