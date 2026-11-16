@@ -75,3 +75,302 @@ a{color:inherit}
   --variable-color-5:#B08A4D;
   --variable-color-6:#6FA1AE;
 }
+
+
+/* Tokens semánticos compartidos para las identidades de cada sección. */
+:root{
+  --bg:var(--canvas);
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:var(--ink);
+  --text-muted:var(--muted);
+  --on-accent:#1A1400;
+  --accent-text:var(--accent-strong);
+  --dur-1:120ms;
+  --dur-2:220ms;
+  --dur-3:360ms;
+  --ease:cubic-bezier(.2,.7,.2,1);
+
+  --status-pending:#5A6472;
+  --status-progress:#0B6FA4;
+  --status-submitted:#5B3FD0;
+  --status-correction:#A64B08;
+  --status-approved:#0F7B4F;
+  --status-overdue:#C62A47;
+
+  --comp-1:#275EA8;
+  --comp-2:#6847A8;
+  --comp-3:#8A5C08;
+  --comp-4:#087C70;
+  --comp-5:#AC3F59;
+  --comp-6:#58741E;
+}
+
+/*
+ * Aprende conserva la paleta real que ya utiliza Traza.
+ * La cuadrícula, la tipografía y los tokens del Simulador no se redefinen aquí.
+ */
+:root[data-section="aprende"][data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0F1A24;
+  --surface:#162431;
+  --surface-raised:#1B2E3D;
+  --surface-soft:#13212D;
+  --line:#2B4051;
+  --line-strong:#496177;
+  --ink:#EDF2F7;
+  --ink-soft:#D8E1E9;
+  --muted:#B0BFCC;
+  --muted-strong:#BFCBD5;
+  --accent:#FFC400;
+  --accent-strong:#FFD84D;
+  --accent-soft:#3F3518;
+  --teal:#7AA8FF;
+  --teal-soft:#1D3047;
+  --positive:#3CCF8E;
+  --positive-soft:#173D31;
+  --warning:#FFC400;
+  --warning-soft:#3F3518;
+  --danger:#FF6B85;
+  --danger-soft:#482633;
+  --grid-line:rgba(154,186,215,.065);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.18);
+  --shadow-md:0 6px 18px rgba(0,0,0,.22);
+  --shadow-lg:0 14px 32px rgba(0,0,0,.28);
+  --focus-ring:0 0 0 3px rgba(255,196,0,.32);
+  --bg:#0F1A24;
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:#EDF2F7;
+  --text-muted:var(--muted);
+  --on-accent:#1A1400;
+  --accent-text:#FFC400;
+  --status-pending:#9FB3C4;
+  --status-progress:#4FC3F7;
+  --status-submitted:#B39DFF;
+  --status-correction:#FF9F4A;
+  --status-approved:#3CCF8E;
+  --status-overdue:#FF6B85;
+  --comp-1:#8AB4FF;
+  --comp-2:#C2A0FF;
+  --comp-3:#F4C66A;
+  --comp-4:#69CFC1;
+  --comp-5:#F09BA8;
+  --comp-6:#B7C977;
+}
+:root[data-section="aprende"][data-theme="light"]{
+  color-scheme:light;
+  --canvas:#F6F2E7;
+  --surface:#FFFDF7;
+  --surface-raised:#FFFFFF;
+  --surface-soft:#F0EBDD;
+  --line:#D8D8CC;
+  --line-strong:#B8C1C7;
+  --ink:#1B2A3A;
+  --ink-soft:#304558;
+  --muted:#6A7B8A;
+  --muted-strong:#53687A;
+  --accent:#FFC400;
+  --accent-strong:#D69E00;
+  --accent-soft:#FFF0B9;
+  --teal:#356F89;
+  --teal-soft:#E2EDF1;
+  --positive:#1F9A67;
+  --positive-soft:#DDF5E9;
+  --warning:#B97B00;
+  --warning-soft:#FFF0C5;
+  --danger:#D94761;
+  --danger-soft:#FFE1E7;
+  --grid-line:rgba(69,91,108,.055);
+  --shadow-sm:0 1px 3px rgba(25,35,32,.05);
+  --shadow-md:0 5px 18px rgba(25,35,32,.07);
+  --shadow-lg:0 12px 30px rgba(25,35,32,.10);
+  --focus-ring:0 0 0 3px rgba(255,196,0,.28);
+  --bg:#F6F2E7;
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:#1B2A3A;
+  --text-muted:var(--muted);
+  --on-accent:#1A1400;
+  --accent-text:#805800;
+  --status-pending:#5A6472;
+  --status-progress:#0B6FA4;
+  --status-submitted:#5B3FD0;
+  --status-correction:#A64B08;
+  --status-approved:#0F7B4F;
+  --status-overdue:#C62A47;
+  --comp-1:#275EA8;
+  --comp-2:#6847A8;
+  --comp-3:#8A5C08;
+  --comp-4:#087C70;
+  --comp-5:#AC3F59;
+  --comp-6:#58741E;
+}
+
+/* Mi ficha: verde bosque y marfil, independiente de la identidad de Aprende. */
+:root[data-section="ficha"][data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#102C23;
+  --surface:#16382D;
+  --surface-raised:#1B4538;
+  --surface-soft:#183D32;
+  --line:#315A4A;
+  --line-strong:#4C7563;
+  --ink:#EAF2EC;
+  --ink-soft:#D6E5DA;
+  --muted:#AFC6B8;
+  --muted-strong:#C5D8CC;
+  --accent:#38A876;
+  --accent-strong:#58C891;
+  --accent-soft:#1B4535;
+  --teal:#83C8A5;
+  --teal-soft:#1A4032;
+  --positive:#3CCF8E;
+  --positive-soft:#174333;
+  --warning:#F4C46A;
+  --warning-soft:#47391E;
+  --danger:#FF7285;
+  --danger-soft:#482832;
+  --grid-line:rgba(176,214,190,.065);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.22);
+  --shadow-md:0 6px 18px rgba(0,0,0,.28);
+  --shadow-lg:0 14px 32px rgba(0,0,0,.34);
+  --focus-ring:0 0 0 3px rgba(88,200,145,.34);
+  --bg:#102C23;
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:#EAF2EC;
+  --text-muted:var(--muted);
+  --on-accent:#102C23;
+  --accent-text:#70D9A6;
+  --status-pending:#AFC6D4;
+  --status-progress:#58C7ED;
+  --status-submitted:#C1A8FF;
+  --status-correction:#FFAD69;
+  --status-approved:#3CCF8E;
+  --status-overdue:#FF7285;
+  --comp-1:#8AB4FF;
+  --comp-2:#C2A0FF;
+  --comp-3:#F4C66A;
+  --comp-4:#69CFC1;
+  --comp-5:#F09BA8;
+  --comp-6:#B7C977;
+}
+:root[data-section="ficha"][data-theme="light"]{
+  color-scheme:light;
+  --canvas:#F5F1E5;
+  --surface:#FFFCF3;
+  --surface-raised:#FFFFFF;
+  --surface-soft:#EEE9DA;
+  --line:#D8D2BF;
+  --line-strong:#BEB9A5;
+  --ink:#1C3025;
+  --ink-soft:#314D3C;
+  --muted:#5C6F60;
+  --muted-strong:#4F6254;
+  --accent:#267A50;
+  --accent-strong:#1D6843;
+  --accent-soft:#E1EFE4;
+  --teal:#356F89;
+  --teal-soft:#E2EDF1;
+  --positive:#0F7B4F;
+  --positive-soft:#DDEFE4;
+  --warning:#A64B08;
+  --warning-soft:#FFF0D5;
+  --danger:#B9324C;
+  --danger-soft:#FBE5E8;
+  --grid-line:rgba(49,83,62,.065);
+  --shadow-sm:0 1px 3px rgba(28,48,37,.06);
+  --shadow-md:0 5px 18px rgba(28,48,37,.09);
+  --shadow-lg:0 12px 30px rgba(28,48,37,.12);
+  --focus-ring:0 0 0 3px rgba(38,122,80,.24);
+  --bg:#F5F1E5;
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:#1C3025;
+  --text-muted:var(--muted);
+  --on-accent:#FFFFFF;
+  --accent-text:#1F6844;
+  --status-pending:#5A6472;
+  --status-progress:#0B6FA4;
+  --status-submitted:#5B3FD0;
+  --status-correction:#A64B08;
+  --status-approved:#0F7B4F;
+  --status-overdue:#C62A47;
+  --comp-1:#275EA8;
+  --comp-2:#6847A8;
+  --comp-3:#8A5C08;
+  --comp-4:#087C70;
+  --comp-5:#AC3F59;
+  --comp-6:#58741E;
+}
+
+/* Portada: fondo Aprende y superficies de acceso con la identidad de cada sección. */
+:root[data-section="home"][data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#0F1A24;
+  --surface:#162431;
+  --surface-raised:#1B2E3D;
+  --surface-soft:#13212D;
+  --line:#2B4051;
+  --line-strong:#496177;
+  --ink:#EDF2F7;
+  --ink-soft:#D8E1E9;
+  --muted:#B0BFCC;
+  --muted-strong:#BFCBD5;
+  --accent:#FFC400;
+  --accent-strong:#FFD84D;
+  --accent-soft:#3F3518;
+  --grid-line:rgba(154,186,215,.065);
+  --bg:var(--canvas);
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:var(--ink);
+  --text-muted:var(--muted);
+  --home-ficha-bg:#102C23;
+  --home-ficha-surface:#16382D;
+  --home-ficha-text:#EAF2EC;
+  --home-ficha-muted:#AFC6B8;
+  --home-ficha-accent:#38A876;
+  --home-ficha-accent-text:#70D9A6;
+  --home-aprende-bg:#0F1A24;
+  --home-aprende-surface:#162431;
+  --home-aprende-text:#EDF2F7;
+  --home-aprende-muted:#B0BFCC;
+  --home-aprende-accent:#FFC400;
+  --home-aprende-accent-text:#FFC400;
+}
+:root[data-section="home"][data-theme="light"]{
+  color-scheme:light;
+  --canvas:#F6F2E7;
+  --surface:#FFFDF7;
+  --surface-raised:#FFFFFF;
+  --surface-soft:#F0EBDD;
+  --line:#D8D8CC;
+  --line-strong:#B8C1C7;
+  --ink:#1B2A3A;
+  --ink-soft:#304558;
+  --muted:#6A7B8A;
+  --muted-strong:#53687A;
+  --accent:#FFC400;
+  --accent-strong:#D69E00;
+  --accent-soft:#FFF0B9;
+  --grid-line:rgba(69,91,108,.055);
+  --bg:var(--canvas);
+  --surface-2:var(--surface-soft);
+  --border:var(--line);
+  --text:var(--ink);
+  --text-muted:var(--muted);
+  --home-ficha-bg:#F5F1E5;
+  --home-ficha-surface:#FFFCF3;
+  --home-ficha-text:#1C3025;
+  --home-ficha-muted:#5C6F60;
+  --home-ficha-accent:#267A50;
+  --home-ficha-accent-text:#1F6844;
+  --home-aprende-bg:#F6F2E7;
+  --home-aprende-surface:#FFFDF7;
+  --home-aprende-text:#1B2A3A;
+  --home-aprende-muted:#53687A;
+  --home-aprende-accent:#FFC400;
+  --home-aprende-accent-text:#805800;
+}
