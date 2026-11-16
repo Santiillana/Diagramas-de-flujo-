@@ -40,6 +40,7 @@ test("humo de producción: Factorial, Mayor de 10 números, Concentración y Pre
   await page.setViewportSize({width:390,height:844});
   await page.reload();
   await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("21");
   await page.screenshot({path:testInfo.outputPath("production-mobile-normal-390.png"),fullPage:true,animations:"disabled"});
   await page.locator("#diagram-fullscreen").click();
