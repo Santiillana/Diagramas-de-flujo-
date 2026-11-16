@@ -413,21 +413,43 @@ export function validateFichaBackup(value) {
   const ids = source.map(item => item?.id);
   if (new Set(ids).size !== ids.length) return { ok: false, reason: "duplicate_ids" };
   for (const item of source) {
-    if (!item || !CLASS_IDS.has(item.classId) && item.classId != null ||
+    if (!item || !cleanText(item.id, 100) || !cleanText(item.title, 240) ||
+        (!CLASS_IDS.has(item.classId) && item.classId != null) ||
         !validNullableDate(item.assignedOn) || !validNullableDate(item.dueOn) ||
         (item.assignedOn && item.dueOn && item.assignedOn > item.dueOn) ||
-        !ACTIVITY_STATUSES.includes(item.status)) {
+        !ACTIVITY_STATUSES.includes(item.status) ||
+        !validTimestamp(item.createdAt) || !validTimestamp(item.updatedAt) ||
+        !Array.isArray(item.attempts) || !Array.isArray(item.feedbackEntries) ||
+        !Array.isArray(item.events)) {
       return { ok: false, reason: "invalid_records" };
     }
-    if (Array.isArray(item.attempts) && item.attempts.some(attempt =>
-      !attempt || !validTimestamp(attempt.submittedAt) ||
-      (attempt.activityId && attempt.activityId !== item.id))) {
+    const attemptIds = item.attempts.map(attempt => attempt?.id);
+    if (new Set(attemptIds).size !== attemptIds.length ||
+        item.attempts.some((attempt, index) =>
+          !attempt || !cleanText(attempt.id, 100) ||
+          !validTimestamp(attempt.submittedAt) ||
+          (attempt.activityId && attempt.activityId !== item.id) ||
+          (attempt.attemptNumber !== undefined && attempt.attemptNumber !== index + 1))) {
       return { ok: false, reason: "invalid_records" };
     }
-    if (Array.isArray(item.feedbackEntries) && item.feedbackEntries.some(entry =>
-      !entry || !validTimestamp(entry.recordedAt) ||
-      (entry.activityId && entry.activityId !== item.id) ||
-      (entry.submissionId && !(item.attempts || []).some(attempt => attempt.id === entry.submissionId)))) {
+    const feedbackIds = item.feedbackEntries.map(entry => entry?.id);
+    if (new Set(feedbackIds).size !== feedbackIds.length ||
+        item.feedbackEntries.some(entry =>
+          !entry || !cleanText(entry.id, 100) ||
+          !validTimestamp(entry.recordedAt) ||
+          !["favorable", "correction_requested", "informational"].includes(entry.result) ||
+          !cleanText(entry.comment) ||
+          (entry.activityId && entry.activityId !== item.id) ||
+          (entry.submissionId && !item.attempts.some(attempt => attempt.id === entry.submissionId)))) {
+      return { ok: false, reason: "invalid_records" };
+    }
+    const eventIds = item.events.map(event => event?.id);
+    if (new Set(eventIds).size !== eventIds.length ||
+        item.events.some(event =>
+          !event || !cleanText(event.id, 100) ||
+          !EVENT_TYPES.has(event.type) ||
+          !validTimestamp(event.occurredAt) ||
+          (event.activityId && event.activityId !== item.id))) {
       return { ok: false, reason: "invalid_records" };
     }
   }
