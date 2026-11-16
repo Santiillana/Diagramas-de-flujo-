@@ -46,6 +46,7 @@ test("el catálogo filtra ejercicios por dificultad y conceptos combinados",asyn
 test("la ficha del ejercicio no revela la solución hasta confirmar en el modal",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="exercises"]').click();
+  await page.locator("[data-page-next]").click();
   await page.locator('[data-select-exercise="23"]').click();
   await expect(page.locator("#exercise-detail h3")).toHaveText("Fibonacci: términos que no superen 40");
   await expect(page.locator("#exercise-detail")).not.toContainText("PSEUDOCÓDIGO");
