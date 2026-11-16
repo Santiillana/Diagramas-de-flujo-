@@ -8,6 +8,7 @@ test("humo de producción: Factorial, Mayor de 10 números, Concentración y Pre
   await page.goto("/");
   await expect(page.locator('meta[name="traza-release"]')).toHaveAttribute("content",/^simulador-v3-/);
   await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
   await expect(page.locator("#flow-svg")).toBeVisible();
 
   await page.locator("#sim-exercise-select").selectOption("21");
