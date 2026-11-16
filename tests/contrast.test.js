@@ -5,14 +5,14 @@ import { readFile } from "node:fs/promises";
 const css = await readFile(new URL("../src/styles/tokens.css", import.meta.url), "utf8");
 
 function blockFor(section, theme) {
-  const selector = \`:root[data-section="\${section}"][data-theme="\${theme}"]\`;
+  const selector = ":root[data-section=\"" + section + "\"][data-theme=\"" + theme + "\"]";
   const start = css.indexOf(selector);
   assert.notEqual(start, -1, "Falta la paleta " + section + "/" + theme);
   const open = css.indexOf("{", start);
   const close = css.indexOf("}", open);
   assert.ok(open > start && close > open, "Bloque CSS incompleto: " + selector);
   return Object.fromEntries(
-    [...css.slice(open + 1, close).matchAll(/(--[\\w-]+)\\s*:\\s*(#[0-9a-fA-F]{6})\\s*;/g)]
+    [...css.slice(open + 1, close).matchAll(/(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{6})\s*;/g)]
       .map(([, name, value]) => [name, value.toUpperCase()])
   );
 }
