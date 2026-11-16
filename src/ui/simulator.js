@@ -286,7 +286,8 @@ function choreographEvent(event){
   if(!event)return;
   const speed=currentSpeedFactor();
   if(reducedMotion()){
-    if(event.type==="input"||event.change||event.type==="output")pulseWindow("variables");
+    if(event.type==="output")pulseWindow("output");
+    else if(event.type==="input"||event.change)pulseWindow("variables");
     else if(event.type==="decision"||event.type==="loop-condition")pulseWindow("scene");
     return;
   }
