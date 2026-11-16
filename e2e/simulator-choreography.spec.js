@@ -4,6 +4,7 @@ test("el paso activo actualiza la ficha contextual con su símbolo y explicació
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await goToSpace(page, "simulator");
+  await page.locator("#simulator-next").click();
   await expect(page.locator("#vf")).toBeVisible();
   await expect(page.locator("#vf")).toHaveClass(/is-arriving/);
   const before=await page.locator("#vf").getAttribute("data-anchor-node");

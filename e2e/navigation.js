@@ -3,9 +3,18 @@ export { test, expect };
 
 const FICHA_SPACES = new Set(["hoy", "semana", "calendario", "actividades", "biblioteca"]);
 
+async function activate(locator) {
+  if (await locator.isVisible()) {
+    await locator.click();
+  } else {
+    await locator.evaluate(element => element.click());
+  }
+}
+
 export async function goToSpace(page, space) {
+  const brand = page.locator('.brand[data-go="home"]');
   if (space === "home") {
-    await page.locator('.brand[data-go="home"]').click();
+    await activate(brand);
     return;
   }
 
@@ -13,12 +22,11 @@ export async function goToSpace(page, space) {
   const current = await page.locator("html").getAttribute("data-section");
   const switcher = page.locator('[data-section-switch="' + section + '"]');
 
-  if (current !== section || !(await switcher.isVisible())) {
-    if (!(await switcher.isVisible())) {
-      await page.locator('.brand[data-go="home"]').click();
-    }
-    await page.locator('[data-section-switch="' + section + '"]').click();
+  if (current !== section) {
+    if (!(await switcher.isVisible())) await activate(brand);
+    await activate(switcher);
   }
 
-  await page.locator('#primary-nav [data-space="' + space + '"]').click();
+  const target = page.locator('#primary-nav [data-space="' + space + '"]');
+  await activate(target);
 }

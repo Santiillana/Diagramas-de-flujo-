@@ -10,7 +10,8 @@
   backdrop-filter:blur(14px)
 }
 .topbar-main{
-  display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(86px,1fr);
+  position:relative;z-index:1;display:grid;flex:0 0 var(--topbar-h);width:100%;
+  grid-template-columns:minmax(150px,1fr) auto minmax(86px,1fr);
   align-items:center;gap:18px;height:var(--topbar-h);min-height:var(--topbar-h);
   padding:0 clamp(16px,2.5vw,38px)
 }
@@ -38,7 +39,8 @@
 }
 .topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .primary-nav{
-  display:flex;align-items:stretch;justify-content:center;min-height:44px;height:44px;
+  position:relative;z-index:2;display:flex;flex:0 0 44px;width:100%;
+  align-items:stretch;justify-content:center;min-height:44px;height:44px;
   border-top:1px solid var(--line);padding:0 clamp(12px,2vw,28px)
 }
 .subnav-group{display:flex;align-items:stretch;justify-content:center;gap:clamp(2px,.5vw,9px);min-width:0}
@@ -145,7 +147,7 @@
   .topbar-actions{gap:3px}
   .topbar-actions .icon-button{width:29px;height:29px}
   .primary-nav{
-    position:fixed;z-index:89;right:0;bottom:0;left:0;width:100%;
+    position:fixed;z-index:89;right:0;bottom:0;left:0;width:100%;flex:0 0 auto;
     height:calc(62px + env(safe-area-inset-bottom));min-height:62px;
     padding:0 4px env(safe-area-inset-bottom);border-top:1px solid var(--line);
     background:color-mix(in srgb,var(--surface) 97%,transparent);backdrop-filter:blur(14px)

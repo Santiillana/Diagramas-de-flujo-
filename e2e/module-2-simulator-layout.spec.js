@@ -124,7 +124,7 @@ test("la navegación de Aprende conserva cuatro etiquetas legibles a 390 px",asy
  await page.goto("/");
  await goToSpace(page,"learn");
  const nav=page.locator("#primary-nav");
- await expect(nav.locator(".nav-button")).toHaveCount(4);
+ await expect(nav.locator('[data-subnav-section="aprende"] .nav-button')).toHaveCount(4);
  const report=await nav.evaluate(el=>{
   const box=el.getBoundingClientRect();
   const items=[...el.querySelectorAll(".nav-button")].map(node=>{
