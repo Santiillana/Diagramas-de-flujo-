@@ -2785,3 +2785,39 @@ body[data-active-space="simulator"] .scene-loop-answer.is-false{color:var(--traz
  body[data-active-space="simulator"] .problem-panel#PL{width:21vw!important}
  body[data-active-space="simulator"] #RC.simulator-inspector{width:27vw!important}
 }
+
+
+/* La coreografía usa la misma duración calculada por JavaScript para la velocidad elegida. */
+body[data-active-space="simulator"] .flow-token{
+  transition:none!important;
+  animation:sim-token-pulse var(--sim-animation-duration,500ms) ease-in-out infinite alternate!important
+}
+body[data-active-space="simulator"] .flow-token-ring.is-expanding{
+  animation:sim-token-ring var(--sim-animation-duration,500ms) ease-out!important
+}
+body[data-active-space="simulator"] .flow-token.is-bouncing{
+  animation:sim-token-bounce var(--sim-animation-duration,500ms) cubic-bezier(.2,.8,.3,1.35)!important
+}
+body[data-active-space="simulator"] .sim-window-restore.is-pulsing{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] #flow-diagram-container .diagram-node.is-active{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] .scene-value-transfer,
+body[data-active-space="simulator"] .scene-event-visual{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] .scene-value-old,
+body[data-active-space="simulator"] .scene-value-new{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] .diagram-edge.is-route-active path{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] .scene-loop-step{
+  transition-duration:var(--sim-animation-duration,500ms)!important
+}
+body[data-active-space="simulator"] .scene-loop-step.is-active{
+  animation-duration:var(--sim-animation-duration,500ms)!important
+}
