@@ -113,7 +113,9 @@ export function toSceneEvent(event, context = {}) {
   const loopStack = event?.loopStack ?? [];
   const expression = event?.condition ?? details.expression;
   const completedRounds = events.slice(0,stepIndex).filter(item=>item.type==="loop-enter"&&String(item.nodeId)===String(event?.nodeId)).length;
-  const loopRound = Number.isFinite(event?.iteration) ? event.iteration : loopStack.at(-1)?.iteration ?? (event?.type==="loop-condition"&&event?.result&&nodeType!=="doWhile" ? completedRounds+1 : completedRounds || null);
+  const loopRound = Number.isFinite(event?.iteration) ? event.iteration :
+    (event?.type==="loop-condition" && event?.result===true && nodeType!=="doWhile")
+      ? completedRounds+1 : loopStack.at(-1)?.iteration ?? (completedRounds||null);
   return {
     kind,stepIndex,stepCount:events.length || stepIndex + 1,
     line:event?.sourceLine ?? null,sourceText:event?.sourceText ?? "",
