@@ -51,6 +51,7 @@ test("el catálogo filtra ejercicios por dificultad y conceptos combinados",asyn
   await page.locator("#exercise-level").selectOption("expert");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(5);
   await page.locator("#exercise-level").selectOption("all");
+  await page.locator("#exercise-concept-details > summary").click();
   await page.locator('[data-concept-filter="Ciclo Para"]').click();
   await expect(page.locator("[data-select-exercise]")).not.toHaveCount(0);
   await page.locator('[data-concept-mode="any"]').click();
