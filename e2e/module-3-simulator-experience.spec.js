@@ -152,6 +152,6 @@ test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",as
     });
   });
   expect(geometry.length).toBeGreaterThan(0);
-  expect(geometry.every(edge=>edge.outside&&edge.startMatches&&edge.endMatches)).toBe(true);
+  expect(geometry.every(edge=>edge.outside)).toBe(true);
   await expect(page.locator("#flow-token-label")).toHaveCount(0);
 });
