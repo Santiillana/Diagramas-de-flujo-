@@ -2027,3 +2027,63 @@ body[data-active-space="simulator"][data-sim-windows-hidden~="scene"][data-sim-w
 body[data-active-space="simulator"][data-sim-windows-hidden~="context"][data-sim-windows-hidden~="pseudocode"][data-sim-windows-hidden~="scene"][data-sim-windows-hidden~="variables"] .simulator-grid.simulator-grid-four{
   grid-template-columns:minmax(0,1fr);grid-template-areas:"diagram" "dock"
 }
+
+/* Corrección de cascada: el selector de ejercicios ahora es parte del panel de controles, no una capa fija. */
+body[data-active-space="simulator"] .simulator-controls-panel .simulator-exercise-nav{
+  position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  transform:none!important;z-index:auto!important;display:flex!important;flex-wrap:wrap;align-content:flex-start;
+  width:100%!important;min-width:0;max-width:none!important;max-height:116px!important;
+  margin:0!important;padding:0!important;overflow:auto!important;overscroll-behavior:contain;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  backdrop-filter:none!important;pointer-events:auto
+}
+body[data-active-space="simulator"] .simulator-controls-panel .simulator-exercise-nav.is-open{display:flex!important}
+body[data-active-space="simulator"] .simulator-controls-panel .simulator-exercise-nav button{
+  flex:0 0 25px;width:25px;height:25px;min-height:25px
+}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+    position:absolute!important;inset:40px 0 0!important;display:grid!important;
+    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;
+    grid-template-areas:"diagram" "dock";align-items:stretch;gap:0;
+    width:100%!important;height:auto!important;min-width:0;min-height:0;margin:0;padding:5px;
+    overflow:hidden;pointer-events:auto
+  }
+  body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+    position:relative!important;inset:auto!important;grid-area:diagram;display:flex!important;flex-direction:column;
+    width:100%!important;height:100%!important;min-width:0;min-height:0;max-width:none;margin:0;padding:0;
+    overflow:hidden;border:1px solid rgba(145,169,160,.16);border-radius:10px
+  }
+  body[data-active-space="simulator"] #wrap.sim-wrap{
+    position:relative!important;inset:auto!important;flex:1 1 auto;width:100%!important;height:100%!important;
+    min-width:0;min-height:0;margin:0;padding:0;overflow:hidden
+  }
+  body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+    position:relative!important;inset:auto!important;display:block;width:100%!important;height:100%!important;
+    min-width:0;min-height:0;margin:0;padding:0;overflow:hidden
+  }
+  body[data-active-space="simulator"] #diagram-pan-hit{
+    position:absolute!important;inset:0!important;z-index:1!important;display:block!important;touch-action:pan-y
+  }
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    grid-area:dock;display:grid!important;width:100%!important;min-width:0;height:auto!important;min-height:58px;
+    margin:5px 0 0!important;transform:none!important
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs{
+    position:absolute!important;top:44px!important;right:6px!important;bottom:auto!important;left:6px!important;
+    display:flex!important;align-items:center;gap:4px;width:auto!important;height:auto!important;
+    min-height:0!important;max-height:42px!important;margin:0!important;padding:4px!important;
+    overflow-x:auto;overflow-y:hidden;border:1px solid rgba(149,177,166,.22);border-radius:8px;
+    background:rgba(18,34,39,.95);pointer-events:auto
+  }
+  body[data-active-space="simulator"] .simulator-mobile-tabs button{
+    flex:1 1 0;min-width:0;min-height:30px;height:30px;padding:0 4px
+  }
+  body[data-active-space="simulator"] .simulator-control-dock{top:50px;right:8px}
+  body[data-active-space="simulator"] .simulator-controls-panel{max-height:calc(100svh - 155px)}
+}
+@media(max-width:520px){
+  body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:9px;padding:0 3px}
+  body[data-active-space="simulator"] .simulator-controls-panel{width:calc(100vw - 12px)}
+}
