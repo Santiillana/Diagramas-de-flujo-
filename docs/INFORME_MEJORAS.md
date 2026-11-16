@@ -101,3 +101,20 @@ Fase 7: accesibilidad, seguridad, rendimiento, documentación y pull request.
 - Pruebas Playwright: 43 aprobadas, 0 fallidas.
 - Capturas de escritorio, tableta y móvil: artefacto `ui-audit-bb386d78121db34514c7e74986bc24af3d2f3123`, ID 14147328295.
 - PR #7 sigue abierto contra main. No se ha fusionado; main permanece intacta.
+
+
+## Actualización de Fase 6 en la portada v4 — 16 de noviembre de 2026
+
+La nota histórica anterior decía que la PR #7 seguía abierta. Ese estado quedó obsoleto: **la PR #7 se fusionó el 15-11-2026**, merge commit `893dd1cf4192be1a627d8e21eea49d012506e3fb`. Integró la primera versión de Inicio y el historial del Constructor con límite de 60 snapshots.
+
+Tras el rediseño v4, la portada pasó a una vista separada con Mi ficha y Aprende. El trabajo actual de M6 completa la continuidad de la Fase 6 en esa nueva estructura:
+
+- Inicio refleja el progreso real de las 17 lecciones, con porcentaje y barra accesible.
+- El progreso usa la clave existente `traza:v2:learn`; no duplica ni cambia la persistencia.
+- Atajos directos desde Inicio a Ejercicios, Simulador y Laboratorio.
+- Los controles Deshacer/Rehacer exponen accesibilidad y teclas rápidas.
+- Se verifica el límite de 60 snapshots, la recuperación de estados y el descarte de la rama futura.
+
+**Evidencia M6:** PR #21 abierta; CI [43961209113](https://github.com/Santiillana/Traza/actions/runs/43961209113), SHA `a3c38a7ba3c72f6aabe1a1686dbe3166f5911cd4`; 267/267 Node y 103/103 Chromium, cero fallos; capturas en artefacto `ui-audit-7ff31ec21cce8e9256bd5be23ce0f204181c52ca`, ID `14274866581`.
+
+La PR #21 no está fusionada. El informe diferencia la primera implementación de la Fase 6 (PR #7) de esta adaptación y auditoría de la portada v4.

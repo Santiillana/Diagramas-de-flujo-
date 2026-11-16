@@ -1,32 +1,34 @@
 # Traza · laboratorio visual de diagramas de flujo
 
-Traza es una plataforma educativa interactiva para aprender a analizar problemas, construir algoritmos y comprender su ejecución mediante diagramas de flujo, pseudocódigo y seguimiento de variables.
+Traza es una plataforma educativa interactiva para analizar problemas, construir algoritmos y comprender su ejecución mediante diagramas de flujo, pseudocódigo y seguimiento de variables.
 
 ## Estado de la versión
 
-La rama principal integra los módulos funcionales y las mejoras v4 del catálogo de Ejercicios. El **Módulo 5** está dedicado a la auditoría integral, rendimiento, accesibilidad y preparación de publicación.
-
 - Repositorio: [Santiillana/Traza](https://github.com/Santiillana/Traza)
-- Rama de producción de código: `main`
-- Último corte integrado antes de M5: `e80d5773eed6ab0c193ad351e618ce744b0c8441`
-- Última CI de `main`: [GitHub Actions #43951436564](https://github.com/Santiillana/Traza/actions/runs/43951436564)
-- Estado de publicación: no se considera desplegada hasta comprobar la URL real con el flujo de verificación posterior al despliegue.
+- Rama principal: `main`
+- Módulos funcionales M1–M5 y las mejoras v4 del catálogo integrados en `main`.
+- **Módulo 6 · Inicio y pulido del Constructor:** implementado en la rama `v4/module-6-home-builder`, PR #21 abierta y CI aprobada; todavía no fusionado.
+- Publicación: no se considera activa hasta comprobar el origen HTTPS real con el flujo de verificación posterior al despliegue.
 
 ## Espacios
 
 ### Inicio
-Acceso a Mi ficha y Aprende, con resumen y continuidad del último espacio visitado.
+Acceso a Mi ficha y Aprende, continuidad del último espacio visitado y, en la entrega del Módulo 6, progreso de las 17 lecciones con porcentaje y barra accesible. Añade accesos directos a Ejercicios, Simulador y Laboratorio.
 
 ### Mi ficha
 Cinco espacios para organizar el trabajo académico: **Hoy, Semana, Calendario, Actividades y Biblioteca**. La sección tiene identidad visual y preferencia de tema propias.
 
 ### Aprende
-Cuatro espacios de aprendizaje: **Aprende, Ejercicios, Simulador y Laboratorio**.
+Cuatro espacios: **Aprende, Ejercicios, Simulador y Laboratorio**.
 
-- **Aprende:** 17 lecciones progresivas organizadas en cuatro bloques, con explicación intuitiva y técnica, escenas, ejemplos resueltos, errores frecuentes y comprobación.
+- **Aprende:** 17 lecciones progresivas organizadas en cuatro bloques, con explicación intuitiva y técnica, escenas, ejemplos, errores frecuentes y comprobación. El progreso se conserva localmente.
 - **Ejercicios:** catálogo de 45 retos: 20 básicos, 10 intermedios, 10 avanzados y 5 expertos. Incluye búsqueda, accesos rápidos por dificultad, filtros por conceptos, filtro de ejercicios de clase, paginación y ficha protegida antes de revelar la solución.
 - **Simulador:** parser e intérprete restringidos para pseudocódigo educativo. Una traza determinista alimenta el diagrama SVG, el pseudocódigo activo, En escena, Variables, Pantalla, Historial y la línea de tiempo. Incluye avance, retroceso, reproducción, predicción, zoom, ajuste, cámara, pantalla completa, tema, tamaño de texto y movimiento reducido.
 - **Laboratorio:** ocho actividades en tres modalidades de práctica, más un constructor gráfico estructurado. El constructor compila al mismo motor del Simulador; no mantiene un intérprete paralelo.
+
+## Constructor · historial de cambios
+
+El Constructor conserva hasta 60 estados del modelo. Incluye Deshacer/Rehacer, atajos de teclado y controles accesibles. El historial está limitado a los últimos 60 snapshots; una edición posterior a deshacer descarta la rama futura. La entrega M6 añade regresiones específicas para comprobar estos límites.
 
 ## Arquitectura
 
@@ -67,9 +69,11 @@ La aplicación es estática. El workflow `.github/workflows/pages.yml` permite u
 
 ## Documentación
 
-- Especificación: `docs/MASTER_SPEC.md`
+- Especificación V5: `docs/MASTER_SPEC.md`
 - Estado del proyecto: `docs/IMPLEMENTATION_STATUS.md`
+- Informe de mejoras v2: `docs/INFORME_MEJORAS.md`
+- Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`
+- Informe M6: `docs/MODULE_6_HOME_BUILDER.md`
 - Decisiones técnicas: `docs/DECISIONS.md`
 - Auditoría de equivalencia original: `docs/ORIGINAL_FEATURE_AUDIT.md`
 - Aceptación y limitaciones: `docs/FINAL_ACCEPTANCE.md`
-- Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`
