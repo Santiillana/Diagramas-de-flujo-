@@ -1,5 +1,15 @@
 import {test,expect} from "@playwright/test";
 
+test("el dock recibe el clic físico y avanza la misma traza",async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await expect(page.locator("body")).toHaveAttribute("data-simulator-step","0");
+  await page.locator("#simulator-next").click();
+  await expect(page.locator("body")).toHaveAttribute("data-simulator-step","1");
+  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","input");
+});
+
 test("Leer anima el dato hasta Variables y pulsa el panel de destino",async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");

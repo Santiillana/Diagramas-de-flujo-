@@ -2430,3 +2430,57 @@ body[data-active-space="simulator"] .sim-context-window{z-index:70!important}
   body[data-active-space="simulator"] .dock-controls .transport-button{font-size:9px!important}
   body[data-active-space="simulator"] .dock-speed>span{font-size:7px!important}
 }
+
+
+/* Capa prioritaria de transporte: los controles no comparten la superficie de gestos del SVG. */
+body[data-active-space="simulator"] .simulator-grid.simulator-grid-four>#dock.simulator-dock{
+  position:relative!important;z-index:500!important;isolation:isolate!important;
+  pointer-events:auto!important;touch-action:pan-x!important
+}
+body[data-active-space="simulator"] #dock .dock-controls,
+body[data-active-space="simulator"] #dock .dock-controls *,
+body[data-active-space="simulator"] #dock .timeline-block,
+body[data-active-space="simulator"] #dock .timeline-block *,
+body[data-active-space="simulator"] #dock .dock-speed,
+body[data-active-space="simulator"] #dock .dock-speed *{
+  position:relative;z-index:1;pointer-events:auto!important
+}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:1!important}
+body[data-active-space="simulator"] #diagram-stage #diagram-pan-hit{z-index:1!important}
+body[data-active-space="simulator"] #diagram-stage .simulator-control-dock{z-index:80!important}
+
+@media(max-width:900px){
+  /* El modo vertical usa flex para evitar que las reglas históricas de grid
+     reintroduzcan una segunda/tercera columna mínima en el lienzo. */
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;
+    justify-content:flex-start!important;gap:0!important;
+    grid-template:none!important;grid-template-areas:none!important;
+    grid-template-columns:none!important;grid-template-rows:none!important;
+    width:100vw!important;max-width:100vw!important;min-width:0!important;
+  }
+  body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+    flex:1 1 0!important;align-self:stretch!important;display:flex!important;
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:auto!important;min-height:180px!important;
+  }
+  body[data-active-space="simulator"] #wrap.sim-wrap{
+    flex:1 1 0!important;width:100%!important;max-width:none!important;
+    min-width:0!important;height:auto!important;min-height:0!important;
+  }
+  body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:100%!important;min-height:0!important;
+  }
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    flex:0 0 58px!important;align-self:stretch!important;
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:58px!important;min-height:58px!important;max-height:58px!important;
+    margin:4px 0 0!important;
+  }
+}
+@media(max-width:520px){
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    flex-basis:56px!important;height:56px!important;min-height:56px!important;max-height:56px!important
+  }
+}
