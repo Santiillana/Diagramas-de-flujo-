@@ -3131,3 +3131,18 @@ body[data-active-space="simulator"] #PV .scene-order-explanation{align-self:stre
     box-sizing:border-box!important;
   }
 }
+
+/* Prioridad frente a reglas históricas #dock: los cinco botones caben en su columna. */
+@media(max-width:900px){
+  body[data-active-space="simulator"] #dock .dock-controls .transport-button{
+    width:auto!important;
+    min-width:16px!important;
+    max-width:none!important;
+    height:30px!important;
+    padding:0 1px!important;
+    font-size:9px!important;
+    line-height:1!important;
+    flex:1 1 0!important;
+    box-sizing:border-box!important;
+  }
+}
