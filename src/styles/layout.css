@@ -78,7 +78,7 @@
  .brand-copy{display:none}
  .primary-nav{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;min-width:0;overflow:hidden;padding:0}
  .topbar-actions{grid-column:3;grid-row:1;gap:3px}
- .nav-button{flex:1 1 0;min-width:0;min-height:34px;justify-content:center;padding:0 2px;font-size:clamp(10px,2.7vw,11px);letter-spacing:-.1px;white-space:nowrap}
+ .nav-button{flex:1 1 0;min-width:0;min-height:34px;justify-content:center;padding:0 2px;font-size:clamp(11px,2.85vw,11.5px);letter-spacing:-.25px;white-space:nowrap}
  .nav-index{display:none}
  .icon-button{width:29px;height:29px;border-radius:8px}
  .page-shell{width:min(100% - 24px,var(--content-width));padding-top:18px}
@@ -89,7 +89,7 @@
  .topbar{grid-template-columns:30px minmax(0,1fr) 60px;gap:4px;padding-inline:6px}
  .brand-mark{width:29px;height:29px}
  .primary-nav{gap:0}
- .nav-button{padding-inline:1px;font-size:clamp(10px,2.65vw,10.5px);letter-spacing:-.25px}
+ .nav-button{padding-inline:1px;font-size:clamp(11px,2.85vw,11.5px);letter-spacing:-.3px}
  .topbar-actions{gap:2px}
  .icon-button{width:28px;height:28px}
 }
