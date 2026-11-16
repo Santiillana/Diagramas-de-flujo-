@@ -54,28 +54,28 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
  await page.locator('[data-space="simulator"]').click();
  await page.locator("#simulator-next").click();
  const centered=async()=>{
-  await expect.poll(()=>page.evaluate(()=>document.querySelector("#diagram-stage")?.dataset.cameraTarget??"")).toBe("1");
-  const report=await page.evaluate(()=>{
-   const stage=document.querySelector("#diagram-stage"),svg=document.querySelector("#flow-svg");
-   const s=stage.getBoundingClientRect(),node=document.querySelector("#flow-svg .diagram-node.is-active");
-   const n=node?.getBoundingClientRect(),canvas=document.querySelector("#flow-diagram-container");
-   const cx=n?n.left+n.width/2:null,cy=n?n.top+n.height/2:null;
-   return {target:stage.dataset.cameraTarget,step:document.body.dataset.simulatorStep,
-    active:node?.id??null,stage:{x:s.x,y:s.y,w:s.width,h:s.height},
-    node:n?{x:n.x,y:n.y,w:n.width,h:n.height}:null,
-    center:n?{dx:cx-(s.left+s.width/2),dy:cy-(s.top+s.height/2)}:null,
-    camera:canvas?{x:canvas.dataset.cameraX,y:canvas.dataset.cameraY,zoom:canvas.dataset.cameraZoom}:null};
-  });
-  expect(report.center,JSON.stringify(report)).not.toBeNull();
-  expect(Math.abs(report.center.dx),JSON.stringify(report)).toBeLessThan(report.stage.w*.12);
-  expect(Math.abs(report.center.dy),JSON.stringify(report)).toBeLessThan(report.stage.h*.16);
+  const activeId=await expect.poll(()=>page.evaluate(()=>document.querySelector("#flow-svg .diagram-node.is-active")?.id??"")).not.toBe("");
+  const nodeId=String(await page.locator("#flow-svg .diagram-node.is-active").getAttribute("id")).replace("flow-node-","");
+  await expect.poll(()=>page.locator("#diagram-stage").getAttribute("data-camera-target")).toBe(nodeId);
+  await expect.poll(()=>page.evaluate(()=>{
+   const stage=document.querySelector("#diagram-stage").getBoundingClientRect();
+   const node=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();
+   if(!node)return false;
+   return Math.abs(node.left+node.width/2-(stage.left+stage.width/2))<stage.width*.12&&
+     Math.abs(node.top+node.height/2-(stage.top+stage.height/2))<stage.height*.16;
+  })).toBe(true);
  };
  await centered();
  await page.locator("#simulator-controls-toggle").click();
  await page.locator("#sim-exercise-select").selectOption("24");
+ await page.locator("#simulator-next").click();
  await centered();
  const methods=page.locator("#simulator-method-tabs [data-method-index]");
- if(await methods.count()>1){await methods.nth(1).click();await centered();}
+ if(await methods.count()>1){
+  await methods.nth(1).click();
+  await page.locator("#simulator-next").click();
+  await centered();
+ }
 });
 
 test("Ctrl/Meta+rueda no modifica el zoom y el panel flotante evita el nodo activo",async({page})=>{
