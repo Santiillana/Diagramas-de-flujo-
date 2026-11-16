@@ -1,61 +1,59 @@
-# Informe de aceptación final · Traza
+# Informe de aceptación · Módulo 5 · Traza
 
-**Fecha de corte:** 16 de noviembre de 2026  
+**Fecha:** 16 de noviembre de 2026  
 **Repositorio:** `Santiillana/Traza`  
-**Rama predeterminada:** `main`  
-**Commit integrado antes de M5:** `e80d5773eed6ab0c193ad351e618ce744b0c8441`
+**PR:** [#20](https://github.com/Santiillana/Traza/pull/20), abierta y sin fusionar.  
+**SHA validado:** `ee804803354a8ea5cf60d17c37405ac90792faa0`.
 
-## Resultado actual
+## Dictamen
 
-La base funcional y las mejoras v4 están integradas en `main`. El Módulo 5 es la auditoría final y la preparación de publicación. Este informe distingue la evidencia ya observada de las verificaciones que todavía requieren un deployment real.
+<badge>Validación CI aprobada</badge>
 
-| Área | Resultado al iniciar M5 |
+La auditoría técnica del Módulo 5 pasó completamente en GitHub Actions. La aceptación del código y de las pruebas de navegador está aprobada para el SHA indicado. **La publicación pública no está aceptada todavía**, porque falta ejecutar la verificación posterior al despliegue con el origen HTTPS real.
+
+## Evidencia de CI
+
+[GitHub Actions run 43954434334](https://github.com/Santiillana/Traza/actions/runs/43954434334)
+
+- Node: **267/267**, cero fallos.
+- Playwright/Chromium: **99/99**, cero fallos.
+- Instalación CI con Node 22; npm informó cero vulnerabilidades en los cuatro paquetes auditados.
+- Capturas visuales: 18 PNG cargados correctamente en `ui-audit-29b2188dc0b27d9a41da525ea8b589d40b83d1df`, artefacto ID `14271616094`.
+
+### Cobertura comprobada
+
+- Los 45 ejercicios, todos sus métodos y escenarios disponibles se ejecutan con el intérprete; los resultados se contrastan también con un oráculo independiente.
+- Se prueban retos expertos, expresiones, parser, ciclos, errores de entrada y límites de ejecución.
+- Rendimiento funcional: ciclo de 200 iteraciones con traza acotada, ciclos anidados con contexto correcto y navegación de snapshots sin mutación.
+- Accesibilidad: contraste WCAG AA, navegación por teclado y movimiento reducido.
+- Navegador: simulador, escenas, variables, historial, cámara, zoom, fullscreen, constructor, catálogo, diez vistas, navegación responsive y tolerancia a localStorage bloqueado.
+- Las diez vistas se recorren a 390, 768, 1024 y 1440 px sin overflow horizontal ni errores de recursos/JavaScript.
+- El primer recorrido detectó una superposición táctil en la cabecera móvil; se corrigió el contexto de posicionamiento de la navegación fija y la segunda ejecución pasó.
+
+## Criterios y limitaciones abiertas
+
+| Criterio | Resultado |
 |---|---|
-| Inicio y navegación | Integrados; la app declara Inicio, cinco espacios de Mi ficha y cuatro espacios de Aprende |
-| Aprende | 17 lecciones; progreso, escenas, ejemplos y comprobación |
-| Ejercicios | 45 retos, distribución 20/10/10/5; CI de M4 integrada |
-| Simulador | Parser e intérprete sin ejecución dinámica de JavaScript; UI conectada a traza determinista |
-| Laboratorio | Ocho actividades y constructor estructurado con compilador y motor compartidos |
-| Rendimiento | Pruebas automatizadas de ciclos de 200 vueltas, ciclos anidados y snapshots |
-| Accesibilidad | Pruebas de contraste WCAG AA, navegación por teclado y movimiento reducido |
-| Publicación | No aceptada como deployment público hasta completar smoke test sobre URL real |
+| CI Node y Chromium del SHA final | Aprobado |
+| Capturas de auditoría generadas | Aprobado; 18 PNG en artefacto CI |
+| Navegación y responsive automatizados | Aprobado en Chromium emulado |
+| Contraste WCAG AA y teclado | Aprobado por las suites existentes y nuevas |
+| Constructor de diagramas | Funciona en modelo estructurado; conexiones libres arbitrarias entre puertos no implementadas |
+| Prueba en hardware físico | No realizada |
+| Deployment público | **Pendiente** |
+| Smoke test de producción | **Pendiente** |
 
-## Evidencia CI de main previa a los nuevos tests M5
+## Publicación
 
-[GitHub Actions run 43951436564](https://github.com/Santiillana/Traza/actions/runs/43951436564)
+El workflow `.github/workflows/pages.yml` es manual y de respaldo. Su comentario indica Cloudflare Workers como hosting primario, pero no hay una URL de producción visible ni una prueba automática de ese proveedor en el repositorio.
 
-- Node: **267/267**.
-- Playwright/Chromium: **95/95**.
-- Instalación de dependencias: sin vulnerabilidades reportadas por npm.
-- Capturas visuales: 18 PNG subidos correctamente en el artefacto `ui-audit-e80d5773eed6ab0c193ad351e618ce744b0c8441` (ID `14266019722`).
+El workflow `.github/workflows/post-deploy.yml` requiere un origen HTTPS real. Antes de declarar release completo debe:
+1. comprobar que la portada publicada expone exactamente la marca `traza-release` del commit esperado;
+2. ejecutar `e2e/production-smoke.spec.js` contra ese origen;
+3. guardar el artefacto de capturas de producción y registrar su run.
 
-La suite Node ejecuta todos los métodos y escenarios existentes del catálogo y contrasta resultados con un oráculo independiente. Los tests de rendimiento cubren 200 iteraciones, ciclos anidados y navegación por snapshots. La suite de navegador cubre el Simulador, Laboratorio, Constructor, responsive y la nueva navegación del catálogo.
+No se inventa una URL ni se usa la aprobación de CI de PR como sustituto de un deployment real.
 
-## Criterios de auditoría M5
+## Conclusión
 
-Los nuevos tests de M5 deben verificar:
-- Entrada y navegación por las diez vistas declaradas.
-- Ausencia de excepciones JS y fallos al cargar scripts/hojas de estilo.
-- Ausencia de desbordamiento horizontal a 390, 768, 1024 y 1440 px.
-- Navegación por teclado en los controles visibles.
-- Comportamiento tolerante cuando el navegador bloquea localStorage.
-- Revalidación del suite de Node y Playwright en el commit de M5.
-
-El resultado final, SHA y artefacto se añadirán tras completar Actions. No se anticipa su aprobación antes de verla.
-
-## Limitaciones que permanecen declaradas
-
-1. **Constructor:** el modelo es estructurado por secuencia, ramas V/F y bloques anidados. No es un editor de conexiones manuales arbitrarias entre puertos SVG.
-2. **Dispositivos físicos:** las pruebas responsive se ejecutan en Chromium emulado. No equivalen a una prueba táctil en teléfonos o tabletas reales.
-3. **Publicación:** `.github/workflows/pages.yml` permite despliegue manual de respaldo en GitHub Pages. `.github/workflows/post-deploy.yml` requiere introducir el origen HTTPS real. Hasta que esa ejecución finalice y confirme la marca `traza-release` y pase el smoke test, no debe decirse que el sitio está publicado ni que M5 está completamente aceptado.
-4. **Rendimiento:** las pruebas de traza acotada garantizan límites funcionales definidos, pero no son una medición de rendimiento en hardware de usuario ni una prueba de carga multiusuario.
-
-## Regla de aceptación
-
-M5 podrá declararse aceptado cuando:
-- La CI del SHA final esté verde en Node y Chromium.
-- Las capturas de auditoría visual se hayan generado y revisado.
-- No queden fallos funcionales reproducibles sin documentar.
-- El smoke test del sitio desplegado pase contra el origen HTTPS real.
-
-Si el deployment o la prueba física no están disponibles, se conservarán como limitaciones explícitas; no se sustituirán por inferencias basadas en un merge o en pruebas locales.
+**M5 aprobado a nivel de código, documentación y CI automatizada.** El cierre del release público permanece condicionado al acceso/configuración del hosting y a la ejecución del smoke test real. La PR #20 sigue separada de `main`; la rama principal no se modificó con esta auditoría.

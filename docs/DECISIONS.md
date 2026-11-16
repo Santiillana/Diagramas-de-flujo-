@@ -154,3 +154,10 @@ La suite CI demuestra el comportamiento del commit en el entorno de Actions. La 
 
 ## D-024 · El diseño estructurado del constructor se declara con precisión
 El constructor integrado permite secuencias, decisiones y ciclos anidados mediante un modelo estructurado compilado al motor común. No se denomina editor libre de conexiones arbitrarias entre puertos. Esta limitación debe seguir visible en los informes de aceptación.
+
+ 
+## D-025 · Evitar contextos de contención para navegación fija móvil
+En la cabecera móvil, un `backdrop-filter` sobre el contenedor padre podía crear un containing block para la navegación descendiente `position: fixed` y superponerla al selector de sección. La auditoría M5 detectó el bloqueo de interacción; se quitó ese filtro del padre en móvil y se conservó un fondo sólido. La regresión está cubierta por el recorrido responsive de M5.
+
+## D-026 · Evidencia M5 ligada al SHA y al artefacto exactos
+La aceptación automatizada de M5 se registra contra el SHA `ee804803354a8ea5cf60d17c37405ac90792faa0`, el run 43954434334 y el artefacto `ui-audit-29b2188dc0b27d9a41da525ea8b589d40b83d1df`. Un resultado histórico de otra rama o SHA no sustituye esa evidencia.
