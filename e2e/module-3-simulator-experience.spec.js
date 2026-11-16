@@ -52,15 +52,17 @@ test("el movimiento reducido conserva el resaltado e impide vuelos secundarios",
   await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
 });
 
-test("En escena cambia con el evento y explica el cálculo y el símbolo del diagrama",async({page})=>{
+test("En escena muestra una ilustración y una explicación concreta sin repetir paneles",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   for(let i=0;i<3;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","assignment");
   await expect(page.locator("#scene-content .scene-figure-host")).toBeVisible();
-  await expect(page.locator("#scene-content .scene-operation-breakdown")).toContainText("8 + 5 = 13");
-  await expect(page.locator("#scene-content .scene-symbol-explanation")).toContainText("Rectángulo · Proceso");
+  await expect(page.locator("#scene-content .scene-event-body")).toContainText("8 + 5 = 13");
+  await expect(page.locator("#scene-content .scene-operation-breakdown")).toHaveCount(0);
+  await expect(page.locator("#scene-content .scene-symbol-explanation")).toHaveCount(0);
+  await expect(page.locator("#scene-content .scene-event-technical")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -119,4 +121,32 @@ test("la ficha contextual se reposiciona sin cubrir otras figuras ni conexiones"
   expect(report.activeOverlap).toBe(false);
   expect(report.otherNodeOverlap).toBe(false);
   expect(report.edgeOverlap).toBe(false);
+});
+
+test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
+  await page.locator("#sim-exercise-select").selectOption("10");
+  const iteration=page.locator('#trace-history [data-history-step]').filter({hasText:"ITERACIÓN"}).first();
+  await expect(iteration).toBeVisible();
+  await iteration.click();
+  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
+  await expect(page.locator("#scene-content .scene-loop-round")).toContainText("Vuelta 1");
+  await expect(page.locator("#scene-content .scene-loop-track .scene-loop-step.is-active")).toContainText("Cuerpo");
+  const geometry=await page.evaluate(()=>{
+    const paths=[...document.querySelectorAll("#flow-svg .diagram-edge.is-back path")];
+    return paths.map(path=>{
+      const values=(path.getAttribute("d").match(/-?\\d+(?:\\.\\d+)?/g)||[]).map(Number);
+      const [startX,startY,bendX,,bendX2,endY,endX,endY2]=values;
+      const boxes=[...document.querySelectorAll("#flow-svg .diagram-node")].map(node=>node.getBBox());
+      const startMatches=boxes.some(box=>Math.abs(box.x-startX)<1&&Math.abs(box.y+box.height/2-startY)<1);
+      const endMatches=boxes.some(box=>Math.abs(box.x-endX)<1&&Math.abs(box.y+box.height/2-endY2)<1);
+      return {outside:bendX<Math.min(startX,endX)-30&&bendX2===bendX,startMatches,endMatches};
+    });
+  });
+  expect(geometry.length).toBeGreaterThan(0);
+  expect(geometry.every(edge=>edge.outside&&edge.startMatches&&edge.endMatches)).toBe(true);
+  await expect(page.locator("#flow-token-label")).toHaveCount(0);
 });
