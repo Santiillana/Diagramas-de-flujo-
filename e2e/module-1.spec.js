@@ -1,80 +1,106 @@
 import { test, expect } from "@playwright/test";
 
-test("la navegación activa cada uno de los cinco espacios", async ({ page }) => {
-  const pageErrors = [];
-  page.on("pageerror", error => pageErrors.push(error.message));
+test("la navegación principal contiene exactamente cuatro espacios",async({page})=>{
+  const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
-  const spaces = ["learn", "exercises", "simulator", "lab", "builder"];
-  for (const space of spaces) {
-    await page.locator(`[data-space="${space}"]`).click();
-    const state = await page.evaluate(() => ({
-      active: document.body.dataset.activeSpace,
-      views: [...document.querySelectorAll("[data-view]")].map(view => ({name:view.dataset.view,hidden:view.hidden,display:getComputedStyle(view).display}))
-    }));
-    console.log("NAV_ACCEPTANCE "+space+" "+JSON.stringify(state));
-    expect(state.active).toBe(space);
-    await expect(page.locator(`[data-view="${space}"]`)).toBeVisible();
-    await expect(page.locator(`[data-space="${space}"]`)).toHaveAttribute("aria-current", "page");
-    await expect(page.locator("body")).toHaveAttribute("data-active-space", space);
+  const spaces=["learn","exercises","simulator","lab"];
+  await expect(page.locator("#primary-nav [data-space]")).toHaveCount(4);
+  for(const space of spaces){
+    await page.locator('#primary-nav [data-space="'+space+'"]').click();
+    await expect(page.locator('[data-view="'+space+'"]')).toBeVisible();
+    await expect(page.locator('#primary-nav [data-space="'+space+'"]')).toHaveAttribute("aria-current","page");
+    await expect(page.locator("body")).toHaveAttribute("data-active-space",space);
   }
-  expect(pageErrors).toEqual([]);
+  await expect(page.locator('[data-view="builder"]')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
 
-for (const viewport of [
-  { name: "escritorio", width: 1440, height: 1000 },
-  { name: "tableta horizontal", width: 1024, height: 768 },
-  { name: "móvil", width: 390, height: 844 }
-]) {
-  test(`las cinco vistas no provocan desbordamiento horizontal en ${viewport.name}`, async ({ page }) => {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+const headerViewports = [
+  {name:"pantalla amplia",width:1920},
+  {name:"referencia",width:1649},
+  {name:"escritorio",width:1440},
+  {name:"tableta",width:1024},
+  {name:"móvil",width:390}
+];
+
+test("la barra superior conserva una sola fila y no se corta en los cinco anchos de referencia",async({page})=>{
+  for(const viewport of headerViewports){
+    await page.setViewportSize({width:viewport.width,height:1000});
     await page.goto("/");
-    for (const space of ["exercises", "learn", "simulator", "lab", "builder"]) {
-      await page.locator(`[data-space="${space}"]`).click();
-      await expect(page.locator(`[data-view="${space}"]`)).toBeVisible();
-      const report = await page.evaluate(() => ({
-        width: document.documentElement.clientWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-        offenders: [...document.querySelectorAll("body *")].map(element => {
-          const rect = element.getBoundingClientRect();
-          const style = getComputedStyle(element);
-          return {tag:element.tagName,id:element.id,className:typeof element.className==="string"?element.className:"",left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),overflow:style.overflow,position:style.position};
-        }).filter(item => item.width>0 && item.right>innerWidth+1 && item.overflow!=="hidden").sort((a,b)=>b.right-a.right).slice(0,12)
-      }));
-      const overflow = report.scrollWidth-report.width;
-      expect(overflow, `overflow horizontal en ${space} a ${viewport.width}px: ${JSON.stringify(report.offenders)}`).toBeLessThanOrEqual(1);
+    await expect(page.locator("#primary-nav [data-space]")).toHaveCount(4);
+    const geometry=await page.evaluate(()=>{
+      const rect=selector=>{
+        const r=document.querySelector(selector).getBoundingClientRect();
+        return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};
+      };
+      const header=document.querySelector("#hd");
+      const nav=document.querySelector("#primary-nav");
+      return {
+        brand:rect(".brand"),nav:rect("#primary-nav"),actions:rect(".topbar-actions"),
+        centers:[".brand","#primary-nav",".topbar-actions"].map(selector=>{
+          const r=document.querySelector(selector).getBoundingClientRect();return r.top+r.height/2;
+        }),
+        headerOverflow:header.scrollWidth-header.clientWidth,
+        navOverflow:nav.scrollWidth-nav.clientWidth,
+        pageOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+      };
+    });
+    expect(Math.max(...geometry.centers)-Math.min(...geometry.centers),viewport.name+" debe mantener marca, navegación y acciones en una fila").toBeLessThanOrEqual(3);
+    expect(geometry.brand.right).toBeLessThanOrEqual(geometry.nav.left+1);
+    expect(geometry.nav.right).toBeLessThanOrEqual(geometry.actions.left+1);
+    expect(geometry.headerOverflow).toBeLessThanOrEqual(1);
+    expect(geometry.navOverflow).toBeLessThanOrEqual(1);
+    expect(geometry.pageOverflow).toBeLessThanOrEqual(1);
+    for(const space of ["learn","exercises","simulator","lab"]){
+      await page.locator('#primary-nav [data-space="'+space+'"]').click();
+      await expect(page.locator('[data-view="'+space+'"]')).toBeVisible();
+      await expect(page.locator('#primary-nav [data-space="'+space+'"]')).toHaveAttribute("aria-current","page");
+    }
+    await page.locator("#hd").screenshot({path:"test-results/module-1-header-"+viewport.width+".png"});
+  }
+});
+
+for(const viewport of [
+  {name:"pantalla amplia",width:1920,height:1000},
+  {name:"referencia",width:1649,height:1000},
+  {name:"escritorio",width:1440,height:1000},
+  {name:"tableta",width:1024,height:768},
+  {name:"móvil",width:390,height:844}
+]){
+  test("los cuatro espacios no desbordan el ancho en "+viewport.name,async({page})=>{
+    await page.setViewportSize({width:viewport.width,height:viewport.height});
+    await page.goto("/");
+    for(const space of ["exercises","learn","simulator","lab"]){
+      await page.locator('#primary-nav [data-space="'+space+'"]').click();
+      await expect(page.locator('[data-view="'+space+'"]')).toBeVisible();
+      const width=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      expect(width,"desbordamiento en "+space+" a "+viewport.width+"px").toBeLessThanOrEqual(1);
     }
   });
 }
 
-test("el dock flota sobre el lienzo sin consumir una fila del simulador", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
+test("el Simulador conserva sus cuatro ventanas y el dock dentro de su lienzo",async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const dock = await page.locator(".execution-dock").boundingBox();
-  const stage = await page.locator("#wrap").boundingBox();
-  const position = await page.locator(".execution-dock").evaluate(element => getComputedStyle(element).position);
-  expect(dock).not.toBeNull();
-  expect(stage).not.toBeNull();
-  expect(position).toBe("fixed");
-  expect(Math.abs(1000 - dock.y - dock.height - 10)).toBeLessThanOrEqual(2);
-  expect(dock.y).toBeLessThan(stage.y + stage.height);
-  expect(dock.y + dock.height).toBeGreaterThan(stage.y);
+  for(const selector of ["#sim-window-context","#sim-window-code","#PV","#PR","#dock","#flow-svg"]){
+    await expect(page.locator(selector)).toBeVisible();
+  }
+  await expect(page.locator("#simulator-output-details")).toBeAttached();
+  await expect(page.locator("#simulator-history-details")).toBeAttached();
+  const dock=await page.locator("#dock").boundingBox();
+  const stage=await page.locator("#diagram-stage").boundingBox();
+  expect(dock).not.toBeNull();expect(stage).not.toBeNull();
+  expect(dock.y).toBeGreaterThan(stage.y);
 });
 
-test("tema y movimiento reducido responden a controles y preferencia del sistema", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("tema y movimiento reducido responden a los controles",async({page})=>{
+  await page.emulateMedia({reducedMotion:"reduce"});
   await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("data-motion", "reduced");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("html")).toHaveAttribute("data-motion","reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
   await page.locator('[data-action="toggle-theme"]').click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("html")).toHaveAttribute("data-theme","light");
   await page.locator('[data-action="toggle-motion"]').click();
-  await expect(page.locator("html")).toHaveAttribute("data-motion", "full");
-});
-
-test("el prototipo original permanece enlazado y accesible", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator('a[href="./reference/diagramas_de_flujo_original.html"]').first()).toHaveAttribute("target", "_blank");
-  const response = await page.request.get("/reference/diagramas_de_flujo_original.html");
-  expect(response.ok()).toBeTruthy();
+  await expect(page.locator("html")).toHaveAttribute("data-motion","full");
 });

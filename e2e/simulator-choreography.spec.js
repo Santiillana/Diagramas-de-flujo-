@@ -1,67 +1,43 @@
-import { test, expect } from "@playwright/test";
+import {test,expect} from "@playwright/test";
 
-test("Leer anima el valor hasta Variables y pulsa la ventana de destino",async({page})=>{
-  await page.setViewportSize({width:1440,height:1000});
+test("el paso activo actualiza la ficha contextual con su símbolo y explicación",async({page})=>{
+  await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
+  await expect(page.locator("#vf")).toBeVisible();
+  const before=await page.locator("#vf").getAttribute("data-anchor-node");
   await page.locator("#simulator-next").click();
-  const flight=page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="variables"]');
-  await expect(flight).toBeAttached({timeout:5000});
-  await expect(flight).toContainText("8");
-  await expect(page.locator('#PR > .variables-panel[data-pulse]')).toBeVisible({timeout:5000});
-  await expect(page.locator('#PR > .variables-panel .sim-pulse-count')).toContainText("+1");
+  await expect(page.locator("#vf")).toBeVisible();
+  const after=await page.locator("#vf").getAttribute("data-anchor-node");
+  expect(after).not.toBeNull();
+  await expect(page.locator("#vf-content")).not.toBeEmpty();
+  await expect(page.locator("#scene-content .scene-symbol-explanation")).toBeVisible();
+  expect(Number(after)).toBeGreaterThanOrEqual(0);
+  expect(before).not.toBeNull();
 });
 
-test("Imprimir vuela hacia Pantalla y una interrupción manual cancela los vuelos pendientes",async({page})=>{
-  await page.setViewportSize({width:1440,height:1000});
+test("las velocidades extremas cambian la duración visual sin desactivar el recorrido",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  const outputStep=page.locator("#trace-history li").filter({hasText:"SALIDA"}).first();
-  const index=Number(await outputStep.getAttribute("data-history-step"));
-  await page.locator("#simulator-timeline").evaluate((input,value)=>{input.value=String(value-1);input.dispatchEvent(new Event("input",{bubbles:true}));},index);
+  await page.locator("#simulator-speed").selectOption("0.1");
+  await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue("--sim-speed").trim())).toBe("0.1");
+  const slow=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sim-animation-duration")));
+  await page.locator("#simulator-speed").selectOption("8");
+  await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue("--sim-speed").trim())).toBe("8");
+  const fast=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sim-animation-duration")));
+  expect(slow).toBeGreaterThan(fast);
   await page.locator("#simulator-next").click();
-  await expect(page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="output"]')).toBeAttached({timeout:5000});
+  await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
+});
+
+test("Mostrar completo revela la ficha de inmediato y mantiene el paso activo",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
+  await page.locator("#simulator-presentation-mode").selectOption("complete");
   await page.locator("#simulator-next").click();
-  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
+  await expect(page.locator("body")).toHaveAttribute("data-presentation-mode","complete");
+  await expect(page.locator("#vf")).toBeVisible();
   await expect(page.locator("#timeline-count")).toContainText("/");
-});
-
-
-test("cinco saltos rápidos cancelan chips, pulsos y contadores pendientes",async({page})=>{
-  await page.setViewportSize({width:1440,height:1000});
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator("#simulator-speed").selectOption("300");
-  await page.locator("#simulator-next").click();
-  await expect(page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="variables"]')).toBeAttached({timeout:5000});
-  const timeline=page.locator("#simulator-timeline");
-  for(const step of [2,3,4,5,1]){
-    await timeline.evaluate((input,value)=>{
-      input.value=String(value);
-      input.dispatchEvent(new Event("input",{bubbles:true}));
-    },step);
-  }
-  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
-  await expect(page.locator("[data-pulse]")).toHaveCount(0);
-  await expect(page.locator(".sim-pulse-count")).toHaveCount(0);
-});
-
-test("movimiento reducido conserva el resaltado instantáneo y omite vuelos y animaciones",async({page})=>{
-  await page.setViewportSize({width:1440,height:1000});
-  await page.emulateMedia({reducedMotion:"reduce"});
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator("#simulator-next").click();
-  await expect(page.locator('#PR > .variables-panel[data-pulse]')).toBeVisible();
-  await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
-  const styles=await page.locator('#PR > .variables-panel').evaluate(el=>({
-    animationDuration:getComputedStyle(el).animationDuration,
-    transitionDuration:getComputedStyle(el).transitionDuration
-  }));
-  const milliseconds=value=>{
-    const amount=parseFloat(value);
-    return value.trim().endsWith("ms")?amount:amount*1000;
-  };
-  expect(milliseconds(styles.animationDuration)).toBeLessThanOrEqual(0.01);
-  expect(milliseconds(styles.transitionDuration)).toBeLessThanOrEqual(0.01);
+  await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
 });

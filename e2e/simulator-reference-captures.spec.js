@@ -9,6 +9,7 @@ test("captura el ejercicio 24 en pasos 1, 3 y 7 en escritorio y móvil",async({p
     await page.setViewportSize({width:size.width,height:size.height});
     await page.goto("/");
     await page.locator('[data-space="simulator"]').click();
+    await page.locator("#simulator-controls-toggle").click();
     await page.locator("#sim-exercise-select").selectOption("24");
     await expect(page.locator("#flow-svg")).toBeVisible();
     if(size.name==="mobile"){

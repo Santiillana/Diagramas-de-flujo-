@@ -1,176 +1,74 @@
-import { test, expect } from "@playwright/test";
-import { exercises } from "../src/content/exercises.js";
-import { buildGapChallenge } from "../src/ui/lab/generators.js";
+import {test,expect} from "@playwright/test";
 
-test("Laboratorio conserva la traza y permite predecir el siguiente paso", async ({ page }) => {
+async function openLab(page){
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await page.locator('[data-space="lab"]').click();
+}
+
+test("Laboratorio presenta exactamente tres formas de practicar",async({page})=>{
+  await openLab(page);
+  await expect(page.locator("#lab-mode-cards [data-lab-mode]")).toHaveCount(3);
+  await expect(page.locator("#lab-mode-cards [data-lab-mode='read']")).toContainText("Sigue la ficha");
+  await expect(page.locator("#lab-mode-cards [data-lab-mode='build']")).toContainText("Arma el diagrama");
+  await expect(page.locator("#lab-mode-cards [data-lab-mode='debug']")).toContainText("Caza el error");
+});
+
+test("Sigue la ficha conserva traza y predicción",async({page})=>{
+  await openLab(page);
+  await page.locator('[data-lab-mode="read"]').click();
   await expect(page.locator("#lab-context-title")).toContainText("Suma de dos números");
   await expect(page.locator("#lab-diagram-container svg")).toBeVisible();
   await page.locator('[data-lab-activity="predict"]').click();
-  await expect(page.locator("#lab-task-title")).toHaveText("Predice el siguiente paso");
   await page.locator("#lab-task-content [data-predict]").first().click();
   await page.locator("#lab-reveal-prediction").click();
   await expect(page.locator("#lab-predict-feedback")).toContainText("El evento real es");
 });
 
-test("Tabla de seguimiento refleja los snapshots y la fila activa", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
-  await page.locator('[data-lab-activity="table"]').click();
-  await expect(page.locator(".lab-trace-table tbody tr").first()).toBeVisible();
-  const rows=await page.locator(".lab-trace-table tbody tr").count();
-  expect(rows).toBeGreaterThan(3);
-  await expect(page.locator(".lab-trace-table tbody tr.is-current")).toHaveCount(1);
-});
-
-test("Ordena instrucciones, identifica símbolos y detecta errores por contraejemplo", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
+test("Arma el diagrama agrupa ordenar, identificar símbolos y completar huecos",async({page})=>{
+  await openLab(page);
+  await page.locator('[data-lab-mode="build"]').click();
+  await expect(page.locator('#lab-activity-list [data-lab-activity="order"]')).toBeVisible();
   await page.locator('[data-lab-activity="order"]').click();
-  await page.locator("#lab-order-check").click();
-  await expect(page.locator("#lab-order-feedback")).toContainText("fuera de lugar");
+  await expect(page.locator("#lab-task-title")).toContainText("Ordena instrucciones");
   await page.locator('[data-lab-activity="symbol"]').click();
-  await page.locator('[data-symbol-choice="Paralelogramo"]').click();
-  await expect(page.locator("#lab-symbol-feedback")).toContainText("Correcto");
-  await page.locator('[data-lab-activity="error"]').click();
-  await page.locator('[data-error-choice="incorrect"]').click();
-  await expect(page.locator("#lab-error-feedback")).toContainText("Buena detección");
+  await expect(page.locator("#lab-task-title")).toContainText("figura");
+  await page.locator('[data-lab-activity="fill-gap"]').click();
+  await expect(page.locator("#lab-task-title")).toContainText("hueco");
 });
 
-test("¿Y si…? compara el resultado original con un pseudocódigo modificado sin alterar la simulación", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
+test("el lienzo libre vive dentro de Arma el diagrama y permite añadir piezas",async({page})=>{
+  await openLab(page);
+  await page.locator('[data-lab-mode="build"]').click();
+  await page.locator("#lab-open-builder").click();
+  await expect(page.locator("#lab-builder-stage")).toBeVisible();
+  const cards=page.locator("#builder-canvas-list [data-node-card]");
+  const initial=await cards.count();
+  await page.locator('#lab-builder-stage [data-add-node="process"]').click();
+  await expect(cards).toHaveCount(initial+1);
+  await expect(page.locator("#view-lab")).toBeVisible();
+  await expect(page.locator("#view-builder")).toHaveCount(0);
+});
+
+test("Caza el error localiza la línea y compara una corrección con los mismos datos",async({page})=>{
+  await openLab(page);
+  await page.locator('[data-lab-mode="debug"]').click();
+  await page.locator('[data-lab-activity="error"]').click();
+  await page.locator('[data-error-line="0"]').click();
+  await expect(page.locator("#lab-task-content")).toContainText("Elegiste: M=0");
+  await page.locator('[data-error-fix="0"]').click();
+  await expect(page.locator("#lab-error-feedback")).toContainText("ANTES · ORIGINAL");
+  await expect(page.locator("#lab-error-feedback")).toContainText("DESPUÉS · CORRECCIÓN");
+});
+
+test("¿Y si...? compara ambos recorridos e identifica su primera divergencia",async({page})=>{
+  await openLab(page);
+  await page.locator('[data-lab-mode="debug"]').click();
   await page.locator('[data-lab-activity="whatif"]').click();
   await page.locator("#lab-whatif-code").fill("leer a,b\nimp a-b");
   await page.locator("#lab-whatif-inputs").fill("8,5");
   await page.locator("#lab-whatif-run").click();
   await expect(page.locator("#lab-whatif-result")).toContainText("[13]");
   await expect(page.locator("#lab-whatif-result")).toContainText("[3]");
-  await expect(page.locator("#lab-context-title")).toContainText("Suma de dos números");
-});
-
-test("Completa el hueco valida la expresión con la ejecución real", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
-  await page.locator('[data-lab-activity="fill-gap"]').click();
-  await expect(page.locator("#lab-task-title")).toHaveText("Completa el hueco");
-
-  const method=exercises.find(item=>item.id===1).methods[0];
-  const challenge=buildGapChallenge(1,0,method.pseudocode,0);
-  expect(challenge).not.toBeNull();
-  await page.locator("#lab-gap-answer").fill(challenge.answer);
-  await page.locator("#lab-gap-check").click();
-  await expect(page.locator("#lab-gap-feedback")).toContainText("La ejecución conserva las mismas salidas y variables");
-});
-
-test("Sigue la flecha muestra opciones y permite inspeccionar el siguiente paso real", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
-  await page.locator('[data-lab-activity="follow-arrow"]').click();
-  await expect(page.locator("#lab-task-title")).toHaveText("Sigue la flecha");
-  const choices=page.locator("#lab-task-content [data-arrow-node]");
-  await expect(choices.first()).toBeVisible();
-  await choices.first().click();
-  await expect(page.locator("#lab-arrow-feedback")).toContainText("La siguiente instrucción real es:");
-  await page.locator("#lab-arrow-inspect").click();
-  await expect(page.locator("#dock-step-title")).not.toBeEmpty();
-});
-
-test("Constructor ejecuta los presets de secuencia y decisión en el motor común", async ({ page }) => {
-  const pageErrors=[];
-  page.on("pageerror",error=>pageErrors.push(error.stack??error.message));
-  await page.goto("/");
-  await page.locator('[data-space="builder"]').click();
-  await page.locator('[data-builder-preset="sequence"]').click();
-  await page.locator("#builder-inputs").fill("8");
-  await page.locator("#builder-run").click();
-  await expect(page.locator("#builder-last")).toBeEnabled();
-  const initialTimeline = await page.locator("#builder-timeline-label").getAttribute("data-current-step");
-  const totalSteps=Number(await page.locator("#builder-timeline-label").getAttribute("data-total-steps"));
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-last")).toHaveAttribute("data-last-seek-after",String(totalSteps-1));
-  expect(pageErrors).toEqual([]);
-  await expect(page.locator("#builder-timeline-label")).toHaveAttribute("data-current-step",String(totalSteps));
-  expect(await page.locator("#builder-timeline-label").getAttribute("data-current-step")).not.toBe(initialTimeline);
-  await expect(page.locator("#builder-runtime-message")).toContainText("Ejecución de");
-  await expect(page.locator("#builder-output")).toContainText("16");
-  await page.locator('[data-builder-preset="decision"]').click();
-  await page.locator("#builder-inputs").fill("5");
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("1");
-  await page.locator("#builder-inputs").fill("-2");
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("0");
-});
-
-test("Constructor ejecuta Para, Mientras y Hacer–Mientras", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="builder"]').click();
-  await page.locator('[data-builder-preset="for"]').click();
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("10");
-  await page.locator('[data-builder-preset="while"]').click();
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("1");
-  await expect(page.locator("#builder-output")).toContainText("3");
-  await page.locator('[data-builder-preset="doWhile"]').click();
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("3");
-});
-
-test("Valida bloques faltantes y permite anidar instrucciones dentro de una rama", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="builder"]').click();
-  await page.locator('[data-builder-preset="empty"]').click();
-  await page.locator("#builder-validate").click();
-  await expect(page.locator("#builder-errors")).toContainText("Añade al menos una instrucción");
-  await page.locator('[data-builder-preset="decision"]').click();
-  await page.locator(".builder-node-nested [data-scope-slot='trueBranch']").click();
-  await expect(page.locator("#builder-breadcrumb")).toContainText("Rama Verdadera");
-  await page.locator('[data-add-node="process"]').click();
-  await expect(page.locator("#builder-canvas-list")).toContainText("Proceso");
-  await page.locator("#builder-validate").click();
-  await expect(page.locator("#builder-status")).toHaveText("ESTRUCTURA VÁLIDA");
-});
-
-test("Laboratorio y constructor se adaptan a escritorio, tableta y móvil", async ({ page }) => {
-  for (const viewport of [{width:1440,height:960},{width:1024,height:768},{width:390,height:844}]) {
-    await page.setViewportSize(viewport);
-    await page.goto("/");
-    await page.locator('[data-space="lab"]').click();
-    let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
-    await page.locator('[data-space="builder"]').click();
-    overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
-  }
-});
-
-
-test("el constructor permite seleccionar, editar y reordenar instrucciones", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-space="builder"]').click();
-  await page.locator('[data-builder-preset="sequence"]').click();
-  const processCard=page.locator('[data-node-card]').filter({hasText:"Proceso"}).first();
-  await processCard.locator("[data-select-node]").click();
-  await expect(page.locator("#builder-inspector-content")).toContainText("Expresión");
-  await page.locator('#builder-inspector-content [data-inspector-field="expression"]').fill("x*3");
-  await page.locator("#builder-inspector-form button[type=submit]").click();
-  await page.locator("#builder-inputs").fill("8");
-  await page.locator("#builder-run").click();
-  await page.locator("#builder-last").click();
-  await expect(page.locator("#builder-output")).toContainText("24");
-  await expect(page.locator("#builder-code")).toContainText("doble=x*3");
+  await expect(page.locator("#lab-whatif-result")).toContainText("PRIMER PUNTO DE DIVERGENCIA");
 });

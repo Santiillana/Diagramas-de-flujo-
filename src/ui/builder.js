@@ -130,7 +130,7 @@ function cardMarkup(node,index,nodes){
     </div>`;
   }
   return `
-    <article class="builder-node-card ${isSelected?"is-selected":""}" data-node-card="${esc(node.id)}">
+    <article class="builder-node-card ${isSelected?"is-selected":""}" data-node-card="${esc(node.id)}" draggable="true" aria-label="Instrucción movible: ${esc(meta)}">
       <button type="button" class="builder-node-select" data-select-node="${esc(node.id)}">
         <span class="builder-node-type">${esc(meta)}</span>
         <strong>${esc(detail)}</strong>
@@ -222,6 +222,19 @@ function moveNode(id,direction){
   if(index<0||next<0||next>=nodes.length)return;
   [nodes[index],nodes[next]]=[nodes[next],nodes[index]];
   markDirty("Orden actualizado");renderEditor();
+}
+function moveNodeRelative(draggedId,targetId,after=false){
+  if(draggedId===targetId)return;
+  const nodes=scope();
+  const from=nodes.findIndex(node=>node.id===draggedId);
+  const to=nodes.findIndex(node=>node.id===targetId);
+  if(from<0||to<0)return;
+  const [moving]=nodes.splice(from,1);
+  const targetIndex=nodes.findIndex(node=>node.id===targetId);
+  nodes.splice(Math.max(0,targetIndex+(after?1:0)),0,moving);
+  selectedId=draggedId;
+  markDirty("Piezas reordenadas con arrastre");
+  renderEditor();
 }
 function deleteNode(id){
   const nodes=scope();
@@ -336,7 +349,53 @@ function runBuilder(){
   }
 }
 function bindBuilder(){
-  $("#builder-canvas-list").addEventListener("click",event=>{
+  const canvas=$("#builder-canvas-list");
+  let dragId=null,paletteDragType=null;
+  document.querySelectorAll("[data-add-node]").forEach(button=>{
+    button.setAttribute("draggable","true");
+    button.addEventListener("dragstart",event=>{
+      paletteDragType=button.dataset.addNode;
+      event.dataTransfer.effectAllowed="copy";
+      event.dataTransfer.setData("application/x-traza-node",paletteDragType);
+      canvas.classList.add("is-palette-drop-target");
+    });
+    button.addEventListener("dragend",()=>{paletteDragType=null;canvas.classList.remove("is-palette-drop-target");});
+  });
+  canvas.addEventListener("dragstart",event=>{
+    const card=event.target.closest("[data-node-card]");
+    if(!card||!event.target.closest(".builder-node-select")){event.preventDefault();return;}
+    dragId=card.dataset.nodeCard;card.classList.add("is-dragging");
+    event.dataTransfer.effectAllowed="move";
+    event.dataTransfer.setData("text/plain",dragId);
+  });
+  canvas.addEventListener("dragover",event=>{
+    if(paletteDragType){event.preventDefault();event.dataTransfer.dropEffect="copy";canvas.classList.add("is-palette-drop-target");return;}
+    const card=event.target.closest("[data-node-card]");
+    if(!dragId||!card||card.dataset.nodeCard===dragId)return;
+    event.preventDefault();event.dataTransfer.dropEffect="move";
+    canvas.querySelectorAll(".is-drop-before,.is-drop-after").forEach(node=>node.classList.remove("is-drop-before","is-drop-after"));
+    const rect=card.getBoundingClientRect(),after=event.clientY>rect.top+rect.height/2;
+    card.classList.add(after?"is-drop-after":"is-drop-before");
+    card.dataset.dropAfter=String(after);
+  });
+  canvas.addEventListener("drop",event=>{
+    const paletteType=event.dataTransfer.getData("application/x-traza-node");
+    if(paletteType&&["input","process","output","decision","for","while","doWhile"].includes(paletteType)){
+      event.preventDefault();canvas.classList.remove("is-palette-drop-target");paletteDragType=null;dragId=null;addNode(paletteType);return;
+    }
+    const card=event.target.closest("[data-node-card]");
+    if(!dragId||!card)return;
+    event.preventDefault();
+    const targetId=card.dataset.nodeCard,after=card.dataset.dropAfter==="true";
+    canvas.querySelectorAll(".is-dragging,.is-drop-before,.is-drop-after").forEach(node=>node.classList.remove("is-dragging","is-drop-before","is-drop-after"));
+    delete card.dataset.dropAfter;
+    const moving=dragId;dragId=null;moveNodeRelative(moving,targetId,after);
+  });
+  canvas.addEventListener("dragend",()=>{
+    dragId=null;
+    canvas.querySelectorAll(".is-dragging,.is-drop-before,.is-drop-after").forEach(node=>node.classList.remove("is-dragging","is-drop-before","is-drop-after"));
+  });
+  canvas.addEventListener("click",event=>{
     const select=event.target.closest("[data-select-node]");
     if(select){selectedId=select.dataset.selectNode;renderEditor();return;}
     const enter=event.target.closest("[data-enter-scope]");
@@ -365,7 +424,7 @@ function bindBuilder(){
   }));
   $("#builder-undo")?.addEventListener("click",undoBuilder);
   $("#builder-redo")?.addEventListener("click",redoBuilder);
-  $("#view-builder")?.addEventListener("keydown",event=>{
+  $("#lab-builder-stage")?.addEventListener("keydown",event=>{
     if(!(event.ctrlKey||event.metaKey)||event.target.matches("input,textarea"))return;
     if(event.key.toLowerCase()==="z"){event.preventDefault();event.shiftKey?redoBuilder():undoBuilder();}
     else if(event.key.toLowerCase()==="y"){event.preventDefault();redoBuilder();}

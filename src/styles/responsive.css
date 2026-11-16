@@ -1,13 +1,9 @@
 @media (max-width:1320px) {
-  .topbar { grid-template-columns:170px minmax(80px,1fr) auto; gap:12px; }
-  .topbar-status { display:none; } .primary-nav { justify-content:center; } .nav-button { padding:0 9px; }
   .simulator-grid { grid-template-columns:minmax(205px,.75fr) minmax(340px,1.35fr) minmax(220px,.8fr); }
   .execution-dock { gap:12px; }
 }
 @media (max-width:1080px) {
-  .topbar { grid-template-columns:155px minmax(0,1fr) auto; min-height:75px; padding-inline:20px; }
-  .primary-nav { justify-content:flex-start; overflow-x:auto; scrollbar-width:thin; }
-  .nav-button { min-height:40px; } .page-shell { width:min(100% - 40px,var(--content-width)); padding-top:25px; }
+  .page-shell { width:min(100% - 40px,var(--content-width)); padding-top:25px; }
   .simulator-grid { grid-template-columns:minmax(0,1.45fr) minmax(245px,.85fr); grid-template-areas:"problem problem" "diagram inspector" "dock dock"; }
   .problem-panel .problem-details[open] .detail-content { display:grid; grid-template-columns:1fr 1fr; gap:0 22px; }
   .problem-panel .problem-details[open] .mini-divider { display:none; }
@@ -17,13 +13,9 @@
   .builder-inspector { grid-column:1/-1; } .inspector-empty { padding:24px; }
 }
 @media (max-width:760px) {
-  .topbar { grid-template-columns:1fr auto; gap:10px; padding:11px 15px 9px; }
-  .brand-mark { width:35px; height:35px; } .brand-copy strong { font-size:18px; }
-  .primary-nav { grid-column:1/-1; grid-row:2; width:100%; min-width:0; padding-bottom:3px; display:flex; flex-wrap:nowrap; gap:2px; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
-  .topbar-actions { grid-column:2; grid-row:1; } .nav-button { flex:0 0 auto; min-height:36px; padding:0 7px; font-size:13px; white-space:nowrap; } .nav-index { display:none; }
   .page-shell { width:min(100% - 28px,var(--content-width)); padding-top:22px; }
   .page-heading { margin-bottom:20px; } .page-heading h1 { font-size:27px; } .heading-mark { display:none; }
-  .challenge-gate { grid-template-columns:1fr; gap:24px; padding:25px 20px; border-radius:20px; }
+  .challenge-gate { grid-template-columns:1fr; gap:24px; padding:25px 20px; border-radius:12px; }
   .challenge-copy h2 { font-size:clamp(28px,8vw,39px); letter-spacing:-1.2px; } .tag-row { margin-bottom:22px; }
   .challenge-card { padding:18px; } .challenge-actions { gap:14px; } .section-foot { align-items:flex-start; flex-direction:column; }
   .section-intro { align-items:flex-start; flex-direction:column; gap:12px; } .phase-chip { white-space:normal; }
@@ -41,8 +33,6 @@
   .page-footer { align-items:flex-start; flex-direction:column; gap:8px; }
 }
 @media (max-width:440px) {
-  .topbar { padding-inline:11px; } .brand-copy small { font-size:13px; } .icon-button { width:33px; height:33px; }
-  .primary-nav .nav-button{padding-inline:6px;font-size:13px;}
   .page-shell { width:min(100% - 22px,var(--content-width)); } .page-heading h1 { font-size:24px; }
   .challenge-copy h2 { font-size:28px; } .button { width:100%; }
   .challenge-actions { align-items:stretch; flex-direction:column; } .challenge-actions .text-link { text-align:center; }
