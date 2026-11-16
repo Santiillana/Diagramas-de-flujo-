@@ -399,7 +399,14 @@
     </section>
 
 
-    <section class="space-view ficha-schedule-view" id="view-hoy" data-view="hoy" aria-labelledby="hoy-title" hidden><div id="ficha-hoy" aria-live="polite"></div></section>
+    <section class="space-view ficha-schedule-view" id="view-hoy" data-view="hoy" aria-labelledby="hoy-title" hidden>
+      <div id="ficha-hoy" aria-live="polite"></div>
+      <section class="ficha-backup-tools" aria-labelledby="ficha-backup-title">
+        <div><p class="eyebrow">TUS DATOS · RESPALDO LOCAL</p><h3 id="ficha-backup-title">Protege tu información</h3><p>Exporta una copia JSON o restaura un respaldo. Los datos permanecen en este navegador; no se sincronizan con otros dispositivos.</p></div>
+        <div class="ficha-backup-actions"><button type="button" id="ficha-backup-export">Descargar respaldo</button><button type="button" id="ficha-backup-import">Importar respaldo</button><input id="ficha-backup-file" type="file" accept="application/json,.json" hidden></div>
+        <p id="ficha-backup-status" class="ficha-backup-status" role="status" aria-live="polite">No hay operaciones de respaldo recientes.</p>
+      </section>
+    </section>
     <section class="space-view ficha-schedule-view" id="view-semana" data-view="semana" aria-labelledby="semana-title" hidden><div id="ficha-semana" aria-live="polite"></div></section>
     <section class="space-view ficha-schedule-view" id="view-calendario" data-view="calendario" aria-labelledby="calendario-title" hidden><div id="ficha-calendario" aria-live="polite"></div></section>
     <section class="space-view ficha-placeholder" id="view-actividades" data-view="actividades" aria-labelledby="actividades-title" hidden>
