@@ -1,30 +1,59 @@
 # Traza — laboratorio visual de diagramas de flujo
 
-Plataforma educativa modular basada en la especificación maestra V5 y en el prototipo original preservado en `reference/`.
+Plataforma educativa modular basada en la especificación maestra V5 y en el prototipo original preservado en `reference/`. Esta rama integra una reorganización de la experiencia en cuatro espacios y una nueva estructura del Simulador y del Laboratorio.
 
-## Estado de los cinco módulos
+## Estado de esta entrega
 
-| Módulo | Estado | Evidencia |
-|---|---|---|
-| 1. Arquitectura y experiencia visual | Aceptado e integrado en `main` | 7/7 Node + 7/7 Chromium en aceptación inicial |
-| 2. Aprende y 45 ejercicios | Aceptado e integrado; correcciones del contenido consolidadas | 17 lecciones, 45 ejercicios (20/10/10/5), oráculo de 170 escenarios |
-| 3. Parser, intérprete, diagramas y simulador | Aceptado e integrado en `main` | 31/31 Node + 16/16 Chromium |
-| 4. Laboratorio y constructor | Aceptado e integrado en `main` | 216/216 Node + 28/28 Chromium |
-| 5. Integración y auditoría final | Aceptado e integrado en `main` (PR #6) | 222/222 Node + 38/38 Chromium en CI de `main` |
+La implementación se trabaja en la rama `mejoras/implementacion-integral-v2`, mediante la [PR #10](https://github.com/Santiillana/Diagramas-de-flujo-/pull/10). **La PR aún no está fusionada en `main` y la validación de navegador está en curso.** Por eso este README describe el alcance implementado en la rama, no una publicación de producción.
 
-La base estable conserva los cinco módulos integrados en `main`. La rama `mejoras/traza-v2` contiene una ampliación pendiente de validación y no está fusionada. GitHub Pages requiere activar su Source en Settings antes de publicar.
+Se conservan los 17 temas de Aprende y los 45 ejercicios (20 básicos, 10 intermedios, 10 avanzados y 5 expertos). El intérprete, parser y compilador siguen siendo la fuente única de ejecución; la reorganización se realiza en la capa de interfaz.
+
+## Los cuatro espacios
+
+### 1. Aprende
+
+17 lecciones progresivas. Cada lección mantiene sus objetivos, explicación intuitiva y técnica, ejemplo con datos, comprobación de comprensión y progreso local. Las escenas interactivas se alimentan de los eventos generados por la ejecución real del ejemplo. El alumno puede avanzar, retroceder o reproducir el recorrido.
+
+### 2. Ejercicios
+
+Catálogo de 45 retos con búsqueda, paginación, nivel de dificultad, filtro de ejercicios de clase y selección de conceptos. Los conceptos se pueden combinar para exigir que aparezcan todos o cualquiera de ellos.
+
+La ficha presenta el enunciado, objetivo, conceptos, entradas y restricciones, sin mostrar directamente el pseudocódigo de solución. El paso al Simulador se confirma en una ventana previa para dar oportunidad de resolver el problema primero.
+
+### 3. Simulador
+
+El parser y el intérprete trabajan sobre la gramática educativa del prototipo: `leer`, `imp`, asignación, `si/sino/fin`, `para`, `mientras` y `hacer/hm`. No ejecutan el pseudocódigo como JavaScript: no usan `eval` ni `new Function`.
+
+Una traza determinista alimenta el pseudocódigo resaltado, el SVG, las rutas V/F, la ficha animada, la escena explicativa, las variables, el historial, la salida y la línea de tiempo.
+
+La vista se organiza en cuatro ventanas: **Problema**, **Pseudocódigo**, **En escena** y **Variables**. Pantalla e Historial son secciones desplegables dentro de Variables, no ventanas adicionales. Un panel agrupado contiene selector de ejercicios, cámara, zoom, presentación, visibilidad de ventanas, tamaño de texto, Predice y Concentración. La velocidad dispone de nueve valores entre 0,1× y 8×; la presentación permite revelar paso a paso o mostrar el contenido completo. La cámara automática se puede liberar mediante arrastre y vuelve a seguir el paso al avanzar.
+
+En móvil se cambia entre cuatro pestañas: Problema, Diagrama, En escena y Variables. Cambiar de pestaña no reinicia la ejecución.
+
+### 4. Laboratorio
+
+El Laboratorio ofrece tres modalidades:
+
+- **Sigue la ficha:** Predice, Tabla de seguimiento y Sigue la flecha, conectadas a la traza del Simulador.
+- **Arma el diagrama:** Ordena instrucciones, Identifica la figura y Completa el hueco. Incluye el **Lienzo libre**, donde se añaden símbolos desde la paleta, se arrastran piezas y se reordenan instrucciones. También conserva edición de propiedades, bloques anidados, validación, compilación y ejecución.
+- **Caza el error:** permite escoger la línea sospechosa, elegir una corrección y ejecutar la versión modificada con los mismos datos. La actividad ¿Y si…? compara dos recorridos e identifica el primer punto de divergencia.
+
+El Constructor utiliza el mismo compilador y el mismo intérprete que el Simulador; no mantiene un motor de ejecución paralelo. Su modelo es estructurado por secuencia, ramas y bloques anidados. El arrastre reordena piezas y añade símbolos; no se presenta como un editor de conexiones libres entre puertos SVG arbitrarios.
 
 ## Ejecutar en local
 
-Requiere Python 3:
+Requiere Python 3 para servir los módulos ES:
+
 ```bash
 python3 -m http.server 8000
 ```
-Abre http://localhost:8000. Los módulos ES se sirven por HTTP.
+
+Abre http://localhost:8000.
 
 ## Pruebas
 
 Requiere Node.js 22 o superior:
+
 ```bash
 npm install
 npm test
@@ -32,32 +61,11 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-La CI utiliza Ubuntu 24.04, Node 22 y Chromium. El pipeline ejecuta pruebas de arquitectura, contenido, parser/intérprete, constructor, oráculo independiente y aceptación real de navegador.
+La CI del repositorio ejecuta pruebas de arquitectura y aceptación Chromium además de las pruebas de contenido, parser/intérprete, compilador y oráculo de ejercicios. El estado de aprobación de esta rama debe comprobarse en el resultado de Actions asociado al SHA más reciente de la PR #10.
 
-## Los cinco espacios
+## Publicación
 
-### 1. Aprende
-17 lecciones progresivas. Cada lección incluye objetivo, explicación intuitiva y técnica, ejemplo visual por pasos, manipulación de datos y comprobación de comprensión.
-
-### 2. Ejercicios
-45 ejercicios: 20 básicos, 10 intermedios, 10 avanzados y 5 expertos. Incluye cinco retos de matemáticas y algoritmos numéricos de dificultad alta. Las fichas incluyen enunciado, objetivos, conceptos, entradas, salidas, restricciones, análisis, métodos, pseudocódigo, casos de prueba y errores frecuentes. El modo reto permite registrar análisis y proceso, pedir pistas y revelar voluntariamente la solución.
-
-### 3. Simulador
-Parser e intérprete seguros para la gramática del prototipo: `leer`, `imp`, asignación, `si/sino/fin`, `para`, `mientras` y `hacer/hm`. No ejecuta texto como JavaScript: no usa `eval` ni `new Function`.
-
-Una única traza determinista alimenta pseudocódigo resaltado, SVG, ruta V/F, token, escena, desglose de operaciones, variables, historial, salida y timeline. El simulador incluye avance, retroceso, reproducción, velocidad, cámara automática/manual, pan, zoom, ajustar, fullscreen, restauración de datos de ejemplo, tamaño de pseudocódigo persistente e historial por variable. En móvil dispone de pestañas para Problema, Diagrama, En escena, Variables, Salida e Historial; la traza no se reinicia al cambiar de vista.
-
-### 4. Laboratorio
-Ocho actividades conectadas a la ejecución real: Predice, Tabla, Ordena, Identifica símbolo, Encuentra el error y ¿Y si…?, Completa el pseudocódigo y Sigue la flecha. Las actividades usan la traza compartida, mantienen visible el contexto y ejecutan los experimentos en una copia independiente para no alterar la ejecución base.
-
-### 5. Constructor
-Constructor de diagramas estructurado con Inicio/Fin, Entrada, Proceso, Salida, Decisión V/F y ciclos Para, Mientras y Hacer–Mientras. Permite insertar, editar, mover, eliminar y anidar instrucciones; validar; compilar a la gramática M3; generar SVG y ejecutar en el mismo intérprete.
-
-**Límite conocido del constructor:** es un editor estructurado por secuencia y bloques anidados. Las flechas secuenciales, ramas y retornos se derivan de la estructura. No es todavía un editor libre en el que el alumno arrastre cualquier puerto y conecte manualmente cualquier nodo. Esa diferencia está documentada; no se presenta como una capacidad terminada.
-
-## Publicación en GitHub Pages
-
-El proyecto es estático y compatible con Pages, sin proceso de build. Para publicar: **Settings → Pages → Deploy from a branch → main → /(root)**. El endpoint público no pudo verificarse desde esta ejecución; por eso no se afirma que Pages esté activo ni se inventa una URL publicada.
+La aplicación es estática y puede servirse desde GitHub Pages, pero su origen debe configurarse en **Settings → Pages**. No se afirma que esta rama esté desplegada ni que un endpoint público esté verificado. La validación CI de una PR no equivale a una publicación.
 
 ## Arquitectura
 
@@ -65,36 +73,22 @@ El proyecto es estático y compatible con Pages, sin proceso de build. Para publ
 .
 ├── index.html
 ├── src/
-│   ├── content/      # lecciones y catálogo de ejercicios
-│   ├── core/         # expresiones, parser, intérprete y compilador
-│   ├── diagram/      # layout y render SVG
+│   ├── content/       # lecciones y catálogo de ejercicios
+│   ├── core/          # expresiones, parser, intérprete y compilador
+│   ├── diagram/       # layout y render SVG
 │   ├── ui/            # navegación, contenido, simulador, laboratorio y builder
 │   └── styles/        # tokens, componentes y vistas responsive
-├── tests/             # unitarias, regresiones y oráculo independiente
-├── e2e/               # aceptación Chromium por módulo
+├── tests/              # unitarias, regresiones y oráculo independiente
+├── e2e/                # aceptación Chromium
 ├── docs/
-└── reference/         # especificación y HTML original inmutable
+└── reference/          # especificación y HTML original inmutable
 ```
 
 ## Documentación del proyecto
+
 - Especificación: `docs/MASTER_SPEC.md`
 - Estado y evidencia: `docs/IMPLEMENTATION_STATUS.md`
-- Decisiones: `docs/DECISIONS.md`
+- Decisiones técnicas: `docs/DECISIONS.md`
 - Equivalencia funcional: `docs/ORIGINAL_FEATURE_AUDIT.md`
 - Aceptación final: `docs/FINAL_ACCEPTANCE.md`
 - HTML original inmutable: `reference/diagramas_de_flujo_original.html`
-
-
-## Ampliaciones en la rama mejoras/traza-v2 (pendientes de CI)
-- Aprende: 17 lecciones organizadas en cinco bloques y una ruta de cinco pantallas con progreso local.
-- Ejercicios: se conservan los 40 originales y se agregan cinco retos expertos (Euclides, primalidad/divisores, Cramer 3×3, Newton–Raphson y Simpson 1/3).
-- Laboratorio: ocho actividades conectadas a la traza real.
-- El catálogo incorpora filtros por nivel, concepto y «De clase», además de paginación.
-- Esta rama no se considera aceptada hasta que Node y Playwright terminen correctamente. No se ha fusionado en main.
-
-
-## Validación final de mejoras/traza-v2
-
-La rama mejoras/traza-v2 quedó validada en GitHub Actions: [run 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), commit af28e95bb648c126ee445797d9ef9b1da236af22. Resultado: **259/259 pruebas Node y 58/58 pruebas Playwright/Chromium**, sin fallos. La CI cargó 17 capturas PNG en el artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57.
-
-La PR [#7](https://github.com/Santiillana/Diagramas-de-flujo-/pull/7) permanece abierta contra main y no se ha fusionado. Por tanto, esta ampliación está terminada y validada en su rama, pero todavía no forma parte de main. GitHub Pages no se declara publicado: requiere configuración y verificación independiente.
