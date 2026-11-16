@@ -37,6 +37,17 @@ function exerciseConceptLabels(item){
 function exerciseConceptUniverse(){
   return [...new Set(exercises.flatMap(exerciseConceptLabels))].sort((a,b)=>a.localeCompare(b,"es"));
 }
+function renderConceptFilters(){
+  const host=$("#exercise-concepts");if(!host)return;
+  host.innerHTML=exerciseConceptUniverse().map(label=>
+    '<button type="button" class="concept-filter-chip '+(selectedConcepts.has(label)?"is-selected":"")+'" data-concept-filter="'+escapeHTML(label)+'" aria-pressed="'+String(selectedConcepts.has(label))+'">'+escapeHTML(label)+'</button>'
+  ).join("");
+  $("[data-concept-mode]").forEach(button=>{
+    button.setAttribute("aria-pressed",String(button.dataset.conceptMode===conceptMatchMode));
+  });
+  const summary=$("#exercise-filter-summary");
+  if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · "+(conceptMatchMode==="all"?"deben aparecer todos":"al menos uno"):"Todos los conceptos";
+}
 
 function readLearnProgress(){
   try{
