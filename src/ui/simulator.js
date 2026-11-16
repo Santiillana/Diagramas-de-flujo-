@@ -1059,9 +1059,14 @@ function render(){
   const scene=sceneView.model?.scene??e.scene??{title:typeName(e.type)};
   const sceneContent=$("#scene-content");
   sceneContent.dataset.eventType=e.type;
+  const symbolMarkup=symbolExplanationMarkup(e);
+  const operation=sceneView.model?.kind==="process"&&sceneView.model?.substituted
+    ?'<div class="scene-operation-breakdown">'+esc(sceneView.model.substituted)+' = '+esc(fmt(e.change?.value??e.value))+'</div>':"";
+  const orderMarkup='<details class="scene-order-explanation"><summary>¿Por qué se ejecuta en este orden?</summary><p>'+esc(orderExplanation(e))+'</p></details>';
   sceneContent.innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span>'+
     '<h4 class="scene-event-title">'+esc(scene.title??typeName(e.type))+'</h4>'+
+    operation+symbolMarkup+orderMarkup+
     '<p class="scene-event-body">'+esc(brief(e))+'</p>';
   sceneContent.scrollTop=0;
   const vars=e.variables??{},names=Object.keys(vars),change=e.change;
