@@ -2,7 +2,7 @@ import { displayValue } from "./common.js";
 
 export function render(event) {
   const rawExpression=event.substituted||event.expression||event.sourceText||"Operación";
-  const expression=String(rawExpression).replace(/\s*(>=|<=|<>|!=|==|[+*/<>=])\s*/g," $1 ").replace(/\s+/g," ").trim();
+  const expression=String(rawExpression).replace(/(?<=[A-Za-z0-9)\]])\s*([+*/-])\s*(?=[A-Za-z0-9(\[])/g," $1 ").replace(/\s+/g," ").trim();
   const variable=event.variable??"RESULTADO";
   const previous=event.previous;
   const next=event.next;
