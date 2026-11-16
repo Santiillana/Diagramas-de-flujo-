@@ -81,6 +81,21 @@
             <div><strong>45</strong><span>Ejercicios</span></div>
             <div><strong>4</strong><span>Espacios</span></div>
           </div>
+          <section class="home-learning-progress" aria-label="Progreso de aprendizaje">
+            <div class="home-learning-progress-heading">
+              <span>Tu avance en Aprende</span>
+              <strong id="home-learn-progress">0 de 17 completadas</strong>
+            </div>
+            <div class="home-learning-progress-track" id="home-learn-progress-bar" role="progressbar"
+              aria-label="Lecciones completadas" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0"
+              aria-valuetext="0 de 17 lecciones completadas">
+              <span id="home-learn-progress-fill"></span>
+            </div>
+            <div class="home-learning-progress-footer">
+              <span id="home-learn-progress-copy">Completa tu primera lección para iniciar tu progreso.</span>
+              <strong id="home-learn-progress-percent">0%</strong>
+            </div>
+          </section>
           <button class="button button-primary home-card-action" id="home-learn-continue" type="button" data-go="learn"><span>Continuar en Aprende</span><span aria-hidden="true">→</span></button>
         </article>
       </div>
@@ -88,6 +103,14 @@
         <div><p class="eyebrow">CONTINUAR DONDE QUEDASTE</p><p id="home-continue-description">Elige un espacio para empezar tu recorrido.</p></div>
         <button class="button button-secondary" id="home-continue-button" type="button" data-go="learn"><span>Ir a Aprende</span><span aria-hidden="true">↗</span></button>
       </section>
+      <nav class="home-shortcuts" aria-label="Accesos rápidos a Aprende">
+        <p class="eyebrow">ACCESOS RÁPIDOS</p>
+        <div class="home-shortcuts-grid">
+          <button type="button" class="home-shortcut" data-go="exercises"><span aria-hidden="true">▤</span><span><strong>Ejercicios</strong><small>Resolver retos</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
+          <button type="button" class="home-shortcut" data-go="simulator"><span aria-hidden="true">⌘</span><span><strong>Simulador</strong><small>Ejecutar pasos</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
+          <button type="button" class="home-shortcut" data-go="lab"><span aria-hidden="true">⌑</span><span><strong>Laboratorio</strong><small>Experimentar</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
+        </div>
+      </nav>
     </section>
 
     <section class="space-view exercises-view" id="view-exercises" data-view="exercises" aria-labelledby="exercise-title" hidden>
