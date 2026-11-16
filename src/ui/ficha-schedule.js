@@ -128,14 +128,14 @@ export function initFichaSchedule() {
 
   function renderToday(now = localParts()) {
     const key = toKey(now);
-    views.hoy.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO OFICIAL · COLOMBIA</p><h2>${escapeHtml(formatDate(key))}</h2><p>Zona horaria: America/Bogota</p></div><span class="ficha-source-label">Horario oficial</span></div>${renderDay(key, now, { badge: "Hoy" })}`;
+    views.hoy.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO OFICIAL · COLOMBIA</p><h2 id="hoy-title">${escapeHtml(formatDate(key))}</h2><p>Zona horaria: America/Bogota</p></div><span class="ficha-source-label">Horario oficial</span></div>${renderDay(key, now, { badge: "Hoy" })}`;
   }
 
   function renderWeek(now = localParts()) {
     const start = weekStart(weekAnchor);
     const days = Array.from({ length: 7 }, (_, index) => shiftDate(start, index));
     const end = days[6];
-    views.semana.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO RECURRENTE</p><h2>Semana del ${escapeHtml(formatDate(start, { day: "numeric", month: "short" }))} al ${escapeHtml(formatDate(end, { day: "numeric", month: "long", year: "numeric" }))}</h2><p>Clases oficiales · America/Bogota</p></div><div class="ficha-schedule-actions"><button type="button" data-ficha-action="week-prev" aria-label="Semana anterior">←</button><button type="button" data-ficha-action="week-today">Esta semana</button><button type="button" data-ficha-action="week-next" aria-label="Semana siguiente">→</button></div></div><div class="ficha-week-grid">${days.map(key => renderDay(key, now, { badge: key === toKey(now) ? "Hoy" : "" })).join("")}</div>`;
+    views.semana.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">HORARIO RECURRENTE</p><h2 id="semana-title">Semana del ${escapeHtml(formatDate(start, { day: "numeric", month: "short" }))} al ${escapeHtml(formatDate(end, { day: "numeric", month: "long", year: "numeric" }))}</h2><p>Clases oficiales · America/Bogota</p></div><div class="ficha-schedule-actions"><button type="button" data-ficha-action="week-prev" aria-label="Semana anterior">←</button><button type="button" data-ficha-action="week-today">Esta semana</button><button type="button" data-ficha-action="week-next" aria-label="Semana siguiente">→</button></div></div><div class="ficha-week-grid">${days.map(key => renderDay(key, now, { badge: key === toKey(now) ? "Hoy" : "" })).join("")}</div>`;
   }
 
   function renderCalendar(now = localParts()) {
@@ -152,7 +152,7 @@ export function initFichaSchedule() {
         <strong>${Number(key.slice(-2))}</strong><span>${count ? `${count} ${count === 1 ? "clase" : "clases"}` : "Sin clases"}</span>
       </button>`;
     }).join("");
-    views.calendario.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">CALENDARIO ACADÉMICO</p><h2>${escapeHtml(monthLabel)}</h2><p>Selecciona un día para consultar sus clases.</p></div><div class="ficha-schedule-actions"><button type="button" data-ficha-action="month-prev" aria-label="Mes anterior">←</button><button type="button" data-ficha-action="month-today">Este mes</button><button type="button" data-ficha-action="month-next" aria-label="Mes siguiente">→</button></div></div><div class="ficha-calendar-grid ficha-calendar-weekdays">${weekdays.map(day => `<span>${day}</span>`).join("")}</div><div class="ficha-calendar-grid">${grid}</div><div class="ficha-calendar-selected">${renderDay(selectedCalendarDate, now)}</div>`;
+    views.calendario.innerHTML = `<div class="ficha-schedule-heading"><div><p class="eyebrow">CALENDARIO ACADÉMICO</p><h2 id="calendario-title">${escapeHtml(monthLabel)}</h2><p>Selecciona un día para consultar sus clases.</p></div><div class="ficha-schedule-actions"><button type="button" data-ficha-action="month-prev" aria-label="Mes anterior">←</button><button type="button" data-ficha-action="month-today">Este mes</button><button type="button" data-ficha-action="month-next" aria-label="Mes siguiente">→</button></div></div><div class="ficha-calendar-grid ficha-calendar-weekdays">${weekdays.map(day => `<span>${day}</span>`).join("")}</div><div class="ficha-calendar-grid">${grid}</div><div class="ficha-calendar-selected">${renderDay(selectedCalendarDate, now)}</div>`;
   }
 
   function render() {
