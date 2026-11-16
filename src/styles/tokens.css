@@ -60,18 +60,18 @@ a{color:inherit}
   --info:var(--teal);
   --sim-speed:1;
   --sim-animation-duration:500ms;
-  --variable-color-1:#d69a2d;
-  --variable-color-2:#438bc2;
-  --variable-color-3:#2e9874;
-  --variable-color-4:#bb6b7c;
-  --variable-color-5:#8d77bd;
-  --variable-color-6:#b37a4a;
+  --variable-color-1:#FFC400;
+  --variable-color-2:#7AA8FF;
+  --variable-color-3:#3CCF8E;
+  --variable-color-4:#FF6B85;
+  --variable-color-5:#B08A4D;
+  --variable-color-6:#6FA1AE;
 }
 :root[data-theme="dark"]{
-  --variable-color-1:#f0bd4b;
-  --variable-color-2:#6fa8d1;
-  --variable-color-3:#5bc18b;
-  --variable-color-4:#e17d73;
-  --variable-color-5:#b18a62;
-  --variable-color-6:#75a89b;
+  --variable-color-1:#FFC400;
+  --variable-color-2:#7AA8FF;
+  --variable-color-3:#3CCF8E;
+  --variable-color-4:#FF6B85;
+  --variable-color-5:#B08A4D;
+  --variable-color-6:#6FA1AE;
 }
