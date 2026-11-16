@@ -28,6 +28,7 @@ test("avanzar y retroceder reconstruye el estado del paso",async({page})=>{
 test("el catálogo abre el ejercicio en el simulador solo tras confirmar",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="exercises"]').click();
+  await page.locator("[data-page-next]").click();
   await page.locator('[data-select-exercise="14"]').click();
   await page.locator("[data-start-exercise]").click();
   await expect(page.locator("#exercise-try-modal")).toBeVisible();
