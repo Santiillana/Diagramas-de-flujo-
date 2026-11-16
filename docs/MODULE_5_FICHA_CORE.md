@@ -1,7 +1,7 @@
 # Módulo 5 v4 · Núcleo y persistencia de Mi ficha
 
 **Rama de trabajo:** \`v4/module-7-activities\`  
-**Estado:** núcleo de datos inicial implementado; integración de vistas, respaldo de interfaz y aceptación completa pendientes.
+**Estado:** repositorio, integración de agenda y controles visibles de respaldo implementados en esta rama; formularios de Actividades y aceptación E2E final pendientes.
 
 ## Objetivo y límites
 
@@ -71,7 +71,5 @@ El formato versionado es \`traza-ficha-backup\`, versión 1. La validación se r
 ## Pendiente para aceptar el paso 5
 
 - Integrar los formularios y selectores compartidos en Mi ficha.
-- Añadir controles de exportación/importación y confirmación de reemplazo.
-- Completar validación estricta de referencias anidadas y migraciones futuras.
-- Conectar Hoy, Semana y Calendario al evento del repositorio para mostrar asignaciones y vencimientos.
-- Añadir E2E de persistencia, restauración y accesibilidad.
+- Añadir migraciones explícitas si se publica una versión futura del esquema.
+- Cerrar E2E de persistencia, restauración, almacenamiento bloqueado y accesibilidad.
