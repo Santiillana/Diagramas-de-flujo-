@@ -674,6 +674,7 @@ export function initLab(){
   });
   $("#lab-open-simulator")?.addEventListener("click",()=>document.querySelector('#primary-nav [data-space="simulator"]')?.click());
   document.addEventListener("traza:execution-updated",event=>publishContext(event.detail));
+  addMixedPracticeButton();
   document.dispatchEvent(new CustomEvent("traza:lab-sync-request"));
   updateProgressBadges();
 }
