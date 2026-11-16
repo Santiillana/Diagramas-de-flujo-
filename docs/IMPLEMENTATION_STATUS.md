@@ -3,13 +3,12 @@
 **Actualizado:** 16 de noviembre de 2026  
 **Repositorio:** `Santiillana/Traza`  
 **Rama principal:** `main`  
-**SHA de main después de M5:** `ea25db33153afbb6ee506647496a74e6dc0f9fde`  
-**Rama M6:** `v4/module-6-home-builder`  
-**PR M6:** [#21](https://github.com/Santiillana/Traza/pull/21), abierta y no fusionada.
+**SHA de main después de M6:** `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
+**PR M6:** [#21](https://github.com/Santiillana/Traza/pull/21), fusionada el 16 de noviembre de 2026.
 
 ## Estado ejecutivo
 
-Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. La auditoría M5 se fusionó mediante la PR #20 el 16 de noviembre; la CI posterior sobre `main` fue correcta. El Módulo 6, derivado de la Fase 6 del informe de mejoras v2, amplía la portada v4 y verifica el historial del Constructor. Su PR #21 sigue abierta, con CI aprobada.
+Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. La auditoría M5 se fusionó mediante la PR #20 el 16 de noviembre; la CI posterior sobre `main` fue correcta. El Módulo 6, derivado de la Fase 6 del informe de mejoras v2, amplía la portada v4 y verifica el historial del Constructor. Su PR #21 está fusionada en `main`.
 
 | Área | Estado | Evidencia |
 |---|---|---|
@@ -20,7 +19,7 @@ Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. L
 | Laboratorio y constructor | Integrados y revalidados | Ocho actividades; Constructor estructurado sobre el motor común |
 | M5 · auditoría y release | **Integrado en main** | PR #20 fusionada; 267 Node y 99 Chromium aprobadas en el SHA de auditoría |
 | M5 · publicación pública | Pendiente externo | Falta origen HTTPS real y smoke test posterior al despliegue |
-| M6 · Inicio y Constructor | **CI aprobada; PR abierta** | 267/267 Node y 103/103 Playwright en PR #21 |
+| M6 · Inicio y Constructor | **Integrado en main** | PR #21 fusionada; 267/267 Node y 103/103 Playwright aprobadas |
 
 ## Secuencia y alcance
 
@@ -31,7 +30,7 @@ Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. L
 - **M4:** Laboratorio y constructor estructurado, con traza y motor común.
 - **M5:** integración, auditoría, rendimiento y preparación de publicación.
 
-El Documento maestro V5 define cinco módulos. El Módulo 6 que se ejecuta ahora procede de la secuencia complementaria del documento `docs/INFORME_MEJORAS.md` (Fase 6), no es un sexto módulo retroactivo de V5.
+El Documento maestro V5 define cinco módulos. El Módulo 6 procede de la secuencia complementaria del documento `docs/INFORME_MEJORAS.md` (Fase 6), no es un sexto módulo retroactivo de V5. La evolución v4 de Mi ficha mantiene su propia secuencia de diez pasos.
 
 ### Continuidad v4
 La iteración v4 reorganiza la plataforma en Inicio, Mi ficha y Aprende. El rediseño del catálogo de Ejercicios fue integrado mediante PR #19; su merge commit fue `e80d5773eed6ab0c193ad351e618ce744b0c8441`.
@@ -53,12 +52,20 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - El historial existente de 60 snapshots no se reimplementa; se añaden pruebas del límite real, undo/redo, atajos y descarte de rama futura.
 
 #### Resultado CI de M6
-- PR: [#21](https://github.com/Santiillana/Traza/pull/21), abierta y no fusionada.
-- Workflow: [GitHub Actions 43961209113](https://github.com/Santiillana/Traza/actions/runs/43961209113).
-- SHA probado: `a3c38a7ba3c72f6aabe1a1686dbe3166f5911cd4`.
+- PR: [#21](https://github.com/Santiillana/Traza/pull/21), fusionada el 16 de noviembre de 2026.
+- Merge commit: `cd9c7598969d9487c779234451a32d9e5f3d67c6`.
+- CI final: [GitHub Actions 43962065870](https://github.com/Santiillana/Traza/actions/runs/43962065870).
+- SHA probado: `c5c0df01eb7054f5767ca4cc8348512305df6bf8`.
 - Node: **267/267**, cero fallos.
 - Playwright/Chromium: **103/103**, cero fallos.
 - Artefacto visual: `ui-audit-7ff31ec21cce8e9256bd5be23ce0f204181c52ca`, ID `14274866581`, 18 capturas.
+
+### M7 · Actividades y detalle de Mi ficha
+- Rama de trabajo: `v4/module-7-activities`.
+- Especificación técnica creada en `docs/MODULE_7_ACTIVITY_DETAIL.md`.
+- La especificación define catálogo, detalle, entregas, devoluciones, estados, bitácora, persistencia, fechas, accesibilidad e integración.
+- **No implementado todavía:** la vista Actividades continúa siendo provisional.
+- Dependencia obligatoria: integrar primero los módulos 5 (núcleo y persistencia de Mi ficha) y 6 (Hoy, Semana y Calendario) de la secuencia v4. M7 debe consumir el repositorio común y no crear almacenamiento paralelo.
 
 ## Arquitectura y comandos
 
@@ -82,5 +89,6 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - Especificación: `docs/MASTER_SPEC.md`.
 - Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`.
 - Informe M6: `docs/MODULE_6_HOME_BUILDER.md`.
+- Especificación M7: `docs/MODULE_7_ACTIVITY_DETAIL.md`.
 - Informe acumulado v2: `docs/INFORME_MEJORAS.md`.
 - Aceptación: `docs/FINAL_ACCEPTANCE.md`.
