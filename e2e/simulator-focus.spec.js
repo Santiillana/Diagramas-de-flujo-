@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("Concentración cubre el viewport, oculta el menú y conserva los pasos",async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   const initial=await page.locator("#sim-exercise-select").inputValue();
   await page.locator("#diagram-fullscreen").click();
@@ -31,7 +31,7 @@ test("Concentración cubre el viewport, oculta el menú y conserva los pasos",as
 test("Concentración funciona sin Fullscreen API",async({page})=>{
   await page.setViewportSize({width:1024,height:768});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.evaluate(()=>{
     Object.defineProperty(document.documentElement,"requestFullscreen",{configurable:true,value:()=>Promise.reject(new Error("unsupported"))});
@@ -46,7 +46,7 @@ test("Concentración funciona sin Fullscreen API",async({page})=>{
 test("Predice detiene el recorrido antes de revelar un evento y no cambia de espacio",async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("24");
   const before=await page.evaluate(()=>({space:document.body.dataset.activeSpace,hash:location.hash}));

@@ -1,4 +1,4 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 for(const viewport of [
  {name:"pantalla amplia",width:1920,height:1080,mobile:false},
@@ -11,7 +11,7 @@ for(const viewport of [
  test("Simulador sin desbordamiento y con cuatro espacios en "+viewport.name,async({page})=>{
   await page.setViewportSize({width:viewport.width,height:viewport.height});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await expect(page.locator("#flow-svg")).toBeVisible();
   await expect(page.locator("#diagram-stage")).toBeVisible();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
@@ -67,7 +67,7 @@ for(const viewport of [
 test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o método",async({page})=>{
  await page.setViewportSize({width:1440,height:900});
  await page.goto("/");
- await page.locator('[data-space="simulator"]').click();
+ await goToSpace(page, "simulator");
  await page.locator("#simulator-next").click();
  const centered=async()=>{
   const activeId=await expect.poll(()=>page.evaluate(()=>document.querySelector("#flow-svg .diagram-node.is-active")?.id??"")).not.toBe("");
@@ -97,7 +97,7 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
 test("Ctrl/Meta+rueda no modifica el zoom y el panel flotante evita el nodo activo",async({page})=>{
  await page.setViewportSize({width:1440,height:900});
  await page.goto("/");
- await page.locator('[data-space="simulator"]').click();
+ await goToSpace(page, "simulator");
  const canvas=page.locator("#flow-diagram-container"),stage=page.locator("#diagram-stage");
  await expect(canvas).toHaveAttribute("data-camera-zoom",/.+/);
  const zoom=Number(await canvas.getAttribute("data-camera-zoom"));
@@ -119,9 +119,10 @@ test("Ctrl/Meta+rueda no modifica el zoom y el panel flotante evita el nodo acti
  await expect(page.locator("#simulator-controls-panel")).toBeHidden();
 });
 
-test("la navegación superior conserva cuatro etiquetas legibles a 390 px",async({page})=>{
+test("la navegación de Aprende conserva cuatro etiquetas legibles a 390 px",async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto("/");
+ await goToSpace(page,"learn");
  const nav=page.locator("#primary-nav");
  await expect(nav.locator(".nav-button")).toHaveCount(4);
  const report=await nav.evaluate(el=>{
@@ -134,8 +135,8 @@ test("la navegación superior conserva cuatro etiquetas legibles a 390 px",async
  });
  expect(report.items.every(item=>item.width>55&&item.fontSize>=11&&item.scrollWidth<=item.clientWidth+1)).toBe(true);
  expect(report.items.every((item,index)=>index===0||item.left>=report.items[index-1].right-1)).toBe(true);
- await page.locator('[data-space="simulator"]').click();
- await expect(page.locator("#primary-nav .nav-button")).toHaveCount(4);
+ await goToSpace(page, "simulator");
+ await expect(page.locator('#primary-nav [data-subnav-section="aprende"] .nav-button')).toHaveCount(4);
  const dock=page.locator("#dock");
  const transport=dock.locator(".dock-controls .transport-button");
  await expect(transport).toHaveCount(5);

@@ -1,5 +1,5 @@
-import {test,expect} from "@playwright/test";
-async function openLearn(page){await page.goto("/");await page.locator('[data-space="learn"]').click();}
+import { test, expect, goToSpace } from "./navigation.js";
+async function openLearn(page){await page.goto("/");await goToSpace(page, "learn");}
 test("Aprende organiza las 17 lecciones en cinco bloques progresivos",async({page})=>{
  await openLearn(page);
  await expect(page.locator("#lesson-catalog [data-lesson-id]")).toHaveCount(17);

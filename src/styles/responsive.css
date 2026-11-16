@@ -40,22 +40,3 @@
   .inspector-stack { grid-template-columns:1fr; } .diagram-legend { flex-wrap:wrap; gap:8px 13px; }
   .lab-context-footer { flex-wrap:wrap; justify-content:flex-start; }
 }
-
-
-/* Navegación Traza compacta: sobrescribe el padding de los botones comunes en móvil. */
-@media(max-width:760px){
- .topbar{display:grid!important;grid-template-columns:30px minmax(0,1fr) 60px!important;grid-template-rows:1fr!important;min-height:52px!important;gap:4px!important;padding:6px!important}
- .brand{grid-column:1!important;grid-row:1!important;width:30px!important;gap:0!important}
- .brand-mark{width:29px!important;height:29px!important}
- .brand-copy{display:none!important}
- .primary-nav{grid-column:2!important;grid-row:1!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:0!important;width:100%!important;min-width:0!important;overflow:hidden!important;padding:0!important}
- .primary-nav .nav-button{
-  display:flex!important;flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;
-  min-height:34px!important;justify-content:center!important;padding:0!important;
-  font-size:clamp(10.8px,2.85vw,11.3px)!important;letter-spacing:-.35px!important;
-  white-space:nowrap!important;overflow:hidden!important
- }
- .primary-nav .nav-index{display:none!important}
- .topbar-actions{grid-column:3!important;grid-row:1!important;display:flex!important;justify-content:flex-end!important;gap:2px!important;width:60px!important;min-width:60px!important}
- .topbar-actions .icon-button{width:28px!important;height:28px!important}
-}

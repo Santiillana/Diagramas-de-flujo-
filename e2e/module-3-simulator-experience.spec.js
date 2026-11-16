@@ -1,10 +1,10 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el clic físico de Siguiente avanza y sincroniza el paso de entrada",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await expect(page.locator("body")).toHaveAttribute("data-simulator-step","0");
   await page.locator("#simulator-next").click();
   await expect(page.locator("body")).toHaveAttribute("data-simulator-step","1");
@@ -16,7 +16,7 @@ test("el clic físico de Siguiente avanza y sincroniza el paso de entrada",async
 test("Leer anima el dato hasta Variables y pulsa el panel de destino",async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-next").click();
   const flight=page.locator('#simulator-flight-layer .sim-flight-chip[data-destination="variables"]');
   await expect(flight).toBeAttached({timeout:5000});
@@ -29,7 +29,7 @@ test("Leer anima el dato hasta Variables y pulsa el panel de destino",async({pag
 test("Imprimir vuela hacia Pantalla y un avance manual cancela el vuelo pendiente",async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const outputStep=page.locator("#trace-history li").filter({hasText:"SALIDA"}).first();
   const index=Number(await outputStep.getAttribute("data-history-step"));
   expect(index).toBeGreaterThan(0);
@@ -47,7 +47,7 @@ test("el movimiento reducido conserva el resaltado e impide vuelos secundarios",
   await page.setViewportSize({width:1440,height:1000});
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-next").click();
   await expect(page.locator("#PR.variables-panel.is-pulsing")).toBeVisible();
   await expect(page.locator("#simulator-flight-layer .sim-flight-chip")).toHaveCount(0);
@@ -56,7 +56,7 @@ test("el movimiento reducido conserva el resaltado e impide vuelos secundarios",
 test("En escena muestra una ilustración y una explicación concreta sin repetir paneles",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   for(let i=0;i<3;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","assignment");
   await expect(page.locator("#scene-content .scene-figure-host")).toBeVisible();
@@ -69,7 +69,7 @@ test("En escena muestra una ilustración y una explicación concreta sin repetir
 
 test("Variables e Historial se reconstruyen exactamente al avanzar y retroceder",async({page})=>{
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-last").click();
   await expect(page.locator('#variables-content [data-variable-history="a"]')).toContainText("8");
   await expect(page.locator('#variables-content [data-variable-history="s"]')).toContainText("13");
@@ -88,7 +88,7 @@ test("Variables e Historial se reconstruyen exactamente al avanzar y retroceder"
 test("la ficha contextual se reposiciona sin cubrir otras figuras ni conexiones",async({page})=>{
   await page.setViewportSize({width:1920,height:1080});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-next").click();
   const card=page.locator("#vf");
   await expect.poll(()=>card.evaluate(el=>!!el.dataset.anchorNode)).toBe(true);
@@ -127,7 +127,7 @@ test("la ficha contextual se reposiciona sin cubrir otras figuras ni conexiones"
 test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await page.locator("#sim-exercise-select").selectOption("10");
   await page.locator("#simulator-history-details").evaluate(el=>{el.open=true;});

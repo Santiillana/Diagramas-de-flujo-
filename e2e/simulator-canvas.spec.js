@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el zoom se controla con botones, no con la rueda del ratón",async({page})=>{
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   const canvas=page.locator("#flow-diagram-container");
   await expect.poll(async()=>Number(await canvas.getAttribute("data-camera-zoom"))).toBeGreaterThan(0);
   const initial=Number(await canvas.getAttribute("data-camera-zoom"));
@@ -24,7 +24,7 @@ test("el zoom se controla con botones, no con la rueda del ratón",async({page})
 test("arrastrar libera la cámara y el siguiente paso reanuda el seguimiento",async({page})=>{
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   await page.locator("#simulator-controls-toggle").click();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
   await page.locator("#diagram-camera-toggle").click();
@@ -48,7 +48,7 @@ test("arrastrar libera la cámara y el siguiente paso reanuda el seguimiento",as
 test("la ficha animada deja rastro sobre las conexiones reales del SVG",async({page})=>{
   await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
-  await page.locator('[data-space="simulator"]').click();
+  await goToSpace(page, "simulator");
   for(let i=0;i<4;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
   await expect(page.locator("#flow-diagram-container #flow-active-trail")).toBeAttached();

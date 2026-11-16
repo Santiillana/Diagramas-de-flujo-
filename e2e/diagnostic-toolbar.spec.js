@@ -1,10 +1,10 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test("el panel de controles se adapta a escritorio, tableta y móvil",async({page})=>{
   for(const width of [1920,1440,1280,1024,900,390]){
     await page.setViewportSize({width,height:900});
     await page.goto("/");
-    await page.locator('[data-space="simulator"]').click();
+    await goToSpace(page, "simulator");
     const data=await page.evaluate(()=>{
       const selectors=["#hd","#primary-nav","#simulator-status","#simulator-controls-toggle","#diagram-stage","#dock","#simulator-mobile-tabs"];
       return Object.fromEntries(selectors.map(selector=>{

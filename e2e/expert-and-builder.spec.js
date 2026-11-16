@@ -1,9 +1,9 @@
-import {test,expect} from "@playwright/test";
+import { test, expect, goToSpace } from "./navigation.js";
 
 test.beforeEach(async({page})=>{await page.goto("/");});
 
 test("el catálogo muestra los cinco ejercicios expertos sin revelar soluciones",async({page})=>{
-  await page.locator('[data-space="exercises"]').click();
+  await goToSpace(page, "exercises");
   await page.locator("#exercise-level").selectOption("expert");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(5);
   await page.locator('[data-select-exercise="43"]').click();
@@ -13,7 +13,7 @@ test("el catálogo muestra los cinco ejercicios expertos sin revelar soluciones"
 });
 
 test("el filtro por clase se combina con conceptos y niveles",async({page})=>{
-  await page.locator('[data-space="exercises"]').click();
+  await goToSpace(page, "exercises");
   await page.locator("#exercise-class-only").check();
   await expect(page.locator("[data-select-exercise]")).toHaveCount(4);
   await page.locator("#exercise-class-only").uncheck();
@@ -24,8 +24,8 @@ test("el filtro por clase se combina con conceptos y niveles",async({page})=>{
 });
 
 test("el constructor se encuentra dentro de Arma el diagrama y permite editar",async({page})=>{
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
+  await goToSpace(page, "simulator");
+  await goToSpace(page, "lab");
   await page.locator('[data-lab-mode="build"]').click();
   await page.locator("#lab-open-builder").click();
   await expect(page.locator("#lab-builder-stage")).toBeVisible();
@@ -40,7 +40,7 @@ test("el constructor se encuentra dentro de Arma el diagrama y permite editar",a
 });
 
 test("el catálogo busca por número y pagina sin perder los filtros",async({page})=>{
-  await page.locator('[data-space="exercises"]').click();
+  await goToSpace(page, "exercises");
   await page.locator("#exercise-search").fill("45");
   await expect(page.locator("[data-select-exercise]")).toHaveCount(1);
   await expect(page.locator('[data-select-exercise="45"]')).toBeVisible();
@@ -51,7 +51,7 @@ test("el catálogo busca por número y pagina sin perder los filtros",async({pag
 });
 
 test("Arma el diagrama ofrece el acceso al Lienzo libre dentro del Laboratorio",async({page})=>{
-  await page.locator('[data-space="lab"]').click();
+  await goToSpace(page, "lab");
   await page.locator('[data-lab-mode="build"]').click();
   await expect(page.locator("#lab-open-builder")).toBeVisible();
   await page.locator("#lab-open-builder").click();
@@ -61,8 +61,8 @@ test("Arma el diagrama ofrece el acceso al Lienzo libre dentro del Laboratorio",
 });
 
 test("se puede deshacer y rehacer el diagrama con atajos desde el lienzo libre",async({page})=>{
-  await page.locator('[data-space="simulator"]').click();
-  await page.locator('[data-space="lab"]').click();
+  await goToSpace(page, "simulator");
+  await goToSpace(page, "lab");
   await page.locator('[data-lab-mode="build"]').click();
   await page.locator("#lab-open-builder").click();
   await page.locator('[data-builder-preset="decision"]').click();

@@ -4,14 +4,16 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("la navegación declara exactamente los cuatro espacios principales", async () => {
+test("la navegación declara portada y espacios de Mi ficha y Aprende", async () => {
   const html = await read("../index.html");
   const spaces = [...html.matchAll(/data-space="([^"]+)"/g)].map(([,space]) => space);
   const views = [...html.matchAll(/data-view="([^"]+)"/g)].map(([,space]) => space);
-  assert.deepEqual(spaces, ["learn", "exercises", "simulator", "lab"]);
-  assert.deepEqual(views, ["exercises", "learn", "simulator", "lab"]);
+  assert.deepEqual(spaces, ["home", "hoy", "semana", "calendario", "actividades", "biblioteca", "learn", "exercises", "simulator", "lab"]);
+  assert.deepEqual(new Set(views), new Set(["home", "hoy", "semana", "calendario", "actividades", "biblioteca", "learn", "exercises", "simulator", "lab"]));
   assert.doesNotMatch(html, /data-space="builder"/);
   assert.doesNotMatch(html, /data-view="builder"/);
+  assert.match(html, /data-subnav-section="ficha"/);
+  assert.match(html, /data-subnav-section="aprende"/);
 });
 
 test("el simulador reserva las cuatro ventanas pedagógicas y el dock", async () => {
