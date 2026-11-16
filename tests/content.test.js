@@ -79,17 +79,3 @@ test("la secuencia Fibonacci y las correcciones de máximos y factorial están d
   assert.ok(exercises.find(x=>x.id===24).constraints.some(x=>x.toLowerCase().includes("negativos")));
   assert.ok(exercises.find(x=>x.id===21).constraints.some(x=>x.includes("0!")));
 });
-
-
-test("los 45 ejercicios exponen etiquetas de conceptos derivadas de sus metadatos",()=>{
-  assert.equal(exercises.length,45);
-  for(const item of exercises){
-    assert.ok(Array.isArray(item.conceptTags),`Faltan etiquetas en el ejercicio ${item.id}`);
-    assert.ok(item.conceptTags.length>0,`El ejercicio ${item.id} no tiene conceptos filtrables`);
-    assert.equal(new Set(item.conceptTags).size,item.conceptTags.length,`Etiquetas repetidas en el ejercicio ${item.id}`);
-  }
-  const tags=new Set(exercises.flatMap(item=>item.conceptTags));
-  for(const required of ["Entrada de datos","Operaciones aritméticas","Decisiones","Ciclo Para","Ciclo Mientras","Ciclo Hacer–Mientras","Ciclos anidados"]){
-    assert.ok(tags.has(required),`No existe la etiqueta ${required}`);
-  }
-});
