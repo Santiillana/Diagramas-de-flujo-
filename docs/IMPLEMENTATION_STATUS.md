@@ -63,8 +63,8 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 ### Auditoría de la secuencia v4 · Mi ficha
 La existencia de rutas de navegación no equivale a la implementación de las vistas. En `main`, `index.html` contiene los contenedores de Hoy, Semana, Calendario, Actividades y Biblioteca, pero todos siguen siendo placeholders (`shell-placeholder`). `src/app.js` no inicializa un módulo de Mi ficha y no existe `src/content/ficha.js` en `main`.
 
-- **Paso 5 v4 · Núcleo y persistencia:** no implementado en `main`; no se encontró repositorio académico ni modelo de datos de Mi ficha.
-- **Paso 6 v4 · Hoy, Semana y Calendario:** no implementado en `main`; las tres vistas muestran mensajes de construcción pendiente.
+- **Paso 5 v4 · Núcleo y persistencia:** en desarrollo en esta rama. Se creó `src/ui/ficha-store.js` con modelo Activity, entregas, devoluciones, bitácora, reglas de estado, persistencia tolerante y contrato de respaldo versionado; pruebas unitarias añadidas. Pendientes: controles de respaldo, formularios/selectores compartidos, E2E y conexión completa de las vistas.
+- **Paso 6 v4 · Hoy, Semana y Calendario:** integración inicial en esta rama con horario oficial en `America/Bogota`, navegación semanal/mensual y estados temporales. Pendiente conectar eventos y fechas de actividades desde el repositorio M5.
 - **Paso 7 v4 · Actividades:** no implementado en `main`; la vista es un placeholder.
 - **Biblioteca y puente Clases ↔ Aprende:** no implementados.
 
@@ -76,15 +76,15 @@ No confundir el M6 de la Fase 6 del informe de mejoras v2 (Inicio/Constructor, y
 - Supuestos y reglas documentados en `docs/OFFICIAL_CLASS_SCHEDULE.md`.
 - La prueba `tests/ficha-schedule.test.js` valida la estructura, el cambio de lunes y las materias no informadas del sábado.
 - **En `main`:** las vistas Hoy, Semana y Calendario siguen siendo placeholders.
-- **En esta rama M7:** `src/ui/ficha-schedule.js` y `src/styles/ficha-schedule.css` conectan el horario a Hoy, Semana y Calendario; `index.html` y `src/app.js` inicializan estas vistas. La validación final de CI/navegador está pendiente.
+- **En esta rama M7:** `src/ui/ficha-schedule.js` y `src/styles/ficha-schedule.css` conectan el horario a Hoy, Semana y Calendario; `index.html` y `src/app.js` inicializan estas vistas. CI de arquitectura y navegador aprobada en el run 43964672938 para el SHA 3116f55.
 - Esto no completa el paso 5 v4 ni la persistencia personal, Actividades o Biblioteca.
 
 ### M7 · Actividades y detalle de Mi ficha
 - Rama de trabajo: `v4/module-7-activities`.
-- Especificación técnica creada en `docs/MODULE_7_ACTIVITY_DETAIL.md`.
+- Especificación técnica creada en `docs/MODULE_7_ACTIVITY_DETAIL.md`. El repositorio M5 ya tiene una primera implementación en esta rama; la interfaz M7 sigue pendiente.
 - La especificación define catálogo, detalle, entregas, devoluciones, estados, bitácora, persistencia, fechas, accesibilidad e integración.
 - **No implementado todavía:** la vista Actividades continúa siendo provisional.
-- Dependencia obligatoria: implementar primero los pasos 5 (núcleo y persistencia de Mi ficha) y 6 (Hoy, Semana y Calendario) de la secuencia v4. M7 debe consumir el repositorio común y no crear almacenamiento paralelo.
+- Dependencia obligatoria: cerrar la integración y aceptación de los pasos 5 y 6 de Mi ficha antes de cerrar M7. La interfaz M7 debe consumir `src/ui/ficha-store.js` y no crear almacenamiento paralelo.
 
 ## Arquitectura y comandos
 
