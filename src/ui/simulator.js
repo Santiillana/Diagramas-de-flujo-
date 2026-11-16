@@ -217,9 +217,10 @@ function reducedMotion(){
 }
 function pulseWindow(id){
   const meta=WINDOW_META.find(item=>item.id===id);
-  const panel=meta?getWindowElement(id):null;
-  const target=panel?.hidden?document.querySelector('[data-window-restore="'+id+'"]'):panel;
-  if(!target)return;
+  const owner=id==="output"?getWindowElement("variables"):(meta?getWindowElement(id):null);
+  let target=id==="output"?$("#simulator-output-details"):owner;
+  if(!target||owner?.hidden)return;
+  if(id==="output"&&target instanceof HTMLDetailsElement)target.open=true;
   target.classList.remove("is-pulsing");
   void target.offsetWidth;
   target.classList.add("is-pulsing");
@@ -236,7 +237,11 @@ function flightTargetFor(event,targetId){
   if(targetId==="variables"&&event.change?.name){
     return document.querySelector('[data-variable-card="'+CSS.escape(event.change.name)+'"]')??getWindowElement("variables");
   }
-  if(targetId==="output")return $("#simulator-output-details")??getWindowElement("variables");
+  if(targetId==="output"){
+    const output=$("#simulator-output-details");
+    if(output)output.open=true;
+    return output??getWindowElement("variables");
+  }
   return getWindowElement(targetId);
 }
 function animateFlight(event,targetId){
