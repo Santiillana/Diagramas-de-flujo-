@@ -46,4 +46,6 @@ Esta incorporación no modifica ni debe modificar:
 
 ## Estado de integración
 
-El archivo de contenido oficial queda definido en esta iteración. La vista Semana y las vistas Hoy/Calendario todavía contienen placeholders en `index.html`; la lectura y expansión visual del horario requiere la implementación de los módulos de Mi ficha. No declarar el horario integrado visualmente hasta que existan pruebas de esas vistas.
+En esta rama, `src/ui/ficha-schedule.js` consume `src/content/ficha.js` y renderiza las vistas Hoy, Semana y Calendario; `src/styles/ficha-schedule.css` aporta su presentación responsive. La inicialización se conecta desde `src/app.js` y los tres placeholders correspondientes se sustituyen en `index.html`.
+
+La integración visual del horario está implementada en esta rama, pero queda pendiente la validación de CI y navegador. Esto no significa que el paso 5 v4 (persistencia personal), la gestión de actividades ni la biblioteca estén implementados; esas vistas siguen siendo placeholders. No afirmar que toda Mi ficha esté terminada hasta completar esos módulos y sus pruebas.
