@@ -1547,16 +1547,22 @@ function bind(){
   $("#simulator-inputs")?.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();run();}
   });
-  $("#dock")?.addEventListener("click",event=>{
-    const control=event.target.closest("button#simulator-first,button#simulator-previous,button#simulator-next,button#simulator-last,button#simulator-play");
-    if(!control||control.disabled)return;
-    event.preventDefault();
-    if(control.id==="simulator-first")seek(0);
-    else if(control.id==="simulator-previous")move(-1);
-    else if(control.id==="simulator-next")move(1);
-    else if(control.id==="simulator-last")seek((timeline?.length??1)-1);
-    else if(control.id==="simulator-play")play();
-  });
+  /* Cada control de transporte recibe su propio listener. No depende de
+     que el click burbujee a través de capas del dock/lienzo. */
+  const transportActions=[
+    ["#simulator-first",()=>seek(0)],
+    ["#simulator-previous",()=>move(-1)],
+    ["#simulator-next",()=>move(1)],
+    ["#simulator-last",()=>seek((timeline?.length??1)-1)],
+    ["#simulator-play",play]
+  ];
+  for(const [selector,action] of transportActions){
+    $(selector)?.addEventListener("click",event=>{
+      if(event.currentTarget.disabled)return;
+      event.preventDefault();
+      action();
+    });
+  }
   $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
   $("#simulator-speed")?.addEventListener("change",()=>{
     document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
