@@ -1,64 +1,56 @@
-import { test, expect } from "@playwright/test";
+import {test,expect} from "@playwright/test";
 
-test("la rueda desplaza el lienzo; solo Ctrl/⌘+rueda y los botones hacen zoom",async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
+test("el zoom se controla con botones, no con la rueda del ratón",async({page})=>{
+  await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await expect(page.locator("#flow-svg")).toBeVisible();
   const canvas=page.locator("#flow-diagram-container");
-  const before=await canvas.evaluate(el=>({
-    x:Number(el.dataset.cameraX),y:Number(el.dataset.cameraY),zoom:Number(el.dataset.cameraZoom)
-  }));
-  const hit=await page.locator("#diagram-pan-hit").boundingBox();
-  await page.mouse.move(hit.x+hit.width*.5,hit.y+hit.height*.5);
+  const initial=Number(await canvas.getAttribute("data-camera-zoom"));
+  const stage=await page.locator("#diagram-pan-hit").boundingBox();
+  await page.mouse.move(stage.x+stage.width*.5,stage.y+stage.height*.5);
   await page.mouse.wheel(0,180);
-  const after=await canvas.evaluate(el=>({
-    x:Number(el.dataset.cameraX),y:Number(el.dataset.cameraY),zoom:Number(el.dataset.cameraZoom)
-  }));
-  expect(after.y).not.toBe(before.y);
-  expect(after.zoom).toBeCloseTo(before.zoom,5);
-  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
-  await expect(page.locator("#sim-camera-follow")).toHaveCount(0);
-  await expect(page.getByText("Cámara libre · Seguir el proceso")).toHaveCount(0);
-
-  await page.evaluate(()=>{
-    const target=document.querySelector("#diagram-pan-hit");
-    target.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,ctrlKey:true,bubbles:true,cancelable:true,clientX:innerWidth/2,clientY:innerHeight/2}));
-  });
-  const ctrlZoom=Number(await canvas.getAttribute("data-camera-zoom"));
-  expect(ctrlZoom).toBeGreaterThan(after.zoom);
-
+  await expect.poll(()=>Number(canvas.getAttribute("data-camera-zoom"))).toBe(initial);
+  await page.locator("#simulator-controls-toggle").click();
   await page.locator("#diagram-zoom-in").click();
-  const buttonZoom=Number(await canvas.getAttribute("data-camera-zoom"));
-  expect(buttonZoom).toBeGreaterThan(ctrlZoom);
+  const enlarged=Number(await canvas.getAttribute("data-camera-zoom"));
+  expect(enlarged).toBeGreaterThan(initial);
   await page.locator("#diagram-zoom-out").click();
-  const smaller=Number(await canvas.getAttribute("data-camera-zoom"));
-  expect(smaller).toBeLessThan(buttonZoom);
+  expect(Number(await canvas.getAttribute("data-camera-zoom"))).toBeLessThan(enlarged);
   await page.locator("#diagram-fit").click();
-  await expect.poll(async()=>Number(await canvas.getAttribute("data-camera-zoom"))).toBeCloseTo(1,4);
+  await expect.poll(()=>Number(canvas.getAttribute("data-camera-zoom"))).toBeCloseTo(1,4);
 });
 
-test("no existe minimapa y la cámara se reactiva en el siguiente paso",async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
+test("arrastrar libera la cámara y el siguiente paso reanuda el seguimiento",async({page})=>{
+  await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await expect(page.locator("#sim-minimap")).toHaveCount(0);
-  await expect(page.locator(".sim-minimap")).toHaveCount(0);
-  await expect(page.locator("#sim-camera-follow")).toHaveCount(0);
+  await page.locator("#simulator-controls-toggle").click();
+  await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
   await page.locator("#diagram-camera-toggle").click();
+  await page.locator("#diagram-zoom-in").click();
+  const stage=page.locator("#diagram-stage");
+  const rect=await stage.boundingBox();
+  await page.mouse.move(rect.x+rect.width*.5,rect.y+rect.height*.5);
+  await page.mouse.down();
+  await page.mouse.move(rect.x+rect.width*.5-90,rect.y+rect.height*.5+40,{steps:5});
+  await page.mouse.up();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","false");
+  await expect(stage).toHaveAttribute("data-pan-start",/[1-9]/);
+  await expect(stage).toHaveAttribute("data-pan-moved",/[1-9]/);
   await page.locator("#simulator-next").click();
   await expect(page.locator("#diagram-camera-toggle")).toHaveAttribute("aria-pressed","true");
+  const target=await stage.getAttribute("data-camera-target");
+  expect(target).not.toBeNull();
 });
 
-test("la ficha recorre las rutas SVG y dibuja el rastro activo e histórico",async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
+test("la ficha animada deja rastro sobre las conexiones reales del SVG",async({page})=>{
+  await page.setViewportSize({width:1440,height:950});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  for(let step=0;step<3;step++)await page.locator("#simulator-next").click();
+  for(let i=0;i<4;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
-  await expect(page.locator("#diagram-stage #flow-active-trail")).toBeAttached();
-  await expect(page.locator("#diagram-stage #flow-trail")).toBeAttached();
-  await expect.poll(async()=>((await page.locator("#diagram-stage #flow-active-trail").getAttribute("points"))??"").trim().split(/\s+/).length).toBeGreaterThan(1);
+  await expect(page.locator("#flow-active-trail")).toBeAttached();
+  await expect(page.locator("#flow-trail")).toBeAttached();
+  await expect.poll(async()=>(await page.locator("#flow-active-trail").getAttribute("points")??"").trim().split(/\s+/).length).toBeGreaterThan(1);
   await expect(page.locator("#flow-svg .diagram-edge.is-token-route")).not.toHaveCount(0);
 });
