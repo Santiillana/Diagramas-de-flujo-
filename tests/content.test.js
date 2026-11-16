@@ -57,7 +57,8 @@ test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
 test("el catálogo conserva los 45 identificadores sin saltos ni duplicados",()=>{
   assert.deepEqual(exercises.map(item=>item.id),Array.from({length:45},(_,index)=>index+1));
 });
-\ntest("las fichas de los ejercicios separan entradas, salidas, restricciones y proceso",()=>{
+
+test("las fichas de los ejercicios separan entradas, salidas, restricciones y proceso",()=>{
   for(const item of exercises){
     assert.ok(item.statement.length>20);
     assert.ok(item.purpose.length>10);
