@@ -3006,3 +3006,10 @@ body[data-active-space="simulator"] #PV .scene-process-result strong{
   gap:2px!important;width:60px!important;min-width:60px!important
  }
 }
+
+html[data-theme="light"] body[data-active-space="simulator"]{
+  --bg:var(--traza-observatory);--grid:var(--traza-stage-grid);--card:var(--traza-glass);
+  --ink:var(--traza-text);--pen:var(--traza-muted);
+  --line:color-mix(in srgb,var(--traza-muted) 24%,transparent);
+  --hl:var(--traza-amber);--ok:var(--traza-green);--no:var(--traza-pink);--info:var(--traza-blue)
+}
