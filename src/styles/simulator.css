@@ -2008,3 +2008,7 @@ body[data-active-space="simulator"].focus #diagram-stage.simulator-diagram-stage
 }
 body[data-active-space="simulator"].focus #diagram-pan-hit{touch-action:none}
 body[data-active-space="simulator"].focus #focus-ui{display:block!important}
+
+body[data-active-space="simulator"].focus .simulator-control-dock,
+body[data-active-space="simulator"].focus #simulator-shortcuts,
+body[data-active-space="simulator"].focus .canvas-coordinate{display:none!important}
