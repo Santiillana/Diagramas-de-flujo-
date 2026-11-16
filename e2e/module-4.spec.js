@@ -32,7 +32,7 @@ test("Arma el diagrama agrupa ordenar, identificar símbolos y completar huecos"
   await page.locator('[data-lab-activity="order"]').click();
   await expect(page.locator("#lab-task-title")).toContainText("Ordena instrucciones");
   await page.locator('[data-lab-activity="symbol"]').click();
-  await expect(page.locator("#lab-task-title")).toContainText("símbolo");
+  await expect(page.locator("#lab-task-title")).toContainText("figura");
   await page.locator('[data-lab-activity="fill-gap"]').click();
   await expect(page.locator("#lab-task-title")).toContainText("hueco");
 });
@@ -55,7 +55,7 @@ test("Caza el error localiza la línea y compara una corrección con los mismos 
   await page.locator('[data-lab-mode="debug"]').click();
   await page.locator('[data-lab-activity="error"]').click();
   await page.locator('[data-error-line="0"]').click();
-  await expect(page.locator("#lab-task-content")).toContainText("Inicializado en cero");
+  await expect(page.locator("#lab-task-content")).toContainText("Elegiste: M=0");
   await page.locator('[data-error-fix="0"]').click();
   await expect(page.locator("#lab-error-feedback")).toContainText("ANTES · ORIGINAL");
   await expect(page.locator("#lab-error-feedback")).toContainText("DESPUÉS · CORRECCIÓN");
