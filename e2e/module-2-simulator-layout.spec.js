@@ -52,6 +52,7 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
  await page.setViewportSize({width:1440,height:900});
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
+ await page.locator("#simulator-next").click();
  const centered=async()=>await expect.poll(()=>page.evaluate(()=>{
   const s=document.querySelector("#diagram-stage").getBoundingClientRect();
   const n=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();

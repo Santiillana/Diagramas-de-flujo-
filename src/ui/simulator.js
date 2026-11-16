@@ -79,7 +79,7 @@ function bindWindows(){
     for(const meta of WINDOW_META)hiddenWindows.add(meta.id);
     persistWindowState();applyWindowState();
   });
-  window.addEventListener("resize",()=>applyWindowState());
+  window.addEventListener("resize",()=>{applyWindowState();if(timeline&&$("#vf")&&!$("#vf").hidden)requestAnimationFrame(()=>placeContextWindow(timeline.current));});
 }
 function rectIntersects(a,b,gap=0){
   return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap;
@@ -131,41 +131,74 @@ function placeContextWindow(event){
   const box=$("#vf"),model=diagramNodeForEvent(event);
   const node=model?document.getElementById("flow-node-"+model.id):null;
   const stage=$("#diagram-stage");
-  if(!box||!stage)return;
-  const nodeRect=node?.getBoundingClientRect();
-  const stageRect=stage.getBoundingClientRect();
+  if(!box||!stage||!event)return;
+  const nodeRect=node?.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
   const width=box.offsetWidth||286,height=box.offsetHeight||130,gap=16,margin=12;
   const workspace={
-    left:Math.max(stageRect.left+margin,margin),
-    top:Math.max(stageRect.top+margin,margin),
-    right:Math.min(stageRect.right-margin,innerWidth-margin),
-    bottom:Math.min(stageRect.bottom-margin,innerHeight-margin)
+    left:Math.max(stageRect.left+margin,margin),top:Math.max(stageRect.top+margin,margin),
+    right:Math.min(stageRect.right-margin,innerWidth-margin),bottom:Math.min(stageRect.bottom-margin,innerHeight-margin)
   };
-  const figure=nodeRect??{left:stageRect.left+stageRect.width/2-30,top:stageRect.top+stageRect.height/2-20,right:stageRect.left+stageRect.width/2+30,bottom:stageRect.top+stageRect.height/2+20,width:60,height:40};
+  const figure=nodeRect??{
+    left:stageRect.left+stageRect.width/2-30,top:stageRect.top+stageRect.height/2-20,
+    right:stageRect.left+stageRect.width/2+30,bottom:stageRect.top+stageRect.height/2+20,width:60,height:40
+  };
   const midX=figure.left+figure.width/2,midY=figure.top+figure.height/2;
   const candidates=[
-    {left:figure.right+gap,top:midY-height/2},
-    {left:figure.left-width-gap,top:midY-height/2},
-    {left:midX-width/2,top:figure.bottom+gap},
-    {left:midX-width/2,top:figure.top-height-gap},
-    {left:workspace.left,top:workspace.bottom-height},
-    {left:workspace.right-width,top:workspace.bottom-height},
-    {left:workspace.left,top:workspace.top},
-    {left:workspace.right-width,top:workspace.top}
+    {left:figure.right+gap,top:midY-height/2},{left:figure.left-width-gap,top:midY-height/2},
+    {left:midX-width/2,top:figure.bottom+gap},{left:midX-width/2,top:figure.top-height-gap},
+    {left:workspace.left,top:workspace.top},{left:workspace.right-width,top:workspace.top},
+    {left:workspace.left,top:workspace.bottom-height},{left:workspace.right-width,top:workspace.bottom-height},
+    {left:midX-width/2,top:workspace.top},{left:midX-width/2,top:workspace.bottom-height}
   ];
-  const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&!rectIntersects(rect,figure,10);
-  const chosen=candidates.find(fits)??{
-    left:Math.max(workspace.left,Math.min(workspace.right-width,midX-width/2)),
-    top:Math.max(workspace.top,Math.min(workspace.bottom-height,figure.bottom+gap))
+  const activeId=String(model?.id??"");
+  const svgScreenBounds=(element,padding=9)=>{
+    try{
+      const bounds=element.getBBox(),matrix=element.getScreenCTM();
+      if(!matrix)return null;
+      const svg=element.ownerSVGElement;
+      const corners=[
+        [bounds.x,bounds.y],[bounds.x+bounds.width,bounds.y],
+        [bounds.x,bounds.y+bounds.height],[bounds.x+bounds.width,bounds.y+bounds.height]
+      ].map(([x,y])=>{
+        const point=svg.createSVGPoint();point.x=x;point.y=y;
+        return point.matrixTransform(matrix);
+      });
+      const xs=corners.map(point=>point.x),ys=corners.map(point=>point.y);
+      return {left:Math.min(...xs)-padding,top:Math.min(...ys)-padding,
+        right:Math.max(...xs)+padding,bottom:Math.max(...ys)+padding};
+    }catch{return null;}
   };
+  const edgeObstacles=[...document.querySelectorAll("#flow-svg .diagram-edge")]
+    .map(element=>svgScreenBounds(element,10)).filter(Boolean);
+  const obstacleElements=[
+    ...document.querySelectorAll("#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+CSS.escape(activeId)+")"),
+    ...document.querySelectorAll(".simulator-control-dock,.simulator-controls-panel,.simulator-mobile-tabs,#simulator-question")
+  ];
+  const otherObstacles=obstacleElements.filter(element=>{
+    const style=getComputedStyle(element);
+    return style.display!=="none"&&style.visibility!=="hidden"&&!element.hidden;
+  }).map(element=>{
+    const r=element.getBoundingClientRect(),pad=3;
+    return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
+  });
+  const obstacles=[...edgeObstacles,...otherObstacles];
+  const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&
+    rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&
+    !rectIntersects(rect,figure,10)&&!obstacles.some(other=>rectIntersects(rect,other,2));
+  const chosen=candidates.find(fits);
   box.dataset.anchorNode=String(model?.id??"");
   box.dataset.anchorSourceLine=String(event.sourceLine??"");
-  box.dataset.cable="false";
-  box.style.left=Math.round(chosen.left)+"px";
-  box.style.top=Math.round(chosen.top)+"px";
+  if(!chosen){
+    box.hidden=true;box.dataset.cable="fallback-scene";
+    const scene=$("#PV");
+    if(node&&scene&&getComputedStyle(scene).display!=="none")drawContextWire(nodeRect,scene.getBoundingClientRect());
+    else hideContextWire();
+    return;
+  }
+  box.hidden=false;box.dataset.cable="false";
+  box.style.left=Math.round(chosen.left)+"px";box.style.top=Math.round(chosen.top)+"px";
   hideContextWire();
 }
-
 function showContextWindow(event){
   const box=$("#vf");
   if(!box||!event||timeline?.index===dismissedVfStep)return;
