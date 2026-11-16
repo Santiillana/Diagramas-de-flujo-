@@ -35,8 +35,9 @@
 .noscript-message{margin:16px;padding:12px;background:var(--warning-soft);border:1px solid var(--warning);border-radius:var(--radius-sm)}
 @media(max-width:1080px){
  .topbar{grid-template-columns:142px minmax(0,1fr) auto;gap:8px;padding-inline:12px}
- .primary-nav{display:flex;justify-content:space-between;gap:0;width:100%;min-width:0;overflow:hidden}
- .nav-button{flex:1 1 0;min-width:0;justify-content:center;gap:3px;padding-inline:1px;font-size:11px;letter-spacing:-.2px}
+ .primary-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:0;width:100%;min-width:0;overflow:hidden}
+ .nav-button{display:flex;width:100%;min-width:0;justify-content:center;gap:2px;padding-inline:0;font-size:10px;letter-spacing:-.25px}
+ .nav-index{display:none}
 }
 @media(max-width:760px){
  .topbar{grid-template-columns:34px minmax(0,1fr) 64px;gap:6px;min-height:52px;padding:6px 8px}

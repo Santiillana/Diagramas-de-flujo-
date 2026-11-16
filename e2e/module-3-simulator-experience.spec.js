@@ -90,6 +90,7 @@ test("la ficha contextual se reposiciona sin cubrir otras figuras ni conexiones"
   const card=page.locator("#vf");
   await expect.poll(()=>card.evaluate(el=>!!el.dataset.anchorNode)).toBe(true);
   await expect(card).toBeVisible();
+  await expect(card).toHaveClass(/is-arriving/);
   const report=await page.evaluate(()=>{
     const card=document.querySelector("#vf"),stage=document.querySelector("#diagram-stage");
     const active=card.dataset.anchorNode,a=card.getBoundingClientRect(),s=stage.getBoundingClientRect();

@@ -131,8 +131,11 @@ function hideContextWire(){
   if(wire)wire.hidden=true;
 }
 function placeContextWindow(event){
-  const box=$("#vf"),model=diagramNodeForEvent(event);
-  const node=model?document.getElementById("flow-node-"+model.id):null;
+  const box=$("#vf"),requestedModel=diagramNodeForEvent(event);
+  const highlighted=document.querySelector("#flow-svg .diagram-node.is-active");
+  const highlightedId=highlighted?.id.replace("flow-node-","");
+  const model=(highlightedId&&diagram?.byId.get(highlightedId))??requestedModel;
+  const node=highlighted??(model?document.getElementById("flow-node-"+model.id):null);
   const stage=$("#diagram-stage");
   if(!box||!stage||!event)return;
   const nodeRect=node?.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
@@ -190,17 +193,20 @@ function placeContextWindow(event){
       return points;
     }catch{return [];}
   });
-  const obstacleElements=[
-    ...document.querySelectorAll("#flow-svg .diagram-edge-label,#flow-svg .diagram-node:not(#flow-node-"+CSS.escape(activeId)+")"),
-    ...document.querySelectorAll(".simulator-control-dock,.simulator-controls-panel,.simulator-mobile-tabs,#simulator-question")
-  ];
-  const otherObstacles=obstacleElements.filter(element=>{
+  const otherNodeElements=[...document.querySelectorAll("#flow-svg .diagram-node")].filter(element=>element!==node);
+  const labelElements=[...document.querySelectorAll("#flow-svg .diagram-edge-label")];
+  const uiElements=[...document.querySelectorAll(".simulator-control-dock,.simulator-controls-panel,.simulator-mobile-tabs,#simulator-question")];
+  const boxObstacle=(element,pad)=>{
     const style=getComputedStyle(element);
-    return style.display!=="none"&&style.visibility!=="hidden"&&!element.hidden;
-  }).map(element=>{
-    const r=element.getBoundingClientRect(),pad=3;
+    if(style.display==="none"||style.visibility==="hidden"||element.hidden)return null;
+    const r=element.getBoundingClientRect();
     return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
-  });
+  };
+  const otherObstacles=[
+    ...otherNodeElements.map(element=>boxObstacle(element,18)),
+    ...labelElements.map(element=>boxObstacle(element,8)),
+    ...uiElements.map(element=>boxObstacle(element,4))
+  ].filter(Boolean);
   const obstacles=otherObstacles;
   const crossesEdge=rect=>edgePoints.some(point=>
     point.x>=rect.left-10&&point.x<=rect.left+width+10&&
@@ -211,7 +217,7 @@ function placeContextWindow(event){
     !rectIntersects(rect,figure,10)&&!crossesEdge(rect)&&
     !obstacles.some(other=>rectIntersects(rect,other,2));
   const chosen=candidates.find(fits);
-  box.dataset.anchorNode=String(model?.id??"");
+  box.dataset.anchorNode=String(model?.sourceId??model?.id??"");
   box.dataset.anchorSourceLine=String(event.sourceLine??"");
   if(!chosen){
     box.hidden=true;box.dataset.cable="fallback-scene";
@@ -231,6 +237,8 @@ function showContextWindow(event){
   $("#vf-title").textContent=view.title;
   $("#vf-content").innerHTML=view.body;
   box.hidden=false;
+  box.style.visibility="hidden";
+  placeContextWindow(event);
   if(vfRaf)cancelAnimationFrame(vfRaf);
   clearTimeout(contextTimer);
   const complete=document.body.dataset.presentationMode==="complete";
@@ -238,6 +246,8 @@ function showContextWindow(event){
   contextTimer=window.setTimeout(()=>{
     vfRaf=requestAnimationFrame(()=>{
       placeContextWindow(event);
+      if(box.hidden){box.style.removeProperty("visibility");vfRaf=0;return;}
+      box.style.removeProperty("visibility");
       box.classList.remove("is-arriving");
       void box.getBoundingClientRect();
       box.classList.add("is-arriving");

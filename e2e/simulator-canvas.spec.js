@@ -5,7 +5,7 @@ test("el zoom se controla con botones, no con la rueda del ratón",async({page})
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   const canvas=page.locator("#flow-diagram-container");
-  await expect.poll(()=>Number(canvas.getAttribute("data-camera-zoom"))).toBeGreaterThan(0);
+  await expect.poll(async()=>Number(await canvas.getAttribute("data-camera-zoom"))).toBeGreaterThan(0);
   const initial=Number(await canvas.getAttribute("data-camera-zoom"));
   const stage=await page.locator("#diagram-pan-hit").boundingBox();
   await page.mouse.move(stage.x+stage.width*.5,stage.y+stage.height*.5);
