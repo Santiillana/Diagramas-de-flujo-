@@ -134,8 +134,11 @@ test("Para muestra la vuelta activa y el retorno del ciclo evita las figuras",as
   const iteration=page.locator('#trace-history [data-history-step]').filter({hasText:"Vuelta 1"}).first();
   await expect(iteration).toBeVisible();
   await iteration.click();
-  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
+  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-condition");
   await expect(page.locator("#scene-content .scene-loop-round")).toContainText("Vuelta 1");
+  await expect(page.locator("#scene-content .scene-loop-track .scene-loop-step.is-active")).toContainText("Comprobar");
+  await page.locator("#simulator-next").click();
+  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","loop-enter");
   await expect(page.locator("#scene-content .scene-loop-track .scene-loop-step.is-active")).toContainText("Cuerpo");
   const geometry=await page.evaluate(()=>{
     const paths=[...document.querySelectorAll("#flow-diagram-container .diagram-edge.is-back path")];
