@@ -5,7 +5,7 @@ test("el simulador ejecuta la suma y sincroniza diagrama, salida y variables",as
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await expect(page.locator("#simulator-exercise-title")).toHaveText("Suma de dos números");
-  await expect(page.locator("#simulator-status")).toContainText("Simulación lista");
+  await expect(page.locator("#simulator-status")).toContainText("LISTO PARA EJECUTAR");
   await page.locator("#simulator-last").click();
   await expect(page.locator("#simulator-output")).toContainText("13");
   await expect(page.locator("#variables-content")).toContainText("a");
