@@ -2087,3 +2087,128 @@ body[data-active-space="simulator"] .simulator-controls-panel .simulator-exercis
   body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:9px;padding:0 3px}
   body[data-active-space="simulator"] .simulator-controls-panel{width:calc(100vw - 12px)}
 }
+
+/* Corrección estructural de viewport: el Simulador no hereda la cabecera editorial del resto de espacios. */
+body[data-active-space="simulator"] .page-heading{display:none!important}
+body[data-active-space="simulator"] .page-shell{
+  position:relative!important;display:block!important;width:100vw!important;max-width:none!important;
+  height:calc(100svh - 54px)!important;min-height:0!important;max-height:calc(100svh - 54px)!important;
+  margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] #view-simulator.simulator-view{
+  position:relative!important;display:block!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+  position:absolute!important;inset:48px 0 0!important;display:grid!important;
+  grid-template-columns:minmax(235px,.76fr) minmax(0,1.72fr) minmax(275px,.86fr)!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  grid-template-areas:"problem diagram inspector" "dock dock dock"!important;
+  gap:0!important;width:100%!important;height:auto!important;min-width:0!important;min-height:0!important;
+  margin:0!important;padding:10px!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+  position:relative!important;grid-area:diagram!important;display:flex!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;
+  overflow:hidden!important
+}
+body[data-active-space="simulator"] #wrap.sim-wrap{
+  position:relative!important;display:block!important;flex:1 1 auto!important;width:100%!important;height:auto!important;
+  min-width:0!important;min-height:0!important;margin:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+  position:relative!important;display:block!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;margin:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"] #flow-diagram-container{
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important
+}
+body[data-active-space="simulator"] .execution-dock.simulator-dock{
+  position:relative!important;grid-area:dock!important;display:grid!important;align-self:end!important;
+  width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important
+}
+body[data-active-space="simulator"] .simulator-control-dock{
+  position:absolute!important;top:10px!important;right:12px!important;left:auto!important;z-index:40!important
+}
+body[data-active-space="simulator"] .simulator-statusbar{z-index:20!important}
+@media(max-width:900px){
+  body[data-active-space="simulator"] .page-shell{
+    width:100vw!important;height:calc(100svh - 94px)!important;min-height:0!important;max-height:calc(100svh - 94px)!important;
+    padding:0!important;overflow:hidden!important
+  }
+  body[data-active-space="simulator"] #view-simulator.simulator-view{width:100%!important;height:100%!important;min-height:0!important}
+  body[data-active-space="simulator"] .simulator-statusbar{
+    position:absolute!important;inset:0 0 auto!important;width:100%!important;height:40px!important;min-height:40px!important;
+    max-height:40px!important;padding:3px 9px!important;overflow:hidden!important
+  }
+  body[data-active-space="simulator"] .simulator-statusbar>div{display:flex;align-items:center;gap:8px;min-width:0}
+  body[data-active-space="simulator"] .simulator-statusbar .eyebrow{display:none!important}
+  body[data-active-space="simulator"] .simulator-statusbar h2{font-size:14px!important;white-space:nowrap}
+  body[data-active-space="simulator"] #simulator-status{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px!important}
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+    position:absolute!important;inset:40px 0 0!important;display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(220px,1fr) 64px!important;
+    grid-template-areas:"diagram" "dock"!important;gap:0!important;
+    width:100%!important;height:auto!important;min-width:0!important;min-height:0!important;
+    margin:0!important;padding:5px!important;overflow:hidden!important
+  }
+  body[data-active-space="simulator"] #PL,
+  body[data-active-space="simulator"] #RC{display:none!important}
+  body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+    position:relative!important;grid-area:diagram!important;display:flex!important;
+    width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;
+    overflow:hidden!important
+  }
+  body[data-active-space="simulator"] #wrap.sim-wrap,
+  body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+    width:100%!important;height:100%!important;min-width:0!important;min-height:0!important
+  }
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    position:relative!important;inset:auto!important;grid-area:dock!important;display:grid!important;
+    grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-rows:1fr!important;
+    align-self:end!important;width:100%!important;height:58px!important;min-height:58px!important;max-height:58px!important;
+    min-width:0!important;margin:4px 0 0!important;padding:5px!important;overflow:hidden!important
+  }
+  body[data-active-space="simulator"] .dock-description{display:none!important}
+  body[data-active-space="simulator"] .dock-controls{grid-column:1!important;grid-row:1!important;display:flex!important;gap:3px!important;min-width:0}
+  body[data-active-space="simulator"] .timeline-block{grid-column:2!important;grid-row:1!important;min-width:0!important}
+  body[data-active-space="simulator"] .dock-speed{grid-column:3!important;grid-row:1!important;min-width:47px!important}
+  body[data-active-space="simulator"] .transport-button{width:24px!important;min-width:24px!important;height:27px!important;padding:0!important;font-size:10px!important}
+  body[data-active-space="simulator"] .transport-play{width:27px!important;min-width:27px!important}
+  body[data-active-space="simulator"] .timeline-range{width:100%!important;min-width:0!important}
+  body[data-active-space="simulator"] .timeline-label{font-size:8px!important}
+  body[data-active-space="simulator"] .simulator-mobile-tabs{
+    position:absolute!important;z-index:24!important;top:44px!important;left:6px!important;right:6px!important;
+    display:flex!important;width:auto!important;max-width:none!important;box-sizing:border-box!important
+  }
+  body[data-active-space="simulator"] .simulator-control-dock{
+    position:absolute!important;top:48px!important;right:7px!important;left:auto!important;z-index:40!important
+  }
+  body[data-active-space="simulator"] .simulator-controls-panel{
+    width:min(360px,calc(100vw - 14px))!important;max-width:calc(100vw - 14px)!important;
+    max-height:calc(100svh - 160px)!important
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PL,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #RC,
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #RC{
+    position:absolute!important;inset:88px 6px 70px!important;z-index:28!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;
+    width:auto!important;height:auto!important;max-height:none!important;min-width:0!important;min-height:0!important
+  }
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV{display:flex!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PV{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PR{display:none!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR{display:flex!important}
+  body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PL{grid-template-rows:minmax(0,1fr) minmax(150px,.8fr)!important}
+}
+@media(max-width:520px){
+  body[data-active-space="simulator"] .simulator-statusbar h2{font-size:12px!important}
+  body[data-active-space="simulator"] #simulator-status{max-width:42%;font-size:8px!important}
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{padding:3px!important;grid-template-rows:minmax(200px,1fr) 62px!important}
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{height:56px!important;min-height:56px!important;max-height:56px!important;gap:4px!important}
+  body[data-active-space="simulator"] .transport-button{width:22px!important;min-width:22px!important;font-size:9px!important}
+  body[data-active-space="simulator"] .transport-play{width:25px!important;min-width:25px!important}
+  body[data-active-space="simulator"] .dock-speed select{max-width:48px!important;min-height:27px!important;font-size:9px!important}
+  body[data-active-space="simulator"] .simulator-mobile-tabs{top:43px!important;left:4px!important;right:4px!important;padding:3px!important}
+  body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:8px!important;padding:0 2px!important}
+}
