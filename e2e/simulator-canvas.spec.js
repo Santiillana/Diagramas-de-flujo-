@@ -18,7 +18,7 @@ test("el zoom se controla con botones, no con la rueda del ratón",async({page})
   await page.locator("#diagram-zoom-out").click();
   expect(Number(await canvas.getAttribute("data-camera-zoom"))).toBeLessThan(enlarged);
   await page.locator("#diagram-fit").click();
-  await expect.poll(()=>Number(canvas.getAttribute("data-camera-zoom"))).toBeCloseTo(1,4);
+  await expect.poll(async()=>Number(await canvas.getAttribute("data-camera-zoom"))).toBeCloseTo(1,4);
 });
 
 test("arrastrar libera la cámara y el siguiente paso reanuda el seguimiento",async({page})=>{
