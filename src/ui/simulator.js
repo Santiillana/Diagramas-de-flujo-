@@ -1060,13 +1060,13 @@ function render(){
   updateCameraButton();
   if(cameraAuto&&cameraReady)centerActiveNode(e);
   /* La escena presenta una figura y una sola explicación del evento actual. */
-  const scene=e.scene??{title:typeName(e.type)};
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
+  const scene=sceneView.model?.scene??e.scene??{title:typeName(e.type)};
   const sceneContent=$("#scene-content");
   sceneContent.dataset.eventType=e.type;
   sceneContent.innerHTML='<div class="scene-figure-host" role="img" aria-label="'+sceneView.alt+'">'+sceneView.markup+'</div>'+
     '<span class="scene-event-type">'+typeName(e.type)+'</span>'+
-    '<h4 class="scene-event-title">'+esc(scene.title)+'</h4>'+
+    '<h4 class="scene-event-title">'+esc(scene.title??typeName(e.type))+'</h4>'+
     '<p class="scene-event-body">'+esc(brief(e))+'</p>';
   sceneContent.scrollTop=0;
   const vars=e.variables??{},names=Object.keys(vars),change=e.change;
