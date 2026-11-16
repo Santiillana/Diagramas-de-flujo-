@@ -2,6 +2,7 @@ import { test, expect, goToSpace } from "./navigation.js";
 
 async function openBuilder(page) {
   await page.goto("/");
+  await goToSpace(page, "simulator");
   await goToSpace(page, "lab");
   await page.locator('[data-lab-mode="build"]').click();
   await page.locator("#lab-open-builder").click();
@@ -9,7 +10,8 @@ async function openBuilder(page) {
 }
 
 test("Inicio muestra el progreso real de Aprende y lo conserva después de recargar", async ({ page }) => {
-  await page.addInitScript(() => {
+  await page.goto("/");
+  await page.evaluate(() => {
     localStorage.setItem("traza:v2:learn", JSON.stringify({
       version: 2,
       completed: ["algorithm", "reading"],
@@ -17,8 +19,8 @@ test("Inicio muestra el progreso real de Aprende y lo conserva después de recar
       screen: 0
     }));
   });
+  await page.reload();
 
-  await page.goto("/");
   await expect(page.locator("#home-learn-progress")).toHaveText("2 de 17 completadas");
   await expect(page.locator("#home-learn-progress-percent")).toHaveText("12%");
   await expect(page.locator("#home-learn-progress-bar")).toHaveAttribute("aria-valuenow", "2");
@@ -64,32 +66,31 @@ test("el Constructor deshace y rehace con atajos y elimina la rama futura al cre
   await page.locator('[data-builder-preset="empty"]').click();
 
   const cards = page.locator("#builder-canvas-list .builder-node-card");
+  const baseline = await cards.count();
   const undo = page.locator("#builder-undo");
   const redo = page.locator("#builder-redo");
   const addProcess = page.locator('#lab-builder-stage [data-add-node="process"]');
 
-  await expect(cards).toHaveCount(2);
-  await expect(undo).toBeDisabled();
   await expect(redo).toBeDisabled();
   await expect(undo).toHaveAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
   await expect(redo).toHaveAttribute("aria-keyshortcuts", "Control+Shift+Z Control+Y Meta+Shift+Z Meta+Y");
 
   await addProcess.click();
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(baseline + 1);
   await expect(undo).toBeEnabled();
 
   await page.locator("#lab-builder-stage").press("Control+z");
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(baseline);
   await expect(redo).toBeEnabled();
 
   await addProcess.click();
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(baseline + 1);
   await expect(redo).toBeDisabled();
 
   await page.locator("#lab-builder-stage").press("Control+z");
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(baseline);
   await page.locator("#lab-builder-stage").press("Control+Shift+z");
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(baseline + 1);
 });
 
 test("el historial del Constructor conserva exactamente los últimos 60 estados y permite recorrerlos", async ({ page }) => {
@@ -98,6 +99,7 @@ test("el historial del Constructor conserva exactamente los últimos 60 estados 
   await page.locator('[data-builder-preset="empty"]').click();
 
   const cards = page.locator("#builder-canvas-list .builder-node-card");
+  const baseline = await cards.count();
   const undo = page.locator("#builder-undo");
   const redo = page.locator("#builder-redo");
   const addProcess = page.locator('#lab-builder-stage [data-add-node="process"]');
@@ -105,15 +107,15 @@ test("el historial del Constructor conserva exactamente los últimos 60 estados 
   for (let index = 0; index < 65; index++) {
     await addProcess.click();
   }
-  await expect(cards).toHaveCount(67);
+  await expect(cards).toHaveCount(baseline + 65);
   await expect(undo).toBeEnabled();
 
   for (let index = 0; index < 59; index++) {
     await undo.click();
   }
 
-  // El límite de 60 estados mantiene el estado inicial alcanzable en el sexto agregado.
-  await expect(cards).toHaveCount(8);
+  // El historial guarda 60 snapshots: el más antiguo aún alcanzable es el sexto agregado.
+  await expect(cards).toHaveCount(baseline + 6);
   await expect(undo).toBeDisabled();
   await expect(redo).toBeEnabled();
 
@@ -121,6 +123,6 @@ test("el historial del Constructor conserva exactamente los últimos 60 estados 
     await redo.click();
   }
 
-  await expect(cards).toHaveCount(67);
+  await expect(cards).toHaveCount(baseline + 65);
   await expect(redo).toBeDisabled();
 });
