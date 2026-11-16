@@ -63,8 +63,8 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 ### Auditoría de la secuencia v4 · Mi ficha
 La existencia de rutas de navegación no equivale a la implementación de las vistas. En `main`, `index.html` contiene los contenedores de Hoy, Semana, Calendario, Actividades y Biblioteca, pero todos siguen siendo placeholders (`shell-placeholder`). `src/app.js` no inicializa un módulo de Mi ficha y no existe `src/content/ficha.js` en `main`.
 
-- **Paso 5 v4 · Núcleo y persistencia:** en desarrollo en esta rama. Se creó `src/ui/ficha-store.js` con modelo Activity, entregas, devoluciones, bitácora, reglas de estado, persistencia tolerante y contrato de respaldo versionado; pruebas unitarias añadidas. Pendientes: controles de respaldo, formularios/selectores compartidos, E2E y conexión completa de las vistas.
-- **Paso 6 v4 · Hoy, Semana y Calendario:** integración inicial en esta rama con horario oficial en `America/Bogota`, navegación semanal/mensual y estados temporales. Pendiente conectar eventos y fechas de actividades desde el repositorio M5.
+- **Paso 5 v4 · Núcleo y persistencia:** en desarrollo en esta rama. Se creó `src/ui/ficha-store.js` con modelo Activity, entregas, devoluciones, bitácora, reglas de estado, persistencia tolerante y contrato de respaldo versionado. `src/ui/ficha-backup.js` ya ofrece descarga e importación validada con confirmación. Pendientes: formularios/selectores de Actividades, migraciones futuras y E2E final.
+- **Paso 6 v4 · Hoy, Semana y Calendario:** integración inicial en esta rama con horario oficial en `America/Bogota`, navegación semanal/mensual y estados temporales. Las fechas de asignación/vencimiento ya se leen del repositorio M5 y aparecen en Hoy, Semana y Calendario; falta cerrar las pruebas E2E del flujo completo.
 - **Paso 7 v4 · Actividades:** no implementado en `main`; la vista es un placeholder.
 - **Biblioteca y puente Clases ↔ Aprende:** no implementados.
 
