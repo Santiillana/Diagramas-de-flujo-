@@ -1,118 +1,78 @@
-# Estado de implementación
+# Estado de implementación · Traza
 
-Última actualización: 2026-11-14
+**Actualizado:** 16 de noviembre de 2026  
+**Repositorio:** `Santiillana/Traza`  
+**Rama predeterminada:** `main`  
+**Base integrada antes de M5:** `e80d5773eed6ab0c193ad351e618ce744b0c8441`  
+**Rama M5:** `v4/module-5-integration-audit`  
+**PR M5:** [#20](https://github.com/Santiillana/Traza/pull/20), abierta y no fusionada.
 
-## Repositorio y ramas
-- Repositorio: `Santiillana/Diagramas-de-flujo-`
-- Rama predeterminada: `main`
-- Rama M5: `module-5/final-audit-release`
-- Último commit validado de M5: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
-- M1 integrado: `19c1efb82623a671ecd8d205a5cfe6c6939405fb`
-- M2 inicial integrado: `b15acd5bdd59238f127d6d96972d719b96c2d671`
-- M3 integrado: `fd7d574abdf8b13e151d8cb6038e7d0e4344f363`
-- M4 integrado: `fc77b2d68a6454101d6edb915a117fafd3cdea34`
-- PR #1 (M1), #2 (M2), #4 (M3) y #5 (M4) están integrados. El PR #3 se cerró como sustituido por #5; sus correcciones principales están consolidadas.
-- PR M5 #6 fusionado; merge commit: `e510f534049c0a990ee03fde38d6b21ec40e8505`.
+## Estado ejecutivo
 
-## Estado de los cinco módulos
+La base funcional y las mejoras v4 del catálogo están integradas en `main`. La auditoría técnica del Módulo 5 ya pasó en GitHub Actions para el SHA `ee804803354a8ea5cf60d17c37405ac90792faa0`. El único cierre que sigue pendiente es la verificación del deployment público contra su origen HTTPS real.
 
-| Módulo | Estado | Commit integrado / validado | Pruebas | Pendientes |
-|---|---|---|---|---|
-| 1. Arquitectura y experiencia visual | **Aceptado e integrado** | `19c1efb82623a671ecd8d205a5cfe6c6939405fb` | 7/7 Node + 7/7 Chromium iniciales; regresiones posteriores mantienen cinco espacios | Ninguno dentro de alcance; M5 incluye responsive y visual audit |
-| 2. Aprende y 40 ejercicios | **Aceptado e integrado** | `b15acd5bdd59238f127d6d96972d719b96c2d671` + correcciones consolidadas en M4 | 14 lecciones, 40 retos 20/10/10; oráculo matemático independiente de 170 escenarios | Ninguno dentro del alcance; modos de reto y correcciones integrados |
-| 3. Parser, intérprete, diagrama y simulador | **Aceptado e integrado** | `fd7d574abdf8b13e151d8cb6038e7d0e4344f363` | 31/31 Node + 16/16 Chromium en aceptación M3; suites M5 vuelven a cubrir el simulador | Ninguno dentro del alcance |
-| 4. Laboratorio y constructor | **Aceptado e integrado** | `fc77b2d68a6454101d6edb915a117fafd3cdea34` | 216/216 Node + 28/28 Chromium en aceptación M4 | Limitación explícita: el constructor es estructurado, no ofrece conexiones manuales arbitrarias por puerto |
-| 5. Integración, auditoría y publicación | **Aceptado e integrado en main; deploy Pages pendiente de activación** | `e510f534049c0a990ee03fde38d6b21ec40e8505` | **222/222 Node + 38/38 Chromium**, CI main #43615474220 — success | Activar Pages desde Settings y verificar URL |
+| Área | Estado | Evidencia |
+|---|---|---|
+| Base visual y navegación | Integrada y auditada | 10 vistas visitadas en Chromium; teclado; responsive |
+| Aprende | Integrado | 17 lecciones, cuatro bloques, pruebas de escenas y progreso |
+| Ejercicios | Integrado y actualizado en PR #19 | 45 retos, distribución 20/10/10/5; búsqueda, accesos rápidos y filtros |
+| Simulador y motor | Integrados y revalidados | Parser/intérprete determinista, traza común, regresiones y E2E |
+| Laboratorio y constructor | Integrados y revalidados | Ocho actividades y constructor estructurado sobre el mismo motor |
+| M5 · auditoría del código | **CI aprobada** | 267/267 Node y 99/99 Playwright en PR #20 |
+| M5 · publicación | **Pendiente externo** | Falta conocer/verificar el origen HTTPS real y ejecutar el smoke test posterior al despliegue |
 
+## Secuencia y alcance
 
-## M1 — Arquitectura y experiencia visual
-- Cinco espacios de navegación, shell visual y responsive.
-- Tokens, tema, motion reducido, navegación por teclado y layout del simulador.
-- README, decisiones, estado y referencia original.
+### Módulos funcionales
+- **M1:** arquitectura visual, sistema de estilos, navegación y responsive.
+- **M2:** lecciones y catálogo didáctico.
+- **M3:** parser, intérprete determinista, SVG y sincronización del Simulador.
+- **M4 funcional V5:** Laboratorio y constructor estructurado, que consumen la traza y el motor común.
 
-## M2 — Aprende y catálogo
-- `src/content/lessons.js`: 14 lecciones con explicación, ejemplo, visualización y quiz.
-- `src/content/exercises.js`: exactamente 40 ejercicios (20/10/10).
-- `src/ui/content-view.js`: buscador, niveles, métodos y ficha detallada.
-- Modo reto: análisis/proceso, persistencia local, pistas y solución voluntaria.
-- `tests/reference-results.test.js`: 170 escenarios calculados con oráculo independiente de las soluciones.
+### Continuidad v4
+La iteración v4 reorganiza la plataforma en Inicio, Mi ficha y Aprende. El módulo 4 de esa iteración rediseñó el catálogo de Ejercicios y preservó sus 45 identificadores. Se integró mediante [PR #19](https://github.com/Santiillana/Traza/pull/19), merge commit `e80d5773eed6ab0c193ad351e618ce744b0c8441`.
 
-## M3 — Motor y simulador
-- Parser restringido, expresiones, intérprete determinista y límites de seguridad.
-- SVG generado desde AST y resaltado del paso real.
-- Snapshot único para pseudocódigo, escena, variables, historial y salida.
-- Avance/retroceso determinista y mensajes de error pedagógicos.
+La etiqueta M4 de la iteración v4 no debe confundirse con el alcance histórico M4 de V5 (Laboratorio y constructor), que ya forma parte de la base integrada.
 
-## M4 — Laboratorio y constructor
-- Seis actividades conectadas a la traza real.
-- Experimentos aislados para que ¿Y si…? no mutile la ejecución base.
-- Builder con nodos y bloques anidados compilados a pseudocódigo M3; mismo intérprete, sin motor paralelo.
-- Modelo estructurado: secuencia, ramas V/F y cuerpos de ciclos. No se afirma edición libre de puertos arbitrarios.
+### M5 · Integración, auditoría, rendimiento y publicación
+La fase M5 audita contenido, ejecución, navegación, responsive, sincronización visual, accesibilidad, rendimiento funcional y preparación de publicación.
 
-## M5 — Auditoría final y experiencia de simulación
-- Auto-cámara y pan manual en el mismo desplazamiento del SVG.
-- Token móvil y realce de la rama V/F elegida.
-- Fit por viewBox, zoom, fullscreen y salida de fullscreen dentro del lienzo.
-- Historial de variables con eventos, origen y cambios anteriores/nuevos.
-- Restauración de muestra, tamaño de pseudocódigo persistente, desglose de operaciones.
-- “En escena” minimizable y con estado de vueltas anidadas.
-- Pestañas móviles para Problema, Diagrama, En escena, Variables, Salida e Historial.
-- Capturas CI de simulador, laboratorio y constructor en desktop/tablet/móvil.
-- CI: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106 — **success**.
-- Node: **222/222**; incluye oráculo independiente, parser/interpreter, rendimiento y regresiones.
-- Playwright Chromium: **38/38**; navegación 5 espacios, 40 ejercicios/14 lecciones, simulador, laboratorio, constructor, fullscreen/pan/zoom/mobile tabs, responsive 390/1024/1440px, consola.
-- Artefacto de capturas: `ui-audit-045f5be0b2f5dc7fe39eb34797a69cba26448612` (retención de CI 7 días). El conjunto se revisó visualmente.
+#### Resultado de CI de M5
+- PR: [#20](https://github.com/Santiillana/Traza/pull/20).
+- Workflow: [GitHub Actions 43954434334](https://github.com/Santiillana/Traza/actions/runs/43954434334).
+- SHA probado: `ee804803354a8ea5cf60d17c37405ac90792faa0`.
+- Node: **267/267**, cero fallos.
+- Playwright/Chromium: **99/99**, cero fallos.
+- Artefacto visual: `ui-audit-29b2188dc0b27d9a41da525ea8b589d40b83d1df`, 18 capturas PNG, ID `14271616094`.
+
+La suite cubre los 45 retos y todos los métodos/escenarios disponibles, el oráculo independiente, cinco retos expertos, parser/intérprete, constructor, bucles largos y anidados, snapshots, contraste WCAG AA y los espacios del producto. Los nuevos cuatro E2E M5 comprueban las diez vistas, fallos de consola/recursos, responsive a 390/768/1024/1440 px, teclado y almacenamiento bloqueado.
+
+#### Corrección surgida de la auditoría
+El primer recorrido móvil detectó que el `backdrop-filter` de la cabecera atrapaba la navegación inferior fija e impedía tocar el selector de sección. Se eliminó el filtro del contenedor superior en móvil, manteniendo un fondo opaco; la segunda CI pasó el recorrido completo. Cambio aislado en `src/styles/shell.css`.
+
+#### Evidencia previa
+Antes de añadir M5, el commit de `main` `e80d5773eed6ab0c193ad351e618ce744b0c8441` ya había pasado 267 pruebas Node y 95 pruebas Chromium: [run 43951436564](https://github.com/Santiillana/Traza/actions/runs/43951436564).
 
 ## Arquitectura y comandos
-- HTML/CSS/JavaScript ES nativo, sin dependencias de runtime.
-- Desarrollo: `python3 -m http.server 8000`
-- Instalación: `npm install`
+
+- Runtime: HTML/CSS/JavaScript ES nativo; sin bundler ni dependencias de runtime.
+- Instalar: `npm install`
+- Desarrollo local: `python3 -m http.server 8000`
 - Node: `npm test`
 - Chromium: `npx playwright install chromium` y `npm run test:browser`
-- Publicación estática, sin build de bundler.
 
-## Referencias inmutables
-- HTML original Git blob: `9f7f5a3d68d10b004e2ea306df1109906f13bc33`.
-- Master V5 Git blob: `c74422272ba8b89757af1be74bca2722337ec902`.
+## Publicación y limitaciones
 
-## Pendientes externos / diferencias declaradas
-1. Crear PR del M5, comprobar sus checks y fusionarlo.
-2. GitHub Pages: el repo es estático y compatible, pero no se verificó su configuración ni una URL pública desde esta ejecución; activar Pages desde Settings si no está habilitado.
-3. Constructor: editor estructurado de secuencias y bloques anidados, no libre conexión manual de cualquier puerto.
-4. La cámara y la inspección se prueban mediante Chromium y capturas automatizadas; no se realizó prueba táctil en un dispositivo físico real.
+- `.github/workflows/pages.yml` permite una ejecución manual de respaldo en GitHub Pages. El comentario del workflow indica Cloudflare Workers como hosting primario, pero el repositorio no contiene una URL pública ni evidencia automatizada del estado actual de ese hosting.
+- `.github/workflows/post-deploy.yml` requiere el origen HTTPS real, espera la marca exacta `traza-release` y ejecuta `e2e/production-smoke.spec.js`. No se ejecutó porque no se ha podido verificar el origen de producción.
+- No afirmar que la aplicación está publicada ni que la aceptación end-to-end de release está completa hasta pasar ese smoke test.
+- Responsive se ha probado en Chromium emulado, no en un teléfono o tableta física.
+- El constructor es estructurado (secuencia, ramas V/F y ciclos anidados); no es un editor libre de conexiones manuales arbitrarias entre puertos SVG.
+- Las pruebas de rendimiento miden límites funcionales de iteración y traza; no equivalen a benchmarks en equipos físicos ni a pruebas de carga multiusuario.
 
+## Referencias
 
-## Extensión en revisión — rama `mejoras/traza-v2`
-
-Este apartado describe cambios posteriores al estado histórico de M5. No modifica el hecho de que los cinco módulos base se integraron en `main`; estas mejoras siguen separadas y no están fusionadas.
-
-- Aprende: 17 lecciones, cinco bloques, cinco pantallas por lección y progreso local.
-- Ejercicios: 45 en total (20 básicos, 10 intermedios, 10 avanzados y 5 expertos). Se preservan los 40 originales.
-- Retos expertos: Euclides (MCD/MCM), divisores y primalidad, Cramer 3×3, Newton–Raphson y Simpson 1/3.
-- Catálogo: búsqueda, nivel, filtro conceptual derivado del pseudocódigo, filtro «De clase» y paginación.
-- Laboratorio: ocho actividades con progreso y dos actividades nuevas basadas en la traza real.
-- Simulador: escenas específicas y narración conectadas a eventos reales.
-- Constructor: historial de deshacer/rehacer, con atajos Ctrl/Cmd+Z y Ctrl/Cmd+Y.
-- Inicio: panel de acceso rápido con estadísticas y progreso de aprendizaje.
-
-**Validación pendiente:** Node y Playwright deben ejecutarse sobre el commit final de esta rama. No declarar aceptación hasta revisar CI y corregir cualquier fallo. `main` y las rutas protegidas permanecen intactas.
-
-
-## Validación final de la rama mejoras/traza-v2
-
-GitHub Actions run 43676037183 finalizó correctamente: 259 pruebas Node y 41 pruebas Playwright aprobadas, sin fallos. Se generaron capturas de escritorio, tableta y móvil. La PR #7 permanece abierta contra main; no se ha fusionado.
-
-
-## Estado final actualizado — mejoras/traza-v2 (15-11-2026)
-
-La validación que faltaba ya terminó correctamente. Esta sección reemplaza la nota anterior que dejaba Node y Playwright como pendientes:
-
-- Rama: mejoras/traza-v2.
-- Commit de código probado: af28e95bb648c126ee445797d9ef9b1da236af22.
-- CI: [GitHub Actions 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), success.
-- Node: 259/259 pruebas aprobadas, 0 fallidas.
-- Playwright/Chromium: 58/58 pruebas aprobadas, 0 fallidas.
-- Auditoría visual: 17 capturas PNG cargadas; artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57, ID 14163486649.
-- PR #7: abierta contra main, no fusionada. La rama principal no se modificó por esta PR.
-
-Las cifras históricas de aceptación de M5 (222/38) describen aquella integración y no deben confundirse con la suite actual de esta rama (259/58). La configuración/publicación de GitHub Pages sigue siendo una acción externa no verificada. El constructor continúa siendo estructurado, no un editor de conexiones libres por puerto.
+- Especificación: `docs/MASTER_SPEC.md`.
+- Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`.
+- Aceptación: `docs/FINAL_ACCEPTANCE.md`.
+- Auditoría del prototipo: `docs/ORIGINAL_FEATURE_AUDIT.md`.

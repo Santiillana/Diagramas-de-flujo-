@@ -136,7 +136,7 @@
   .primary-nav .nav-button{padding-inline:10px;font-size:12px}
 }
 @media(max-width:760px){
-  .topbar{position:sticky}
+  .topbar{position:sticky;background:var(--surface);backdrop-filter:none}
   .topbar-main{grid-template-columns:minmax(100px,auto) minmax(0,1fr) auto;gap:6px;height:56px;min-height:56px;padding:0 8px}
   .brand{gap:5px}
   .brand-mark{width:31px;height:31px}

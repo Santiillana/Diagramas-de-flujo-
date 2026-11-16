@@ -1,80 +1,59 @@
-# Informe de aceptación final — Traza
+# Informe de aceptación · Módulo 5 · Traza
 
-Fecha: 14 de noviembre de 2026  
-Repositorio: `Santiillana/Diagramas-de-flujo-`  
-Rama de aceptación: `module-5/final-audit-release`  
-Commit validado: `045f5be0b2f5dc7fe39eb34797a69cba26448612`
+**Fecha:** 16 de noviembre de 2026  
+**Repositorio:** `Santiillana/Traza`  
+**PR:** [#20](https://github.com/Santiillana/Traza/pull/20), abierta y sin fusionar.  
+**SHA validado:** `ee804803354a8ea5cf60d17c37405ac90792faa0`.
 
-## Resultado ejecutivo
+## Dictamen
 
-Los cinco módulos están integrados en `main`. El PR #6 de M5 se fusionó con el commit `e510f534049c0a990ee03fde38d6b21ec40e8505`; la CI de la rama principal pasó después de integrar.
+<badge>Validación CI aprobada</badge>
 
-### Estado por módulo
+La auditoría técnica del Módulo 5 pasó completamente en GitHub Actions. La aceptación del código y de las pruebas de navegador está aprobada para el SHA indicado. **La publicación pública no está aceptada todavía**, porque falta ejecutar la verificación posterior al despliegue con el origen HTTPS real.
 
-| Módulo | Resultado | Evidencia |
-|---|---|---|
-| 1. Arquitectura y diseño | Aceptado e integrado | 7/7 Node + 7/7 Chromium iniciales |
-| 2. Lecciones y ejercicios | Aceptado e integrado | 14 lecciones, 40 ejercicios (20/10/10), oráculo de 170 escenarios |
-| 3. Parser, motor y simulador | Aceptado e integrado | 31/31 Node + 16/16 Chromium |
-| 4. Laboratorio y constructor | Aceptado e integrado con límite de alcance documentado | 216/216 Node + 28/28 Chromium |
-| 5. Integración y auditoría | Implementado y CI validada; PR pendiente | 222/222 Node + 38/38 Chromium |
+## Evidencia de CI
 
-## Evidencia M5
+[GitHub Actions run 43954434334](https://github.com/Santiillana/Traza/actions/runs/43954434334)
 
-CI aceptación de M5: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43614738106
-CI main final: https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615474220
+- Node: **267/267**, cero fallos.
+- Playwright/Chromium: **99/99**, cero fallos.
+- Instalación CI con Node 22; npm informó cero vulnerabilidades en los cuatro paquetes auditados.
+- Capturas visuales: 18 PNG cargados correctamente en `ui-audit-29b2188dc0b27d9a41da525ea8b589d40b83d1df`, artefacto ID `14271616094`.
 
-- **Node:** 222 pruebas pasaron, 0 fallaron.
-- **Chromium:** 38 pruebas pasaron, 0 fallaron.
-- Se ejecutaron 170 escenarios de referencia matemática independientes para el catálogo.
-- Se comprobaron cinco espacios, responsive a 1440 px, 1024 px y 390 px, arranque sin excepciones JS, modo reto, simulador, movimiento de cámara, zoom, fit, fullscreen, historial, restauración de entradas, pestañas móviles y reducción de movimiento.
-- Se capturaron las vistas del simulador, laboratorio y constructor en escritorio/tableta/móvil; artefacto CI: `ui-audit-045f5be0b2f5dc7fe39eb34797a69cba26448612`.
+### Cobertura comprobada
 
-## Revisión visual de las capturas
+- Los 45 ejercicios, todos sus métodos y escenarios disponibles se ejecutan con el intérprete; los resultados se contrastan también con un oráculo independiente.
+- Se prueban retos expertos, expresiones, parser, ciclos, errores de entrada y límites de ejecución.
+- Rendimiento funcional: ciclo de 200 iteraciones con traza acotada, ciclos anidados con contexto correcto y navegación de snapshots sin mutación.
+- Accesibilidad: contraste WCAG AA, navegación por teclado y movimiento reducido.
+- Navegador: simulador, escenas, variables, historial, cámara, zoom, fullscreen, constructor, catálogo, diez vistas, navegación responsive y tolerancia a localStorage bloqueado.
+- Las diez vistas se recorren a 390, 768, 1024 y 1440 px sin overflow horizontal ni errores de recursos/JavaScript.
+- El primer recorrido detectó una superposición táctil en la cabecera móvil; se corrigió el contexto de posicionamiento de la navegación fija y la segunda ejecución pasó.
 
-Se revisaron las capturas producidas por Chromium:
-- Simulador desktop: problema/pseudocódigo a la izquierda, diagrama central, escena/variables/salida a la derecha, historial y dock inferior.
-- Simulador mobile: barra de espacios navegable, pestañas táctiles para los seis paneles y dock conservado; no hay desbordamiento horizontal del documento.
-- Laboratorio desktop: diagrama, escena y variables persistentes junto a las seis actividades.
-- Constructor desktop/mobile: paleta, secuencia y terminales, propiedades, compilación/ejecución y vista previa; el layout se adapta sin scroll horizontal de página.
+## Criterios y limitaciones abiertas
 
-La comprobación de interacción móvil se ejecutó con Chromium emulado; no equivale a probar un dispositivo físico real.
-
-## Diferencias o limitaciones que se declaran
-
-1. **Constructor estructurado, no cableado libre:** se crean secuencias, ramas V/F y cuerpos de ciclo anidados. Las flechas se infieren por orden/estructura. No se implementó todavía el editor libre de conexiones manuales por puerto que describe V5. La implementación no se etiqueta como ese editor completo.
-2. **GitHub Pages:** el proyecto es estático y compatible, pero no se pudo verificar la configuración ni una URL pública de Pages desde esta ejecución. Para publicar, habilitar Settings → Pages → Deploy from a branch → main → /(root), y luego comprobar la URL.
-3. **Prueba física:** responsive y gestos se probaron con Chromium a tamaños de viewport configurados, no en un teléfono/tableta físico.
-
-## Correcciones de contenido detectadas por la ejecución
-
-- Ejercicio 34: en caso de todos los valores iguales, mantener la primera posición de máximo/mínimo.
-- Ejercicio 36: corregir el promedio y los aprobados para el caso declarado.
-- Se mantienen verificaciones de Fibonacci hasta 34 (sin imprimir 55), máximos con valores negativos, factorial 0! = 1, centinela no contado y promedio sin división entre cero.
+| Criterio | Resultado |
+|---|---|
+| CI Node y Chromium del SHA final | Aprobado |
+| Capturas de auditoría generadas | Aprobado; 18 PNG en artefacto CI |
+| Navegación y responsive automatizados | Aprobado en Chromium emulado |
+| Contraste WCAG AA y teclado | Aprobado por las suites existentes y nuevas |
+| Constructor de diagramas | Funciona en modelo estructurado; conexiones libres arbitrarias entre puertos no implementadas |
+| Prueba en hardware físico | No realizada |
+| Deployment público | **Pendiente** |
+| Smoke test de producción | **Pendiente** |
 
 ## Publicación
 
-El repositorio incluye `.github/workflows/pages.yml`, que publica el contenido estático en cada push a `main`. El intento posterior a la fusión terminó con HTTP 404 en “Configure GitHub Pages” (https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43615398257): el sitio aún no está habilitado. El propietario debe ir a Settings → Pages → Build and deployment → Source y seleccionar GitHub Actions. Después, re-ejecutar Deploy GitHub Pages y comprobar la URL del entorno.
+El workflow `.github/workflows/pages.yml` es manual y de respaldo. Su comentario indica Cloudflare Workers como hosting primario, pero no hay una URL de producción visible ni una prueba automática de ese proveedor en el repositorio.
 
-## Estado final de integración
+El workflow `.github/workflows/post-deploy.yml` requiere un origen HTTPS real. Antes de declarar release completo debe:
+1. comprobar que la portada publicada expone exactamente la marca `traza-release` del commit esperado;
+2. ejecutar `e2e/production-smoke.spec.js` contra ese origen;
+3. guardar el artefacto de capturas de producción y registrar su run.
 
-- PR #6 se fusionó en `main`.
-- CI `main`: 222/222 Node y 38/38 Chromium.
-- El único bloqueo externo restante es activar GitHub Pages en Settings → Pages → Build and deployment → Source → GitHub Actions. Tras hacerlo, re-ejecutar el workflow y abrir la URL para comprobar los cinco espacios y los módulos JS.
-- No se afirma que Pages esté publicado mientras esa activación no se realice y el deployment no termine correctamente.
+No se inventa una URL ni se usa la aprobación de CI de PR como sustituto de un deployment real.
 
+## Conclusión
 
-## Aceptación final — rama mejoras/traza-v2
-
-Fecha: 15 de noviembre de 2026. Esta sección actualiza el estado de la rama de mejoras y prevalece sobre los resultados históricos de M5 indicados arriba.
-
-- Rama: mejoras/traza-v2.
-- Commit de código validado: af28e95bb648c126ee445797d9ef9b1da236af22.
-- Pull request: [#7](https://github.com/Santiillana/Diagramas-de-flujo-/pull/7), base main, estado abierto, no fusionado.
-- GitHub Actions: [run 43718173332](https://github.com/Santiillana/Diagramas-de-flujo-/actions/runs/43718173332), resultado success.
-- Node: 259 pruebas aprobadas, 0 fallidas.
-- Playwright/Chromium: 58 pruebas aprobadas, 0 fallidas.
-- El job completó las pruebas de arquitectura y navegador y cargó 17 capturas PNG como artefacto ui-audit-4bb58882c1233f6dce3892f7fa2f7e5cfad82f57 (ID 14163486649, 3.388.715 bytes, retención configurada de 7 días).
-- La prueba final de movimiento reducido quedó ajustada para comprobar la duración computada efectiva (≤0,01 ms), no una representación textual específica del CSS.
-
-La aprobación de CI verifica esta revisión automatizada en Chromium; no equivale a una prueba física en dispositivos ni a una publicación web. No se fusionó la PR y no se afirma que GitHub Pages esté desplegado. La rama main permanece fuera de esta entrega.
+**M5 aprobado a nivel de código, documentación y CI automatizada.** El cierre del release público permanece condicionado al acceso/configuración del hosting y a la ejecución del smoke test real. La PR #20 sigue separada de `main`; la rama principal no se modificó con esta auditoría.
