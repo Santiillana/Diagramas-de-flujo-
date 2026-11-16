@@ -233,7 +233,7 @@ function returnToLabModes(){
 function setActivity(next,options={}){
   if(!options.keepMixed)mixedQueue=[];
   activity=next;
-  predictionAnswer=null;whatIfResult=null;orderChecked=false;
+  predictionAnswer=null;whatIfResult=null;orderChecked=false;errorLineSelected=null;
   $("#lab-activity-list")?.querySelectorAll("[data-lab-activity]").forEach(button=>
     button.classList.toggle("is-active",button.dataset.labActivity===next));
   const titles={predict:"Predice el siguiente paso",table:"Tabla de seguimiento","follow-arrow":"Sigue la flecha",order:"Ordena instrucciones",symbol:"Identifica la figura",error:"Encuentra el error",whatif:"¿Y si…?","fill-gap":"Completa el hueco"};
@@ -447,6 +447,10 @@ function renderError(){
         '<li><button type="button" data-error-line="'+index+'"><span>'+String(index+1).padStart(2,"0")+'</span><code>'+esc(line)+'</code><b>Elegir</b></button></li>'
       ).join("")+'</ol>'+
       '<button type="button" class="lab-choice lab-no-error" data-error-line="-1">✓ No hay error: el algoritmo es correcto</button></div>';
+    $("#lab-task-content").querySelectorAll("[data-error-line]").forEach(button=>button.addEventListener("click",()=>{
+      errorLineSelected=Number(button.dataset.errorLine);
+      renderError();
+    }));
     return;
   }
   const chosenLine=Number(errorLineSelected);
