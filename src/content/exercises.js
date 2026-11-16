@@ -1,7 +1,55 @@
 
 const method = (name, pseudocode, sample, tests, note="") => ({name,pseudocode,sample,tests,note});
+
+const normalizeConcept = value => String(value??"")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .toLocaleLowerCase("es").replace(/[–—]/g,"-").replace(/\s+/g," ").trim();
+
+const CONCEPT_GROUPS = [
+  ["Entrada de datos",["Entrada","entrada múltiple"]],
+  ["Variables",["variables","variables auxiliares","variables relacionadas","variable de referencia"]],
+  ["Asignación",["asignación"]],
+  ["Salida",["salida"]],
+  ["Operaciones aritméticas",["operaciones aritméticas","suma","resta","división","multiplicación","Multiplicación repetida","paréntesis","porcentajes"]],
+  ["Comparaciones",["comparación","comparaciones",">="]],
+  ["Decisiones",["decisión","decisiones","Si","Si/Sino","Si/Sino anidado"]],
+  ["Ciclo Para",["Para"]],
+  ["Ciclo Mientras",["Mientras"]],
+  ["Ciclo Hacer–Mientras",["Hacer–Mientras"]],
+  ["Ciclos",["ciclos"]],
+  ["Ciclos anidados",["ciclos anidados","Para anidado","contador exterior e interior"]],
+  ["Acumuladores",["acumulador","Acumulador","acumuladores","acumulador global","acumulador local","acumulador local y global","Acumulador multiplicativo"]],
+  ["Contadores",["contador","Contador","contadores","dos contadores","tres contadores"]],
+  ["Promedios",["promedio","promedio condicional"]],
+  ["Máximos y mínimos",["máximo","Máximo","mínimo"]],
+  ["Centinelas",["centinela","Centinela"]],
+  ["Validación",["validación","Validación","validación de N"]],
+  ["Control del ciclo",["avance","avance de dos","avance de tres","avance fijo","decremento","lectura repetida","actualización ordenada"]],
+  ["Condiciones compuestas",["condición","condición compuesta","condiciones compuestas"]],
+  ["Series numéricas",["secuencia","serie numérica"]],
+  ["Posiciones",["posición","posiciones"]],
+  ["Métodos numéricos",["método numérico","derivada"]],
+  ["Integración numérica",["integración numérica"]],
+  ["Primalidad",["primalidad"]],
+  ["Divisores",["divisores"]],
+  ["Sistema lineal",["sistema lineal","determinantes"]],
+  ["MCD",["MCD"]],
+  ["MCM",["MCM"]],
+  ["Complejidad",["complejidad"]],
+  ["Alternancia",["alternancia"]],
+  ["Error",["error"]],
+  ["Intercambio de valores",["intercambio de valores"]]
+];
+const CONCEPT_LABELS = new Map(CONCEPT_GROUPS.flatMap(([label,aliases]) =>
+  aliases.map(alias=>[normalizeConcept(alias),label])
+));
+const getConceptTags = concepts => [...new Set((concepts??[])
+  .map(concept=>CONCEPT_LABELS.get(normalizeConcept(concept))??String(concept).trim())
+  .filter(Boolean)
+)];
+
 const exercise = (id,level,title,statement,purpose,concepts,inputs,outputs,constraints,analysis,methods,errors=[]) => ({
-  id,number:id,level,title,statement,purpose,objective:purpose,concepts,inputs,outputs,constraints,analysis,methods,errors
+  id,number:id,level,title,statement,purpose,objective:purpose,concepts,conceptTags:getConceptTags(concepts),inputs,outputs,constraints,analysis,methods,errors
 });
 const tests = (...items) => items.map(([name,input,expected])=>({name,input,expected}));
 
