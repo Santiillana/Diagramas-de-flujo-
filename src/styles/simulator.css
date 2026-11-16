@@ -2944,3 +2944,19 @@ body[data-active-space="simulator"] #PR[hidden]{display:none!important}
  body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV,
  body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR{display:flex!important}
 }
+
+
+/* Dock compacto: los cinco controles de transporte permanecen visibles en móvil. */
+@media(max-width:900px){
+ body[data-active-space="simulator"] .execution-dock.simulator-dock{
+  grid-template-columns:minmax(132px,142px) minmax(0,1fr) minmax(45px,52px)!important;
+  column-gap:4px!important
+ }
+ body[data-active-space="simulator"] .dock-controls{display:flex!important;visibility:visible!important;opacity:1!important;overflow:visible!important}
+ body[data-active-space="simulator"] .dock-controls .transport-button{
+  display:inline-flex!important;visibility:visible!important;opacity:1!important;flex:1 1 0!important;
+  width:auto!important;min-width:0!important;height:30px!important;max-width:none!important
+ }
+ body[data-active-space="simulator"] .dock-controls .transport-play{width:auto!important;min-width:0!important}
+ body[data-active-space="simulator"] #simulator-last{display:inline-flex!important;visibility:visible!important;opacity:1!important}
+}
