@@ -1039,6 +1039,9 @@ function render(){
   $("#simulator-timeline").max=String(timeline.length-1);
   $("#simulator-timeline").value=String(timeline.index);
   $("#dock-step-title").textContent=typeName(e.type)+" · "+(timeline.index+1);
+  document.body.dataset.simulatorStep=String(timeline.index);
+  document.body.dataset.simulatorSteps=String(timeline.length);
+  document.body.dataset.simulatorEvent=e.type;
   $("#dock-step-description").textContent=brief(e);
   updateLoopBadge(e);
   $("#simulator-first").disabled=timeline.index===0;
@@ -1476,11 +1479,16 @@ function bind(){
   $("#simulator-inputs")?.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();run();}
   });
-  $("#simulator-first")?.addEventListener("click",()=>seek(0));
-  $("#simulator-previous")?.addEventListener("click",()=>move(-1));
-  $("#simulator-next")?.addEventListener("click",()=>move(1));
-  $("#simulator-last")?.addEventListener("click",()=>seek((timeline?.length??1)-1));
-  $("#simulator-play")?.addEventListener("click",play);
+  $("#dock")?.addEventListener("click",event=>{
+    const control=event.target.closest("button#simulator-first,button#simulator-previous,button#simulator-next,button#simulator-last,button#simulator-play");
+    if(!control||control.disabled)return;
+    event.preventDefault();
+    if(control.id==="simulator-first")seek(0);
+    else if(control.id==="simulator-previous")move(-1);
+    else if(control.id==="simulator-next")move(1);
+    else if(control.id==="simulator-last")seek((timeline?.length??1)-1);
+    else if(control.id==="simulator-play")play();
+  });
   $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
   $("#simulator-speed")?.addEventListener("change",()=>{
     document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
