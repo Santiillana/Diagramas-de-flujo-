@@ -27,6 +27,23 @@ test("la escena de Aprende permite retroceder, avanzar y reproducir",async({page
   await page.locator("[data-visual-play]").click();
 });
 
+test("las 17 lecciones presentan fases visuales y una escena vinculada a eventos",async({page})=>{
+  await page.goto("/");
+  await page.locator('[data-space="learn"]').click();
+  const lessons=page.locator("[data-lesson-id]");
+  await expect(lessons).toHaveCount(17);
+  for(let index=0;index<17;index++){
+    await lessons.nth(index).click();
+    await page.locator("[data-lesson-next]").click();
+    const visual=page.locator(".lesson-visual");
+    await expect(visual).toBeVisible();
+    await expect(visual.locator(".lesson-phase")).not.toHaveCount(0);
+    await expect(visual.locator(".lesson-scene-host")).toBeVisible();
+    const source=await visual.getAttribute("data-phase-source");
+    expect(["lesson","events"]).toContain(source);
+  }
+});
+ 
 test("el catálogo filtra ejercicios por dificultad y conceptos combinados",async({page})=>{
   await page.goto("/");
   await page.locator('[data-space="exercises"]').click();
