@@ -161,3 +161,10 @@ En la cabecera móvil, un `backdrop-filter` sobre el contenedor padre podía cre
 
 ## D-026 · Evidencia M5 ligada al SHA y al artefacto exactos
 La aceptación automatizada de M5 se registra contra el SHA `ee804803354a8ea5cf60d17c37405ac90792faa0`, el run 43954434334 y el artefacto `ui-audit-29b2188dc0b27d9a41da525ea8b589d40b83d1df`. Un resultado histórico de otra rama o SHA no sustituye esa evidencia.
+
+
+## D-049 · Horario oficial y datos personales no comparten almacenamiento
+El horario de clases es contenido editable del repositorio (\`src/content/ficha.js\`). Actividades, entregas, devoluciones y notas son datos personales locales bajo \`traza:v4:ficha\`. Las vistas consultan un único repositorio y no mantienen copias paralelas. El respaldo versionado valida esquema y referencias antes de reemplazar datos; no promete sincronización entre dispositivos.
+
+## D-050 · La devolución académica se registra como transcripción
+Traza no autentica instructores ni se conecta a plataformas institucionales. Las devoluciones introducidas manualmente por el estudiante llevan \`source: student_transcription\`; el sistema no las presenta como verificadas. El estudiante no puede aprobar directamente una actividad.
