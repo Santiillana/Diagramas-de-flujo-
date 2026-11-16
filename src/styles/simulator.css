@@ -2012,3 +2012,18 @@ body[data-active-space="simulator"].focus #focus-ui{display:block!important}
 body[data-active-space="simulator"].focus .simulator-control-dock,
 body[data-active-space="simulator"].focus #simulator-shortcuts,
 body[data-active-space="simulator"].focus .canvas-coordinate{display:none!important}
+
+/* Las columnas laterales desaparecen si se ocultan sus dos ventanas. */
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"][data-sim-windows-hidden~="pseudocode"] #PL{display:none!important}
+body[data-active-space="simulator"][data-sim-windows-hidden~="scene"][data-sim-windows-hidden~="variables"] #RC{display:none!important}
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"][data-sim-windows-hidden~="pseudocode"] .simulator-grid.simulator-grid-four{
+  grid-template-columns:minmax(0,1.9fr) minmax(290px,.8fr);
+  grid-template-areas:"diagram inspector" "dock dock"
+}
+body[data-active-space="simulator"][data-sim-windows-hidden~="scene"][data-sim-windows-hidden~="variables"] .simulator-grid.simulator-grid-four{
+  grid-template-columns:minmax(245px,.76fr) minmax(0,1.72fr);
+  grid-template-areas:"problem diagram" "dock dock"
+}
+body[data-active-space="simulator"][data-sim-windows-hidden~="context"][data-sim-windows-hidden~="pseudocode"][data-sim-windows-hidden~="scene"][data-sim-windows-hidden~="variables"] .simulator-grid.simulator-grid-four{
+  grid-template-columns:minmax(0,1fr);grid-template-areas:"diagram" "dock"
+}
