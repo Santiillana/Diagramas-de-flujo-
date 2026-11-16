@@ -6,11 +6,11 @@
   --canvas:#f1f0e8;--surface:#fbfaf4;--surface-raised:#fffef9;--surface-soft:#eae9df;
   --line:#d5d5c9;--line-strong:#b9beb2;--accent:#c38b1c;--accent-strong:#8e6210;
   --accent-soft:#f5e9c8;--teal:#33645e;--teal-soft:#dce9e3;--positive:#23845c;
-  --positive-soft:#dff1e6;--warning:#a86e13;--warning-soft:#f8edcf;--danger:#bd4d4a;
-  --danger-soft:#f8e1dc;--grid-line:rgba(53,81,77,.09);
+  --positive-soft:#dff1e6;--warning:#a86e13;--warning-soft:#f8edcf;--danger:#c65d52;
+  --danger-soft:#f8e1dc;--grid-line:rgba(53,81,77,.045);
   --shadow-sm:0 1px 3px rgba(25,35,32,.06);--shadow-md:0 5px 18px rgba(25,35,32,.09);
   --shadow-lg:0 12px 30px rgba(25,35,32,.13);
-  --radius-sm:7px;--radius-md:10px;--radius-lg:13px;--radius-xl:16px;
+  --radius-sm:8px;--radius-md:10px;--radius-lg:12px;--radius-xl:12px;
   --content-width:1480px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;
   --space-5:24px;--space-6:32px;--space-7:48px;--space-8:72px;
   --fig-terminal:#879a91;--fig-input:#4986ba;--fig-process:#638e83;--fig-output:#588b89;
@@ -28,7 +28,7 @@
   --line:#34494b;--line-strong:#52696a;--accent:#f0bd4b;--accent-strong:#ffd46e;--accent-soft:#46391d;
   --teal:#75a89b;--teal-soft:#203d39;--positive:#5bc18b;--positive-soft:#1f3e34;
   --warning:#e0b35e;--warning-soft:#443821;--danger:#e17d73;--danger-soft:#482a2a;
-  --grid-line:rgba(174,195,180,.09);--shadow-sm:0 1px 3px rgba(0,0,0,.18);
+  --grid-line:rgba(174,195,180,.05);--shadow-sm:0 1px 3px rgba(0,0,0,.18);
   --shadow-md:0 6px 18px rgba(0,0,0,.23);--shadow-lg:0 14px 32px rgba(0,0,0,.3);
   --focus-ring:0 0 0 3px rgba(240,189,75,.32);
   --traza-observatory:#101e23;--traza-glass:rgba(25,43,48,.96);--traza-text:#edf1e8;
@@ -39,7 +39,9 @@
 }
 *{box-sizing:border-box}
 html{min-width:320px;scroll-behavior:smooth}
-body{margin:0;min-width:320px;min-height:100vh;color:var(--ink);background:var(--canvas);font-size:16px;line-height:1.62}
+body{margin:0;min-width:320px;min-height:100vh;color:var(--ink);background-color:var(--canvas);background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:32px 32px;font-size:16px;line-height:1.62}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif}
+code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
 button,input,select,textarea{font:inherit}
 button,a{-webkit-tap-highlight-color:transparent}
 a{color:inherit}
