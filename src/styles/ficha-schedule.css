@@ -34,3 +34,17 @@
 .ficha-calendar-cell.is-empty{visibility:hidden}
 .ficha-calendar-selected{margin-top:22px;padding:17px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--surface-soft)}
 @media(max-width:720px){.ficha-week-grid{grid-template-columns:1fr}.ficha-class-card{grid-template-columns:1fr auto;gap:8px 12px}.ficha-class-time{grid-column:1/-1;display:flex;gap:10px;align-items:baseline}.ficha-class-main{min-width:0}.ficha-calendar-cell{min-height:66px;padding:6px}.ficha-calendar-cell span{font-size:.6rem}.ficha-calendar-grid{gap:3px}}
+
+
+.ficha-attention-panel,.ficha-activities-day{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.ficha-attention-panel>h3,.ficha-activities-day>h4,.ficha-attention>h3{margin:0 0 12px;font-size:.95rem}
+.ficha-activity-list{display:grid;gap:9px}
+.ficha-activity-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-raised,var(--surface))}
+.ficha-activity-card[data-overdue="true"]{border-color:var(--danger-border,var(--line))}
+.ficha-activity-main{min-width:0}
+.ficha-activity-main h4{margin:0;font-size:.9rem}
+.ficha-activity-main p{margin:4px 0 0;color:var(--muted);font-size:.78rem}
+.ficha-activity-status{flex:0 0 auto;color:var(--muted);font-size:.75rem;font-weight:650;text-align:right}
+.ficha-calendar-cell small{display:block;margin-top:3px;color:var(--accent);font-size:.62rem}
+.ficha-attention-panel>.ficha-empty-day{margin:0}
+@media(max-width:620px){.ficha-activity-card{align-items:flex-start;flex-direction:column;gap:6px}.ficha-activity-status{text-align:left}}
