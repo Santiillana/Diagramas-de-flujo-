@@ -19,7 +19,10 @@ test("las variables se muestran como cajitas y su historial se reconstruye por t
   await page.locator("#simulator-last").click();
   const card=page.locator('#variables-content [data-variable-history="a"]');
   await expect(card).toBeVisible();
-  await expect(card).toContainText("13");
+  await expect(card).toContainText("8");
+  const sum=page.locator('#variables-content [data-variable-history="s"]');
+  await expect(sum).toBeVisible();
+  await expect(sum).toContainText("13");
   await card.click();
   await page.locator(".variable-history-details summary").click();
   await expect(page.locator("#variable-history")).toContainText("Historial · a");
