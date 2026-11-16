@@ -1983,3 +1983,28 @@ body[data-active-space="simulator"][data-presentation-mode="complete"] .variable
   body[data-active-space="simulator"][data-sim-windows-hidden~="scene"] #PV,
   body[data-active-space="simulator"][data-sim-windows-hidden~="variables"] #PR{display:none!important}
 }
+
+/* Concentración: el lienzo realmente ocupa todo el viewport, no una tarjeta bajo el menú. */
+body[data-active-space="simulator"].focus{overflow:hidden!important}
+body[data-active-space="simulator"].focus #hd{display:none!important}
+body[data-active-space="simulator"].focus .page-shell{
+  width:100vw!important;height:100svh!important;min-height:100svh!important;max-height:100svh!important;
+  margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus .simulator-view{
+  position:absolute!important;inset:0!important;width:100vw!important;height:100svh!important;min-height:100svh!important
+}
+body[data-active-space="simulator"].focus .simulator-grid.simulator-grid-four{
+  position:absolute!important;inset:0!important;display:block!important;width:100vw!important;height:100svh!important;
+  min-height:100svh!important;margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus .diagram-panel.sim-world-panel{
+  position:absolute!important;inset:0!important;display:flex!important;width:100vw!important;height:100svh!important;
+  min-height:100svh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important
+}
+body[data-active-space="simulator"].focus #wrap.sim-wrap,
+body[data-active-space="simulator"].focus #diagram-stage.simulator-diagram-stage{
+  width:100vw!important;height:100svh!important;min-height:100svh!important;margin:0!important
+}
+body[data-active-space="simulator"].focus #diagram-pan-hit{touch-action:none}
+body[data-active-space="simulator"].focus #focus-ui{display:block!important}
