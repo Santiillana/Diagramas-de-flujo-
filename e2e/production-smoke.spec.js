@@ -18,16 +18,19 @@ test("humo de producción: Factorial, Mayor de 10 números, Concentración y Pre
   await page.locator("#simulator-next").click();
   await page.screenshot({path:testInfo.outputPath("production-factorial-normal-1920.png"),animations:"disabled"});
 
+  await page.locator("#simulator-controls-toggle").click();
   await page.locator("#diagram-fullscreen").click();
   await expect(page.locator("body")).toHaveClass(/focus/);
   await page.keyboard.press("ArrowRight");
   await page.screenshot({path:testInfo.outputPath("production-factorial-focus-1920.png"),animations:"disabled"});
   await page.keyboard.press("Escape");
   await expect(page.locator("body")).not.toHaveClass(/focus/);
+  await page.locator("#simulator-controls-toggle").click();
 
   await page.locator("#sim-exercise-select").selectOption("24");
   await expect(page.locator("#simulator-exercise-title")).toContainText("Encontrar el mayor de diez números");
   await page.locator("#simulator-run").click();
+  await page.locator("#simulator-controls-toggle").click();
   await page.locator("#simulator-predict").click();
   for(let i=0;i<50;i++){
     if(await page.locator("#simulator-question").isVisible())break;

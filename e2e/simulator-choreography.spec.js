@@ -5,9 +5,11 @@ test("el paso activo actualiza la ficha contextual con su símbolo y explicació
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   await expect(page.locator("#vf")).toBeVisible();
+  await expect(page.locator("#vf")).toHaveClass(/is-arriving/);
   const before=await page.locator("#vf").getAttribute("data-anchor-node");
   await page.locator("#simulator-next").click();
   await expect(page.locator("#vf")).toBeVisible();
+  await expect(page.locator("#vf")).toHaveClass(/is-arriving/);
   const after=await page.locator("#vf").getAttribute("data-anchor-node");
   expect(after).not.toBeNull();
   await expect(page.locator("#vf-content")).not.toBeEmpty();

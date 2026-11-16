@@ -52,17 +52,30 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
  await page.setViewportSize({width:1440,height:900});
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
- const centered=async()=>await expect.poll(()=>page.evaluate(()=>{
-  const s=document.querySelector("#diagram-stage").getBoundingClientRect();
-  const n=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();
-  return !!n&&Math.abs(n.left+n.width/2-(s.left+s.width/2))<s.width*.12&&Math.abs(n.top+n.height/2-(s.top+s.height/2))<s.height*.16;
- })).toBe(true);
+ await page.locator("#simulator-next").click();
+ const centered=async()=>{
+  const activeId=await expect.poll(()=>page.evaluate(()=>document.querySelector("#flow-svg .diagram-node.is-active")?.id??"")).not.toBe("");
+  const nodeId=String(await page.locator("#flow-svg .diagram-node.is-active").getAttribute("id")).replace("flow-node-","");
+  await expect.poll(()=>page.locator("#diagram-stage").getAttribute("data-camera-target")).toBe(nodeId);
+  await expect.poll(()=>page.evaluate(()=>{
+   const stage=document.querySelector("#diagram-stage").getBoundingClientRect();
+   const node=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();
+   if(!node)return false;
+   return Math.abs(node.left+node.width/2-(stage.left+stage.width/2))<stage.width*.12&&
+     Math.abs(node.top+node.height/2-(stage.top+stage.height/2))<stage.height*.16;
+  })).toBe(true);
+ };
  await centered();
  await page.locator("#simulator-controls-toggle").click();
  await page.locator("#sim-exercise-select").selectOption("24");
+ await page.locator("#simulator-next").click();
  await centered();
  const methods=page.locator("#simulator-method-tabs [data-method-index]");
- if(await methods.count()>1){await methods.nth(1).click();await centered();}
+ if(await methods.count()>1){
+  await methods.nth(1).click();
+  await page.locator("#simulator-next").click();
+  await centered();
+ }
 });
 
 test("Ctrl/Meta+rueda no modifica el zoom y el panel flotante evita el nodo activo",async({page})=>{

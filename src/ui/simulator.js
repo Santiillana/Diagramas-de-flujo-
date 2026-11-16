@@ -5,6 +5,7 @@ import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 import { renderScene } from "./scenes/index.js";
+import { variableTone } from "./variable-tone.js";
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -79,7 +80,7 @@ function bindWindows(){
     for(const meta of WINDOW_META)hiddenWindows.add(meta.id);
     persistWindowState();applyWindowState();
   });
-  window.addEventListener("resize",()=>applyWindowState());
+  window.addEventListener("resize",()=>{applyWindowState();if(timeline&&$("#vf")&&!$("#vf").hidden)requestAnimationFrame(()=>placeContextWindow(timeline.current));});
 }
 function rectIntersects(a,b,gap=0){
   return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap;
@@ -108,6 +109,8 @@ function contextWindowMarkup(event){
 }
 function diagramNodeForEvent(event){
   if(!diagram||!event)return null;
+  if(event.type==="program-start")return diagram.byId.get(String(diagram.startId))??null;
+  if(event.type==="program-end")return diagram.byId.get(String(diagram.endId))??null;
   const sourceId=event.nodeId===null||event.nodeId===undefined?null:String(event.nodeId);
   return diagram.nodes.find(node=>sourceId!==null&&String(node.sourceId)===sourceId)
     ??diagram.nodes.find(node=>event.sourceLine!==null&&event.sourceLine!==undefined&&Number(node.line)===Number(event.sourceLine))
@@ -128,44 +131,105 @@ function hideContextWire(){
   if(wire)wire.hidden=true;
 }
 function placeContextWindow(event){
-  const box=$("#vf"),model=diagramNodeForEvent(event);
-  const node=model?document.getElementById("flow-node-"+model.id):null;
+  const box=$("#vf"),requestedModel=diagramNodeForEvent(event);
+  const highlighted=document.querySelector("#flow-svg .diagram-node.is-active");
+  const highlightedId=highlighted?.id.replace("flow-node-","");
+  const model=(highlightedId&&diagram?.byId.get(highlightedId))??requestedModel;
+  const node=highlighted??(model?document.getElementById("flow-node-"+model.id):null);
   const stage=$("#diagram-stage");
-  if(!box||!stage)return;
-  const nodeRect=node?.getBoundingClientRect();
-  const stageRect=stage.getBoundingClientRect();
+  if(!box||!stage||!event)return;
+  const nodeRect=node?.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
   const width=box.offsetWidth||286,height=box.offsetHeight||130,gap=16,margin=12;
   const workspace={
-    left:Math.max(stageRect.left+margin,margin),
-    top:Math.max(stageRect.top+margin,margin),
-    right:Math.min(stageRect.right-margin,innerWidth-margin),
-    bottom:Math.min(stageRect.bottom-margin,innerHeight-margin)
+    left:Math.max(stageRect.left+margin,margin),top:Math.max(stageRect.top+margin,margin),
+    right:Math.min(stageRect.right-margin,innerWidth-margin),bottom:Math.min(stageRect.bottom-margin,innerHeight-margin)
   };
-  const figure=nodeRect??{left:stageRect.left+stageRect.width/2-30,top:stageRect.top+stageRect.height/2-20,right:stageRect.left+stageRect.width/2+30,bottom:stageRect.top+stageRect.height/2+20,width:60,height:40};
+  const figure=nodeRect??{
+    left:stageRect.left+stageRect.width/2-30,top:stageRect.top+stageRect.height/2-20,
+    right:stageRect.left+stageRect.width/2+30,bottom:stageRect.top+stageRect.height/2+20,width:60,height:40
+  };
   const midX=figure.left+figure.width/2,midY=figure.top+figure.height/2;
   const candidates=[
-    {left:figure.right+gap,top:midY-height/2},
-    {left:figure.left-width-gap,top:midY-height/2},
-    {left:midX-width/2,top:figure.bottom+gap},
-    {left:midX-width/2,top:figure.top-height-gap},
-    {left:workspace.left,top:workspace.bottom-height},
-    {left:workspace.right-width,top:workspace.bottom-height},
-    {left:workspace.left,top:workspace.top},
-    {left:workspace.right-width,top:workspace.top}
+    {left:figure.right+gap,top:midY-height/2},{left:figure.left-width-gap,top:midY-height/2},
+    {left:midX-width/2,top:figure.bottom+gap},{left:midX-width/2,top:figure.top-height-gap},
+    {left:workspace.left,top:workspace.top},{left:workspace.right-width,top:workspace.top},
+    {left:workspace.left,top:workspace.bottom-height},{left:workspace.right-width,top:workspace.bottom-height},
+    {left:midX-width/2,top:workspace.top},{left:midX-width/2,top:workspace.bottom-height}
   ];
-  const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&!rectIntersects(rect,figure,10);
-  const chosen=candidates.find(fits)??{
-    left:Math.max(workspace.left,Math.min(workspace.right-width,midX-width/2)),
-    top:Math.max(workspace.top,Math.min(workspace.bottom-height,figure.bottom+gap))
+  const activeId=String(model?.id??"");
+  const svgScreenBounds=(element,padding=9)=>{
+    try{
+      const bounds=element.getBBox(),matrix=element.getScreenCTM();
+      if(!matrix)return null;
+      const svg=element.ownerSVGElement;
+      const corners=[
+        [bounds.x,bounds.y],[bounds.x+bounds.width,bounds.y],
+        [bounds.x,bounds.y+bounds.height],[bounds.x+bounds.width,bounds.y+bounds.height]
+      ].map(([x,y])=>{
+        const point=svg.createSVGPoint();point.x=x;point.y=y;
+        return point.matrixTransform(matrix);
+      });
+      const xs=corners.map(point=>point.x),ys=corners.map(point=>point.y);
+      return {left:Math.min(...xs)-padding,top:Math.min(...ys)-padding,
+        right:Math.max(...xs)+padding,bottom:Math.max(...ys)+padding};
+    }catch{return null;}
   };
-  box.dataset.anchorNode=String(model?.id??"");
+  /* Las aristas se comparan por puntos muestreados en pantalla.
+     Su bounding-box rectangular completo era demasiado conservador y podía
+     ocultar la ficha aunque la línea no cruzara realmente su superficie. */
+  const edgePoints=[...document.querySelectorAll("#flow-svg .diagram-edge path")].flatMap(path=>{
+    try{
+      const length=path.getTotalLength(),matrix=path.getScreenCTM(),svg=path.ownerSVGElement;
+      if(!matrix||!Number.isFinite(length)||length<=0)return [];
+      const interval=Math.max(5,Math.min(14,length/48)),points=[];
+      for(let distance=0;distance<=length;distance+=interval){
+        const local=path.getPointAtLength(Math.min(length,distance));
+        const point=svg.createSVGPoint();point.x=local.x;point.y=local.y;
+        const screen=point.matrixTransform(matrix);
+        points.push({x:screen.x,y:screen.y});
+      }
+      const local=path.getPointAtLength(length),end=svg.createSVGPoint();end.x=local.x;end.y=local.y;
+      const screen=end.matrixTransform(matrix);points.push({x:screen.x,y:screen.y});
+      return points;
+    }catch{return [];}
+  });
+  const otherNodeElements=[...document.querySelectorAll("#flow-svg .diagram-node")].filter(element=>element!==node);
+  const labelElements=[...document.querySelectorAll("#flow-svg .diagram-edge-label")];
+  const uiElements=[...document.querySelectorAll(".simulator-control-dock,.simulator-controls-panel,.simulator-mobile-tabs,#simulator-question")];
+  const boxObstacle=(element,pad)=>{
+    const style=getComputedStyle(element);
+    if(style.display==="none"||style.visibility==="hidden"||element.hidden)return null;
+    const r=element.getBoundingClientRect();
+    return {left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};
+  };
+  const otherObstacles=[
+    ...otherNodeElements.map(element=>boxObstacle(element,18)),
+    ...labelElements.map(element=>boxObstacle(element,8)),
+    ...uiElements.map(element=>boxObstacle(element,4))
+  ].filter(Boolean);
+  const obstacles=otherObstacles;
+  const crossesEdge=rect=>edgePoints.some(point=>
+    point.x>=rect.left-10&&point.x<=rect.left+width+10&&
+    point.y>=rect.top-10&&point.y<=rect.top+height+10
+  );
+  const fits=rect=>rect.left>=workspace.left&&rect.top>=workspace.top&&
+    rect.left+width<=workspace.right&&rect.top+height<=workspace.bottom&&
+    !rectIntersects(rect,figure,10)&&!crossesEdge(rect)&&
+    !obstacles.some(other=>rectIntersects(rect,other,2));
+  const chosen=candidates.find(fits);
+  box.dataset.anchorNode=String(model?.sourceId??model?.id??"");
   box.dataset.anchorSourceLine=String(event.sourceLine??"");
-  box.dataset.cable="false";
-  box.style.left=Math.round(chosen.left)+"px";
-  box.style.top=Math.round(chosen.top)+"px";
+  if(!chosen){
+    box.hidden=true;box.dataset.cable="fallback-scene";
+    const scene=$("#PV");
+    if(node&&scene&&getComputedStyle(scene).display!=="none")drawContextWire(nodeRect,scene.getBoundingClientRect());
+    else hideContextWire();
+    return;
+  }
+  box.hidden=false;box.dataset.cable="false";
+  box.style.left=Math.round(chosen.left)+"px";box.style.top=Math.round(chosen.top)+"px";
   hideContextWire();
 }
-
 function showContextWindow(event){
   const box=$("#vf");
   if(!box||!event||timeline?.index===dismissedVfStep)return;
@@ -173,6 +237,8 @@ function showContextWindow(event){
   $("#vf-title").textContent=view.title;
   $("#vf-content").innerHTML=view.body;
   box.hidden=false;
+  box.style.visibility="hidden";
+  placeContextWindow(event);
   if(vfRaf)cancelAnimationFrame(vfRaf);
   clearTimeout(contextTimer);
   const complete=document.body.dataset.presentationMode==="complete";
@@ -180,6 +246,8 @@ function showContextWindow(event){
   contextTimer=window.setTimeout(()=>{
     vfRaf=requestAnimationFrame(()=>{
       placeContextWindow(event);
+      if(box.hidden){box.style.removeProperty("visibility");vfRaf=0;return;}
+      box.style.removeProperty("visibility");
       box.classList.remove("is-arriving");
       void box.getBoundingClientRect();
       box.classList.add("is-arriving");
@@ -375,6 +443,9 @@ function freeCanvasRect(){
 function applyCanvasTransform(){
   const canvas=$("#flow-diagram-container"),wrap=$("#wrap");
   if(!canvas)return;
+  if(!Number.isFinite(zoom)||zoom<=0)zoom=1;
+  if(!Number.isFinite(panOffset.x))panOffset.x=0;
+  if(!Number.isFinite(panOffset.y))panOffset.y=0;
   canvas.style.transformOrigin="0 0";
   canvas.style.transform="translate3d("+panOffset.x+"px,"+panOffset.y+"px,0) scale("+zoom+")";
   canvas.dataset.cameraX=String(panOffset.x);
@@ -662,6 +733,12 @@ function pseudocode(source,active=null,visited=[],activeVariables=[]){
   host.innerHTML=rows.map(row=>'<li class="'+(row.line===active?"is-active":seen.has(row.line)?"is-visited":"")+'" data-line="'+row.line+'"><span>'+String(row.line).padStart(2,"0")+'</span><code>'+highlight(row.text)+'</code></li>').join("");
   if(active)host.querySelector('[data-line="'+active+'"]')?.scrollIntoView({block:"nearest"});
 }
+function fitDiagramWhenVisible(attempt=0){
+  if(fitDiagram())return true;
+  if(attempt>=8)return false;
+  requestAnimationFrame(()=>fitDiagramWhenVisible(attempt+1));
+  return false;
+}
 function prepare(){
   stop();cameraReady=false;
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
@@ -701,6 +778,7 @@ function prepare(){
     $("#diagram-empty").hidden=true;
     $("#diagram-dimensions").textContent=diagram.width+" × "+diagram.height;
     const svg=$("#flow-svg");if(svg){svg.style.width="100%";svg.style.maxWidth="none";}
+    zoom=1;panOffset={x:0,y:0};applyCanvasTransform();
   }catch(error){
     diagram=null;routeGraph.clear();routeWeights.clear();routeCache.clear();clearDiagramTrail();
     $("#flow-diagram-container").innerHTML="";
@@ -708,7 +786,7 @@ function prepare(){
     $("#diagram-empty p").textContent=error.message;
   }
   run();
-  requestAnimationFrame(()=>fitDiagram());
+  requestAnimationFrame(()=>fitDiagramWhenVisible());
 }
 function typeName(type){
   return ({ "program-start":"INICIO",input:"ENTRADA",assignment:"ASIGNACIÓN",output:"SALIDA",
@@ -1284,18 +1362,42 @@ function fitDiagram(){
   if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
   return true;
 }
+const FOCUS_LAYOUT=[
+  ["#main-content",{position:"fixed",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",maxWidth:"100vw",maxHeight:"100svh",margin:"0",padding:"0",overflow:"hidden"}],
+  ["#view-simulator",{position:"fixed",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",maxWidth:"100vw",maxHeight:"100svh",margin:"0",padding:"0",overflow:"hidden"}],
+  [".simulator-grid.simulator-grid-four",{position:"absolute",inset:"0",display:"block",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}],
+  [".diagram-panel.sim-world-panel",{position:"absolute",inset:"0",display:"block",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden",border:"0",borderRadius:"0"}],
+  ["#wrap.sim-wrap",{position:"absolute",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}],
+  ["#diagram-stage.simulator-diagram-stage",{position:"absolute",inset:"0",width:"100vw",height:"100svh",minWidth:"0",minHeight:"0",margin:"0",padding:"0",overflow:"hidden"}]
+];
+function setFocusLayout(enabled){
+  for(const [selector,properties] of FOCUS_LAYOUT){
+    const element=$(selector);if(!element)continue;
+    for(const [property,value] of Object.entries(properties)){
+      if(enabled)element.style.setProperty(property.replace(/[A-Z]/g,letter=>"-"+letter.toLowerCase()),value,"important");
+      else element.style.removeProperty(property.replace(/[A-Z]/g,letter=>"-"+letter.toLowerCase()));
+    }
+  }
+}
 async function toggleDiagramFullscreen(){
   const body=document.body;
   if(body.classList.contains("focus")){
+    setFocusLayout(false);
     body.classList.remove("focus");
     clearTimeout(focusIdleTimer);
     if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch{}}
     document.documentElement.dataset.fullscreenRequested="false";
     updateFullscreenButton();
-    requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    requestAnimationFrame(()=>{fitDiagramWhenVisible();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
     return;
   }
+  /* Concentración debe salir del panel flotante antes de ocultarlo:
+     así Escape siempre queda asociado a salir del modo, no a cerrar un menú invisible. */
+  const controls=$("#simulator-controls-panel");
+  if(controls&&!controls.hidden)toggleControls(false);
+  body.classList.remove("sim-controls-open");
   body.classList.add("focus");
+  setFocusLayout(true);
   if(document.documentElement.requestFullscreen){
     document.documentElement.dataset.fullscreenRequested="true";
     try{await document.documentElement.requestFullscreen();}
@@ -1412,6 +1514,7 @@ function toggleControls(open){
   if(!panel||!button)return;
   const visible=typeof open==="boolean"?open:panel.hidden;
   panel.hidden=!visible;
+  document.body.classList.toggle("sim-controls-open",visible);
   button.setAttribute("aria-expanded",String(visible));
   button.classList.toggle("is-active",visible);
   if(visible)requestAnimationFrame(()=>{positionControlsPanel();$("#sim-exercise-search")?.focus({preventScroll:true});});
@@ -1493,6 +1596,7 @@ function bind(){
   document.addEventListener("fullscreenchange",()=>{
     if(document.body.classList.contains("focus")&&!document.fullscreenElement&&document.documentElement.dataset.fullscreenRequested==="true"){
       document.documentElement.dataset.fullscreenRequested="false";
+      setFocusLayout(false);
       document.body.classList.remove("focus");
       clearTimeout(focusIdleTimer);
       requestAnimationFrame(()=>{fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
@@ -1514,16 +1618,22 @@ function bind(){
   $("#simulator-inputs")?.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();run();}
   });
-  $("#dock")?.addEventListener("click",event=>{
-    const control=event.target.closest("button#simulator-first,button#simulator-previous,button#simulator-next,button#simulator-last,button#simulator-play");
-    if(!control||control.disabled)return;
-    event.preventDefault();
-    if(control.id==="simulator-first")seek(0);
-    else if(control.id==="simulator-previous")move(-1);
-    else if(control.id==="simulator-next")move(1);
-    else if(control.id==="simulator-last")seek((timeline?.length??1)-1);
-    else if(control.id==="simulator-play")play();
-  });
+  /* Cada control de transporte recibe su propio listener. No depende de
+     que el click burbujee a través de capas del dock/lienzo. */
+  const transportActions=[
+    ["#simulator-first",()=>seek(0)],
+    ["#simulator-previous",()=>move(-1)],
+    ["#simulator-next",()=>move(1)],
+    ["#simulator-last",()=>seek((timeline?.length??1)-1)],
+    ["#simulator-play",play]
+  ];
+  for(const [selector,action] of transportActions){
+    $(selector)?.addEventListener("click",event=>{
+      if(event.currentTarget.disabled)return;
+      event.preventDefault();
+      action();
+    });
+  }
   $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
   $("#simulator-speed")?.addEventListener("change",()=>{
     document.documentElement.style.setProperty("--sim-speed",String(currentSpeedFactor()));
@@ -1563,7 +1673,7 @@ function bind(){
   document.querySelector('[data-space="simulator"]')?.addEventListener("click",()=>{
     if(!execution)prepare();
     setMobilePanel("diagram");
-    requestAnimationFrame(()=>{syncDockHeight();fitDiagram();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
+    requestAnimationFrame(()=>{syncDockHeight();fitDiagramWhenVisible();if(timeline&&cameraAuto)centerActiveNode(timeline.current,"auto");});
   });
   syncDockHeight();
   const dock=$("#dock");

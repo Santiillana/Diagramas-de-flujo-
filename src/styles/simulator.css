@@ -2361,3 +2361,196 @@ body[data-active-space="simulator"].focus #flow-diagram-container{
 }
 @media(prefers-reduced-motion:reduce){body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}}
 :root[data-motion="reduced"] body[data-active-space="simulator"] #flow-diagram-container{transition:none!important}
+
+/* M2 regression repair: the pan hit area belongs to the stage, never to the viewport. */
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+  position:relative!important;z-index:1!important;pointer-events:auto!important;
+}
+body[data-active-space="simulator"] #wrap.sim-wrap,
+body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+  pointer-events:auto!important;
+}
+body[data-active-space="simulator"] #diagram-pan-hit{
+  position:absolute!important;inset:0!important;z-index:1!important;
+  display:block!important;min-width:0!important;min-height:0!important;
+  pointer-events:auto!important;touch-action:none!important;
+}
+body[data-active-space="simulator"] #flow-diagram-container{
+  z-index:2!important;pointer-events:none!important;
+}
+body[data-active-space="simulator"] .simulator-control-dock{
+  position:absolute!important;z-index:80!important;pointer-events:none!important;
+}
+body[data-active-space="simulator"] .simulator-controls-trigger{pointer-events:auto!important}
+body[data-active-space="simulator"] .simulator-controls-panel{z-index:100!important}
+body[data-active-space="simulator"] .sim-context-window{z-index:70!important}
+
+@media(max-width:900px){
+  body[data-active-space="simulator"] #view-simulator.simulator-view{
+    width:100vw!important;max-width:100vw!important;left:0!important;right:0!important;
+  }
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+    left:0!important;right:0!important;width:100vw!important;max-width:100vw!important;
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+    width:100%!important;min-width:0!important;max-width:none!important;
+  }
+  body[data-active-space="simulator"] #wrap.sim-wrap{
+    display:block!important;flex:1 1 0!important;width:100%!important;min-width:0!important;
+  }
+  body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+    display:block!important;width:100%!important;min-width:0!important;
+  }
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    grid-template-columns:minmax(104px,122px) minmax(0,1fr) minmax(42px,50px)!important;
+    column-gap:5px!important;
+  }
+  body[data-active-space="simulator"] .dock-controls{
+    width:100%!important;min-width:0!important;flex-wrap:nowrap!important;gap:2px!important;
+  }
+  body[data-active-space="simulator"] .dock-controls .transport-button{
+    flex:1 1 0!important;width:auto!important;min-width:0!important;padding:0!important;
+  }
+  body[data-active-space="simulator"] .dock-controls .transport-play{
+    flex:1 1 0!important;width:auto!important;min-width:0!important;
+  }
+  body[data-active-space="simulator"] .timeline-block{min-width:0!important;width:100%!important}
+  body[data-active-space="simulator"] .dock-speed{min-width:0!important;width:100%!important}
+  body[data-active-space="simulator"] .dock-speed>span{white-space:nowrap;font-size:8px!important}
+  body[data-active-space="simulator"] .dock-speed select{
+    width:100%!important;min-width:0!important;max-width:none!important;
+  }
+}
+@media(max-width:520px){
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    grid-template-columns:minmax(104px,112px) minmax(0,1fr) minmax(40px,44px)!important;
+    column-gap:4px!important;
+  }
+  body[data-active-space="simulator"] .dock-controls .transport-button{font-size:9px!important}
+  body[data-active-space="simulator"] .dock-speed>span{font-size:7px!important}
+}
+
+
+/* Capa prioritaria de transporte: los controles no comparten la superficie de gestos del SVG. */
+body[data-active-space="simulator"] .simulator-grid.simulator-grid-four>#dock.simulator-dock{
+  position:relative!important;z-index:500!important;isolation:isolate!important;
+  pointer-events:auto!important;touch-action:pan-x!important
+}
+body[data-active-space="simulator"] #dock .dock-controls,
+body[data-active-space="simulator"] #dock .dock-controls *,
+body[data-active-space="simulator"] #dock .timeline-block,
+body[data-active-space="simulator"] #dock .timeline-block *,
+body[data-active-space="simulator"] #dock .dock-speed,
+body[data-active-space="simulator"] #dock .dock-speed *{
+  position:relative;z-index:1;pointer-events:auto!important
+}
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel{z-index:1!important}
+body[data-active-space="simulator"] #diagram-stage #diagram-pan-hit{z-index:1!important}
+body[data-active-space="simulator"] #diagram-stage .simulator-control-dock{z-index:80!important}
+
+@media(max-width:900px){
+  /* El modo vertical usa flex para evitar que las reglas históricas de grid
+     reintroduzcan una segunda/tercera columna mínima en el lienzo. */
+  body[data-active-space="simulator"] .simulator-grid.simulator-grid-four{
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;
+    justify-content:flex-start!important;gap:0!important;
+    grid-template:none!important;grid-template-areas:none!important;
+    grid-template-columns:none!important;grid-template-rows:none!important;
+    width:100vw!important;max-width:100vw!important;min-width:0!important;
+  }
+  body[data-active-space="simulator"] .diagram-panel.sim-world-panel{
+    flex:1 1 0!important;align-self:stretch!important;display:flex!important;
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:auto!important;min-height:180px!important;
+  }
+  body[data-active-space="simulator"] #wrap.sim-wrap{
+    flex:1 1 0!important;width:100%!important;max-width:none!important;
+    min-width:0!important;height:auto!important;min-height:0!important;
+  }
+  body[data-active-space="simulator"] #diagram-stage.simulator-diagram-stage{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:100%!important;min-height:0!important;
+  }
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    flex:0 0 58px!important;align-self:stretch!important;
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:58px!important;min-height:58px!important;max-height:58px!important;
+    margin:4px 0 0!important;
+  }
+}
+@media(max-width:520px){
+  body[data-active-space="simulator"] .execution-dock.simulator-dock{
+    flex-basis:56px!important;height:56px!important;min-height:56px!important;max-height:56px!important
+  }
+}
+
+
+/* El menú de Controles necesita escapar de la pila z del diagrama cuando se abre.
+   La superficie de gestos se desactiva mientras el usuario opera el menú. */
+body[data-active-space="simulator"].sim-controls-open .diagram-panel.sim-world-panel{
+  z-index:95!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-control-dock{
+  z-index:130!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-trigger,
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{
+  pointer-events:auto!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{
+  z-index:140!important
+}
+body[data-active-space="simulator"].sim-controls-open #diagram-pan-hit{
+  pointer-events:none!important
+}
+
+
+/* Menú flotante por encima de las cuatro ventanas, sin capturar el lienzo. */
+body[data-active-space="simulator"].sim-controls-open .diagram-panel.sim-world-panel{
+  z-index:160!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-control-dock{
+  z-index:180!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-trigger,
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{
+  pointer-events:auto!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{z-index:190!important}
+body[data-active-space="simulator"].sim-controls-open #diagram-pan-hit{pointer-events:none!important}
+
+/* Concentración ancla cada capa al viewport incluso bajo los resets del layout M2. */
+body[data-active-space="simulator"].focus #main-content.page-shell{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100svh!important;
+  min-width:0!important;min-height:0!important;max-width:100vw!important;max-height:100svh!important;
+  margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus #view-simulator.simulator-view{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100svh!important;
+  min-width:0!important;min-height:0!important;max-width:100vw!important;max-height:100svh!important;
+  margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus .simulator-grid.simulator-grid-four{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100vw!important;height:100svh!important;min-width:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus .diagram-panel.sim-world-panel{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100vw!important;height:100svh!important;min-width:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;
+  z-index:1!important;pointer-events:auto!important
+}
+body[data-active-space="simulator"].focus #wrap.sim-wrap,
+body[data-active-space="simulator"].focus #diagram-stage.simulator-diagram-stage{
+  position:absolute!important;inset:0!important;width:100vw!important;height:100svh!important;
+  min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important
+}
+body[data-active-space="simulator"].focus #diagram-pan-hit{
+  position:absolute!important;inset:0!important;z-index:1!important;pointer-events:auto!important
+}
+body[data-active-space="simulator"].focus #flow-diagram-container{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;z-index:2!important
+}
