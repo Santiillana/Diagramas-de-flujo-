@@ -1446,6 +1446,7 @@ function toggleControls(open){
   if(!panel||!button)return;
   const visible=typeof open==="boolean"?open:panel.hidden;
   panel.hidden=!visible;
+  document.body.classList.toggle("sim-controls-open",visible);
   button.setAttribute("aria-expanded",String(visible));
   button.classList.toggle("is-active",visible);
   if(visible)requestAnimationFrame(()=>{positionControlsPanel();$("#sim-exercise-search")?.focus({preventScroll:true});});

@@ -5,6 +5,7 @@ test("el zoom se controla con botones, no con la rueda del ratón",async({page})
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
   const canvas=page.locator("#flow-diagram-container");
+  await expect(canvas).toHaveAttribute("data-camera-zoom",/.+/);
   const initial=Number(await canvas.getAttribute("data-camera-zoom"));
   const stage=await page.locator("#diagram-pan-hit").boundingBox();
   await page.mouse.move(stage.x+stage.width*.5,stage.y+stage.height*.5);
@@ -49,8 +50,8 @@ test("la ficha animada deja rastro sobre las conexiones reales del SVG",async({p
   await page.locator('[data-space="simulator"]').click();
   for(let i=0;i<4;i++)await page.locator("#simulator-next").click();
   await expect(page.locator("#flow-diagram-container .flow-token")).toHaveAttribute("visibility","visible");
-  await expect(page.locator("#flow-active-trail")).toBeAttached();
-  await expect(page.locator("#flow-trail")).toBeAttached();
-  await expect.poll(async()=>(await page.locator("#flow-active-trail").getAttribute("points")??"").trim().split(/\s+/).length).toBeGreaterThan(1);
+  await expect(page.locator("#flow-diagram-container #flow-active-trail")).toBeAttached();
+  await expect(page.locator("#flow-diagram-container #flow-trail")).toBeAttached();
+  await expect.poll(async()=>(await page.locator("#flow-diagram-container #flow-active-trail").getAttribute("points")??"").trim().split(/\s+/).length).toBeGreaterThan(1);
   await expect(page.locator("#flow-svg .diagram-edge.is-token-route")).not.toHaveCount(0);
 });

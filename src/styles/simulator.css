@@ -2484,3 +2484,23 @@ body[data-active-space="simulator"] #diagram-stage .simulator-control-dock{z-ind
     flex-basis:56px!important;height:56px!important;min-height:56px!important;max-height:56px!important
   }
 }
+
+
+/* El menú de Controles necesita escapar de la pila z del diagrama cuando se abre.
+   La superficie de gestos se desactiva mientras el usuario opera el menú. */
+body[data-active-space="simulator"].sim-controls-open .diagram-panel.sim-world-panel{
+  z-index:95!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-control-dock{
+  z-index:130!important;pointer-events:none!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-trigger,
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{
+  pointer-events:auto!important
+}
+body[data-active-space="simulator"].sim-controls-open .simulator-controls-panel{
+  z-index:140!important
+}
+body[data-active-space="simulator"].sim-controls-open #diagram-pan-hit{
+  pointer-events:none!important
+}

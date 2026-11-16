@@ -53,11 +53,23 @@ test("la cámara centra el primer nodo al entrar y al cambiar ejercicio o métod
  await page.goto("/");
  await page.locator('[data-space="simulator"]').click();
  await page.locator("#simulator-next").click();
- const centered=async()=>await expect.poll(()=>page.evaluate(()=>{
-  const s=document.querySelector("#diagram-stage").getBoundingClientRect();
-  const n=document.querySelector("#flow-svg .diagram-node.is-active")?.getBoundingClientRect();
-  return !!n&&Math.abs(n.left+n.width/2-(s.left+s.width/2))<s.width*.12&&Math.abs(n.top+n.height/2-(s.top+s.height/2))<s.height*.16;
- })).toBe(true);
+ const centered=async()=>{
+  await expect.poll(()=>page.evaluate(()=>document.querySelector("#diagram-stage")?.dataset.cameraTarget??"")).toBe("1");
+  const report=await page.evaluate(()=>{
+   const stage=document.querySelector("#diagram-stage"),svg=document.querySelector("#flow-svg");
+   const s=stage.getBoundingClientRect(),node=document.querySelector("#flow-svg .diagram-node.is-active");
+   const n=node?.getBoundingClientRect(),canvas=document.querySelector("#flow-diagram-container");
+   const cx=n?n.left+n.width/2:null,cy=n?n.top+n.height/2:null;
+   return {target:stage.dataset.cameraTarget,step:document.body.dataset.simulatorStep,
+    active:node?.id??null,stage:{x:s.x,y:s.y,w:s.width,h:s.height},
+    node:n?{x:n.x,y:n.y,w:n.width,h:n.height}:null,
+    center:n?{dx:cx-(s.left+s.width/2),dy:cy-(s.top+s.height/2)}:null,
+    camera:canvas?{x:canvas.dataset.cameraX,y:canvas.dataset.cameraY,zoom:canvas.dataset.cameraZoom}:null};
+  });
+  expect(report.center,JSON.stringify(report)).not.toBeNull();
+  expect(Math.abs(report.center.dx),JSON.stringify(report)).toBeLessThan(report.stage.w*.12);
+  expect(Math.abs(report.center.dy),JSON.stringify(report)).toBeLessThan(report.stage.h*.16);
+ };
  await centered();
  await page.locator("#simulator-controls-toggle").click();
  await page.locator("#sim-exercise-select").selectOption("24");
