@@ -70,3 +70,15 @@ El original tenía paneles/actividades que se podían alternar. En móvil el nue
 ## Regla de cierre
 
 Solo una prueba funcional puede convertir una fila de “parcial” a “migrada”. Una equivalencia de interfaz puede ser intencionalmente distinta, pero debe conservar la acción educativa, declarar su cambio visual y mantener los datos del mismo motor.
+
+
+## Actualización de equivalencia para la versión integrada en Traza (16-11-2026)
+
+La interfaz actual de la rama `main` amplía la navegación y el catálogo respecto de la línea base de este documento:
+- Inicio enlaza Mi ficha y Aprende.
+- Mi ficha contiene Hoy, Semana, Calendario, Actividades y Biblioteca.
+- Aprende contiene Aprende, Ejercicios, Simulador y Laboratorio.
+- El catálogo actual tiene 45 retos: conserva el conjunto base y añade cinco retos expertos.
+- El Laboratorio mantiene ocho actividades y el constructor estructurado dentro del mismo espacio.
+
+Esta actualización no convierte en “migrada” una capacidad que siga siendo parcial. En particular, el constructor no ofrece conexión libre entre cualquier puerto SVG. La evidencia de navegación y equivalencia del release debe asociarse al SHA auditado en `docs/IMPLEMENTATION_STATUS.md`, no a capturas o resultados de una rama histórica.
