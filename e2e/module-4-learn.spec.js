@@ -38,9 +38,24 @@ test("la escena avanza, retrocede y respeta el movimiento reducido",async({page}
  await page.locator("[data-visual-play]").click();
  await expect(page.locator("[data-visual-play]")).toHaveAttribute("aria-pressed","false");
 });
-test("Aprende mantiene su escena legible y no desborda el viewport en móvil",async({page},testInfo)=>{
- await page.setViewportSize({width:390,height:844});
+test("la prueba interactiva ejecuta el pseudocódigo real con datos modificados",async({page})=>{
  await openLearn(page);
+ await page.locator('[data-lesson-id="algorithm"]').click();
+ await page.locator("[data-lesson-next]").click();
+ await page.locator("[data-lesson-next]").click();
+ await page.locator(".lesson-interactive-test > summary").click();
+ await page.locator("#lesson-data-input").fill("5");
+ await page.locator("[data-run-mini-program]").click();
+ await expect(page.locator("#lesson-data-result")).toContainText("Salida: 10");
+});
+test("Aprende conserva una composición legible en escritorio y móvil",async({page},testInfo)=>{
+ await page.setViewportSize({width:1440,height:900});
+ await openLearn(page);
+ await page.locator('[data-lesson-id="decisions"]').click();
+ await page.locator("[data-lesson-next]").click();
+ await expect(page.locator(".lesson-visual .lesson-scene-host")).toBeVisible();
+ await page.screenshot({path:testInfo.outputPath("learn-desktop.png"),fullPage:true});
+ await page.setViewportSize({width:390,height:844});
  await page.locator('[data-lesson-id="do-while"]').click();
  await page.locator("[data-lesson-next]").click();
  await expect(page.locator(".lesson-visual .lesson-scene-host")).toBeVisible();
