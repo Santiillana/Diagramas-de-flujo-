@@ -33,33 +33,7 @@
 .page-footer a{color:var(--accent-strong);font-weight:750;text-decoration:none;white-space:nowrap}
 .page-footer a:hover{text-decoration:underline}
 .noscript-message{margin:16px;padding:12px;background:var(--warning-soft);border:1px solid var(--warning);border-radius:var(--radius-sm)}
-@media(max-width:1080px){
- .topbar{grid-template-columns:142px minmax(0,1fr) auto;gap:8px;padding-inline:8px}
- .primary-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:0;width:100%;min-width:0;overflow:hidden}
- .nav-button{display:flex;width:100%;min-width:0;box-sizing:border-box;overflow:hidden;white-space:nowrap;text-overflow:clip;justify-content:center;gap:2px;padding-inline:0;font-size:10px;letter-spacing:-.25px}
- .nav-index{display:none}
-}
-@media(max-width:760px){
- .topbar{grid-template-columns:34px minmax(0,1fr) 64px;gap:6px;min-height:52px;padding:6px 8px}
- .brand{width:34px;gap:0}
- .brand-mark{width:32px;height:32px}
- .brand-copy{display:none}
- .primary-nav{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;min-width:0;overflow:hidden;padding:0}
- .topbar-actions{grid-column:3;grid-row:1;gap:3px}
- .nav-button{flex:1 1 0;min-width:0;min-height:34px;justify-content:center;padding:0 2px;font-size:clamp(9px,2.7vw,11px);letter-spacing:-.15px}
- .nav-index{display:none}
- .icon-button{width:29px;height:29px;border-radius:8px}
- .page-shell{width:min(100% - 24px,var(--content-width));padding-top:18px}
- .section-intro{align-items:flex-start;flex-direction:column;gap:8px}
- .page-footer{align-items:flex-start;flex-direction:column;gap:8px}
-}
-@media(max-width:440px){
- .topbar{grid-template-columns:30px minmax(0,1fr) 60px;gap:4px;padding-inline:6px}
- .brand-mark{width:29px;height:29px}
- .nav-button{padding-inline:1px;font-size:clamp(9px,2.55vw,10.5px)}
- .topbar-actions{gap:2px}
- .icon-button{width:28px;height:28px}
-}
+
 
 /* Marca y navegación Traza: una fila estable en todas las anchuras. */
 .brand-mark{width:40px;height:40px;color:var(--ink);background:transparent;border:0;border-radius:0;box-shadow:none}
