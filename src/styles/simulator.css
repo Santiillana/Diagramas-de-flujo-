@@ -2821,3 +2821,14 @@ body[data-active-space="simulator"] .scene-loop-step{
 body[data-active-space="simulator"] .scene-loop-step.is-active{
   animation-duration:var(--sim-animation-duration,500ms)!important
 }
+
+
+/* El dato viaja como ficha, no como un número suelto sobre el diagrama. */
+body[data-active-space="simulator"] .sim-flight-chip{
+  left:-7px!important;top:-7px!important;display:block!important;
+  width:14px!important;min-width:14px!important;height:14px!important;padding:0!important;
+  overflow:hidden!important;border:2px solid var(--traza-glass)!important;border-radius:50%!important;
+  color:transparent!important;background:var(--traza-amber)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--traza-amber) 22%,transparent),0 0 14px color-mix(in srgb,var(--traza-amber) 58%,transparent)!important;
+  font-size:0!important;line-height:0!important
+}
