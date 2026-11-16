@@ -17,6 +17,7 @@ test("el filtro por clase se combina con conceptos y niveles",async({page})=>{
   await page.locator("#exercise-class-only").check();
   await expect(page.locator("[data-select-exercise]")).toHaveCount(4);
   await page.locator("#exercise-class-only").uncheck();
+  await page.locator("#exercise-concept-details > summary").click();
   await page.locator('[data-concept-filter="Ciclo Mientras"]').click();
   await expect(page.locator("[data-select-exercise]")).not.toHaveCount(0);
   await page.locator("#exercise-level").selectOption("advanced");

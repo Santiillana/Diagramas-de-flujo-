@@ -53,6 +53,11 @@ test("el catálogo tiene 45 ejercicios y distribución 20/10/10/5",()=>{
   assert.deepEqual(validateCatalog(),[]);
 });
 
+
+test("el catálogo conserva los 45 identificadores sin saltos ni duplicados",()=>{
+  assert.deepEqual(exercises.map(item=>item.id),Array.from({length:45},(_,index)=>index+1));
+});
+
 test("las fichas de los ejercicios separan entradas, salidas, restricciones y proceso",()=>{
   for(const item of exercises){
     assert.ok(item.statement.length>20);

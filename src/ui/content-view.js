@@ -83,6 +83,10 @@ function renderConceptFilters(){
   });
   const summary=$("#exercise-filter-summary");
   if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · "+(conceptMatchMode==="all"?"deben aparecer todos":"al menos uno"):"Todos los conceptos";
+  const conceptSummary=$("#exercise-concepts-summary");
+  if(conceptSummary)conceptSummary.textContent=selectedConcepts.size
+    ?selectedConcepts.size+" seleccionado(s)"
+    :"Todos los conceptos";
 }
 
 
@@ -338,6 +342,29 @@ function updateLessonData(){
 function renderExerciseCards(){
   const host=$("#exercise-grid");if(!host)return;
   const query=exerciseQuery.trim().toLocaleLowerCase("es");
+  const counts={
+    all:exercises.length,
+    basic:exercises.filter(item=>item.level==="basic").length,
+    intermediate:exercises.filter(item=>item.level==="intermediate").length,
+    advanced:exercises.filter(item=>item.level==="advanced").length,
+    expert:exercises.filter(item=>item.level==="expert").length
+  };
+  const quickLevels=[
+    ["all","Todos","Los 45 retos"],
+    ["basic","Básico","Empieza por lo esencial"],
+    ["intermediate","Intermedio","Combina conceptos"],
+    ["advanced","Avanzado","Integra varios pasos"],
+    ["expert","Experto","Retos de mayor alcance"]
+  ];
+  const shortcuts=$("#exercise-level-shortcuts");
+  if(shortcuts){
+    shortcuts.innerHTML=quickLevels.map(([key,label,description])=>
+      '<button type="button" class="exercise-level-shortcut '+(exerciseLevel===key?"is-active":"")+'" data-exercise-level-shortcut="'+key+'" aria-pressed="'+String(exerciseLevel===key)+'">'+
+      '<span class="exercise-level-shortcut-top"><strong>'+label+'</strong><b>'+counts[key]+'</b></span>'+
+      '<small>'+description+'</small></button>'
+    ).join("");
+  }
+
   const filtered=exercises.filter(item=>{
     const concepts=exerciseConceptLabels(item);
     const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
@@ -351,40 +378,67 @@ function renderExerciseCards(){
   const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   exercisePage=Math.min(exercisePage,pages-1);
   const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
-  $("#exercise-count").textContent=filtered.length+" de "+exercises.length+" ejercicios";
+  const count=$("#exercise-count");
+  if(count)count.textContent=filtered.length+" de "+exercises.length+" ejercicios";
+
   host.innerHTML=visible.length?visible.map(item=>{
     const level=LEVELS[item.level];
     const labels=exerciseConceptLabels(item);
+    const caseCount=item.methods.reduce((total,method)=>total+(method.tests?.length??0),0);
     return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?"is-selected":"")+'" data-select-exercise="'+item.id+'" aria-pressed="'+String(selectedExercise?.id===item.id)+'">'+
       '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
       (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+
       '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.statement)+'</small>'+
       '<span class="exercise-card-concepts">'+labels.slice(0,4).map(label=>'<i>'+escapeHTML(label)+'</i>').join("")+'</span>'+
-      '<span class="exercise-card-footer">Ver enunciado y requisitos <span aria-hidden="true">↗</span></span></button>';
-  }).join(""):'<div class="catalog-empty"><strong>No hay ejercicios con estos filtros.</strong><p>Quita algún concepto o limpia la búsqueda para volver a ver el catálogo.</p></div>';
+      '<span class="exercise-card-meta"><span>'+item.methods.length+' método(s)</span><span>'+caseCount+' casos de prueba</span></span>'+
+      '<span class="exercise-card-footer">Abrir ficha del reto <span aria-hidden="true">↗</span></span></button>';
+  }).join(""):'<div class="catalog-empty"><span class="catalog-empty-mark">⌕</span><strong>No encontramos ejercicios con esos filtros.</strong><p>Prueba con otro término, cambia la dificultad o elimina algún concepto.</p><button type="button" class="button button-secondary" id="exercise-empty-clear">Limpiar búsqueda y filtros</button></div>';
+
   let pagination=host.parentElement.querySelector(".exercise-pagination");
   if(!pagination){pagination=document.createElement("nav");pagination.className="exercise-pagination";pagination.setAttribute("aria-label","Páginas de ejercicios");host.after(pagination);}
   pagination.hidden=filtered.length<=PAGE_SIZE;
   pagination.innerHTML='<button type="button" data-page-prev '+(exercisePage===0?"disabled":"")+'>Anterior</button><span>Página '+(exercisePage+1)+' de '+pages+'</span><button type="button" data-page-next '+(exercisePage>=pages-1?"disabled":"")+'>Siguiente</button>';
+
+  const active=$("#exercise-active-filters");
+  if(active){
+    const chips=[];
+    if(query)chips.push("Búsqueda: "+exerciseQuery.trim());
+    if(exerciseLevel!=="all")chips.push("Nivel: "+LEVELS[exerciseLevel].label);
+    if(exerciseClassOnly)chips.push("De clase");
+    if(selectedConcepts.size)chips.push(...[...selectedConcepts].map(label=>"Concepto: "+label));
+    active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");
+    active.hidden=chips.length===0;
+  }
   renderConceptFilters();
 }
 function renderExerciseDetail(){
   const host=$("#exercise-detail");if(!host)return;
   const item=selectedExercise;
   if(!item){
-    host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">45</span><p class="eyebrow">INFORMACIÓN DEL EJERCICIO</p><h3>Selecciona un ejercicio.</h3><p>Verás el enunciado, su objetivo, los conceptos que necesitas y las restricciones. La solución se mantiene oculta hasta que decidas abrirla en el Simulador.</p></div>';
+    host.innerHTML='<div class="detail-empty">'+
+      '<span class="detail-empty-mark">45</span>'+
+      '<p class="eyebrow">FICHA DEL RETO</p>'+
+      '<h3>Selecciona un ejercicio.</h3>'+
+      '<p>Verás qué debes resolver, qué conocimientos necesitas y qué condiciones debes respetar. El pseudocódigo seguirá oculto hasta que confirmes que ya intentaste resolverlo.</p>'+
+      '<span class="exercise-detail-hint"><i aria-hidden="true">↖</i> Elige una tarjeta para abrir su ficha.</span></div>';
     return;
   }
   const level=LEVELS[item.level];
   const concepts=exerciseConceptLabels(item);
+  const caseCount=item.methods.reduce((total,method)=>total+(method.tests?.length??0),0);
   host.innerHTML='<div class="exercise-detail-scroll">'+
-    '<header class="exercise-detail-heading"><div class="exercise-detail-kicker"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></div>'+
-    '<h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.statement)+'</p></header>'+
-    '<section class="exercise-spec"><p class="eyebrow">OBJETIVO</p><p>'+escapeHTML(item.purpose)+'</p></section>'+
+    '<header class="exercise-detail-heading">'+
+      '<div class="exercise-detail-kicker"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span>'+(CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+'</div>'+
+      '<p class="eyebrow exercise-detail-overline">FICHA DEL RETO · '+String(item.id).padStart(2,"0")+' / 45</p>'+
+      '<h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.statement)+'</p>'+
+    '</header>'+
+    '<div class="exercise-detail-stats"><span><strong>'+item.methods.length+'</strong> método(s)</span><span><strong>'+caseCount+'</strong> casos de prueba</span></div>'+
+    '<section class="exercise-spec"><p class="eyebrow">QUÉ VAS A RESOLVER</p><p>'+escapeHTML(item.purpose)+'</p></section>'+
     '<section class="exercise-spec"><p class="eyebrow">CONCEPTOS NECESARIOS</p><div class="concept-tags">'+concepts.map(tag=>'<span>'+escapeHTML(tag)+'</span>').join("")+'</div></section>'+
-    '<section class="exercise-spec"><p class="eyebrow">DATOS QUE DEBES CONSIDERAR</p><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
+    '<section class="exercise-io-grid"><div><p class="eyebrow">DATOS DE ENTRADA</p><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></div><div><p class="eyebrow">RESULTADOS ESPERADOS</p><ul>'+item.outputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></div></section>'+
     '<section class="exercise-spec"><p class="eyebrow">CONDICIONES Y RESTRICCIONES</p><ul>'+item.constraints.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
-    '<button type="button" class="button button-primary exercise-simulate" data-start-exercise>Ver en el Simulador <span aria-hidden="true">→</span></button>'+
+    '<section class="exercise-detail-approach"><p class="eyebrow">PISTA DE ENFOQUE</p><p>'+escapeHTML(item.analysis)+'</p></section>'+
+    '<button type="button" class="button button-primary exercise-simulate" data-start-exercise>He intentado resolverlo · Abrir en Simulador <span aria-hidden="true">→</span></button>'+
     '<p class="exercise-detail-note">El pseudocódigo y la solución solo se mostrarán después de confirmar que ya intentaste resolverlo.</p>'+
     '</div>';
 }
@@ -505,15 +559,21 @@ function bindContentEvents(){
     exercisePage=0;renderExerciseCards();
   });
   $("#view-exercises")?.addEventListener("click",event=>{
-    const mode=event.target.closest("[data-concept-mode]");
-    if(mode){conceptMatchMode=mode.dataset.conceptMode==="any"?"any":"all";exercisePage=0;renderExerciseCards();return;}
-    if(event.target.closest("#exercise-filters-clear")){
+    const quickLevel=event.target.closest("[data-exercise-level-shortcut]");
+    if(quickLevel){
+      exerciseLevel=quickLevel.dataset.exerciseLevelShortcut;
+      if($("#exercise-level"))$("#exercise-level").value=exerciseLevel;
+      exercisePage=0;renderExerciseCards();return;
+    }
+    if(event.target.closest("#exercise-empty-clear")||event.target.closest("#exercise-filters-clear")){
       exerciseQuery="";exerciseLevel="all";exerciseClassOnly=false;selectedConcepts.clear();conceptMatchMode="all";exercisePage=0;
       if($("#exercise-search"))$("#exercise-search").value="";
       if($("#exercise-level"))$("#exercise-level").value="all";
       if($("#exercise-class-only"))$("#exercise-class-only").checked=false;
       renderExerciseCards();return;
     }
+    const mode=event.target.closest("[data-concept-mode]");
+    if(mode){conceptMatchMode=mode.dataset.conceptMode==="any"?"any":"all";exercisePage=0;renderExerciseCards();return;}
     if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}
     if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}
   });
