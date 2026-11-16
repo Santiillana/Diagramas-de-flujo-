@@ -4,6 +4,7 @@ test("Concentración cubre el viewport, oculta el menú y conserva los pasos",as
   await page.setViewportSize({width:1440,height:900});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
   const initial=await page.locator("#sim-exercise-select").inputValue();
   await page.locator("#diagram-fullscreen").click();
   await expect(page.locator("body")).toHaveClass(/focus/);
@@ -31,6 +32,7 @@ test("Concentración funciona sin Fullscreen API",async({page})=>{
   await page.setViewportSize({width:1024,height:768});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
+  await page.locator("#simulator-controls-toggle").click();
   await page.evaluate(()=>{
     Object.defineProperty(document.documentElement,"requestFullscreen",{configurable:true,value:()=>Promise.reject(new Error("unsupported"))});
   });
