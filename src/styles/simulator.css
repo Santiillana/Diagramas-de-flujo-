@@ -2909,3 +2909,38 @@ body[data-active-space="simulator"] #PV #scene-content{
  body[data-active-space="simulator"] #PV[hidden],
  body[data-active-space="simulator"] #PR[hidden]{display:none!important}
 }
+
+
+/* Ajuste final de la cuadrícula: Problema y Variables ocupan sus pistas, no anchos fijos antiguos. */
+body[data-active-space="simulator"] .problem-panel#PL.sim-left-window-stack{
+  position:relative!important;inset:auto!important;grid-area:problem!important;
+  width:auto!important;height:100%!important;min-width:0!important;max-width:none!important;
+  min-height:0!important;max-height:none!important;margin:0!important;transform:none!important
+}
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  position:relative!important;inset:auto!important;grid-area:inspector!important;
+  width:auto!important;height:100%!important;min-width:0!important;max-width:none!important;
+  min-height:0!important;max-height:none!important;margin:0!important;transform:none!important
+}
+body[data-active-space="simulator"] #PL[hidden],
+body[data-active-space="simulator"] #RC[hidden],
+body[data-active-space="simulator"] #PV[hidden],
+body[data-active-space="simulator"] #PR[hidden]{display:none!important}
+@media(max-width:900px){
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #RC.simulator-inspector,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #RC.simulator-inspector,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PL.problem-panel,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PL.problem-panel,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #PL.problem-panel{display:none!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PL.problem-panel{display:grid!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #RC.simulator-inspector,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #RC.simulator-inspector{display:grid!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PV,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PR,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PR,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PV,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #PV,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #PR{display:none!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR{display:flex!important}
+}
