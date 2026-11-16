@@ -67,9 +67,10 @@ test("las actividades locales aparecen en Hoy, Semana y Calendario", async ({ pa
 
 test("el horario conserva los dos bloques del sábado y el domingo libre", async ({ page }) => {
   await openFicha(page);
-  await page.getByRole("button", { name: "Calendario", exact: true }).click();
-  const sunday = page.locator('[data-ficha-date]').filter({ hasText: /^22/ }).first();
-  await expect(page.locator("#ficha-calendario .ficha-calendar-weekdays")).toContainText("Dom");
-  await expect(page.locator("#ficha-calendario")).toContainText("Selecciona un día");
-  await expect(page.locator("#ficha-calendario .ficha-calendar-grid")).toBeVisible();
+  await page.getByRole("button", { name: "Semana", exact: true }).click();
+  const saturday = page.locator(".ficha-day-block").filter({ hasText: "sábado" });
+  const sunday = page.locator(".ficha-day-block").filter({ hasText: "domingo" });
+  await expect(saturday.locator(".ficha-class-card")).toHaveCount(2);
+  await expect(saturday).toContainText("Clase del sábado");
+  await expect(sunday).toContainText("No tienes clases programadas este día.");
 });
