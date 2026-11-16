@@ -1,38 +1,15 @@
 import {test,expect} from "@playwright/test";
 
-test("diagnóstico: el clic del dock entra al handler y renderiza el siguiente paso",async({page})=>{
+test("el clic físico de Siguiente avanza y sincroniza el paso de entrada",async({page})=>{
   const errors=[];page.on("pageerror",error=>errors.push(error.message));
   await page.setViewportSize({width:1440,height:1000});
   await page.goto("/");
   await page.locator('[data-space="simulator"]').click();
-  await page.evaluate(()=>{document.documentElement.dataset.debugSimulator="true";});
   await expect(page.locator("body")).toHaveAttribute("data-simulator-step","0");
-  const probe=await page.evaluate(()=>{
-    const button=document.querySelector("#simulator-next"),dock=document.querySelector("#dock");
-    button.addEventListener("click",()=>document.body.dataset.debugNativeClick="target");
-    dock.addEventListener("click",()=>document.body.dataset.debugDockBubble="yes");
-    return {disabled:button.disabled,parent:button.parentElement?.className,rect:(()=>{
-      const r=button.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};
-    })(),topElement:(()=>{
-      const r=button.getBoundingClientRect(),e=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
-      return {tag:e?.tagName,id:e?.id,className:e?.className};
-    })()};
-  });
   await page.locator("#simulator-next").click();
-  const debug=await page.evaluate(()=>({
-    native:document.body.dataset.debugNativeClick??null,
-    dockBubble:document.body.dataset.debugDockBubble??null,
-    handler:document.body.dataset.debugTransportClick??null,
-    action:document.body.dataset.debugTransportAction??null,
-    blocked:document.body.dataset.debugTransportBlocked??document.body.dataset.debugMoveBlocked??null,
-    move:document.body.dataset.debugMoveEntered??null,
-    destination:document.body.dataset.debugMoveDestination??null,
-    rendered:document.body.dataset.debugMoveRendered??null,
-    moveError:document.body.dataset.debugMoveError??null,
-    step:document.body.dataset.simulatorStep??null,
-    event:document.body.dataset.simulatorEvent??null
-  }));
-  expect(debug.step,"probe="+JSON.stringify(probe)+" debug="+JSON.stringify(debug)+" errors="+JSON.stringify(errors)).toBe("1");
+  await expect(page.locator("body")).toHaveAttribute("data-simulator-step","1");
+  await expect(page.locator("#scene-content")).toHaveAttribute("data-event-type","input");
+  await expect(page.locator('#variables-content [data-variable-card="a"]')).toContainText("8");
   expect(errors).toEqual([]);
 });
 

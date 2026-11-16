@@ -5,6 +5,7 @@ import { parsePseudocode } from "../core/parser.js";
 import { layoutFlow } from "../diagram/layout.js";
 import { renderDiagram, highlightDiagram } from "../diagram/renderer.js";
 import { renderScene } from "./scenes/index.js";
+import { variableTone } from "./variable-tone.js";
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1246,22 +1247,15 @@ function seek(index){
   render();
 }
 function move(delta){
-  const debug=document.documentElement.dataset.debugSimulator==="true";
-  if(debug)document.body.dataset.debugMoveEntered=String(delta);
-  if(!timeline){if(debug)document.body.dataset.debugMoveBlocked="missing-timeline";return;}
-  if(predictionPending){if(debug)document.body.dataset.debugMoveBlocked="prediction-pending";return;}
+  if(!timeline||predictionPending)return;
   const destination=Math.max(0,Math.min(timeline.length-1,timeline.index+delta));
-  if(debug)document.body.dataset.debugMoveDestination=String(destination);
-  if(destination===timeline.index){if(debug)document.body.dataset.debugMoveBlocked="same-index";return;}
+  if(destination===timeline.index)return;
   if(delta>0&&predictEnabled&&eventAskable(execution.events[destination])){
-    if(debug)document.body.dataset.debugMoveBlocked="prediction";
     predictionResume=timer!==null;stop();showPredictionQuestion(destination);return;
   }
   stop();timeline.seek(destination);
   cameraAuto=true;updateCameraButton();choreographyPlayback=true;
-  try{render();if(debug)document.body.dataset.debugMoveRendered=String(timeline.index);}
-  catch(error){if(debug)document.body.dataset.debugMoveError=String(error?.stack??error);}
-  finally{choreographyPlayback=false;}
+  try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
   if(!timeline)return;
@@ -1565,13 +1559,9 @@ function bind(){
   ];
   for(const [selector,action] of transportActions){
     $(selector)?.addEventListener("click",event=>{
-      const debug=document.documentElement.dataset.debugSimulator==="true";
-      if(debug)document.body.dataset.debugTransportClick=selector;
-      if(event.currentTarget.disabled){if(debug)document.body.dataset.debugTransportBlocked="disabled";return;}
+      if(event.currentTarget.disabled)return;
       event.preventDefault();
-      if(debug)document.body.dataset.debugTransportAction="called";
       action();
-      if(debug)document.body.dataset.debugTransportAction="returned";
     });
   }
   $("#simulator-timeline")?.addEventListener("input",event=>seek(Number(event.target.value)));
