@@ -184,3 +184,70 @@
   .home-card{min-height:260px;padding:19px}
   .home-card-stats{gap:20px}
 }
+
+
+/* Módulo 6: progreso persistente y accesos directos desde Inicio. */
+.home-learning-progress{
+  display:grid;gap:10px;margin:17px 0 20px;padding:13px 14px;
+  border:1px solid color-mix(in srgb,var(--home-aprende-accent) 28%,transparent);
+  border-radius:12px;background:color-mix(in srgb,var(--home-aprende-accent) 8%,transparent)
+}
+.home-learning-progress-heading,.home-learning-progress-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0
+}
+.home-learning-progress-heading span{color:var(--home-aprende-muted);font-size:12px;font-weight:700}
+.home-learning-progress-heading strong{
+  color:var(--home-aprende-text);font-size:12px;font-weight:800;
+  font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.home-learning-progress-track{
+  height:8px;overflow:hidden;border-radius:999px;
+  background:color-mix(in srgb,var(--home-aprende-text) 13%,transparent)
+}
+.home-learning-progress-track>span{
+  display:block;width:0;height:100%;border-radius:inherit;
+  background:var(--home-aprende-accent);
+  transition:width var(--dur-3) var(--ease)
+}
+.home-learning-progress-footer span{
+  min-width:0;color:var(--home-aprende-muted);font-size:11px;line-height:1.4
+}
+.home-learning-progress-footer strong{
+  flex:none;color:var(--home-aprende-text);font-size:12px;
+  font-variant-numeric:tabular-nums
+}
+.home-shortcuts{max-width:1080px;margin:18px auto 0}
+.home-shortcuts>.eyebrow{margin:0 0 9px}
+.home-shortcuts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.home-shortcut{
+  display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:9px;
+  min-width:0;min-height:68px;padding:11px 13px;border:1px solid var(--line);
+  border-radius:12px;color:var(--ink);background:var(--surface);text-align:left;
+  cursor:pointer;transition:border-color var(--dur-2) var(--ease),background-color var(--dur-2) var(--ease)
+}
+.home-shortcut:hover{border-color:var(--accent);background:var(--surface-soft)}
+.home-shortcut:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.home-shortcut>span:first-child{
+  display:grid;place-items:center;width:26px;height:26px;border-radius:8px;
+  color:var(--accent-text);background:var(--accent-soft);font-size:16px
+}
+.home-shortcut>span:nth-child(2){display:grid;gap:2px;min-width:0}
+.home-shortcut strong{overflow:hidden;font-size:13px;font-weight:800;text-overflow:ellipsis}
+.home-shortcut small{color:var(--muted-strong);font-size:11px}
+.home-shortcut-arrow{color:var(--muted);font-size:14px}
+@media(max-width:760px){
+  .home-learning-progress{margin:15px 0 18px;padding:12px}
+  .home-shortcuts{margin-top:14px}
+  .home-shortcuts-grid{gap:7px}
+  .home-shortcut{grid-template-columns:22px minmax(0,1fr);gap:7px;min-height:64px;padding:9px 8px}
+  .home-shortcut>span:first-child{width:22px;height:22px;font-size:14px}
+  .home-shortcut strong{font-size:11.5px}
+  .home-shortcut small{font-size:10px}
+  .home-shortcut-arrow{display:none}
+}
+@media(max-width:360px){
+  .home-shortcuts-grid{grid-template-columns:1fr}
+  .home-shortcut{grid-template-columns:26px minmax(0,1fr) auto;padding:10px 12px}
+  .home-shortcut>span:first-child{width:26px;height:26px}
+  .home-shortcut-arrow{display:block}
+}
