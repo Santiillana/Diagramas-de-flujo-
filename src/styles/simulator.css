@@ -2554,3 +2554,232 @@ body[data-active-space="simulator"].focus #flow-diagram-container{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   min-width:0!important;min-height:0!important;z-index:2!important
 }
+
+
+/* Traza · acabado visual y didáctico de los módulos 1–3 */
+body[data-active-space="simulator"]{
+  --bg:var(--traza-observatory);--card:var(--traza-glass);--ink:var(--traza-text);
+  --pen:var(--traza-muted);--line:color-mix(in srgb,var(--traza-muted) 24%,transparent);
+  --hl:var(--traza-amber);--ok:var(--traza-green);--bad:var(--traza-pink);--info:var(--traza-blue);
+  background-color:var(--bg)!important;
+  background-image:linear-gradient(var(--traza-stage-grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--traza-stage-grid) 1px,transparent 1px)!important;
+  background-size:22px 22px!important;
+}
+body[data-active-space="simulator"] .simulator-statusbar,
+body[data-active-space="simulator"] .diagram-panel.sim-world-panel,
+body[data-active-space="simulator"] .sim-window,
+body[data-active-space="simulator"] #PV,
+body[data-active-space="simulator"] #PR{
+  color:var(--ink)!important;background-color:var(--card)!important;
+  background-image:none!important;border-color:var(--line)!important;
+  box-shadow:var(--shadow-sm)!important;
+}
+body[data-active-space="simulator"] .problem-panel#PL{
+  left:10px!important;width:min(20vw,340px)!important;top:64px!important;
+  bottom:calc(var(--dk) + 20px)!important;height:auto!important;max-height:none!important;
+  display:flex!important;flex-direction:column!important;gap:10px!important;
+  overflow:hidden!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important
+}
+body[data-active-space="simulator"] #PL>.sim-window{
+  position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;
+  flex:1 1 0!important;width:100%!important;height:auto!important;min-width:0!important;min-height:0!important;
+  overflow:hidden!important;border:1px solid var(--line)!important;border-radius:10px!important
+}
+body[data-active-space="simulator"] #PL #sim-window-context{--window-identity:var(--traza-amber);flex:1.05 1 0!important}
+body[data-active-space="simulator"] #PL #sim-window-code{--window-identity:var(--traza-blue);flex:.95 1 0!important}
+body[data-active-space="simulator"] #PL .sim-window .panel-heading,
+body[data-active-space="simulator"] #PV>.panel-heading,
+body[data-active-space="simulator"] #PR>.panel-heading{
+  flex:0 0 auto!important;min-height:48px!important;padding:9px 12px!important;
+  border-left:3px solid var(--window-identity,var(--traza-amber))!important
+}
+body[data-active-space="simulator"] #PL .panel-heading h3,
+body[data-active-space="simulator"] #PV .panel-heading h3,
+body[data-active-space="simulator"] #PR .panel-heading h3{font-size:17px!important;line-height:1.25!important}
+body[data-active-space="simulator"] #PL .eyebrow,
+body[data-active-space="simulator"] #PV .eyebrow,
+body[data-active-space="simulator"] #PR .eyebrow{font-size:11px!important;letter-spacing:.08em!important}
+body[data-active-space="simulator"] #PL .sim-window-body{
+  flex:1 1 auto!important;min-height:0!important;overflow:auto!important;padding:10px 13px 13px!important;
+  font-size:14px!important;line-height:1.5!important;overscroll-behavior:contain
+}
+body[data-active-space="simulator"] #simulator-exercise-title{font-size:18px!important;line-height:1.25!important}
+body[data-active-space="simulator"] #simulator-exercise-statement,
+body[data-active-space="simulator"] #PL .sim-context-notes p,
+body[data-active-space="simulator"] #PL .simulator-help,
+body[data-active-space="simulator"] #PL #simulator-exercise-spec li{font-size:14px!important;line-height:1.5!important}
+body[data-active-space="simulator"] #PL .sim-context-notes h4,
+body[data-active-space="simulator"] #PL .simulator-subheading h4{font-size:14px!important}
+body[data-active-space="simulator"] #PL .simulator-field-label,
+body[data-active-space="simulator"] #PL .simulator-field>span{font-size:12px!important}
+body[data-active-space="simulator"] #PL .simulator-inputs-block input{min-height:40px;font-size:15px}
+body[data-active-space="simulator"] #PL .simulator-run{min-height:42px;font-size:14px!important}
+body[data-active-space="simulator"] #PL .sim-code-body{padding:7px 9px!important}
+body[data-active-space="simulator"] #PL .pseudocode-lines{
+  display:grid!important;gap:3px!important;max-height:none!important;height:100%!important;overflow:auto!important;padding:5px 0!important
+}
+body[data-active-space="simulator"] #PL .pseudocode-lines li{
+  grid-template-columns:28px minmax(0,1fr)!important;gap:8px!important;min-height:27px!important;
+  padding:4px 8px!important;font-size:15px!important;line-height:1.48!important;overflow-wrap:anywhere
+}
+body[data-active-space="simulator"] #PL .pseudocode-lines li span:first-child{font-size:13px!important}
+body[data-active-space="simulator"] #PL .sim-window-body::-webkit-scrollbar,
+body[data-active-space="simulator"] #PR .variables-content::-webkit-scrollbar{width:7px}
+body[data-active-space="simulator"] #RC.simulator-inspector{
+  top:64px!important;right:10px!important;bottom:calc(var(--dk) + 20px)!important;
+  width:min(27vw,500px)!important;height:auto!important;max-width:none!important;
+  min-width:0!important;display:flex!important;flex-direction:column!important;gap:10px!important;
+  overflow:hidden!important;background:transparent!important;border:0!important;box-shadow:none!important
+}
+body[data-active-space="simulator"] #PV.scene-panel{
+  flex:1 1 0!important;min-height:245px!important;height:auto!important;max-height:none!important;
+  display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:10px!important
+}
+body[data-active-space="simulator"] #PV #scene-content{
+  display:grid!important;grid-template-rows:minmax(120px,1fr) auto auto!important;
+  align-content:start!important;gap:7px!important;min-height:0!important;overflow:hidden!important;
+  padding:10px 13px 13px!important;text-align:left!important
+}
+body[data-active-space="simulator"] #PV .scene-figure-host{
+  display:grid!important;place-items:center!important;width:100%!important;min-width:0!important;
+  min-height:120px!important;max-height:185px!important;overflow:hidden!important;margin:0!important;
+  padding:10px!important;border-radius:9px!important;background:var(--surface-soft)!important
+}
+body[data-active-space="simulator"] #PV .scene-figure{width:100%!important;max-width:100%!important;gap:8px!important;font-size:14px!important}
+body[data-active-space="simulator"] #PV .scene-event-type{font-size:12px!important;letter-spacing:.06em}
+body[data-active-space="simulator"] #PV .scene-event-title{margin:0!important;font-size:18px!important;line-height:1.22!important}
+body[data-active-space="simulator"] #PV .scene-event-body{margin:0!important;font-size:15px!important;line-height:1.42!important;color:var(--pen)!important}
+body[data-active-space="simulator"] #PR.variables-panel{
+  flex:1 1 0!important;min-height:235px!important;height:auto!important;max-height:none!important;
+  display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:10px!important
+}
+body[data-active-space="simulator"] #PR .panel-heading{flex:0 0 48px!important}
+body[data-active-space="simulator"] #PR #variables-content{flex:1 1 auto!important;min-height:56px!important;overflow:auto!important;padding:11px 12px!important}
+body[data-active-space="simulator"] #PR .variable-cards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(82px,1fr))!important;gap:8px!important}
+body[data-active-space="simulator"] #PR .variable-card{
+  min-height:70px!important;gap:5px!important;padding:9px 10px!important;
+  border:1px solid var(--line)!important;border-top:3px solid var(--variable-highlight,var(--traza-amber))!important;
+  border-radius:9px!important;color:var(--ink)!important;background:var(--traza-glass)!important;box-shadow:none!important
+}
+body[data-active-space="simulator"] #PR .variable-card-name{font-size:14px!important;font-weight:800!important}
+body[data-active-space="simulator"] #PR .variable-card-values{display:flex!important;align-items:baseline!important;gap:7px!important}
+body[data-active-space="simulator"] #PR .variable-card-values strong{font:700 21px/1.15 ui-monospace,monospace!important;color:var(--ink)!important}
+body[data-active-space="simulator"] #PR .variable-old-value{font-size:13px!important;color:var(--muted)!important}
+body[data-active-space="simulator"] #PR .variable-value-arrow{font-size:14px!important;color:var(--muted)!important}
+body[data-active-space="simulator"] #PR .variable-change{
+  flex:0 0 auto!important;padding:9px 12px!important;border-top:1px solid var(--line)!important;
+  font-size:14px!important;line-height:1.4!important;color:var(--pen)!important
+}
+body[data-active-space="simulator"] #PR .variable-history-details,
+body[data-active-space="simulator"] #PR .simulator-output-details,
+body[data-active-space="simulator"] #PR .simulator-history-details{flex:0 0 auto!important}
+body[data-active-space="simulator"] #PR .variable-history-details summary,
+body[data-active-space="simulator"] #PR .simulator-output-details summary,
+body[data-active-space="simulator"] #PR .simulator-history-details summary{min-height:36px!important;padding:7px 12px!important;font-size:13px!important}
+body[data-active-space="simulator"] .variable-tone-1{--variable-highlight:var(--traza-amber)!important}
+body[data-active-space="simulator"] .variable-tone-2{--variable-highlight:var(--traza-blue)!important}
+body[data-active-space="simulator"] .variable-tone-3{--variable-highlight:var(--traza-green)!important}
+body[data-active-space="simulator"] .variable-tone-4{--variable-highlight:var(--traza-pink)!important}
+body[data-active-space="simulator"] .variable-tone-5{--variable-highlight:#B08A4D!important}
+body[data-active-space="simulator"] .sim-context-window{
+  border-color:var(--traza-amber)!important;background:var(--traza-glass)!important;
+  box-shadow:var(--traza-shadow)!important
+}
+body[data-active-space="simulator"] .sim-context-heading{color:var(--traza-amber)!important;border-color:var(--line)!important}
+body[data-active-space="simulator"] .sim-context-heading strong{font-size:14px!important}
+body[data-active-space="simulator"] .sim-context-content{font-size:14px!important;line-height:1.45!important}
+body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:13px!important;min-height:38px!important}
+body[data-active-space="simulator"] .simulator-controls-trigger,
+body[data-active-space="simulator"] .simulator-controls-panel button,
+body[data-active-space="simulator"] #dock button{font-size:14px!important}
+body[data-active-space="simulator"] #dock .transport-button{width:40px!important;min-width:40px!important;height:40px!important}
+body[data-active-space="simulator"] #dock .transport-play{width:44px!important;min-width:44px!important;height:44px!important}
+body[data-active-space="simulator"] #dock .dock-description strong{font-size:14px!important}
+body[data-active-space="simulator"] #dock .dock-description small{font-size:12px!important;line-height:1.35}
+body[data-active-space="simulator"] #dock .timeline-label{font-size:12px!important}
+body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px!important;font-size:13px!important}
+body[data-active-space="simulator"] .scene-loop-track{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px;width:100%;align-items:stretch
+}
+body[data-active-space="simulator"] .scene-loop-step{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;
+  min-height:48px;padding:6px 4px;border:1px solid var(--line);border-radius:8px;
+  color:var(--pen);background:var(--traza-glass);text-align:center;transition:border-color 180ms ease,background 180ms ease,transform 180ms ease
+}
+body[data-active-space="simulator"] .scene-loop-step i{width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
+body[data-active-space="simulator"] .scene-loop-step span{font-size:11px;font-weight:750;line-height:1.2}
+body[data-active-space="simulator"] .scene-loop-step.is-complete{border-color:var(--traza-green);color:var(--traza-green)}
+body[data-active-space="simulator"] .scene-loop-step.is-complete i{background:var(--traza-green)}
+body[data-active-space="simulator"] .scene-loop-step.is-active{
+  border:2px solid var(--traza-amber);color:var(--ink);background:var(--accent-soft);
+  transform:translateY(-2px);animation:scene-loop-pulse 1.8s ease-in-out infinite
+}
+body[data-active-space="simulator"] .scene-loop-step.is-active i{background:var(--traza-amber);box-shadow:0 0 0 4px color-mix(in srgb,var(--traza-amber) 20%,transparent)}
+body[data-active-space="simulator"] .scene-loop-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-active-space="simulator"] .scene-loop-heading strong{font-size:14px;color:var(--ink)}
+body[data-active-space="simulator"] .scene-loop-round,
+body[data-active-space="simulator"] .scene-loop-order{
+  display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;
+  color:#192632;background:var(--traza-amber);font:800 12px/1.2 ui-monospace,monospace
+}
+body[data-active-space="simulator"] .scene-loop-detail{font-size:14px;line-height:1.4;color:var(--pen)}
+body[data-active-space="simulator"] .scene-loop-condition,
+body[data-active-space="simulator"] .scene-loop-question,
+body[data-active-space="simulator"] .scene-loop-body{padding:8px 10px;gap:4px}
+body[data-active-space="simulator"] .scene-loop-condition strong,
+body[data-active-space="simulator"] .scene-loop-question strong,
+body[data-active-space="simulator"] .scene-loop-body strong{font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+body[data-active-space="simulator"] .scene-loop-answer{font-size:14px;font-weight:850}
+body[data-active-space="simulator"] .scene-loop-answer.is-true{color:var(--traza-green)}
+body[data-active-space="simulator"] .scene-loop-answer.is-false{color:var(--traza-pink)}
+@keyframes scene-loop-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--traza-amber) 0%,transparent)}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--traza-amber) 15%,transparent)}}
+@media(prefers-reduced-motion:reduce){
+ body[data-active-space="simulator"] .scene-loop-step.is-active{animation:none!important;transform:none!important}
+}
+:root[data-motion="reduced"] body[data-active-space="simulator"] .scene-loop-step.is-active{animation:none!important;transform:none!important}
+
+/* En móvil se abre solo el panel elegido; nunca compiten dos ventanas por el escenario. */
+@media(max-width:900px){
+ body[data-active-space="simulator"] .topbar#hd{grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:39px 43px!important}
+ body[data-active-space="simulator"] .primary-nav{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-column:1/-1!important;
+  grid-row:1!important;flex:1 1 auto!important;gap:3px!important;width:100%!important;min-width:0!important;
+  padding:0 72px 0 0!important;overflow:visible!important
+ }
+ body[data-active-space="simulator"] .primary-nav .nav-button{min-width:0!important;min-height:35px!important;padding:0 2px!important;font-size:11.5px!important;letter-spacing:0!important}
+ body[data-active-space="simulator"] .problem-panel#PL{left:6px!important;right:6px!important;top:86px!important;bottom:72px!important;width:auto!important}
+ body[data-active-space="simulator"] #RC.simulator-inspector{left:6px!important;right:6px!important;top:86px!important;bottom:72px!important;width:auto!important}
+ body[data-active-space="simulator"] #PL,
+ body[data-active-space="simulator"] #RC,
+ body[data-active-space="simulator"] #PV,
+ body[data-active-space="simulator"] #PR{display:none!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="problem"] #PL{display:flex!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #RC,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PV{display:flex!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="scene"] #PR{display:none!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #RC{display:flex!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PR{display:flex!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="variables"] #PV{display:none!important}
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #PL,
+ body[data-active-space="simulator"][data-simulator-mobile-panel="diagram"] #RC{display:none!important}
+ body[data-active-space="simulator"] .simulator-mobile-tabs{left:6px!important;right:102px!important;top:44px!important}
+ body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:12px!important;min-height:36px!important;flex:1 1 0!important}
+ body[data-active-space="simulator"] .problem-panel#PL>.sim-window{flex:1 1 0!important}
+ body[data-active-space="simulator"] #RC #PV,
+ body[data-active-space="simulator"] #RC #PR{flex:1 1 0!important}
+ body[data-active-space="simulator"] #PR .variable-cards{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))!important}
+}
+@media(max-width:520px){
+ body[data-active-space="simulator"] .simulator-mobile-tabs{right:92px!important;gap:2px!important}
+ body[data-active-space="simulator"] .simulator-mobile-tabs button{font-size:11px!important;padding-inline:3px!important}
+ body[data-active-space="simulator"] #dock .transport-button{width:34px!important;min-width:34px!important;height:36px!important}
+ body[data-active-space="simulator"] #dock .transport-play{width:38px!important;min-width:38px!important}
+ body[data-active-space="simulator"] #dock .dock-speed>span{font-size:10px!important}
+ body[data-active-space="simulator"] #PV .scene-event-body{font-size:14px!important}
+ body[data-active-space="simulator"] #PR .variable-change{font-size:13px!important}
+}
+@media(min-width:901px) and (max-width:1180px){
+ body[data-active-space="simulator"] .problem-panel#PL{width:21vw!important}
+ body[data-active-space="simulator"] #RC.simulator-inspector{width:27vw!important}
+}
