@@ -13,7 +13,7 @@ test("Actividades está conectada a navegación, inicialización y estilos", asy
   const css = await read("../src/styles/ficha-activities.css");
   const app = await read("../src/ui/navigation.js");
   assert.match(html, /id="view-actividades" data-view="actividades"/);
-  assert.doesNotMatch(html, /view-actividades[^>]*ficha-placeholder/);
+  assert.doesNotMatch(html, /class="space-view ficha-placeholder" id="view-actividades"/);
   assert.match(html, /styles\/ficha-activities\.css/);
   assert.match(init, /initActividades\(\)/);
   assert.match(init, /renderActividades\(\)/);
