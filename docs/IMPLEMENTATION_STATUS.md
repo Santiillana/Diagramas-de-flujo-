@@ -106,11 +106,11 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 
 #### Resultado de validación de la rama
 
-- PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta y en borrador.
-- SHA validado: `5c3419b06ecde00019ebef2743966312d32464f0`.
-- GitHub Actions: run [43993117362](https://github.com/Santiillana/Traza/actions/runs/43993117362), **success**: 292/292 pruebas Node y 113/113 pruebas Playwright.
-- Los builds externos de Cloudflare Workers fallaron en commits anteriores (`db8db1f` y `727119c`). No se recibió una confirmación externa de Workers para el SHA validado; antes de integrar o publicar debe revisarse el estado del build en Cloudflare y hacer smoke test.
-- Se agregaron pruebas de navegador en `e2e/module-7-activities.spec.js` para ciclo de vida, filtros y protección de datos corruptos.
+- PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta, en borrador y sin fusionar.
+- SHA validado por GitHub Actions: `856df59cea40ead2dd3ecd55de8c4921f893fa88`.
+- GitHub Actions: run [43995672198](https://github.com/Santiillana/Traza/actions/runs/43995672198), **300/300 pruebas Node y 116/116 pruebas Playwright aprobadas**, cero fallos.
+- El check externo **Workers Builds: diagramas-de-flujo** para este SHA terminó en **failure** (build Cloudflare `9d85afc3-06fa-43c0-9c89-09415f3aac8d`). El check no entregó anotaciones ni causa técnica en GitHub; hay que abrir sus logs en Cloudflare y resolverlo antes de publicar.
+- No se ha ejecutado un smoke test del sitio desplegado. La CI de GitHub no sustituye el build externo ni el smoke test.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
 
 #### Paso 8 · Clases y conexión con Aprende
