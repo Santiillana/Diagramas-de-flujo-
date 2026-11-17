@@ -59,6 +59,7 @@ test("Actividades se adapta a móvil y no sobrescribe almacenamiento dañado", a
   }
   await page.goto("/");
   await page.evaluate(() => localStorage.setItem("traza:v4:ficha", "{dañado"));
+  await page.reload();
   await goToSpace(page, "actividades");
   await expect(page.locator("#ficha-activity-detail .ficha-storage-error")).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem("traza:v4:ficha"))).toBe("{dañado");
