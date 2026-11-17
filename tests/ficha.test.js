@@ -185,6 +185,9 @@ test("el horario resuelve instructor y competencia y excluye domingos", () => {
   assert.equal(clasesDelDia("2026-11-22", horario).length, 0);
   assert.equal(clasesDelDia("2026-11-17").length, 1);
   assert.equal(clasesDelDia("2026-11-17")[0].competencia.id, "comunicacion");
+  assert.equal(clasesDelDia("2026-11-01")[0].competencia.id, "evaluar-requisitos");
+  assert.equal(clasesDelDia("2026-11-02")[0].competencia.id, "matematicas");
+  assert.equal(clasesDelDia("2026-11-09")[0].instructor.id, "yilliam-romero");
 });
 
 test("el resumen por competencia cuenta aprobación del instructor, no entrega", () => {

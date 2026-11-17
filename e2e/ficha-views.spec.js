@@ -22,7 +22,7 @@ test("Semana permite navegar y muestra los bloques transcritos del lunes al sáb
   await goToSpace(page, "semana");
   await expect(page.locator("#view-semana .ficha-week-desktop")).toBeVisible();
   await expect(page.locator("#view-semana .ficha-week-block")).toHaveCount(7);
-  await expect(page.locator("#view-semana .ficha-week-note")).toContainText("Matemáticas");
+  await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "Matemáticas" })).toBeVisible();
   await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "Comunicación" })).toBeVisible();
   await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "TICS" })).toBeVisible();
   const antes = await page.locator("#view-semana .ficha-date-range").textContent();
@@ -48,7 +48,7 @@ test("Calendario ofrece navegación mensual, horario recurrente y detalle selecc
     return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
   });
   await page.locator('[data-calendar-day="' + monday + '"]').click();
-  await expect(page.locator("#view-calendario .ficha-calendar-detail")).toContainText("Evaluar requisitos");
+  await expect(page.locator("#view-calendario .ficha-calendar-detail")).toContainText("Matemáticas");
 });
 
 test("Semana y Calendario responden en tableta y móvil sin desbordamiento", async ({ page }) => {

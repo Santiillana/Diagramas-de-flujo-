@@ -10,7 +10,7 @@ export const FICHA = {
     version: "v2 · demostración",
     ficha: "Por configurar",
     actualizado: "2026-11-17",
-    fuente: "Horario transcrito de la imagen compartida; las actividades de ejemplo deben sustituirse por publicaciones oficiales.",
+    fuente: "Horario transcrito de la imagen compartida; Matemáticas reemplaza Evaluar requisitos los lunes desde el 2 de noviembre de 2026. Las materias del sábado siguen por confirmar.",
     esDemostracion: true
   },
   competencias: [
@@ -34,7 +34,8 @@ export const FICHA = {
   // Horario transcrito de la imagen compartida. Día: 1=lunes ... 6=sábado.
   // El nombre de las dos clases del sábado no aparece en la imagen.
   horario: [
-    { id: "lunes-evaluar-requisitos", dia: 1, inicio: "18:00", fin: "22:00", competenciaId: "evaluar-requisitos", instructorId: "jair-castaneda", fuente: "Horario compartido por el usuario" },
+    { id: "lunes-evaluar-requisitos", dia: 1, inicio: "18:00", fin: "22:00", competenciaId: "evaluar-requisitos", instructorId: "jair-castaneda", vigenteDesde: null, vigenteHasta: "2026-11-01", fuente: "Horario compartido por el usuario" },
+    { id: "lunes-matematicas", dia: 1, inicio: "18:00", fin: "22:00", competenciaId: "matematicas", instructorId: "yilliam-romero", vigenteDesde: "2026-11-02", vigenteHasta: null, fuente: "Horario compartido por el usuario; vigencia interpretada desde 2-11-2026" },
     { id: "martes-comunicacion", dia: 2, inicio: "18:00", fin: "22:00", competenciaId: "comunicacion", instructorId: "sandra-lizcano", fuente: "Horario compartido por el usuario" },
     { id: "miercoles-evaluar-requisitos", dia: 3, inicio: "18:00", fin: "22:00", competenciaId: "evaluar-requisitos", instructorId: "jair-castaneda", fuente: "Horario compartido por el usuario" },
     { id: "jueves-tics", dia: 4, inicio: "18:00", fin: "22:00", competenciaId: "tics", instructorId: "yonel-torres", fuente: "Horario compartido por el usuario" },
@@ -42,9 +43,7 @@ export const FICHA = {
     { id: "sabado-mediodia-por-confirmar", dia: 6, inicio: "12:00", fin: "16:00", competenciaId: "clase-sabado-por-confirmar", titulo: "Clase por confirmar", instructorId: "gloria-romero", fuente: "Horario compartido por el usuario" },
     { id: "sabado-tarde-por-confirmar", dia: 6, inicio: "16:00", fin: "22:00", competenciaId: "clase-sabado-por-confirmar", titulo: "Clase por confirmar", instructorId: "jair-castaneda", fuente: "Horario compartido por el usuario" }
   ],
-  horarioNotas: [
-    { id: "matematicas-lunes-nota", dia: 1, competenciaId: "matematicas", titulo: "Matemáticas", instructorId: "yilliam-romero", nota: "A partir del 2 de noviembre. La imagen no precisa hora ni año." }
-  ],
+  horarioNotas: [],
   actividades: [
     {
       id: "actividad-diagrama",

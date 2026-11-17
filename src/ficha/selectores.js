@@ -1,6 +1,6 @@
 import { FICHA } from "../content/ficha.js";
 import { ESTADO } from "./estados.js";
-import { diaSemana, finSemana, hoy, parsearFechaLocal } from "./fechas.js";
+import { diaSemana, finSemana, hoy, parsearFechaLocal, fechaISO } from "./fechas.js";
 
 function obtenerRegistro(personal, actividadId) {
   if (personal && Object.hasOwn(personal, "estado")) return personal;
@@ -88,6 +88,11 @@ export function panel(personal = {}, fechaActual = hoy(), opciones = {}, ficha =
   return { ...grupos, total, totalPendiente };
 }
 
+function classIsValidOnDate(clase, clave) {
+  return (!clase.vigenteDesde || clave >= clase.vigenteDesde) &&
+    (!clase.vigenteHasta || clave <= clase.vigenteHasta);
+}
+
 /** Horario del día; acepta un calendario alternativo para probar/validar datos antes de publicarlos. */
 export function clasesDelDia(fechaActual = hoy(), horario = FICHA.horario) {
   const fecha = fechaReferencia(fechaActual);
@@ -95,8 +100,9 @@ export function clasesDelDia(fechaActual = hoy(), horario = FICHA.horario) {
   const dia = diaSemana(fecha);
   if (dia < 1 || dia > 6) return [];
 
+  const clave = fechaISO(fecha);
   return horario
-    .filter(clase => clase.dia === dia)
+    .filter(clase => classIsValidOnDate(clase, clave) && clase.dia === dia)
     .map(clase => ({
       ...clase,
       competencia: FICHA.competencias.find(item => item.id === clase.competenciaId) ?? null,

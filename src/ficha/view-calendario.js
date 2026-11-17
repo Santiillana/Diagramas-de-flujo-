@@ -22,7 +22,7 @@ function eventosDelDia(iso, personal, filtros) {
   const fecha = parsearFechaLocal(iso);
   const dia = fecha.getDay() === 0 ? 7 : fecha.getDay();
   const clasesHorario = FICHA.horario
-    .filter(item => item.dia === dia && competenciaPasaFiltro(item.competenciaId, filtros))
+    .filter(item => item.dia === dia && (!item.vigenteDesde || iso >= item.vigenteDesde) && (!item.vigenteHasta || iso <= item.vigenteHasta) && competenciaPasaFiltro(item.competenciaId, filtros))
     .map(item => {
       const competencia = FICHA.competencias.find(value => value.id === item.competenciaId);
       const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
