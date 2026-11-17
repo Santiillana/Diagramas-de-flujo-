@@ -4,7 +4,7 @@
 **Repositorio:** `Santiillana/Traza`  
 **Rama:** `v4/module-7-activities`  
 **Base:** integración del Módulo 6, commit `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
-**Estado:** especificación técnica preparada; el repositorio común M5 y el horario de M6 tienen una primera implementación en esta rama. La interfaz M7 permanece pendiente hasta cerrar la aceptación de M5/M6.
+**Estado:** catálogo y detalle funcionales en construcción avanzada dentro de esta rama: crear, editar, buscar, filtrar, registrar entregas, devoluciones transcritas, notas, bitácora y archivo lógico. La aceptación final depende de CI y de cerrar los casos E2E.
 
 ## 1. Objetivo
 
@@ -16,10 +16,26 @@ La vista no será un sistema de calificación oficial ni una integración con Za
 
 El Módulo 7 depende de contratos que pertenecen a los módulos anteriores:
 
-- **Módulo 5:** modelo académico común, identificadores, persistencia, validación, migración y respaldo. Primera base disponible en `src/ui/ficha-store.js`; faltan integración de interfaz y E2E.
-- **Módulo 6:** vistas Hoy, Semana y Calendario que consumirán el mismo repositorio de actividades.
+- **Módulo 5:** modelo común, persistencia local protegida, validación estricta y respaldo versionado en `src/ui/ficha-store.js` y `src/ui/ficha-backup.js`.
+- **Módulo 6:** Hoy, Semana y Calendario consumen ese mismo repositorio para fechas de asignación y vencimiento.
+- La interfaz de Actividades vive en `src/ui/ficha-activities.js`; no crea una segunda base de datos.
 
-Por tanto, este módulo no debe inventar una segunda base de datos ni implementar almacenamiento paralelo. Antes de integrar la interfaz, se debe importar el repositorio y los tipos definidos por M5. La rama se prepara desde el main actualizado y no altera la rama principal.
+Por tanto, este módulo no debe inventar una segunda base de datos ni implementar almacenamiento paralelo. Los registros creados desde esta pantalla son datos personales del estudiante en su propio navegador. No son tareas publicadas a un grupo por un moderador ni se sincronizan entre usuarios.
+
+## Estado de implementación de la interfaz
+
+La primera interfaz funcional está conectada desde `src/app.js` y `index.html`:
+
+- Catálogo con búsqueda, filtros por estado y condición temporal, y orden por vencimiento.
+- Creación y edición de una actividad, con fechas opcionales y clase relacionada opcional.
+- Detalle con estado, fechas, intentos, devoluciones y bitácora.
+- Transiciones permitidas: Pendiente → En curso; registro de entrega; devolución transcrita que puede solicitar corrección o indicar resultado favorable.
+- Notas personales, archivo lógico y conservación del historial.
+- Estados vacíos, mensajes de error, controles por teclado y diseño responsive.
+
+Los E2E de navegador de `e2e/module-7-activities.spec.js` cubren el ciclo de vida, filtros y la protección frente a almacenamiento corrupto. Deben pasar en el SHA final antes de aceptar el módulo.
+
+**Límite deliberado:** esta pantalla permite que cada estudiante organice sus propias actividades. El alta de tareas oficiales para todo un grupo requiere un servicio central con autenticación y roles de moderador; no se simula con datos locales.
 
 ## 3. Experiencia de usuario
 
