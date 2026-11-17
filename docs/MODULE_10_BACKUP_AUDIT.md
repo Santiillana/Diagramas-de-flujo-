@@ -1,6 +1,6 @@
 # Módulo 10 · Respaldo, auditoría y publicación
 
-**Estado:** respaldos granulares e integral implementados y probados en la rama `v4/module-7-activities`. Migraciones, pruebas de fallos extremos, auditoría integral y validación de publicación siguen pendientes. La suite conjunta aprobó 300 pruebas Node y 116 Playwright en SHA `04b699f` (run 43996077312); el check externo de Cloudflare falló también en el SHA base de `main`.
+**Estado:** respaldos granulares e integral implementados y probados en la rama `v4/module-7-activities`. Migraciones, pruebas de fallos extremos, auditoría integral y validación de publicación siguen pendientes. La suite conjunta aprobó 309 pruebas Node y 117 Playwright en SHA `f84374f` (run 43998449769). El check externo de Cloudflare falló también en el SHA base de `main`; debe revisarse antes de publicar.
 
 ## Datos y límites actuales
 
@@ -12,7 +12,7 @@
 | Actividades personales | `traza:v4:ficha` | Almacenamiento local de cada navegador |
 | Biblioteca personal | `traza:v4:library` | Almacenamiento local separado |
 
-Los catálogos oficiales tienen validadores automáticos de IDs, referencias, fechas y URLs; el horario también comprueba solapamientos de bloques. No existe backend, sincronización entre dispositivos ni almacenamiento central de entregas y notas. Perder los datos locales del navegador puede perder la copia personal si no se descargaron respaldos.
+Los catálogos oficiales tienen validadores automáticos de IDs, referencias, fechas y URLs; el horario también comprueba solapamientos de bloques. El build externo Cloudflare para SHA `f84374f` falló (build `388e89e8-40d6-4720-9d9e-daaaee9fa26e`); el mismo check también falló en el SHA base de `main` (build `726475b5-3558-4061-a5b4-bc4b58cdb949`). No existe backend, sincronización entre dispositivos ni almacenamiento central de entregas y notas. Perder los datos locales del navegador puede perder la copia personal si no se descargaron respaldos.
 
 ## Controles implementados
 
