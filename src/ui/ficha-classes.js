@@ -36,6 +36,16 @@ function classTitle(item) {
   return item.diaSemana === 6 ? "Clase del sábado" : "Clase sin materia confirmada";
 }
 
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password
+      ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 function renderOfficialItems(items, type) {
   if (!items.length) {
     return '<p class="ficha-class-empty">Aún no hay ' +
@@ -45,8 +55,8 @@ function renderOfficialItems(items, type) {
   return '<ul class="ficha-class-content-list">' + items.map(item =>
     '<li><strong>' + escapeHtml(item.title) + '</strong>' +
     (item.description ? '<p>' + escapeHtml(item.description) + '</p>' : "") +
-    (item.url || item.instructionsUrl
-      ? '<a href="' + escapeHtml(item.url || item.instructionsUrl) +
+    (safeExternalUrl(item.url || item.instructionsUrl || "")
+      ? '<a href="' + escapeHtml(safeExternalUrl(item.url || item.instructionsUrl)) +
         '" target="_blank" rel="noopener noreferrer">Abrir ↗</a>' : "") +
     '</li>'
   ).join("") + "</ul>";
@@ -56,6 +66,7 @@ export function initFichaClasses() {
   const root = document.querySelector("#ficha-clases");
   if (!root) return;
 
+  function render() {
   const today = todayInBogota();
   const active = HORARIO_CLASES.filter(item => isActiveOnDate(item, today))
     .slice().sort((a, b) => a.diaSemana - b.diaSemana ||
@@ -98,4 +109,11 @@ export function initFichaClasses() {
         escapeHtml(item.instructor) + ' · Vigente hasta ' +
         escapeHtml(item.vigenteHasta || "fecha no indicada") + '</li>'
       ).join("") + '</ul></details>' : "");
+  }
+  render();
+  window.setInterval(render, 60_000);
+  window.addEventListener("focus", render);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) render();
+  });
 }
