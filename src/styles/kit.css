@@ -11,6 +11,7 @@
 .recipe-node{fill:var(--card);stroke:var(--struct);stroke-width:2;transition:stroke-width 180ms ease,fill 180ms ease}
 .recipe-node.is-active{fill:color-mix(in srgb,var(--accent) 18%,var(--card));stroke:var(--accent-text);stroke-width:3}
 .recipe-node-label{fill:var(--text);font:500 14px ui-monospace,monospace}
+.recipe-loop-label tspan.is-active{text-decoration:underline;text-decoration-color:var(--accent-text);text-decoration-thickness:3px;text-underline-offset:4px}
 .recipe-order{fill:var(--text-2);font:500 12px ui-monospace,monospace}
 .recipe-arrow{fill:none;stroke:var(--line);stroke-width:2}
 .recipe-guide{fill:var(--accent);stroke:var(--card);stroke-width:2;transition:transform 260ms cubic-bezier(.22,1,.36,1)}

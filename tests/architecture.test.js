@@ -60,7 +60,7 @@ test("la lección usa lectura continua con seis secciones y cierre explícito",a
 test("las recetas del bloque inicial entran en el reproductor y mantienen estático numerado",async()=>{
   const content=await read("../src/ui/content-view.js");
   const recipes=await read("../src/ui/kit/recipes.js");
-  assert.match(content,/recipeSceneMarkup\(recipe,frame\)/);
+  assert.match(content,/recipeSceneMarkup\(recipe,frame,recipeMomentIndex/);
   assert.match(content,/recipe-static-sequence/);
   for(const id of ["algorithm","reading","terminals"])assert.match(recipes,new RegExp(id+":"));
 });

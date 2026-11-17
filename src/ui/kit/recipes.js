@@ -74,31 +74,55 @@ const recipes = {
     cierre:"El contador aumenta de uno en uno; el acumulador recibe cada monto.",
     moments:["El contador empieza en 0", "Entra una persona y suma 1", "El acumulador agrega el monto"],
     figures:[["process","cont = 0"],["process","entra persona"],["process","cont = cont + 1"],["process","suma += monto"]]
+  },
+  for: {
+    id:"R12-for", idea:"Un ciclo Para recorre una pista un número definido de veces.", term:"Ciclo Para",
+    cierre:"El ciclo inicia M en 1, repite mientras M sea menor que E y aumenta M en cada vuelta.",
+    moments:["La cabecera reúne inicio, condición y avance", "M empieza en 1 y la condición se cumple", "El cuerpo se ejecuta y M aumenta", "La condición deja de cumplirse y el ciclo termina"],
+    figures:[["loop","M=1; M<E; M++"],["process","M = 1"],["decision","1 < 4 · Sí ✓"],["process","Ejecutar cuerpo"],["process","M++ · M = 2"]],
+    loopPartByMoment:[0,1,2,1]
+  },
+  while: {
+    id:"R13-while", idea:"Mientras repite una acción mientras su condición siga siendo verdadera.", term:"Ciclo Mientras",
+    cierre:"La condición se revisa antes de cada vuelta; al cambiar a falso, el ciclo termina.",
+    moments:["La condición se comprueba antes del cuerpo", "La respuesta Sí permite una vuelta", "El cuerpo cambia el valor comprobado", "La condición pasa a No y el ciclo termina"],
+    figures:[["decision","¿Hay sol?"],["process","Jugar"],["process","El sol se oculta"],["decision","¿Hay sol? No ✗"]],
+    choices:["Sí ✓","No ✗"]
+  },
+  "do-while": {
+    id:"R13-do-while", idea:"Hacer–Mientras ejecuta el cuerpo una vez y después comprueba si debe repetir.", term:"Ciclo Hacer–Mientras",
+    cierre:"El cuerpo ocurre antes de comprobar la condición de repetición.",
+    moments:["El cuerpo se ejecuta primero", "La condición se comprueba después", "Si es verdadera, comienza otra vuelta", "Cuando es falsa, el ciclo termina"],
+    figures:[["process","Hacer: jugar"],["decision","¿Sigue habiendo sol?"],["process","Repetir"],["output","Fin"]],
+    choices:["Sí ✓","No ✗"]
   }
 };
 
-function shape(type,x,y,label,active,index){
+function shape(type,x,y,label,active,index,activePart=-1){
   const common='class="recipe-node'+(active?" is-active":"")+'"';
   let figure="";
   if(type==="terminal")figure='<ellipse '+common+' cx="'+x+'" cy="'+y+'" rx="57" ry="31"/>';
   else if(type==="input"||type==="output")figure='<polygon '+common+' points="'+(x-48)+','+(y-28)+' '+(x+58)+','+(y-28)+' '+(x+48)+','+(y+28)+' '+(x-58)+','+(y+28)+'"/>';
   else if(type==="decision")figure='<polygon '+common+' points="'+x+','+(y-38)+' '+(x+64)+','+y+' '+x+','+(y+38)+' '+(x-64)+','+y+'"/>';
   else if(type==="document")figure='<path '+common+' d="M'+(x-49)+' '+(y-30)+'h88l12 12v48h-100z M'+(x+39)+' '+(y-30)+'v13h13"/>';
-  else if(type==="loop")figure='<polygon '+common+' points="'+(x-53)+','+(y-31)+' '+(x+38)+','+(y-31)+' '+(x+54)+','+y+' '+(x+38)+','+(y+31)+' '+(x-53)+','+(y+31)+' '+(x-40)+','+y+'"/>';
+  else if(type==="loop")figure='<polygon '+common+' points="'+(x-70)+','+(y-31)+' '+(x+53)+','+(y-31)+' '+(x+70)+','+y+' '+(x+53)+','+(y+31)+' '+(x-70)+','+(y+31)+' '+(x-53)+','+y+'"/>';
   else figure='<rect '+common+' x="'+(x-54)+'" y="'+(y-30)+'" width="108" height="60" rx="7"/>';
-  return figure+'<text class="recipe-node-label" x="'+x+'" y="'+(y+5)+'" text-anchor="middle">'+escapeHTML(label)+'</text><text class="recipe-order" x="'+x+'" y="'+(y+57)+'" text-anchor="middle">'+(index+1)+'</text>';
+  const text=type==="loop"&&label.includes(";")?'<text class="recipe-node-label recipe-loop-label" x="'+x+'" y="'+(y+5)+'" text-anchor="middle">'+label.split(";").map((part,position)=>'<tspan class="'+(position===activePart?"is-active":"")+'">'+escapeHTML(part.trim())+'</tspan>').join('<tspan> ; </tspan>')+'</text>':'<text class="recipe-node-label" x="'+x+'" y="'+(y+5)+'" text-anchor="middle">'+escapeHTML(label)+'</text>';
+  return figure+text+'<text class="recipe-order" x="'+x+'" y="'+(y+57)+'" text-anchor="middle">'+(index+1)+'</text>';
 }
 
 export function lessonRecipe(id){return recipes[id]??null;}
 
-export function recipeSceneMarkup(recipe,frame=0){
+export function recipeSceneMarkup(recipe,frame=0,momentIndex=0){
   if(!recipe)return "";
   const nodes=recipe.figures,margin=76,width=760,y=106;
   const gap=nodes.length>1?(width-margin*2)/(nodes.length-1):0;
   const xs=nodes.map((_,index)=>margin+gap*index);
   const current=Math.max(0,Math.min(nodes.length-1,frame));
-  const arrows=nodes.slice(1).map((_,index)=>'<path class="recipe-arrow" d="M'+(xs[index]+52)+' '+y+'H'+(xs[index+1]-52)+'" marker-end="url(#recipe-arrowhead)"/>').join("");
-  const shapes=nodes.map(([kind,label],index)=>shape(kind,xs[index],y,label,index===current,index)).join("");
+  const halfWidth=kind=>kind==="terminal"?57:kind==="decision"?64:kind==="loop"?70:kind==="input"||kind==="output"?58:kind==="document"?55:54;
+  const arrows=nodes.slice(1).map((_,index)=>'<path class="recipe-arrow" d="M'+(xs[index]+halfWidth(nodes[index][0])-2)+' '+y+'H'+(xs[index+1]-halfWidth(nodes[index+1][0])+2)+'" marker-end="url(#recipe-arrowhead)"/>').join("");
+  const activePart=recipe.loopPartByMoment?.[momentIndex]??-1;
+  const shapes=nodes.map(([kind,label],index)=>shape(kind,xs[index],y,label,index===current,index,kind==="loop"?activePart:-1)).join("");
   const choiceIndex=nodes.findIndex(([kind])=>kind==="decision"),choiceX=xs[choiceIndex];
   const choices=recipe.choices&&choiceIndex>=0?'<path class="recipe-choice-arrow" d="M'+(choiceX-20)+' 143L'+(choiceX-62)+' 183M'+(choiceX+20)+' 143L'+(choiceX+62)+' 183"/><g class="recipe-choice recipe-choice-yes"><rect x="'+(choiceX-122)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX-92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[0])+'</text></g><g class="recipe-choice recipe-choice-no"><rect x="'+(choiceX+62)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX+92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[1])+'</text></g>':'';
   return '<svg class="lesson-recipe-svg" viewBox="0 0 '+width+' '+(recipe.choices?240:220)+'" role="img" aria-label="'+escapeHTML(recipe.cierre)+'"><defs><marker id="recipe-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>'+arrows+choices+shapes+'<circle class="recipe-guide" cx="'+xs[0]+'" cy="55" r="8" transform="translate('+(xs[current]-xs[0])+' 0)" aria-hidden="true"/></svg>';

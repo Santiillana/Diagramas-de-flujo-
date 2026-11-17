@@ -34,7 +34,7 @@ test("cada lección conserva escena, ejemplo ejecutable y comprobación inmediat
   await page.goto("/");
   await openDiagramLessons(page);
   const ids=["algorithm","reading","terminals","input","process","output","variables","arithmetic","comparisons","decisions","nested-decisions","counters-accumulators","for","while","do-while","nested-loops","validation-sentinel"];
-  const recipes={algorithm:"R02-algorithm",reading:"R02-sequence",terminals:"R01-figures",input:"R05-input",process:"R08-process",output:"R06-output",variables:"R03-variables",arithmetic:"R08-arithmetic",comparisons:"R09-comparisons",decisions:"R09-decisions","nested-decisions":"R09-nested-decisions","counters-accumulators":"R11-counters"};
+  const recipes={algorithm:"R02-algorithm",reading:"R02-sequence",terminals:"R01-figures",input:"R05-input",process:"R08-process",output:"R06-output",variables:"R03-variables",arithmetic:"R08-arithmetic",comparisons:"R09-comparisons",decisions:"R09-decisions","nested-decisions":"R09-nested-decisions","counters-accumulators":"R11-counters",for:"R12-for",while:"R13-while","do-while":"R13-do-while"};
   for(const id of ids){
     await page.locator('#lesson-catalog [data-lesson-id="'+id+'"]').click();
     const reader=page.locator("#lesson-detail");
