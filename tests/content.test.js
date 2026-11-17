@@ -113,6 +113,7 @@ test("el catálogo de temas comparte competencias y conserva el mapa de 17 lecci
     const topic=temas.find(item=>item.id===id);
     assert.equal(topic.estado,"disponible");
     assert.equal(topic.lecciones.length,5);
+    assert.ok(topic.ejercicios.length>=9);
   }
 });
 

@@ -102,10 +102,12 @@
 
       <section class="catalog-filter-panel exercise-filter-panel" aria-label="Buscar y filtrar ejercicios">
         <div class="exercise-filter-main">
+          <label class="catalog-search"><span>Banco</span><select id="exercise-bank"><option value="diagramas">Diagramas de flujo</option><option value="matematicas">Matemáticas</option></select></label>
           <label class="catalog-search">
             <span>Buscar</span>
             <input id="exercise-search" type="search" placeholder="Título, número o concepto…" autocomplete="off">
           </label>
+          <label class="catalog-search" id="exercise-math-topic-wrap" hidden><span>Tema matemático</span><select id="exercise-math-topic"><option value="todos">Todos</option><option value="enteros">Enteros</option><option value="racionales">Racionales</option><option value="regla-de-tres">Regla de tres</option></select></label>
           <div class="exercise-difficulty-filter"><span>Dificultad</span><div id="exercise-difficulty-options" role="group" aria-label="Filtrar por dificultad"></div></div>
           <label class="catalog-class-filter">
             <input id="exercise-class-only" type="checkbox">
@@ -138,6 +140,7 @@
           <p class="eyebrow">BANCO DE PRÁCTICA</p>
           <h3>Elige tu siguiente reto</h3>
         </div>
+        <button type="button" id="exercise-generate-math" class="button button-secondary" hidden>Generar reto con semilla</button>
           <div class="exercise-view-toggle" role="group" aria-label="Vista del catálogo"><button type="button" data-exercise-view="grid" aria-pressed="true" aria-label="Vista de tarjetas">▦</button><button type="button" data-exercise-view="list" aria-pressed="false" aria-label="Vista de lista">☰</button></div>
       </div>
 
@@ -170,6 +173,7 @@
         <div><p class="eyebrow">SIMULADOR</p><h2 id="simulator-title">El algoritmo, paso a paso.</h2></div>
         <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
       </header>
+      <section id="math-player" class="math-player" aria-label="Reproductor de matemáticas" hidden></section>
       <div class="simulator-mobile-tabs" id="simulator-mobile-tabs" role="tablist" aria-label="Paneles del simulador">
         <button type="button" role="tab" data-mobile-panel="problem" aria-selected="false">Problema</button>
         <button type="button" role="tab" data-mobile-panel="diagram" aria-selected="true">Diagrama</button>

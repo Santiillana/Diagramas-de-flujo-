@@ -788,3 +788,4 @@ body.has-exercise-modal{overflow:hidden}
 @media(max-width:1120px){.exercises-view .exercise-workspace{grid-template-columns:1fr}.exercises-view .exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.exercises-view .exercise-detail-panel{position:static;max-height:none}.exercises-view .exercise-detail-scroll{max-height:none}}
 @media(max-width:520px){.exercises-view .exercise-grid{grid-template-columns:1fr}.exercise-filter-main{grid-template-columns:1fr}.exercises-view .exercise-card{min-height:150px}.exercises-view .exercise-grid.is-list .exercise-card{grid-template-columns:42px 1fr}.exercise-static-preview{margin:10px 0}}
 :root[data-motion="reduced"] .exercise-solution{animation:none}
+.catalog-concept-filter[hidden]{display:none!important}

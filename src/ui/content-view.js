@@ -10,6 +10,9 @@ import { conceptos, conceptoPorEtiqueta } from "../content/conceptos.js";
 import { normalizeLearnProgress, dateInBogota, currentStreak } from "../content/learn-progress.js";
 import { adaptLegacyExercise } from "../content/exercise-adapter.js";
 import { conceptMedals } from "./lab/progress.js";
+import { mathExercises, mathExerciseById } from "../math/exercises.js";
+import { generateMathExercise } from "../math/generators.js";
+import { compare, formatRational, parseRationalAnswer } from "../math/exact.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -43,6 +46,12 @@ let exerciseClassOnly = false;
 let selectedConcepts = new Set();
 let conceptSearch = "";
 let exerciseListView = false;
+let exerciseBank = "diagramas";
+let mathTopicFilter = "todos";
+let selectedMathExercise = null;
+const generatedMathExercises = [];
+const revealedMathSolutions = new Set();
+const mathAnswerResults = new Map();
 const revealedExerciseSolutions = new Set();
 const CLASS_EXERCISES = new Set([22,23,24,28]);
 const LESSON_TERMS = {
@@ -171,6 +180,12 @@ function renderTopicTabs(){
     ["laboratorio","Laboratorio",theme.laboratorio?.mecanicas.length||0,"lab"]
   ];
   host.innerHTML=entries.map(([id,label,count,space])=>`<button type="button" class="learn-topic-tab${topicTab===id?" is-active":""}" data-topic-tab="${id}"${space?` data-go="${space}"`:""} aria-current="${topicTab===id?"page":"false"}"><span aria-hidden="true">${({lecciones:"▤",ejercicios:"◇",simulador:"⌘",laboratorio:"⌑"})[id]}</span>${label}<small>${count}</small></button>`).join("");
+}
+function setMathExerciseContext(topicId){
+  exerciseBank="matematicas";mathTopicFilter=topicId;
+  const bank=$("#exercise-bank"),topic=$("#exercise-math-topic"),wrap=$("#exercise-math-topic-wrap"),concepts=$("#exercise-concept-details"),generator=$("#exercise-generate-math");
+  if(bank)bank.value=exerciseBank;if(topic)topic.value=mathTopicFilter;if(wrap)wrap.hidden=false;if(concepts)concepts.hidden=true;if(generator)generator.hidden=false;
+  renderExerciseCards();
 }
 
 function renderTopicSpace(){
@@ -435,8 +450,24 @@ function updateLessonData(){
   output.textContent="Salida: "+result+(variables?" | Variables: "+variables:"");
 }
 function adaptedExercises(){return exercises.map(item=>adaptLegacyExercise(item,exerciseConceptLabels(item),CLASS_EXERCISES.has(item.id)));}
+function mathCatalogItems(){return [...mathExercises,...generatedMathExercises];}
+function renderMathExerciseCards(host){
+  const query=exerciseQuery.trim().toLocaleLowerCase("es");
+  const filtered=mathCatalogItems().filter(item=>(mathTopicFilter==="todos"||item.topic===mathTopicFilter)&&
+    (!exerciseLevels.size||exerciseLevels.has(String(item.difficulty)))&&(!exerciseClassOnly||item.classExercise)&&
+    (!query||`${item.id} ${item.title} ${item.statement} ${item.expression??""} ${item.type??""}`.toLocaleLowerCase("es").includes(query)))
+    .sort((a,b)=>a.difficulty-b.difficulty||a.id.localeCompare(b.id,"es"));
+  const difficulty=$("#exercise-difficulty-options");
+  if(difficulty)difficulty.innerHTML=[1,2,3,4].map(level=>'<button type="button" data-exercise-difficulty="'+level+'" aria-pressed="'+String(exerciseLevels.has(String(level)))+'" aria-label="Dificultad '+level+'">'+Array.from({length:4},(_,i)=>'<i class="'+(i<level?'is-filled':'')+'"></i>').join("")+'</button>').join("");
+  host.classList.toggle("is-list",exerciseListView);
+  host.innerHTML=filtered.length?filtered.map(item=>'<button type="button" class="exercise-card math-exercise-card" data-select-math-exercise="'+escapeHTML(item.id)+'" aria-label="'+escapeHTML(item.title)+'"><span class="exercise-card-top"><span class="exercise-number">'+escapeHTML(item.id.slice(-2))+'</span><span class="exercise-level '+(item.pending?"level-advanced":"level-"+(item.difficulty===1?"basic":item.difficulty===2?"intermediate":item.difficulty===3?"advanced":"expert"))+'">'+(item.pending?"Por confirmar":"Nivel "+item.difficulty)+'</span></span><strong>'+escapeHTML(item.title)+'</strong><span class="exercise-card-concepts"><i>'+escapeHTML(item.topic.replaceAll("-"," "))+'</i>'+(item.type?'<i>'+escapeHTML(item.type)+'</i>':"")+'</span>'+(item.classExercise?'<span class="exercise-class-tag">De clase</span>':" ")+'</button>').join(""):'<div class="catalog-empty"><strong>Ningún ejercicio coincide</strong><button type="button" class="button button-secondary" id="exercise-empty-clear">Limpiar</button></div>';
+  const active=$("#exercise-active-filters"),chips=[];if(query)chips.push("Búsqueda: "+exerciseQuery.trim());if(exerciseLevels.size)chips.push("Dificultad: "+[...exerciseLevels].join(", "));if(exerciseClassOnly)chips.push("De clase");if(mathTopicFilter!=="todos")chips.push(mathTopicFilter.replaceAll("-"," "));
+  if(active){active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");active.hidden=!chips.length;}
+  const counter=$(".exercise-catalog-heading>span");if(counter)counter.textContent=filtered.length+" ejercicios";
+}
 function renderExerciseCards(){
   const host=$("#exercise-grid");if(!host)return;
+  if(exerciseBank==="matematicas"){renderMathExerciseCards(host);return;}
   const query=exerciseQuery.trim().toLocaleLowerCase("es"),selectedConceptIds=new Set([...selectedConcepts].map(label=>conceptos.find(item=>item.titulo===label)?.id).filter(Boolean));
   const filtered=adaptedExercises().filter(item=>{
     const source=exercises.find(exercise=>exercise.id===item.id),labels=exerciseConceptLabels(source),ids=new Set(item.conceptos);
@@ -459,8 +490,16 @@ function renderExerciseCards(){
   if(active){active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");active.hidden=!chips.length;}
   renderConceptFilters();
 }
+function renderMathExerciseDetail(host){
+  const item=selectedMathExercise,verified=mathAnswerResults.get(item.id),revealed=revealedMathSolutions.has(item.id);
+  if(item.pending){host.innerHTML='<div class="exercise-detail-scroll math-exercise-detail"><header class="exercise-detail-heading"><span class="exercise-class-tag">Por confirmar con el original</span><h3>'+escapeHTML(item.title)+'</h3></header><section class="exercise-prompt"><p class="eyebrow">TRANSCRIPCIÓN ORIGINAL</p><p>'+escapeHTML(item.statement)+'</p></section><p class="math-inline-status">Este enunciado se conserva tal cual aparece en la evidencia. Su primer término puede ser un error de digitación; no se calcula ni se corrige.</p></div>';return;}
+  const solution=item.topic==="regla-de-tres"?'<ol><li>Tipo declarado: proporcionalidad '+escapeHTML(item.type)+'.</li><li>'+escapeHTML(item.type==="directa"?`${item.rule.b} × ${item.rule.c} ÷ ${item.rule.a}`:`${item.rule.a} × ${item.rule.b} ÷ ${item.rule.c}`)+' = '+escapeHTML(item.expectedText)+'.</li><li>'+escapeHTML(item.verification)+'</li></ol>':'<ol>'+item.solution.map(step=>'<li>'+escapeHTML(step.expression)+' = '+escapeHTML(step.result)+'</li>').join("")+'</ol>';
+  const answer=verified?'<p class="math-answer-feedback '+(verified.correct?"is-correct":"is-wrong")+'" id="math-answer-feedback" role="status">'+escapeHTML(verified.message)+'</p>':'<p class="math-answer-feedback" id="math-answer-feedback" role="status"></p>';
+  host.innerHTML='<div class="exercise-detail-scroll math-exercise-detail"><nav class="exercise-detail-nav"><span>'+escapeHTML(item.id)+'</span><span>'+escapeHTML(item.source)+'</span></nav><header class="exercise-detail-heading"><span class="exercise-class-tag">'+(item.classExercise?"De clase":"Generado · semilla reproducible")+'</span><h3>'+escapeHTML(item.title)+'</h3><div class="concept-tags"><span>'+escapeHTML(item.topic.replaceAll("-"," "))+'</span><span>Nivel '+item.difficulty+'</span>'+(item.type?'<span>Proporción '+escapeHTML(item.type)+'</span>':"")+'</div></header><section class="exercise-prompt"><p class="eyebrow">EL RETO</p><p>'+escapeHTML(item.statement)+'</p>'+(item.expression?'<p class="math-exercise-expression">'+escapeHTML(item.expression)+'</p>':"")+'</section><form class="math-answer-form" data-math-answer-form><label for="math-answer">Tu respuesta</label><div><input id="math-answer" name="answer" inputmode="decimal" autocomplete="off" placeholder="Ejemplo: −3/7" aria-describedby="math-answer-feedback"><button type="submit" class="button button-primary">Comprobar</button></div>'+answer+'</form>'+(revealed?'<section class="exercise-solution math-exercise-solution"><p class="eyebrow">SOLUCIÓN PASO A PASO</p>'+solution+'<strong>Resultado: '+escapeHTML(item.expectedText)+'</strong></section>':'<button type="button" class="text-link" data-reveal-math-solution>Ver solución paso a paso</button>')+'<button type="button" class="button button-secondary exercise-open-simulator" data-start-math-exercise>Abrir en el Simulador</button></div>';
+}
 function renderExerciseDetail(){
   const host=$("#exercise-detail");if(!host)return;
+  if(selectedMathExercise){renderMathExerciseDetail(host);return;}
   const item=selectedExercise;
   if(!item){
     host.innerHTML='<div class="detail-empty">'+
@@ -487,12 +526,18 @@ function renderExerciseDetail(){
     '</div>';
 }
 function confirmExerciseInSimulator(){
+  if(selectedMathExercise){
+    document.querySelector('#primary-nav [data-space="simulator"]')?.click();
+    document.dispatchEvent(new CustomEvent("traza:open-math-player",{detail:{exerciseId:selectedMathExercise.id,exercise:selectedMathExercise}}));
+    return;
+  }
   const item=selectedExercise;if(!item)return;
   selectedMethod=0;
   document.dispatchEvent(new CustomEvent("traza:request-simulation",{detail:{exerciseId:item.id,methodIndex:0}}));
   document.querySelector('#primary-nav [data-space="simulator"]')?.click();
 }
 function selectExercise(id){
+  selectedMathExercise=null;
   selectedExercise=exercises.find(item=>item.id===Number(id))??null;
   selectedMethod=0;
   renderExerciseCards();
@@ -502,6 +547,10 @@ function selectExercise(id){
     card?.scrollIntoView({block:"nearest"});
   }
 }
+function selectMathExercise(id){
+  selectedExercise=null;selectedMathExercise=mathCatalogItems().find(item=>item.id===id)??null;
+  renderExerciseCards();renderExerciseDetail();
+}
 
 function selectLesson(id){
   if(!lessons.some(lesson=>lesson.id===id))return;
@@ -510,6 +559,19 @@ function selectLesson(id){
   $("#learn-topic-space")?.classList.remove("is-list-open");
 }
 function bindContentEvents(){
+  $("#exercise-bank")?.addEventListener("change",event=>{
+    exerciseBank=event.target.value;selectedExercise=null;selectedMathExercise=null;exerciseLevels.clear();selectedConcepts.clear();mathTopicFilter="todos";
+    const mathMode=exerciseBank==="matematicas",topicWrap=$("#exercise-math-topic-wrap"),concepts=$("#exercise-concept-details"),generator=$("#exercise-generate-math");
+    if(topicWrap)topicWrap.hidden=!mathMode;if(concepts)concepts.hidden=mathMode;if(generator)generator.hidden=!mathMode;
+    renderExerciseCards();renderExerciseDetail();
+  });
+  $("#exercise-math-topic")?.addEventListener("change",event=>{mathTopicFilter=event.target.value;renderExerciseCards();renderExerciseDetail();});
+  $("#exercise-generate-math")?.addEventListener("click",()=>{
+    const topic=mathTopicFilter==="todos"?"enteros":mathTopicFilter;
+    const difficulty=Number([...exerciseLevels][0])||1;
+    const item=generateMathExercise(topic,difficulty,`${topic}-${difficulty}-${generatedMathExercises.length+1}`);
+    generatedMathExercises.unshift(item);selectMathExercise(item.id);
+  });
   $("#learn-open-progress")?.addEventListener("click",()=>{renderLearnProgress();showLearnPanel("progress");});
   $("#learn-progress-page")?.addEventListener("click",event=>{if(event.target.closest("[data-learn-back]"))showLearnPanel("catalog");});
   $("#learn-topic-space")?.addEventListener("click",event=>{
@@ -517,7 +579,7 @@ function bindContentEvents(){
     const card=event.target.closest("[data-topic-open]");
     if(card){const topic=temaPorId(card.dataset.topicOpen);if(topic?.estado==="disponible")openTheme(topic.id);return;}
     const tab=event.target.closest("[data-topic-tab]");
-    if(tab){topicTab=tab.dataset.topicTab;saveLearnProgress();renderTopicSpace();}
+    if(tab){topicTab=tab.dataset.topicTab;if(topicTab==="ejercicios"&&temaPorId(selectedTheme)?.competenciaId==="matematicas"){setMathExerciseContext(selectedTheme);saveLearnProgress();event.stopPropagation();document.querySelector('#primary-nav [data-space="exercises"]')?.click();return;}saveLearnProgress();renderTopicSpace();}
   });
   $("#learn-catalog-bands")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-topic-open]");
@@ -539,7 +601,7 @@ function bindContentEvents(){
       return;
     }
     const tab={exercises:"ejercicios",simulator:"simulador",lab:"laboratorio"}[space];
-    if(tab&&selectedTheme){topicTab=tab;saveLearnProgress();renderTopicSpace();}
+    if(tab&&selectedTheme){topicTab=tab;if(space==="exercises"&&temaPorId(selectedTheme)?.competenciaId==="matematicas")setMathExerciseContext(selectedTheme);saveLearnProgress();renderTopicSpace();}
   });
   document.addEventListener("traza:actividad-laboratorio",()=>{recordLearnActivity();saveLearnProgress();});
   $("#lesson-catalog")?.addEventListener("click",event=>{
@@ -619,12 +681,29 @@ function bindContentEvents(){
     if(event.target.closest("#exercise-empty-clear")||event.target.closest("#exercise-filters-clear")){exerciseQuery="";exerciseLevels.clear();exerciseClassOnly=false;selectedConcepts.clear();if($("#exercise-search"))$("#exercise-search").value="";if($("#exercise-class-only"))$("#exercise-class-only").checked=false;renderExerciseCards();renderExerciseDetail();return;}
     const view=event.target.closest("[data-exercise-view]");if(view){exerciseListView=view.dataset.exerciseView==="list";$$("[data-exercise-view]").forEach(button=>button.setAttribute("aria-pressed",String(button===view)));renderExerciseCards();}
   });
-  $("#exercise-grid")?.addEventListener("click",event=>{const card=event.target.closest("[data-select-exercise]");if(card)selectExercise(card.dataset.selectExercise);});
+  $("#exercise-grid")?.addEventListener("click",event=>{
+    const math=event.target.closest("[data-select-math-exercise]");if(math){selectMathExercise(math.dataset.selectMathExercise);return;}
+    const card=event.target.closest("[data-select-exercise]");if(card)selectExercise(card.dataset.selectExercise);
+  });
   $("#exercise-detail")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-reveal-math-solution]")&&selectedMathExercise){revealedMathSolutions.add(selectedMathExercise.id);renderExerciseDetail();return;}
     const reveal=event.target.closest("[data-reveal-solution]");if(reveal&&selectedExercise){revealedExerciseSolutions.add(selectedExercise.id);renderExerciseDetail();return;}
     const neighbor=event.target.closest("[data-exercise-neighbor]");if(neighbor?.dataset.exerciseNeighbor){selectExercise(neighbor.dataset.exerciseNeighbor);return;}
     const lesson=event.target.closest("[data-open-exercise-lesson]");if(lesson){selectLesson(lesson.dataset.openExerciseLesson);document.querySelector('[data-topic-tab="lessons"]')?.click();return;}
     if(event.target.closest("[data-start-exercise]"))confirmExerciseInSimulator();
+    if(event.target.closest("[data-start-math-exercise]"))confirmExerciseInSimulator();
+  });
+  $("#exercise-detail")?.addEventListener("submit",event=>{
+    if(!event.target.matches("[data-math-answer-form]")||!selectedMathExercise)return;
+    event.preventDefault();const input=$("#math-answer",event.target),feedback=$("#math-answer-feedback",event.target),item=selectedMathExercise;
+    try{
+      if(item.pending||!item.expected)throw new Error("Este ejercicio todavía está por confirmar.");
+      const answer=parseRationalAnswer(input.value),correct=compare(answer,item.expected)===0;
+      const entered=input.value.trim().replace(/[−–]/g,"-");
+      const expectedSpelling=item.expectedText.replace(/[−–]/g,"-");
+      const message=correct?(item.topic==="racionales"&&entered!==expectedSpelling?`Está bien, y se puede simplificar a ${item.expectedText}.`:"Correcto. Tu respuesta es equivalente."):"Aún no coincide. Revisa los datos y el orden de las operaciones.";
+      mathAnswerResults.set(item.id,{correct,message});renderExerciseDetail();
+    }catch(error){if(feedback){feedback.className="math-answer-feedback is-wrong";feedback.textContent=error.message||"Escribe un número o una fracción, por ejemplo −3/7.";}}
   });
 }
 
