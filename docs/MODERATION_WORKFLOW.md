@@ -11,14 +11,33 @@ Incluye horario, materias, instructores, vigencias, calendarios académicos, act
 |---|---|---|
 | Horario de clases | `src/content/ficha.js` | Fuente central editable implementada |
 | Vigencias y cambios de horario | `src/content/ficha.js` | Se registran con fechas de inicio y fin |
-| Actividades oficiales para un grupo | Fuente central de contenido, pendiente | No confundir con actividades personales |
-| Recursos de Biblioteca | Fuente central de biblioteca, pendiente | Biblioteca aún no construida |
+| Actividades oficiales | `src/content/ficha-activities.js` | Fuente compartida editable; catálogo inicial vacío |
+| Recursos oficiales de Biblioteca | `src/content/ficha-resources.js` | Fuente compartida editable; catálogo inicial vacío |
 | Relaciones de contenido con Aprende | Referencias verificadas, pendiente | No inventar enlaces |
 
 ### Información personal del estudiante
-La pantalla Actividades permite crear y modificar actividades personales, entregas, notas y devoluciones transcritas. Se guarda en `localStorage` bajo `traza:v4:ficha`, en el navegador de ese estudiante. No aparece automáticamente en otros navegadores ni en la cuenta de un moderador.
+La pantalla Actividades separa las actividades oficiales publicadas (solo lectura, desde `src/content/ficha-activities.js`) de las actividades personales que cada estudiante crea y modifica. Estas últimas, con entregas, notas y devoluciones transcritas, se guardan en `localStorage` bajo `traza:v4:ficha`, en el navegador de ese estudiante. No aparecen automáticamente en otros navegadores ni en la cuenta de un moderador.
+
+Biblioteca separa el catálogo oficial de solo lectura (`src/content/ficha-resources.js`) de los recursos personales que cada estudiante guarda en su navegador (`traza:v4:library`). Ambos catálogos oficiales están inicialmente vacíos: no se inventaron actividades, libros ni enlaces.
 
 Las devoluciones se etiquetan como transcripciones del estudiante. La aplicación no autentica instructores ni certifica una calificación.
+
+## Cómo publicar una actividad oficial
+
+1. Editar `src/content/ficha-activities.js` y añadir un objeto con `id` estable, `title`, `description`, `classId` válido o `null`, `assignedOn`, `dueOn` e `instructionsUrl` opcional.
+2. Mantener las fechas en `YYYY-MM-DD`; `null` significa que esa fecha no fue definida.
+3. Validar que la URL de instrucciones sea HTTP/HTTPS y que el contenido sea correcto.
+4. Ejecutar `npm test` y `npm run test:browser`, revisar la vista y abrir PR.
+
+El catálogo actual es compartido y público para todos los visitantes. Todavía no segmenta por ficha, cohorte o usuario. No añadir información privada ni datos de calificación a este archivo.
+
+## Cómo publicar un recurso oficial
+
+1. Editar `src/content/ficha-resources.js` y añadir un objeto con `id`, `title`, `kind`, `url`, `description`, `classId` y `tags`.
+2. Usar solo recursos revisados y enlaces HTTP/HTTPS. `url: ""` se reserva para referencias bibliográficas o apuntes sin enlace directo.
+3. Ejecutar las pruebas, revisar el catálogo en Biblioteca y publicar mediante PR.
+
+El estudiante puede abrir los recursos oficiales, pero no editarlos desde la aplicación. Sus propios recursos viven por separado en `traza:v4:library` y no modifican el catálogo común.
 
 ## Cómo cambiar el horario hoy
 
