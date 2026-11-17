@@ -1,10 +1,6 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
-import {
-  ACTIVIDADES_OFICIALES, validateOfficialActivities
-} from "../content/ficha-activities.js";
-import {
-  RECURSOS_OFICIALES, validateOfficialResources
-} from "../content/ficha-resources.js";
+import { validateOfficialActivities } from "../content/ficha-activities.js";
+import { validateOfficialResources } from "../content/ficha-resources.js";
 import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
 import { learningForClass } from "../content/class-learning-map.js";
