@@ -386,5 +386,6 @@ export function initFichaActivities() {
   });
 
   renderOfficialActivities();
+  window.addEventListener("traza:ficha-change", renderList);
   renderList();
 }
