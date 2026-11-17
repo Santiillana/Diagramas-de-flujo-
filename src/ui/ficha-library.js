@@ -121,7 +121,7 @@ export function initFichaLibrary() {
     '<div class="ficha-library-layout"><section class="ficha-library-catalog" aria-labelledby="ficha-library-catalog-title">' +
     '<div class="ficha-library-heading"><h3 id="ficha-library-catalog-title">Mis recursos</h3><span id="ficha-library-count"></span></div>' +
     '<div class="ficha-library-filters"><label>Buscar <input id="ficha-library-search" type="search" placeholder="Título, descripción o etiqueta"></label>' +
-    '<label>Tipo <select id="ficha-library-kind-filter"><option value="all">Todos</option>' + kindOptions("link") +
+    '<label>Tipo <select id="ficha-library-kind-filter"><option value="all" selected>Todos</option>' + kindOptions(null) +
     '</select></label></div><div id="ficha-library-list" class="ficha-library-list"></div></section>' +
     '<section id="ficha-library-detail" class="ficha-library-detail" aria-live="polite" aria-label="Detalle del recurso">' +
     '<div class="ficha-library-empty"><h3>Selecciona un recurso</h3><p>Podrás consultar sus datos, abrir el enlace y editar tus notas.</p></div></section></div>' +
