@@ -75,7 +75,7 @@ test("el filtro por estado y Limpiar funcionan", async ({ page }) => {
   await goToSpace(page, "hoy");
   await page.locator("#hoy-estado").selectOption("atrasada");
   await expect(page.locator("#view-hoy .ficha-activity-card")).toHaveCount(1);
-  await page.locator("[data-ficha-filter-clear]").click();
+  await page.locator("#view-hoy [data-ficha-filter-clear]").click();
   await expect(page.locator("#hoy-estado")).toHaveValue("todos");
   await expect(page.locator("#hoy-competencia")).toHaveValue("todas");
 });
