@@ -49,6 +49,7 @@ function recordResult(mode,correct,hints=0){
   labProgress=recordLabResult(labProgress,{exerciseId,mode,correct,hints});
   saveLabProgress();
   updateProgressBadges();
+  if(correct)document.dispatchEvent(new CustomEvent("traza:actividad-laboratorio"));
 }
 function mixedAdvanceMarkup(){
   return mixedQueue.length

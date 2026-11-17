@@ -30,3 +30,9 @@ export async function goToSpace(page, space) {
   const target = page.locator('#primary-nav [data-space="' + space + '"]');
   await activate(target);
 }
+
+export async function openDiagramLessons(page) {
+  await goToSpace(page, "learn");
+  const card = page.locator('[data-topic-open="diagramas-flujo"]');
+  if (await card.isVisible()) await card.click();
+}

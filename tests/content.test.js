@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import { lessons } from "../src/content/lessons.js";
 import { rutas } from "../src/content/rutas.js";
 import { exercises, validateCatalog } from "../src/content/exercises.js";
+import { temas, competenciasAprende } from "../src/content/temas.js";
+import { conceptos, conceptoPorEtiqueta, etiquetasConcepto } from "../src/content/conceptos.js";
+import { normalizeLearnProgress, currentStreak } from "../src/content/learn-progress.js";
+import { exerciseConceptLabels } from "../src/ui/content-view.js";
+import { FICHA } from "../src/content/ficha.js";
 
 test("existen las 17 lecciones progresivas del temario oficial",()=>{
   assert.equal(lessons.length,17);
@@ -97,4 +102,38 @@ test("la secuencia Fibonacci y las correcciones de máximos y factorial están d
   assert.deepEqual(fib.methods[0].tests[0].expected,[0,1,1,2,3,5,8,13,21,34]);
   assert.ok(exercises.find(x=>x.id===24).constraints.some(x=>x.toLowerCase().includes("negativos")));
   assert.ok(exercises.find(x=>x.id===21).constraints.some(x=>x.includes("0!")));
+});
+
+test("el catálogo de temas comparte competencias y conserva el mapa de 17 lecciones",()=>{
+  assert.deepEqual(competenciasAprende.map(item=>item.id),["establecer-requisitos","evaluar-requisitos","tics","comunicacion","matematicas"]);
+  assert.ok(competenciasAprende.every(item=>FICHA.competencias.some(source=>source.id===item.id)));
+  assert.equal(temas.find(item=>item.id==="diagramas-flujo").lecciones.length,17);
+  assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),["fuentes-informacion","enteros","racionales","regla-de-tres"]);
+});
+
+test("cada etiqueta de conceptos encontrada en los ejercicios tiene un identificador",()=>{
+  for(const exercise of exercises){
+    for(const label of exerciseConceptLabels(exercise)){
+      assert.ok(etiquetasConcepto[label],"Falta el mapa para "+label);
+      assert.ok(conceptoPorEtiqueta(label),"Falta el concepto para "+label);
+    }
+  }
+  assert.ok(conceptos.length>0);
+});
+
+test("la migración aditiva de traza:v2:learn conserva el progreso previo",()=>{
+  const old={version:2,completed:["algorithm","for","not-a-lesson"],current:"for",screen:3};
+  const migrated=normalizeLearnProgress(old,lessons.map(item=>item.id),temas.map(item=>item.id));
+  assert.deepEqual(migrated.completed,["algorithm","for"]);
+  assert.equal(migrated.current,"for");
+  assert.equal(migrated.screen,3);
+  const next=normalizeLearnProgress({...migrated,theme:"diagramas-flujo",tab:"ejercicios",activityDays:["2026-11-16"]},lessons.map(item=>item.id),temas.map(item=>item.id));
+  assert.equal(next.theme,"diagramas-flujo");
+  assert.equal(next.tab,"ejercicios");
+  assert.deepEqual(next.activityDays,["2026-11-16"]);
+});
+
+test("la racha cuenta días consecutivos y mantiene el día anterior",()=>{
+  assert.equal(currentStreak(["2026-11-15","2026-11-16"],"2026-11-17"),2);
+  assert.equal(currentStreak(["2026-11-14","2026-11-15"],"2026-11-17"),0);
 });

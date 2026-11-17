@@ -4,6 +4,9 @@ import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
 import { renderScene } from "./scenes/index.js";
 import { parsePseudocode } from "../core/parser.js";
+import { temas, competenciasAprende, temaPorId } from "../content/temas.js";
+import { conceptos } from "../content/conceptos.js";
+import { normalizeLearnProgress, dateInBogota, currentStreak } from "../content/learn-progress.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -22,6 +25,10 @@ let lessonScreenStep = 0;
 let lessonPlaybackTimer = 0;
 let lessonPlaying = false;
 let learnProgress = readLearnProgress();
+let selectedTheme = learnProgress.theme;
+let topicTab = learnProgress.tab;
+let learnDifficulty = "todas";
+let learnCompetence = "todas";
 let selectedExercise = null;
 let selectedMethod = 0;
 let exerciseQuery = "";
@@ -34,7 +41,7 @@ let modalExercise = null;
 const PAGE_SIZE = 12;
 const CLASS_EXERCISES = new Set([22,23,24,28]);
 
-function exerciseConceptLabels(item){
+export function exerciseConceptLabels(item){
   const labels=new Set();
   const map={input:"Entrada de datos",assignment:"Asignación",output:"Imprimir",if:"Decisiones",for:"Ciclo Para",while:"Ciclo Mientras",doWhile:"Ciclo Hacer–Mientras"};
   let nestedLoop=false;
@@ -94,71 +101,115 @@ function renderConceptFilters(){
 function readLearnProgress(){
   try{
     const value=JSON.parse(localStorage.getItem("traza:v2:learn")||"null");
-    if(!value||value.version!==2||!Array.isArray(value.completed))return {version:2,completed:[],current:lessons[0].id,screen:0};
-    const valid=lessons.some(item=>item.id===value.current);
-    return {version:2,completed:value.completed.filter(id=>lessons.some(item=>item.id===id)),current:valid?value.current:lessons[0].id,
-      screen:Number.isInteger(value.screen)?Math.max(0,Math.min(4,value.screen)):0};
-  }catch{return {version:2,completed:[],current:lessons[0].id,screen:0};}
+    return normalizeLearnProgress(value, lessons.map(item=>item.id), temas.map(item=>item.id));
+  }catch{return normalizeLearnProgress(null, lessons.map(item=>item.id), temas.map(item=>item.id));}
 }
 function saveLearnProgress(){
   learnProgress.current=selectedLesson;
   learnProgress.screen=lessonScreenStep;
+  learnProgress.theme=selectedTheme;
+  learnProgress.tab=topicTab;
   try{localStorage.setItem("traza:v2:learn",JSON.stringify(learnProgress));}catch{}
 }
 function completeLesson(){
   if(!learnProgress.completed.includes(selectedLesson))learnProgress.completed.push(selectedLesson);
+  recordLearnActivity();
   saveLearnProgress();
   lessonList();
   renderLesson();
 }
-function updateHomeLearningProgress(){
-  const completed=learnProgress.completed.length;
-  const total=lessons.length;
-  const percent=Math.round(completed/total*100);
-  const label=$("#home-learn-progress");
-  const track=$("#home-learn-progress-bar");
-  const fill=$("#home-learn-progress-fill");
-  const copy=$("#home-learn-progress-copy");
-  const percentage=$("#home-learn-progress-percent");
+function recordLearnActivity(){
+  const day=dateInBogota();
+  learnProgress.activityDays=Array.isArray(learnProgress.activityDays)?learnProgress.activityDays:[];
+  if(!learnProgress.activityDays.includes(day))learnProgress.activityDays.push(day);
+  learnProgress.activityDays=learnProgress.activityDays.slice(-60);
+  const streak=document.querySelector("#learn-streak");
+  if(streak)streak.textContent="Racha: "+currentStreak(learnProgress.activityDays,day)+" días";
+}
 
-  if(label)label.textContent=completed+" de "+total+" completadas";
-  if(track){
-    track.setAttribute("aria-valuenow",String(completed));
-    track.setAttribute("aria-valuetext",completed+" de "+total+" lecciones completadas");
+function showLearnPanel(panel){
+  const catalog=$("#learn-catalog-home"),progress=$("#learn-progress-page"),topic=$("#learn-topic-space");
+  if(catalog)catalog.hidden=panel!=="catalog";
+  if(progress)progress.hidden=panel!=="progress";
+  if(topic)topic.hidden=panel!=="topic";
+}
+function progressRing(done,total){return `<span class="theme-progress-ring" style="--theme-progress:${total?Math.round(done/total*100):0}%" aria-label="${done} de ${total} lecciones completadas">${total?Math.round(done/total*100):"–"}%</span>`;}
+
+function renderLearnCatalog(){
+  const host=$("#learn-catalog-bands");if(!host)return;
+  const filterHost=$("#learn-competence-filters");
+  if(filterHost)filterHost.innerHTML=`<button type="button" class="learn-competence-chip${learnCompetence==="todas"?" is-active":""}" data-learn-competence="todas" aria-pressed="${learnCompetence==="todas"}">Todas las competencias</button>`+competenciasAprende.map(item=>`<button type="button" class="learn-competence-chip${learnCompetence===item.id?" is-active":""}" data-learn-competence="${item.id}" aria-pressed="${learnCompetence===item.id}"><span class="competence-marker" data-forma="${item.forma}" aria-hidden="true"></span>${escapeHTML(item.titulo)}</button>`).join("");
+  host.innerHTML=competenciasAprende.filter(competence=>learnCompetence==="todas"||competence.id===learnCompetence).map(competence=>{
+    const items=temas.filter(theme=>theme.competenciaId===competence.id&&
+      (learnDifficulty==="todas"||String(theme.dificultad)===learnDifficulty)).sort((a,b)=>a.dificultad-b.dificultad);
+    const all=temas.filter(theme=>theme.competenciaId===competence.id);
+    const tiles=items.map(theme=>{
+      const available=theme.estado==="disponible";
+      const complete=theme.lecciones.filter(id=>learnProgress.completed.includes(id)).length;
+      const include=[theme.lecciones.length,theme.ejercicios.length,theme.simulador?1:0,theme.laboratorio?.mecanicas.length||0];
+      return `<button type="button" class="theme-card${available?"":" is-coming"}" data-topic-open="${escapeHTML(theme.id)}" data-difficulty="${theme.dificultad}" aria-disabled="${String(!available)}" aria-label="${escapeHTML(theme.titulo)}${available?"":"; no disponible todavía"}"><span class="theme-icon" aria-hidden="true">${escapeHTML(theme.icono)}</span>${available?progressRing(complete,theme.lecciones.length):'<span class="theme-coming-label">◷ Próximamente</span>'}<strong>${escapeHTML(theme.titulo)}</strong><span class="theme-difficulty" aria-label="Dificultad ${theme.dificultad} de 4">${[1,2,3,4].map(n=>`<i class="${n<=theme.dificultad?"is-filled":""}"></i>`).join("")}</span><span class="theme-includes"><span>▤ ${include[0]}</span><span>◇ ${include[1]}</span><span>⌘ ${include[2]}</span><span>⌑ ${include[3]}</span></span></button>`;
+    }).join("");
+    return `<section class="learn-competence-band"><header><span class="competence-marker" data-forma="${competence.forma}" aria-hidden="true"></span><h3>${escapeHTML(competence.titulo)}</h3><span>${all.length} ${all.length===1?"tema":"temas"}</span></header>${tiles?`<div class="theme-grid">${tiles}</div>`:all.length?'<p class="learn-coming-empty">No hay temas con esta dificultad.</p>':'<p class="learn-coming-empty">Próximamente</p>'}</section>`;
+  }).join("");
+}
+
+function renderTopicTabs(){
+  const host=$("#learn-topic-tabs");const theme=temaPorId(selectedTheme);if(!host||!theme)return;
+  const entries=[
+    ["lecciones","Lecciones",theme.lecciones.length,null],
+    ["ejercicios","Ejercicios",theme.ejercicios.length,"exercises"],
+    ["simulador","Simulador",theme.simulador?1:0,"simulator"],
+    ["laboratorio","Laboratorio",theme.laboratorio?.mecanicas.length||0,"lab"]
+  ];
+  host.innerHTML=entries.map(([id,label,count,space])=>`<button type="button" class="learn-topic-tab${topicTab===id?" is-active":""}" data-topic-tab="${id}"${space?` data-go="${space}"`:""} aria-current="${topicTab===id?"page":"false"}"><span aria-hidden="true">${({lecciones:"▤",ejercicios:"◇",simulador:"⌘",laboratorio:"⌑"})[id]}</span>${label}<small>${count}</small></button>`).join("");
+}
+
+function renderTopicSpace(){
+  const theme=temaPorId(selectedTheme);if(!theme||theme.estado!=="disponible")return;
+  const competence=competenciasAprende.find(item=>item.id===theme.competenciaId);
+  const label=$("#learn-topic-competence"),title=$("#learn-topic-title"),select=$("#learn-topic-select");
+  if(label)label.textContent=competence?.titulo||"Aprende";
+  if(title)title.textContent=theme.titulo;
+  const count=$("#learn-catalog-count");
+  const topicConcepts=conceptos.filter(item=>theme.conceptos.includes(item.id));
+  if(count)count.textContent=theme.lecciones.length+" lecciones · "+topicConcepts.length+" conceptos";
+  if(select){
+    select.innerHTML=competenciasAprende.map(item=>`<optgroup label="${escapeHTML(item.titulo)}">${temas.filter(topic=>topic.competenciaId===item.id).map(topic=>`<option value="${escapeHTML(topic.id)}"${topic.id===selectedTheme?" selected":""}${topic.estado!=="disponible"?' data-coming="true"':""}>${escapeHTML(topic.titulo)}${topic.estado!=="disponible"?" · Próximamente":""}</option>`).join("")}</optgroup>`).join("");
   }
-  if(fill)fill.style.width=percent+"%";
-  if(percentage)percentage.textContent=percent+"%";
-  if(copy)copy.textContent=completed===total
-    ?"Ruta completada. Puedes repasar cualquier lección."
-    :completed===0
-      ?"Completa tu primera lección para iniciar tu progreso."
-      :"Te faltan "+(total-completed)+" lecciones para terminar la ruta.";
+  renderTopicTabs();
+  const lessonsHost=$("#learn-lessons-content"),empty=$("#learn-topic-empty");
+  if(lessonsHost)lessonsHost.hidden=topicTab!=="lecciones";
+  if(empty){empty.hidden=topicTab==="lecciones";empty.innerHTML=topicTab==="lecciones"?"":`<span aria-hidden="true">◇</span><strong>Vista de ${escapeHTML(topicTab)} para ${escapeHTML(theme.titulo)}</strong><p>Usa la pestaña superior para abrir esta herramienta. El tema queda guardado para volver a sus lecciones.</p><button type="button" class="button button-secondary" data-go="${topicTab==="ejercicios"?"exercises":topicTab==="simulador"?"simulator":"lab"}">Abrir ${escapeHTML(topicTab)}</button>`;}
+}
+
+function openTheme(id){
+  const theme=temaPorId(id);if(!theme||theme.estado!=="disponible")return;
+  selectedTheme=id;
+  if(!theme.lecciones.includes(selectedLesson)){selectedLesson=theme.lecciones[0]||lessons[0].id;lessonScreenStep=0;lessonVisualStep=0;}
+  topicTab=learnProgress.tab||"lecciones";
+  saveLearnProgress();
+  showLearnPanel("topic");
+  lessonList();renderLesson();renderTopicSpace();
+}
+
+function renderLearnProgress(){
+  const host=$("#learn-progress-topics");if(!host)return;
+  const done=learnProgress.completed.length;const percent=Math.round(done/lessons.length*100);
+  const ring=$("#learn-progress-ring"),text=$("#learn-progress-percent"),total=$("#learn-progress-total"),fill=$("#learn-progress-fill");
+  if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(done));}
+  if(text)text.textContent=percent+"%";if(total)total.textContent=done+" de "+lessons.length+" lecciones completadas";if(fill)fill.style.width=percent+"%";
+  let lab={};try{lab=JSON.parse(localStorage.getItem("traza:v2:progress")||"{}").exercises||{};}catch{}
+  host.innerHTML=competenciasAprende.map(competence=>{
+    const owned=temas.filter(theme=>theme.competenciaId===competence.id);
+    const lessonIds=owned.flatMap(theme=>theme.lecciones);const completed=lessonIds.filter(id=>learnProgress.completed.includes(id)).length;
+    return `<article class="learn-progress-competence"><header><span class="competence-marker" data-forma="${competence.forma}" aria-hidden="true"></span><strong>${escapeHTML(competence.titulo)}</strong>${progressRing(completed,lessonIds.length)}</header>${owned.map(theme=>{const count=theme.lecciones.filter(id=>learnProgress.completed.includes(id)).length;const pct=theme.lecciones.length?Math.round(count/theme.lecciones.length*100):0;const stars=theme.ejercicios.reduce((sum,id)=>sum+Object.values(lab[String(id)]||{}).reduce((n,mode)=>n+(Number(mode?.stars)||0),0),0);return `<div class="learn-progress-topic"><span>${escapeHTML(theme.titulo)}</span><span class="learn-topic-track"><i style="width:${pct}%"></i></span><small>${count} de ${theme.lecciones.length} lecciones · ${stars} estrellas del Laboratorio</small></div>`;}).join("")||'<p>Próximamente</p>'}</article>`;
+  }).join("");
 }
 function lessonList(){
-  updateHomeLearningProgress();
   const host=$("#lesson-catalog");
   if(!host)return;
   const completed=learnProgress.completed.length;
   const percent=Math.round(completed/lessons.length*100);
-  const ring=$("#learn-progress-ring");
-  const ringText=$("#learn-progress-percent");
-  const total=$("#learn-progress-total");
-  const nextCopy=$("#learn-progress-next");
-  const progressFill=$("#learn-progress-fill");
-  const continueButton=$("#learn-continue-current");
-  const nextLesson=lessons.find(lesson=>!learnProgress.completed.includes(lesson.id))??lessons[lessons.length-1];
-  if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(completed));}
-  if(ringText)ringText.textContent=percent+"%";
-  if(total)total.textContent=completed+" de "+lessons.length+" lecciones completadas";
-  if(nextCopy)nextCopy.textContent=completed===lessons.length
-    ?"Has completado la ruta. Puedes repasar cualquier concepto."
-    :"Tu siguiente paso es "+nextLesson.title+".";
-  if(progressFill)progressFill.style.width=percent+"%";
-  if(continueButton)continueButton.dataset.lessonContinue=nextLesson.id;
-  const continueLabel=$("#learn-continue-label");
-  if(continueLabel)continueLabel.textContent=completed===lessons.length
-    ?"Repasar última lección"
-    :"Continuar: lección "+String(nextLesson.order).padStart(2,"0");
   host.innerHTML=rutas.map(group=>{
     const done=group.ids.filter(id=>learnProgress.completed.includes(id)).length;
     const items=lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
@@ -513,11 +564,38 @@ function selectLesson(id){
   saveLearnProgress();lessonList();renderLesson();
 }
 function bindContentEvents(){
-  $("#learn-continue-current")?.addEventListener("click",event=>{
-    const id=event.currentTarget.dataset.lessonContinue;
-    if(id)selectLesson(id);
+  $("#learn-open-progress")?.addEventListener("click",()=>{renderLearnProgress();showLearnPanel("progress");});
+  $("#learn-progress-page")?.addEventListener("click",event=>{if(event.target.closest("[data-learn-back]"))showLearnPanel("catalog");});
+  $("#learn-topic-space")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-learn-back]")){showLearnPanel("catalog");return;}
+    const card=event.target.closest("[data-topic-open]");
+    if(card){const topic=temaPorId(card.dataset.topicOpen);if(topic?.estado==="disponible")openTheme(topic.id);return;}
+    const tab=event.target.closest("[data-topic-tab]");
+    if(tab){topicTab=tab.dataset.topicTab;saveLearnProgress();renderTopicSpace();}
   });
-
+  $("#learn-catalog-bands")?.addEventListener("click",event=>{
+    const card=event.target.closest("[data-topic-open]");
+    if(card){const topic=temaPorId(card.dataset.topicOpen);if(topic?.estado==="disponible")openTheme(topic.id);}
+  });
+  $("#learn-difficulty")?.addEventListener("change",event=>{learnDifficulty=event.target.value;renderLearnCatalog();});
+  $("#learn-competence-filters")?.addEventListener("click",event=>{const chip=event.target.closest("[data-learn-competence]");if(!chip)return;learnCompetence=chip.dataset.learnCompetence;renderLearnCatalog();});
+  $("#learn-all-competencies")?.addEventListener("click",()=>{learnCompetence="todas";learnDifficulty="todas";const select=$("#learn-difficulty");if(select)select.value="todas";renderLearnCatalog();});
+  $("#learn-topic-select")?.addEventListener("change",event=>{
+    const theme=temaPorId(event.target.value);
+    if(theme?.estado==="disponible")openTheme(theme.id);
+    else {showLearnPanel("catalog");renderLearnCatalog();}
+  });
+  document.addEventListener("traza:space-change",event=>{
+    const space=event.detail?.space;
+    if(space==="learn"){
+      if(selectedTheme){showLearnPanel("topic");renderTopicSpace();lessonList();renderLesson();}
+      else showLearnPanel("catalog");
+      return;
+    }
+    const tab={exercises:"ejercicios",simulator:"simulador",lab:"laboratorio"}[space];
+    if(tab&&selectedTheme){topicTab=tab;saveLearnProgress();renderTopicSpace();}
+  });
+  document.addEventListener("traza:actividad-laboratorio",()=>{recordLearnActivity();saveLearnProgress();});
   $("#lesson-catalog")?.addEventListener("click",event=>{
     const button=event.target.closest("[data-lesson-id]");
     if(!button)return;
@@ -622,7 +700,9 @@ export function initContentViews(){
   selectedLesson=learnProgress.current;lessonScreenStep=learnProgress.screen;
   const count=$("#view-learn .lesson-catalog-panel h3");if(count)count.textContent=lessons.length+" lecciones";
   const mark=$("#view-learn .detail-empty-mark");if(mark)mark.textContent=String(lessons.length);
-  lessonList();renderLesson();
+  lessonList();renderLesson();renderLearnCatalog();renderLearnProgress();
+  const streak=$("#learn-streak");if(streak)streak.textContent="Racha: "+currentStreak(learnProgress.activityDays||[])+" días";
+  if(selectedTheme){showLearnPanel("topic");renderTopicSpace();}else showLearnPanel("catalog");
   renderConceptFilters();renderExerciseCards();renderExerciseDetail();
   bindContentEvents();
 }
