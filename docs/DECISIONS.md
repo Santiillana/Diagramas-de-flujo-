@@ -175,3 +175,10 @@ La lectura visual puede ofrecer un fallback vacío para no romper el render, per
 
 ## D-052 · Contenido oficial separado de la actividad personal
 El horario, las actividades oficiales de grupo y los recursos son contenido compartido/versionado. Las actividades creadas por el estudiante, sus entregas y sus notas son datos personales del navegador. No se presenta una pantalla local como panel de moderación global. El panel real requiere autenticación, roles y persistencia de servidor.
+
+
+## D-053 · Los catálogos oficiales son contenido versionado y de solo lectura
+Las actividades oficiales y los recursos públicos se mantienen separados de los registros personales del estudiante. Sus fuentes son `src/content/ficha-activities.js` y `src/content/ficha-resources.js`. Se publican mediante cambios revisados en GitHub; no se editan desde `localStorage`. El catálogo público no segmenta por cohorte o identidad mientras no exista backend de usuarios y roles.
+
+## D-054 · La biblioteca personal tiene respaldo independiente
+Los recursos personales se guardan bajo `traza:v4:library` y su respaldo es independiente del respaldo `traza-ficha-backup` de Actividades. La UI debe dejar visible esta diferencia y validar ambos formatos sin sobrescribir datos dañados.
