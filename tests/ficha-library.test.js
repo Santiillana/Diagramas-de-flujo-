@@ -86,6 +86,14 @@ test("el respaldo es estricto, versionado y permite restauración explícita", (
   assert.equal(readLibraryData(corrupt).resources[0].title, "Guía de algoritmos");
 });
 
+test("un respaldo no puede incluir recursos sin enlace ni descripción", () => {
+  const created = resource();
+  const backup = createLibraryBackup(created.data);
+  backup.data.resources[0].url = "";
+  backup.data.resources[0].description = "";
+  assert.equal(validateLibraryBackup(backup).reason, "invalid_records");
+});
+
 test("un recurso sin URL puede guardarse como apunte", () => {
   const note = createLibraryResource({
     title: "Resumen de clase",
