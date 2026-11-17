@@ -3,13 +3,13 @@
 **Actualizado:** 17 de noviembre de 2026  
 **Repositorio:** `Santiillana/Traza`  
 **Rama principal:** `main`  
-**SHA de main después de M5:** `ea25db33153afbb6ee506647496a74e6dc0f9fde`  
-**Rama M6:** `v4/module-6-home-builder`  
-**PR M6:** [#21](https://github.com/Santiillana/Traza/pull/21), abierta y no fusionada.
+**SHA de main después de M6 Mi ficha:** `1d6628f081ea413dd84eecdb6574072c9d0720f4`  
+**PR M6 Inicio/Constructor:** [#21](https://github.com/Santiillana/Traza/pull/21), fusionada el 16 de noviembre de 2026.  
+**PR M6 Mi ficha:** [#24](https://github.com/Santiillana/Traza/pull/24), fusionada el 17 de noviembre de 2026.
 
 ## Estado ejecutivo
 
-Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. La auditoría M5 se fusionó mediante la PR #20 el 16 de noviembre; la CI posterior sobre `main` fue correcta. El Módulo 6, derivado de la Fase 6 del informe de mejoras v2, amplía la portada v4 y verifica el historial del Constructor. Su PR #21 sigue abierta, con CI aprobada.
+Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. La auditoría M5 se fusionó mediante la PR #20 el 16 de noviembre; la CI posterior sobre `main` fue correcta. El Módulo 6, derivado de la Fase 6 del informe de mejoras v2, amplía la portada v4 y verifica el historial del Constructor. La PR #21 se fusionó en `main` el 16 de noviembre de 2026.
 
 | Área | Estado | Evidencia |
 |---|---|---|
@@ -21,7 +21,7 @@ Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. L
 | M5 · auditoría y release | **Integrado en main** | PR #20 fusionada; 267 Node y 99 Chromium aprobadas en el SHA de auditoría |
 | M5 v4 · Mi ficha (núcleo personal) | **Reforzado en esta entrega** | Lectura estricta, escritura protegida, respaldo versionado y recuperación validada; ver `docs/MODULE_5_FICHA_CORE.md` |
 | M5 · publicación pública | Pendiente externo | Falta origen HTTPS real y smoke test posterior al despliegue |
-| M6 · Inicio y Constructor | **CI aprobada; PR abierta** | 267/267 Node y 103/103 Playwright en PR #21 |
+| M6 · Inicio y Constructor | **Integrado en main** | PR #21 fusionada; 267/267 Node y 103/103 Playwright aprobadas |
 
 ## Secuencia y alcance
 
@@ -54,7 +54,7 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - El historial existente de 60 snapshots no se reimplementa; se añaden pruebas del límite real, undo/redo, atajos y descarte de rama futura.
 
 #### Resultado CI de M6
-- PR: [#21](https://github.com/Santiillana/Traza/pull/21), abierta y no fusionada.
+- PR: [#21](https://github.com/Santiillana/Traza/pull/21), fusionada en `main` mediante `cd9c7598969d9487c779234451a32d9e5f3d67c6`.
 - Workflow: [GitHub Actions 43961209113](https://github.com/Santiillana/Traza/actions/runs/43961209113).
 - SHA probado: `a3c38a7ba3c72f6aabe1a1686dbe3166f5911cd4`.
 - Node: **267/267**, cero fallos.
