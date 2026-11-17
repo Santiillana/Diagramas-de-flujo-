@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#101e23"><title>Traza — laboratorio de diagramas de flujo</title>
   <link rel="stylesheet" href="./src/styles/tokens.css"><link rel="stylesheet" href="./src/styles/layout.css">
   <link rel="stylesheet" href="./src/styles/components.css"><link rel="stylesheet" href="./src/styles/motion.css">
-  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/shell.css"><link rel="stylesheet" href="./src/styles/ficha-schedule.css"><link rel="stylesheet" href="./src/styles/ficha-activities.css"><script type="module" src="./src/app.js"></script>
+  <link rel="stylesheet" href="./src/styles/responsive.css"><link rel="stylesheet" href="./src/styles/content.css"><link rel="stylesheet" href="./src/styles/simulator.css"><link rel="stylesheet" href="./src/styles/lab-builder.css"><link rel="stylesheet" href="./src/styles/shell.css"><link rel="stylesheet" href="./src/styles/ficha-schedule.css"><link rel="stylesheet" href="./src/styles/ficha-library.css"><link rel="stylesheet" href="./src/styles/ficha-activities.css"><script type="module" src="./src/app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -412,9 +412,8 @@
     <section class="space-view ficha-activities-view" id="view-actividades" data-view="actividades" aria-labelledby="actividades-title" hidden>
       <div id="ficha-actividades"></div>
     </section>
-    <section class="space-view ficha-placeholder" id="view-biblioteca" data-view="biblioteca" aria-labelledby="biblioteca-title" hidden>
-      <header class="section-intro"><div><p class="eyebrow">MI FICHA · RECURSOS</p><h2 id="biblioteca-title">Biblioteca</h2><p>Materiales, guías y recursos relacionados con tus temas.</p></div></header>
-      <div class="shell-placeholder"><span aria-hidden="true">▤</span><h3>Tu biblioteca se construirá aquí.</h3><p>La estructura está preparada para reunir materiales del SENA, recursos extra y contenidos de Traza.</p></div>
+    <section class="space-view ficha-library-view" id="view-biblioteca" data-view="biblioteca" aria-labelledby="biblioteca-title" hidden>
+      <div id="ficha-biblioteca"></div>
     </section>
     <footer class="page-footer"><a href="./reference/diagramas_de_flujo_original.html" target="_blank" rel="noopener">Consultar el prototipo original ↗</a><small>Traza · Pizarra de algoritmos</small></footer>
   </main>
