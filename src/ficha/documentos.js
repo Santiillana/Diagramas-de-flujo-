@@ -96,10 +96,11 @@ export function validarDocumentoOficial(documento, contexto = {}) {
 /** Devuelve únicamente documentos publicados que correspondan al contexto solicitado. */
 export function documentosPublicados(seccion, contexto = {}, ficha = FICHA) {
   if (!SECCIONES_DOCUMENTO.includes(seccion)) return [];
-  return (ficha.documentos ?? []).filter(documento => validarDocumentoOficial(documento).ok && (() => {
+  return (ficha.documentos ?? []).filter(documento => {
+    if (!validarDocumentoOficial(documento).ok) return false;
     if (documento.estadoPublicacion !== "publicado" || !documento.secciones?.includes(seccion)) return false;
     if (documento.claseId && documento.claseId !== contexto.claseId) return false;
     if (documento.actividadId && documento.actividadId !== contexto.actividadId) return false;
     return true;
-  })());
+  });
 }
