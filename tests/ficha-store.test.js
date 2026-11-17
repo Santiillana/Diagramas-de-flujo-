@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   FICHA_STORAGE_KEY, addFeedback, addSubmission, archiveActivity,
   createActivity, createEmptyFichaData, createFichaBackup, importFichaBackup,
-  isActivityOverdue, isCivilDate, normalizeFichaData, readFichaData,
+  isActivityOverdue, isCivilDate, normalizeFichaData, readFichaData, readFichaDataStrict,
   transitionActivity, updateActivity, validateFichaBackup, writeFichaData
 } from "../src/ui/ficha-store.js";
 
@@ -107,6 +107,50 @@ test("la persistencia tolera datos corruptos y almacenamiento bloqueado", () => 
   };
   assert.deepEqual(readFichaData(blocked), createEmptyFichaData());
   assert.equal(writeFichaData(createEmptyFichaData(), blocked).ok, false);
+});
+
+test("los datos corruptos o de una versión futura no se silencian ni se sobrescriben", () => {
+  const corrupt = memoryStorage("{");
+  assert.equal(readFichaDataStrict(corrupt).reason, "corrupt_storage");
+  const created = activity();
+  const blockedWrite = writeFichaData(created.data, corrupt);
+  assert.equal(blockedWrite.ok, false);
+  assert.equal(blockedWrite.reason, "existing_corrupt_storage");
+  assert.equal(corrupt.value, "{");
+
+  const future = memoryStorage(JSON.stringify({ version: 99, activities: [] }));
+  assert.equal(readFichaDataStrict(future).reason, "unsupported_schema");
+  assert.equal(writeFichaData(created.data, future).reason, "existing_unsupported_schema");
+});
+
+test("un respaldo con campos anidados que perderían información se rechaza", () => {
+  const created = activity();
+  const backup = createFichaBackup(created.data);
+  const brokenAttempt = structuredClone(backup);
+  brokenAttempt.data.activities[0].attempts = [{
+    id: "attempt-1",
+    activityId: created.activity.id,
+    submittedAt: new Date().toISOString(),
+    summary: 12,
+    evidenceUrl: "",
+    studentNote: "",
+    attemptNumber: 1
+  }];
+  assert.equal(validateFichaBackup(brokenAttempt).ok, false);
+
+  const brokenEvent = structuredClone(backup);
+  brokenEvent.data.activities[0].events[0].source = "unknown";
+  assert.equal(validateFichaBackup(brokenEvent).ok, false);
+});
+
+test("un respaldo válido puede recuperar almacenamiento corrupto de forma explícita", () => {
+  const created = activity();
+  const backup = createFichaBackup(created.data);
+  const corrupt = memoryStorage("{");
+  const restored = importFichaBackup(backup, corrupt);
+  assert.equal(restored.ok, true);
+  assert.equal(readFichaDataStrict(corrupt).ok, true);
+  assert.equal(readFichaData(corrupt).activities[0].title, "Resolver guía");
 });
 
 test("normalización elimina registros inválidos y duplicados", () => {
