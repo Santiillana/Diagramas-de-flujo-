@@ -1,6 +1,9 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
 import { ACTIVIDADES_OFICIALES } from "../content/ficha-activities.js";
 import { RECURSOS_OFICIALES } from "../content/ficha-resources.js";
+import { lessons } from "../content/lessons.js";
+import { exercises } from "../content/exercises.js";
+import { learningForClass } from "../content/class-learning-map.js";
 
 const DAY_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -78,6 +81,17 @@ export function initFichaClasses() {
   const cards = active.map(item => {
     const activities = ACTIVIDADES_OFICIALES.filter(entry => entry.classId === item.id);
     const resources = RECURSOS_OFICIALES.filter(entry => entry.classId === item.id);
+    const learning = learningForClass(item.id);
+    const linkedLessons = learning ? learning.lessonIds
+      .map(id => lessons.find(entry => entry.id === id)).filter(Boolean) : [];
+    const linkedExercises = learning ? learning.exerciseIds
+      .map(id => exercises.find(entry => entry.id === id)).filter(Boolean) : [];
+    const learningMarkup = linkedLessons.length || linkedExercises.length
+      ? '<div class="ficha-class-learning-links">' +
+        linkedLessons.map(entry => '<button type="button" data-class-open-lesson="' + escapeHtml(entry.id) + '">Lección: ' + escapeHtml(entry.title) + ' ↗</button>').join("") +
+        linkedExercises.map(entry => '<button type="button" data-class-open-exercise="' + escapeHtml(entry.id) + '">Ejercicio ' + escapeHtml(entry.id) + ': ' + escapeHtml(entry.title) + ' ↗</button>').join("") +
+        '</div>'
+      : '<p>Sin asociación pedagógica confirmada para esta clase todavía.</p>';
     const label = classTitle(item);
     const block = item.diaSemana === 6
       ? "Bloque " + (item.id === "sabado-bloque-1" ? "1" : "2")
@@ -93,7 +107,7 @@ export function initFichaClasses() {
       renderOfficialItems(activities, "activity") + '</section><section><h4>Biblioteca oficial</h4>' +
       renderOfficialItems(resources, "resource") + '</section></div>' +
       '<div class="ficha-class-learn"><strong>Contenido de Aprende</strong>' +
-      '<p>Sin asociación pedagógica confirmada para esta clase todavía.</p></div></article>';
+      learningMarkup + '</div></article>';
   }).join("");
 
   root.innerHTML = '<header class="ficha-classes-heading"><div><p class="eyebrow">MI FICHA · FORMACIÓN</p>' +
@@ -110,6 +124,22 @@ export function initFichaClasses() {
         escapeHtml(item.vigenteHasta || "fecha no indicada") + '</li>'
       ).join("") + '</ul></details>' : "");
   }
+  root.addEventListener("click", event => {
+    const lesson = event.target.closest("[data-class-open-lesson]");
+    const exercise = event.target.closest("[data-class-open-exercise]");
+    if (lesson) {
+      document.dispatchEvent(new CustomEvent("traza:navigate", { detail: { space: "learn" } }));
+      document.dispatchEvent(new CustomEvent("traza:select-lesson", {
+        detail: { lessonId: lesson.dataset.classOpenLesson }
+      }));
+    } else if (exercise) {
+      document.dispatchEvent(new CustomEvent("traza:navigate", { detail: { space: "exercises" } }));
+      document.dispatchEvent(new CustomEvent("traza:select-exercise", {
+        detail: { exerciseId: exercise.dataset.classOpenExercise }
+      }));
+    }
+  });
+
   render();
   window.setInterval(render, 60_000);
   window.addEventListener("focus", render);
