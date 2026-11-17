@@ -295,6 +295,8 @@ test("la metadata de documentos impide publicar archivos sin URL segura y filtra
   };
   assert.equal(validarDocumentoOficial(base).ok, true);
   assert.equal(validarDocumentoOficial({ ...base, url: "javascript:alert(1)" }).ok, false);
+  assert.equal(validarDocumentoOficial({ ...base, url: "https://usuario:clave@archivos.example/guia.pdf" }).ok, false);
+  assert.equal(validarDocumentoOficial({ ...base, url: "/archivos/%2e%2e/privado.pdf" }).ok, false);
   assert.equal(validarDocumentoOficial({ ...base, url: null }).ok, false);
   assert.equal(validarDocumentoOficial({ ...base, estadoPublicacion: "borrador", url: null, publicadoEn: null }).ok, true);
 
@@ -306,6 +308,8 @@ test("la metadata de documentos impide publicar archivos sin URL segura y filtra
     ]
   };
   assert.deepEqual(documentosPublicados("clases", {}, ficha).map(item => item.id), ["doc-1"]);
+  assert.deepEqual(documentosPublicados("actividades", { actividadId: "actividad-diagrama" }, ficha).map(item => item.id), ["doc-3"]);
+  ficha.documentos.push({ ...base, id: "doc-inseguro", secciones: ["actividades"], actividadId: "actividad-diagrama", url: "javascript:alert(1)" });
   assert.deepEqual(documentosPublicados("actividades", { actividadId: "actividad-diagrama" }, ficha).map(item => item.id), ["doc-3"]);
 });
 
