@@ -1,6 +1,6 @@
 # Módulo 5 v4 · Núcleo y persistencia de Mi ficha
 
-**Estado:** núcleo local integrado en `main`; esquema v1.
+**Estado:** núcleo base integrado en `main`; el cierre de seguridad, respaldo versionado y recuperación validada se incorpora en la PR #25; esquema v1.
 
 ## Alcance implementado
 
