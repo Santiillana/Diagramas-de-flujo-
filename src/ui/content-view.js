@@ -5,8 +5,9 @@ import { executePseudocode } from "../core/interpreter.js";
 import { renderScene, createClock, lessonRecipe, recipeFrame, recipeMoment, recipeMomentIndex, recipeSceneMarkup } from "./kit/index.js";
 import { parsePseudocode } from "../core/parser.js";
 import { temas, competenciasAprende, temaPorId } from "../content/temas.js";
-import { conceptos } from "../content/conceptos.js";
+import { conceptos, conceptoPorEtiqueta } from "../content/conceptos.js";
 import { normalizeLearnProgress, dateInBogota, currentStreak } from "../content/learn-progress.js";
+import { adaptLegacyExercise } from "../content/exercise-adapter.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -34,13 +35,12 @@ let learnCompetence = "todas";
 let selectedExercise = null;
 let selectedMethod = 0;
 let exerciseQuery = "";
-let exerciseLevel = "all";
+let exerciseLevels = new Set();
 let exerciseClassOnly = false;
 let selectedConcepts = new Set();
-let conceptMatchMode = "all";
-let exercisePage = 0;
-let modalExercise = null;
-const PAGE_SIZE = 12;
+let conceptSearch = "";
+let exerciseListView = false;
+const revealedExerciseSolutions = new Set();
 const CLASS_EXERCISES = new Set([22,23,24,28]);
 const LESSON_TERMS = {
   algorithm:"Algoritmo",reading:"Flujo y secuencia",terminals:"Símbolos de diagrama",
@@ -91,20 +91,16 @@ function exerciseConceptUniverse(){
 }
 function renderConceptFilters(){
   const host=$("#exercise-concepts");if(!host)return;
-  host.innerHTML=exerciseConceptUniverse().map(label=>
-    '<button type="button" class="concept-filter-chip '+(selectedConcepts.has(label)?"is-selected":"")+'" data-concept-filter="'+escapeHTML(label)+'" aria-pressed="'+String(selectedConcepts.has(label))+'">'+escapeHTML(label)+'</button>'
-  ).join("");
-  $$("[data-concept-mode]").forEach(button=>{
-    button.setAttribute("aria-pressed",String(button.dataset.conceptMode===conceptMatchMode));
-  });
+  const needle=conceptSearch.trim().toLocaleLowerCase("es"),used=exerciseConceptUniverse();
+  host.innerHTML=[1,2,3,4].map(level=>{
+    const entries=conceptos.filter(item=>item.nivel===level&&used.some(label=>conceptoPorEtiqueta(label)?.id===item.id)&&(!needle||item.titulo.toLocaleLowerCase("es").includes(needle)));
+    return entries.length?'<section class="exercise-concept-group"><h4>Nivel '+level+'</h4><div>'+entries.map(item=>'<button type="button" class="concept-filter-chip '+(selectedConcepts.has(item.titulo)?"is-selected":"")+'" data-concept-filter="'+escapeHTML(item.titulo)+'" aria-pressed="'+String(selectedConcepts.has(item.titulo))+'">'+escapeHTML(item.titulo)+'</button>').join("")+'</div></section>':"";
+  }).join("");
   const summary=$("#exercise-filter-summary");
-  if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · "+(conceptMatchMode==="all"?"deben aparecer todos":"al menos uno"):"Todos los conceptos";
+  if(summary)summary.textContent=selectedConcepts.size?selectedConcepts.size+" concepto(s) · deben aparecer todos":"Todos los conceptos";
   const conceptSummary=$("#exercise-concepts-summary");
-  if(conceptSummary)conceptSummary.textContent=selectedConcepts.size
-    ?selectedConcepts.size+" seleccionado(s)"
-    :"Todos los conceptos";
+  if(conceptSummary)conceptSummary.textContent=selectedConcepts.size?selectedConcepts.size+" seleccionado(s)":"Todos los conceptos";
 }
-
 
 
 function readLearnProgress(){
@@ -406,76 +402,29 @@ function updateLessonData(){
   const variables=Object.entries(execution.variables??{}).map(([name,value])=>name+" = "+value).join(" · ");
   output.textContent="Salida: "+result+(variables?" | Variables: "+variables:"");
 }
+function adaptedExercises(){return exercises.map(item=>adaptLegacyExercise(item,exerciseConceptLabels(item),CLASS_EXERCISES.has(item.id)));}
 function renderExerciseCards(){
   const host=$("#exercise-grid");if(!host)return;
-  const query=exerciseQuery.trim().toLocaleLowerCase("es");
-  const counts={
-    all:exercises.length,
-    basic:exercises.filter(item=>item.level==="basic").length,
-    intermediate:exercises.filter(item=>item.level==="intermediate").length,
-    advanced:exercises.filter(item=>item.level==="advanced").length,
-    expert:exercises.filter(item=>item.level==="expert").length
-  };
-  const quickLevels=[
-    ["all","Todos","Los 45 retos"],
-    ["basic","Básico","Empieza por lo esencial"],
-    ["intermediate","Intermedio","Combina conceptos"],
-    ["advanced","Avanzado","Integra varios pasos"],
-    ["expert","Experto","Retos de mayor alcance"]
-  ];
-  const shortcuts=$("#exercise-level-shortcuts");
-  if(shortcuts){
-    shortcuts.innerHTML=quickLevels.map(([key,label,description])=>
-      '<button type="button" class="exercise-level-shortcut '+(exerciseLevel===key?"is-active":"")+'" data-exercise-level-shortcut="'+key+'" aria-pressed="'+String(exerciseLevel===key)+'">'+
-      '<span class="exercise-level-shortcut-top"><strong>'+label+'</strong><b>'+counts[key]+'</b></span>'+
-      '<small>'+description+'</small></button>'
-    ).join("");
-  }
-
-  const filtered=exercises.filter(item=>{
-    const concepts=exerciseConceptLabels(item);
-    const matchesLevel=exerciseLevel==="all"||item.level===exerciseLevel;
-    const matchesClass=!exerciseClassOnly||CLASS_EXERCISES.has(item.id);
-    const matchesConcepts=!selectedConcepts.size||(conceptMatchMode==="all"
-      ?[...selectedConcepts].every(tag=>concepts.includes(tag))
-      :[...selectedConcepts].some(tag=>concepts.includes(tag)));
-    const searchable=[item.title,item.statement,item.purpose,...item.concepts,...concepts].join(" ").toLocaleLowerCase("es");
-    return matchesLevel&&matchesClass&&matchesConcepts&&(!query||searchable.includes(query)||String(item.id)===query);
-  });
-  const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
-  exercisePage=Math.min(exercisePage,pages-1);
-  const visible=filtered.slice(exercisePage*PAGE_SIZE,(exercisePage+1)*PAGE_SIZE);
-  const count=$("#exercise-count");
-  if(count)count.textContent=filtered.length+" de "+exercises.length+" ejercicios";
-
-  host.innerHTML=visible.length?visible.map(item=>{
-    const level=LEVELS[item.level];
-    const labels=exerciseConceptLabels(item);
-    const caseCount=item.methods.reduce((total,method)=>total+(method.tests?.length??0),0);
-    return '<button type="button" class="exercise-card '+(selectedExercise?.id===item.id?"is-selected":"")+'" data-select-exercise="'+item.id+'" aria-pressed="'+String(selectedExercise?.id===item.id)+'">'+
-      '<span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span>'+
-      (CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+
-      '<strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.statement)+'</small>'+
-      '<span class="exercise-card-concepts">'+labels.slice(0,4).map(label=>'<i>'+escapeHTML(label)+'</i>').join("")+'</span>'+
-      '<span class="exercise-card-meta"><span>'+item.methods.length+' método(s)</span><span>'+caseCount+' casos de prueba</span></span>'+
-      '<span class="exercise-card-footer">Abrir ficha del reto <span aria-hidden="true">↗</span></span></button>';
-  }).join(""):'<div class="catalog-empty"><span class="catalog-empty-mark">⌕</span><strong>No encontramos ejercicios con esos filtros.</strong><p>Prueba con otro término, cambia la dificultad o elimina algún concepto.</p><button type="button" class="button button-secondary" id="exercise-empty-clear">Limpiar búsqueda y filtros</button></div>';
-
-  let pagination=host.parentElement.querySelector(".exercise-pagination");
-  if(!pagination){pagination=document.createElement("nav");pagination.className="exercise-pagination";pagination.setAttribute("aria-label","Páginas de ejercicios");host.after(pagination);}
-  pagination.hidden=filtered.length<=PAGE_SIZE;
-  pagination.innerHTML='<button type="button" data-page-prev '+(exercisePage===0?"disabled":"")+'>Anterior</button><span>Página '+(exercisePage+1)+' de '+pages+'</span><button type="button" data-page-next '+(exercisePage>=pages-1?"disabled":"")+'>Siguiente</button>';
-
-  const active=$("#exercise-active-filters");
-  if(active){
-    const chips=[];
-    if(query)chips.push("Búsqueda: "+exerciseQuery.trim());
-    if(exerciseLevel!=="all")chips.push("Nivel: "+LEVELS[exerciseLevel].label);
-    if(exerciseClassOnly)chips.push("De clase");
-    if(selectedConcepts.size)chips.push(...[...selectedConcepts].map(label=>"Concepto: "+label));
-    active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");
-    active.hidden=chips.length===0;
-  }
+  const query=exerciseQuery.trim().toLocaleLowerCase("es"),selectedConceptIds=new Set([...selectedConcepts].map(label=>conceptos.find(item=>item.titulo===label)?.id).filter(Boolean));
+  const filtered=adaptedExercises().filter(item=>{
+    const source=exercises.find(exercise=>exercise.id===item.id),labels=exerciseConceptLabels(source),ids=new Set(item.conceptos);
+    const matchLevel=!exerciseLevels.size||exerciseLevels.has(String(item.dificultad));
+    const matchConcepts=[...selectedConceptIds].every(id=>ids.has(id));
+    const searchable=[item.titulo,item.enunciado,...labels].join(" ").toLocaleLowerCase("es");
+    return matchLevel&&(!exerciseClassOnly||item.esDeClase)&&matchConcepts&&(!query||searchable.includes(query)||String(item.id)===query);
+  }).sort((a,b)=>a.dificultad-b.dificultad||a.id-b.id);
+  const difficulty=$("#exercise-difficulty-options");
+  if(difficulty)difficulty.innerHTML=[1,2,3,4].map(level=>'<button type="button" data-exercise-difficulty="'+level+'" aria-pressed="'+String(exerciseLevels.has(String(level)))+'" aria-label="Dificultad '+level+'">'+Array.from({length:4},(_,i)=>'<i class="'+(i<level?'is-filled':'')+'"></i>').join("")+'</button>').join("");
+  host.classList.toggle("is-list",exerciseListView);
+  host.innerHTML=filtered.length?filtered.map(item=>{
+    const source=exercises.find(exercise=>exercise.id===item.id),labels=exerciseConceptLabels(source),level=LEVELS[source.level];
+    const tags=labels.slice(0,3).map(label=>'<i>'+escapeHTML(label)+'</i>').join("")+(labels.length>3?'<i>+'+(labels.length-3)+'</i>':"");
+    return '<button type="button" class="exercise-card" data-select-exercise="'+item.id+'" aria-label="Ejercicio '+item.id+': '+escapeHTML(item.titulo)+'"><span class="exercise-card-top"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span></span><strong>'+escapeHTML(item.titulo)+'</strong><span class="exercise-card-difficulty" aria-label="Dificultad '+item.dificultad+'">'+Array.from({length:4},(_,i)=>'<i class="'+(i<item.dificultad?'is-filled':'')+'"></i>').join("")+'</span><span class="exercise-card-concepts">'+tags+'</span>'+(item.esDeClase?'<span class="exercise-class-tag">De clase</span>':"")+'</button>';
+  }).join(""):'<div class="catalog-empty"><strong>Ningún ejercicio coincide</strong><button type="button" class="button button-secondary" id="exercise-empty-clear">Limpiar</button></div>';
+  let pagination=host.parentElement.querySelector(".exercise-pagination");if(pagination)pagination.remove();
+  const active=$("#exercise-active-filters"),chips=[];
+  if(query)chips.push("Búsqueda: "+exerciseQuery.trim());if(exerciseLevels.size)chips.push("Dificultad: "+[...exerciseLevels].join(", "));if(exerciseClassOnly)chips.push("De clase");chips.push(...selectedConcepts);
+  if(active){active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");active.hidden=!chips.length;}
   renderConceptFilters();
 }
 function renderExerciseDetail(){
@@ -483,58 +432,30 @@ function renderExerciseDetail(){
   const item=selectedExercise;
   if(!item){
     host.innerHTML='<div class="detail-empty">'+
-      '<span class="detail-empty-mark">45</span>'+
-      '<p class="eyebrow">FICHA DEL RETO</p>'+
-      '<h3>Selecciona un ejercicio.</h3>'+
-      '<p>Verás qué debes resolver, qué conocimientos necesitas y qué condiciones debes respetar. El pseudocódigo seguirá oculto hasta que confirmes que ya intentaste resolverlo.</p>'+
+      '<span class="detail-empty-mark">↖</span><p class="eyebrow">DETALLE</p><h3>Elige una tarjeta</h3><p>Lee el reto, piensa los pasos y prueba tu solución cuando estés listo.</p>'+
       '<span class="exercise-detail-hint"><i aria-hidden="true">↖</i> Elige una tarjeta para abrir su ficha.</span></div>';
     return;
   }
   const level=LEVELS[item.level];
   const concepts=exerciseConceptLabels(item);
-  const caseCount=item.methods.reduce((total,method)=>total+(method.tests?.length??0),0);
+  const ordered=adaptedExercises().filter(ex=>!exerciseLevels.size||exerciseLevels.has(String(ex.dificultad))).filter(ex=>!exerciseClassOnly||ex.esDeClase).filter(ex=>[...selectedConcepts].every(label=>ex.conceptos.includes(conceptoPorEtiqueta(label)?.id))).filter(ex=>{const q=exerciseQuery.trim().toLocaleLowerCase("es"),src=exercises.find(x=>x.id===ex.id);return !q||[src.title,src.statement,...exerciseConceptLabels(src)].join(" ").toLocaleLowerCase("es").includes(q)||String(ex.id)===q;}).sort((a,b)=>a.dificultad-b.dificultad||a.id-b.id);
+  const position=ordered.findIndex(ex=>ex.id===item.id),revealed=revealedExerciseSolutions.has(item.id);
+  const lessonLink=concepts.map(label=>{const id=conceptoPorEtiqueta(label)?.id;const map={figuras:"terminals",flujo:"reading",entrada:"input",salida:"output",variables:"variables",asignacion:"variables",operaciones:"arithmetic",tipos:"terminals",comparaciones:"comparisons",decisiones:"decisions",logica:"nested-decisions",contadores:"counters-accumulators",acumuladores:"counters-accumulators","ciclo-para":"for","ciclo-mientras":"while","ciclo-hacer-mientras":"do-while",depuracion:"validation-sentinel",traza:"algorithm",programa:"algorithm"};return lessons.find(lesson=>lesson.id===map[id]);}).find(Boolean);
+  const recipe=lessonRecipe(lessonLink?.id),mini=recipe?recipeSceneMarkup(recipe,0,0):'<svg viewBox="0 0 280 96" role="img" aria-label="Vista previa estática de un diagrama"><ellipse cx="140" cy="13" rx="32" ry="10"/><path d="M140 23v10m-4-4 4 4 4-4"/><rect x="94" y="34" width="92" height="22" rx="3"/><path d="M140 56v10m-4-4 4 4 4-4"/><path d="M140 66l24 14-24 14-24-14z"/></svg>';
   host.innerHTML='<div class="exercise-detail-scroll">'+
-    '<header class="exercise-detail-heading">'+
-      '<div class="exercise-detail-kicker"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span>'+(CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+'</div>'+
-      '<p class="eyebrow exercise-detail-overline">FICHA DEL RETO · '+String(item.id).padStart(2,"0")+' / 45</p>'+
-      '<h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.statement)+'</p>'+
-    '</header>'+
-    '<div class="exercise-detail-stats"><span><strong>'+item.methods.length+'</strong> método(s)</span><span><strong>'+caseCount+'</strong> casos de prueba</span></div>'+
-    '<section class="exercise-spec"><p class="eyebrow">QUÉ VAS A RESOLVER</p><p>'+escapeHTML(item.purpose)+'</p></section>'+
-    '<section class="exercise-spec"><p class="eyebrow">CONCEPTOS NECESARIOS</p><div class="concept-tags">'+concepts.map(tag=>'<span>'+escapeHTML(tag)+'</span>').join("")+'</div></section>'+
-    '<section class="exercise-io-grid"><div><p class="eyebrow">DATOS DE ENTRADA</p><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></div><div><p class="eyebrow">RESULTADOS ESPERADOS</p><ul>'+item.outputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></div></section>'+
-    '<section class="exercise-spec"><p class="eyebrow">CONDICIONES Y RESTRICCIONES</p><ul>'+item.constraints.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
-    '<section class="exercise-detail-approach"><p class="eyebrow">PISTA DE ENFOQUE</p><p>'+escapeHTML(item.analysis)+'</p></section>'+
-    '<button type="button" class="button button-primary exercise-simulate" data-start-exercise>He intentado resolverlo · Abrir en Simulador <span aria-hidden="true">→</span></button>'+
-    '<p class="exercise-detail-note">El pseudocódigo y la solución solo se mostrarán después de confirmar que ya intentaste resolverlo.</p>'+
+    '<nav class="exercise-detail-nav"><button type="button" data-exercise-neighbor="'+(ordered[position-1]?.id??"")+'" '+(position<=0?'disabled':'')+'>‹ Anterior</button><span>'+String(item.id).padStart(2,"0")+'</span><button type="button" data-exercise-neighbor="'+(ordered[position+1]?.id??"")+'" '+(position>=ordered.length-1?'disabled':'')+'>Siguiente ›</button></nav>'+
+    '<header class="exercise-detail-heading"><div class="exercise-detail-kicker"><span class="exercise-number">'+String(item.id).padStart(2,"0")+'</span><span class="exercise-level '+level.className+'">'+level.label+'</span>'+(CLASS_EXERCISES.has(item.id)?'<span class="exercise-class-tag">De clase</span>':"")+'</div><h3>'+escapeHTML(item.title)+'</h3><div class="concept-tags">'+concepts.map(tag=>'<span>'+escapeHTML(tag)+'</span>').join("")+'</div></header>'+
+    '<div class="exercise-static-preview">'+mini+'</div><section class="exercise-prompt"><p class="eyebrow">EL RETO</p><p>'+escapeHTML(item.statement)+'</p></section>'+
+    '<section class="exercise-sample"><p class="eyebrow">DATOS DE EJEMPLO</p><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
+    '<section class="exercise-guide"><p class="eyebrow">ANTES DE EMPEZAR</p><ol>'+adaptLegacyExercise(item,concepts,CLASS_EXERCISES.has(item.id)).preguntasGuia.map(question=>'<li>'+escapeHTML(question)+'</li>').join("")+'</ol></section>'+
+    '<button type="button" class="button button-primary exercise-simulate" data-reveal-solution>Ya lo intenté</button>'+
+    (revealed?'<section class="exercise-solution" aria-live="polite"><p class="eyebrow">UNA SOLUCIÓN POSIBLE</p><pre>'+escapeHTML(item.methods[0]?.pseudocode??"")+'</pre><p>Comprueba el resultado con los datos del ejercicio.</p></section>':"")+
+    '<button type="button" class="button button-secondary exercise-open-simulator" data-start-exercise>Abrir en el Simulador</button>'+
+    (lessonLink?'<button type="button" class="text-link" data-open-exercise-lesson="'+lessonLink.id+'">Ver lección: '+escapeHTML(lessonLink.title)+'</button>':"")+
     '</div>';
 }
-function openExerciseTryModal(){
-  const item=selectedExercise,modal=$("#exercise-try-modal");
-  if(!item||!modal)return;
-  modalExercise=item;
-  const level=LEVELS[item.level];
-  $("#exercise-try-level").textContent=level.label;
-  $("#exercise-try-level").className="exercise-level "+level.className;
-  $("#exercise-try-title").textContent=String(item.id).padStart(2,"0")+" · "+item.title;
-  $("#exercise-try-statement").textContent=item.statement;
-  $("#exercise-try-guidance").innerHTML=
-    '<section><strong>Conceptos que necesitas</strong><p>'+exerciseConceptLabels(item).map(escapeHTML).join(" · ")+'</p></section>'+
-    '<section><strong>Datos de entrada</strong><ul>'+item.inputs.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>'+
-    '<section><strong>Condiciones importantes</strong><ul>'+item.constraints.map(value=>'<li>'+escapeHTML(value)+'</li>').join("")+'</ul></section>';
-  modal.hidden=false;
-  document.body.classList.add("has-exercise-modal");
-  $("#exercise-try-back")?.focus({preventScroll:true});
-}
-function closeExerciseTryModal(){
-  const modal=$("#exercise-try-modal");
-  if(modal)modal.hidden=true;
-  document.body.classList.remove("has-exercise-modal");
-  modalExercise=null;
-}
 function confirmExerciseInSimulator(){
-  const item=modalExercise;if(!item)return;
-  closeExerciseTryModal();
+  const item=selectedExercise;if(!item)return;
   selectedMethod=0;
   document.dispatchEvent(new CustomEvent("traza:request-simulation",{detail:{exerciseId:item.id,methodIndex:0}}));
   document.querySelector('#primary-nav [data-space="simulator"]')?.click();
@@ -657,48 +578,21 @@ function bindContentEvents(){
     const value=Math.max(0,Math.min(100,Math.round((window.scrollY-top)/range*100)));
     bar.setAttribute("aria-valuenow",String(value));$("span",bar).style.width=value+"%";
   },{passive:true});
-  $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
-  $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
-  $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});
-  $("#exercise-concepts")?.addEventListener("click",event=>{
-    const chip=event.target.closest("[data-concept-filter]");if(!chip)return;
-    const label=chip.dataset.conceptFilter;
-    selectedConcepts.has(label)?selectedConcepts.delete(label):selectedConcepts.add(label);
-    exercisePage=0;renderExerciseCards();
-  });
+  $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;renderExerciseCards();renderExerciseDetail();});
+  $("#exercise-concept-search")?.addEventListener("input",event=>{conceptSearch=event.target.value;renderConceptFilters();});
+  $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;renderExerciseCards();renderExerciseDetail();});
+  $("#exercise-concepts")?.addEventListener("click",event=>{const chip=event.target.closest("[data-concept-filter]");if(!chip)return;const label=chip.dataset.conceptFilter;selectedConcepts.has(label)?selectedConcepts.delete(label):selectedConcepts.add(label);renderExerciseCards();renderExerciseDetail();});
+  $("#exercise-difficulty-options")?.addEventListener("click",event=>{const button=event.target.closest("[data-exercise-difficulty]");if(!button)return;const level=button.dataset.exerciseDifficulty;exerciseLevels.has(level)?exerciseLevels.delete(level):exerciseLevels.add(level);renderExerciseCards();renderExerciseDetail();});
   $("#view-exercises")?.addEventListener("click",event=>{
-    const quickLevel=event.target.closest("[data-exercise-level-shortcut]");
-    if(quickLevel){
-      exerciseLevel=quickLevel.dataset.exerciseLevelShortcut;
-      if($("#exercise-level"))$("#exercise-level").value=exerciseLevel;
-      exercisePage=0;renderExerciseCards();return;
-    }
-    if(event.target.closest("#exercise-empty-clear")||event.target.closest("#exercise-filters-clear")){
-      exerciseQuery="";exerciseLevel="all";exerciseClassOnly=false;selectedConcepts.clear();conceptMatchMode="all";exercisePage=0;
-      if($("#exercise-search"))$("#exercise-search").value="";
-      if($("#exercise-level"))$("#exercise-level").value="all";
-      if($("#exercise-class-only"))$("#exercise-class-only").checked=false;
-      renderExerciseCards();return;
-    }
-    const mode=event.target.closest("[data-concept-mode]");
-    if(mode){conceptMatchMode=mode.dataset.conceptMode==="any"?"any":"all";exercisePage=0;renderExerciseCards();return;}
-    if(event.target.closest("[data-page-prev]")){exercisePage=Math.max(0,exercisePage-1);renderExerciseCards();}
-    if(event.target.closest("[data-page-next]")){exercisePage++;renderExerciseCards();}
+    if(event.target.closest("#exercise-empty-clear")||event.target.closest("#exercise-filters-clear")){exerciseQuery="";exerciseLevels.clear();exerciseClassOnly=false;selectedConcepts.clear();if($("#exercise-search"))$("#exercise-search").value="";if($("#exercise-class-only"))$("#exercise-class-only").checked=false;renderExerciseCards();renderExerciseDetail();return;}
+    const view=event.target.closest("[data-exercise-view]");if(view){exerciseListView=view.dataset.exerciseView==="list";$$("[data-exercise-view]").forEach(button=>button.setAttribute("aria-pressed",String(button===view)));renderExerciseCards();}
   });
-  $("#exercise-grid")?.addEventListener("click",event=>{
-    const card=event.target.closest("[data-select-exercise]");
-    if(card)selectExercise(card.dataset.selectExercise);
-  });
+  $("#exercise-grid")?.addEventListener("click",event=>{const card=event.target.closest("[data-select-exercise]");if(card)selectExercise(card.dataset.selectExercise);});
   $("#exercise-detail")?.addEventListener("click",event=>{
-    if(event.target.closest("[data-start-exercise]"))openExerciseTryModal();
-  });
-  $("#exercise-try-back")?.addEventListener("click",closeExerciseTryModal);
-  $("#exercise-try-confirm")?.addEventListener("click",confirmExerciseInSimulator);
-  $("#exercise-try-modal")?.addEventListener("click",event=>{
-    if(event.target.id==="exercise-try-modal")closeExerciseTryModal();
-  });
-  document.addEventListener("keydown",event=>{
-    if(event.key==="Escape"&&!$("#exercise-try-modal")?.hidden)closeExerciseTryModal();
+    const reveal=event.target.closest("[data-reveal-solution]");if(reveal&&selectedExercise){revealedExerciseSolutions.add(selectedExercise.id);renderExerciseDetail();return;}
+    const neighbor=event.target.closest("[data-exercise-neighbor]");if(neighbor?.dataset.exerciseNeighbor){selectExercise(neighbor.dataset.exerciseNeighbor);return;}
+    const lesson=event.target.closest("[data-open-exercise-lesson]");if(lesson){selectLesson(lesson.dataset.openExerciseLesson);document.querySelector('[data-topic-tab="lessons"]')?.click();return;}
+    if(event.target.closest("[data-start-exercise]"))confirmExerciseInSimulator();
   });
 }
 

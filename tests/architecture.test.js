@@ -131,22 +131,23 @@ test("la nueva capa de interfaz no ejecuta pseudocódigo como JavaScript", async
   assert.doesNotMatch(source, /new\s+Function\s*\(/);
 });
 
-test("Ejercicios conserva 45 retos y expone filtros, accesos rápidos y ficha protegida",async()=>{
+test("Ejercicios adapta los 45 retos al catálogo compacto con filtros combinables y detalle protegido",async()=>{
   const html=await read("../index.html");
   const source=await read("../src/ui/content-view.js");
-  for(const id of ["exercise-count","exercise-level-shortcuts","exercise-search","exercise-level","exercise-class-only","exercise-concepts","exercise-concepts-summary","exercise-filter-summary","exercise-active-filters","exercise-filters-clear","exercise-grid","exercise-detail","exercise-try-modal"]){
+  const adapter=await read("../src/content/exercise-adapter.js");
+  for(const id of ["exercise-search","exercise-difficulty-options","exercise-class-only","exercise-concepts","exercise-concepts-summary","exercise-filter-summary","exercise-active-filters","exercise-filters-clear","exercise-grid","exercise-detail","exercise-concept-search"]){
     assert.match(html,new RegExp('id="'+id+'"'),"Falta el control "+id);
   }
-  assert.match(source,/const quickLevels=\[/,"Falta el conjunto de accesos rápidos por dificultad.");
-  for(const level of ["all","basic","intermediate","advanced","expert"]){
-    assert.match(source,new RegExp('\\["'+level+'"'),"Falta el nivel "+level);
-  }
+  assert.doesNotMatch(html,/id="exercise-count"|id="exercise-level-shortcuts"|id="exercise-try-modal"/);
+  assert.match(html,/data-exercise-view="list"/);
   assert.ok(source.includes("const CLASS_EXERCISES = new Set([22,23,24,28]);"),"Los cuatro retos de clase no deben cambiar.");
   assert.match(source,/function renderExerciseCards\(\)/);
   assert.match(source,/function renderExerciseDetail\(\)/);
   assert.match(source,/data-start-exercise/);
-  assert.match(source,/data-exercise-level-shortcut/);
-  assert.match(source,/exercise-level-shortcut/);
+  assert.match(source,/data-reveal-solution/);
+  assert.match(source,/data-exercise-difficulty/);
+  assert.match(adapter,/export function validateExercise/);
+  assert.match(adapter,/oraculo: \(\) => exercise\.methods/);
 });
 
 

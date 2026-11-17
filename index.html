@@ -97,54 +97,29 @@
 
     <section class="space-view exercises-view" id="view-exercises" data-view="exercises" aria-labelledby="exercise-title" hidden>
       <header class="section-intro catalog-intro exercise-hero">
-        <div class="exercise-hero-copy">
-          <p class="eyebrow">APRENDE · PRACTICA · COMPRUEBA</p>
-          <h2 id="exercise-title">Un reto a la vez. La lógica la construyes tú.</h2>
-          <p>Explora los ejercicios por dificultad, busca un tema o combina conceptos. Primero comprende el reto; la solución seguirá protegida hasta que decidas probarla.</p>
-        </div>
-        <div class="exercise-hero-count" aria-live="polite">
-          <strong id="exercise-count">45 de 45 ejercicios</strong>
-          <span>retos disponibles</span>
-        </div>
+        <div class="exercise-hero-copy"><p class="eyebrow">APRENDE · PRACTICA</p><h2 id="exercise-title">Ejercicios</h2></div>
       </header>
-
-      <nav class="exercise-level-shortcuts" id="exercise-level-shortcuts" aria-label="Filtrar ejercicios por dificultad"></nav>
 
       <section class="catalog-filter-panel exercise-filter-panel" aria-label="Buscar y filtrar ejercicios">
         <div class="exercise-filter-main">
           <label class="catalog-search">
-            <span>Buscar en los 45 retos</span>
+            <span>Buscar</span>
             <input id="exercise-search" type="search" placeholder="Título, número o concepto…" autocomplete="off">
           </label>
-          <label class="catalog-level">
-            <span>Dificultad</span>
-            <select id="exercise-level">
-              <option value="all">Todos los niveles</option>
-              <option value="basic">Básico</option>
-              <option value="intermediate">Intermedio</option>
-              <option value="advanced">Avanzado</option>
-              <option value="expert">Experto</option>
-            </select>
-          </label>
+          <div class="exercise-difficulty-filter"><span>Dificultad</span><div id="exercise-difficulty-options" role="group" aria-label="Filtrar por dificultad"></div></div>
           <label class="catalog-class-filter">
             <input id="exercise-class-only" type="checkbox">
-            <span>Solo ejercicios de clase <small>4 retos</small></span>
+            <span>Ejercicios de clase</span>
           </label>
         </div>
 
         <details class="catalog-concept-filter exercise-concept-disclosure" id="exercise-concept-details">
           <summary>
-            <span class="concept-summary-copy"><strong>Conceptos que quiero practicar</strong><small>Combina uno o varios temas para encontrar el reto adecuado</small></span>
+            <span class="concept-summary-copy"><strong>Conceptos</strong><small>Se muestran ejercicios que incluyen todos los elegidos</small></span>
             <span class="concept-summary-state" id="exercise-concepts-summary">Todos los conceptos</span>
           </summary>
           <div class="catalog-concept-content">
-            <div class="catalog-filter-heading">
-              <span>Cómo combinar los conceptos</span>
-              <div class="catalog-match-mode" role="group" aria-label="Cómo combinar conceptos">
-                <button type="button" data-concept-mode="all" aria-pressed="true">Todos</button>
-                <button type="button" data-concept-mode="any" aria-pressed="false">Cualquiera</button>
-              </div>
-            </div>
+            <label class="exercise-concept-search">Buscar concepto<input id="exercise-concept-search" type="search" placeholder="Escribe para filtrar conceptos"></label>
             <div class="catalog-concept-options" id="exercise-concepts" aria-label="Elegir conceptos"></div>
           </div>
         </details>
@@ -163,7 +138,7 @@
           <p class="eyebrow">BANCO DE PRÁCTICA</p>
           <h3>Elige tu siguiente reto</h3>
         </div>
-        <span>La solución no aparece en el catálogo</span>
+          <div class="exercise-view-toggle" role="group" aria-label="Vista del catálogo"><button type="button" data-exercise-view="grid" aria-pressed="true" aria-label="Vista de tarjetas">▦</button><button type="button" data-exercise-view="list" aria-pressed="false" aria-label="Vista de lista">☰</button></div>
       </div>
 
       <div class="exercise-workspace exercise-workspace-catalog">
@@ -172,30 +147,15 @@
         </section>
         <aside class="panel exercise-detail-panel" id="exercise-detail" aria-live="polite" aria-label="Información del ejercicio">
           <div class="detail-empty">
-            <span class="detail-empty-mark">45</span>
-            <p class="eyebrow">FICHA DEL RETO</p>
-            <h3>Selecciona un ejercicio.</h3>
-            <p>Verás qué debes resolver, qué conocimientos necesitas y qué condiciones debes respetar. El pseudocódigo seguirá oculto hasta que confirmes que ya intentaste resolverlo.</p>
+            <span class="detail-empty-mark">↖</span>
+            <p class="eyebrow">DETALLE</p>
+            <h3>Elige una tarjeta</h3>
+            <p>Lee el reto, piensa los pasos y prueba tu solución cuando estés listo.</p>
             <span class="exercise-detail-hint"><i aria-hidden="true">↖</i> Elige una tarjeta para abrir su ficha.</span>
           </div>
         </aside>
       </div>
 
-      <section class="exercise-try-modal" id="exercise-try-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-try-title" hidden>
-        <div class="exercise-try-card">
-          <div class="exercise-try-top">
-            <p class="eyebrow">ANTES DE VER LA SOLUCIÓN</p>
-            <span id="exercise-try-level" class="exercise-level level-basic">Básico</span>
-          </div>
-          <h2 id="exercise-try-title">Revisa el problema</h2>
-          <p id="exercise-try-statement" class="exercise-try-statement"></p>
-          <div class="exercise-try-guidance" id="exercise-try-guidance"></div>
-          <div class="exercise-try-actions">
-            <button type="button" class="button button-secondary" id="exercise-try-back">Volver a ejercicios</button>
-            <button type="button" class="button button-primary" id="exercise-try-confirm">Ya lo intenté, ver solución</button>
-          </div>
-        </div>
-      </section>
     </section>
 
     <section class="space-view learn-view" id="view-learn" data-view="learn" aria-labelledby="learn-title" hidden>
