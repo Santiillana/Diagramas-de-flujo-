@@ -1,4 +1,6 @@
-import { DIAS_SIN_CLASES, FICHA_TIME_ZONE, HORARIO_CLASES } from "../content/ficha.js";
+import {
+  DIAS_SIN_CLASES, FICHA_TIME_ZONE, HORARIO_CLASES, validateHorarioClases
+} from "../content/ficha.js";
 import { isActivityOverdue, readFichaData } from "./ficha-store.js";
 
 const pad = value => String(value).padStart(2, "0");
@@ -162,6 +164,13 @@ export function initFichaSchedule() {
     calendario: document.querySelector("#ficha-calendario")
   };
   if (!views.hoy || !views.semana || !views.calendario) return;
+
+  const scheduleValidation = validateHorarioClases();
+  if (!scheduleValidation.ok) {
+    const warning = '<p class="ficha-schedule-error" role="alert">El horario oficial necesita revisión. No se mostrará un calendario posiblemente incorrecto.</p>';
+    Object.values(views).forEach(view => { view.innerHTML = warning; });
+    return;
+  }
 
   let weekAnchor = toKey(localParts());
   let calendarAnchor = monthStart(toKey(localParts()));
