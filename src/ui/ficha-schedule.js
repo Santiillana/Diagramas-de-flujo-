@@ -195,7 +195,11 @@ export function initFichaSchedule() {
   }
 
   function renderCalendar(now = localParts()) {
-    if (monthFollowsToday) calendarAnchor = monthStart(toKey(now));
+    if (monthFollowsToday) {
+      const currentMonth = monthStart(toKey(now));
+      if (calendarAnchor !== currentMonth) selectedCalendarDate = toKey(now);
+      calendarAnchor = currentMonth;
+    }
     const { year, month } = parseCivilDate(calendarAnchor);
     const cells = monthDays(calendarAnchor);
     const monthLabel = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric", timeZone: "UTC" })
@@ -238,13 +242,16 @@ export function initFichaSchedule() {
     if (action.startsWith("month-")) {
       const { year, month } = parseCivilDate(calendarAnchor);
       const delta = action === "month-prev" ? -1 : action === "month-next" ? 1 : 0;
-      if (action === "month-today") { monthFollowsToday = true; calendarAnchor = monthStart(toKey(localParts())); }
-      else {
+      if (action === "month-today") {
+        monthFollowsToday = true;
+        selectedCalendarDate = toKey(localParts());
+        calendarAnchor = monthStart(selectedCalendarDate);
+      } else {
         monthFollowsToday = false;
         const date = new Date(Date.UTC(year, month - 1 + delta, 1));
         calendarAnchor = toKey({ year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: 1 });
+        selectedCalendarDate = calendarAnchor;
       }
-      selectedCalendarDate = calendarAnchor;
       renderCalendar();
     }
   });
