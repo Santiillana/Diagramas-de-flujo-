@@ -1,4 +1,5 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
+import { ACTIVIDADES_OFICIALES } from "../content/ficha-activities.js";
 import {
   addFeedback, addSubmission, archiveActivity, createActivity,
   isActivityOverdue, readFichaData, readFichaDataStrict, updateActivity,
@@ -139,7 +140,11 @@ export function initFichaActivities() {
   const root = document.querySelector("#ficha-actividades");
   if (!root) return;
 
-  root.innerHTML = '<div class="ficha-activities-toolbar"><div><p class="eyebrow">SEGUIMIENTO PERSONAL</p>' +
+  root.innerHTML = '<section class="ficha-official-activities" aria-labelledby="ficha-official-activities-title">' +
+    '<div><p class="eyebrow">PUBLICADAS POR TRAZA</p><h2 id="ficha-official-activities-title">Actividades oficiales</h2>' +
+    '<p>Instrucciones y fechas compartidas. Este contenido es de solo lectura.</p></div>' +
+    '<div id="ficha-official-activities-list"></div></section>' +
+    '<div class="ficha-activities-toolbar"><div><p class="eyebrow">SEGUIMIENTO PERSONAL</p>' +
     '<h2>Mis actividades</h2><p>Organiza tus entregas y conserva el historial de cada intento.</p></div>' +
     '<button type="button" class="ficha-primary-button" data-activity-create-toggle aria-expanded="false" aria-controls="ficha-activity-create">+ Nueva actividad</button></div>' +
     '<section class="ficha-activity-create" id="ficha-activity-create" hidden><h3>Registrar actividad</h3>' +
@@ -175,6 +180,35 @@ export function initFichaActivities() {
 
   function currentData() {
     return readFichaData();
+  }
+
+  function renderOfficialActivities() {
+    const target = root.querySelector("#ficha-official-activities-list");
+    const entries = ACTIVIDADES_OFICIALES.filter(item =>
+      item && typeof item.id === "string" && typeof item.title === "string" && item.title.trim()
+    );
+    if (!entries.length) {
+      target.innerHTML = '<p class="ficha-official-empty">Todavía no hay actividades oficiales publicadas.</p>';
+      return;
+    }
+    target.innerHTML = entries.map(item => {
+      const link = item.instructionsUrl ? safeInstructionsUrl(item.instructionsUrl) : null;
+      return '<article class="ficha-official-activity"><div><h3>' + escapeHtml(item.title) +
+        '</h3><p>' + escapeHtml(item.description || "Sin descripción") + '</p><small>' +
+        escapeHtml(classLabel(item.classId)) + ' · Asignada: ' + escapeHtml(dateLabel(item.assignedOn)) +
+        ' · Vence: ' + escapeHtml(dateLabel(item.dueOn)) + '</small></div>' +
+        (link ? '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">Ver instrucciones ↗</a>' : "") +
+        '</article>';
+    }).join("");
+  }
+
+  function safeInstructionsUrl(value) {
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+    } catch {
+      return null;
+    }
   }
 
   function renderList() {
@@ -351,5 +385,6 @@ export function initFichaActivities() {
     setStatus(statusNode, saved.ok ? message : mutationMessage(saved.reason), saved.ok ? "success" : "error");
   });
 
+  renderOfficialActivities();
   renderList();
 }
