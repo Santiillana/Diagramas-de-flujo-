@@ -37,7 +37,10 @@ test("Clases nunca inventa materias para los bloques del sábado ni vínculos co
   await expect(saturday.nth(0)).toContainText("Gloria Romero");
   await expect(saturday.nth(1)).toContainText("4 p. m. – 10 p. m.");
   await expect(saturday.nth(1)).toContainText("Jair Castañeda");
-  await expect(saturday).not.toContainText("TICS");
-  await expect(saturday).not.toContainText("Matemáticas");
-  await expect(saturday).toContainText("Sin asociación pedagógica confirmada");
+  await expect(saturday.nth(0)).not.toContainText("TICS");
+  await expect(saturday.nth(0)).not.toContainText("Matemáticas");
+  await expect(saturday.nth(1)).not.toContainText("TICS");
+  await expect(saturday.nth(1)).not.toContainText("Matemáticas");
+  await expect(saturday.nth(0)).toContainText("Sin asociación pedagógica confirmada");
+  await expect(saturday.nth(1)).toContainText("Sin asociación pedagógica confirmada");
 });
