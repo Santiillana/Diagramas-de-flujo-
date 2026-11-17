@@ -1,7 +1,7 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
 import {
   addFeedback, addSubmission, archiveActivity, createActivity,
-  isActivityOverdue, readFichaData, updateActivity,
+  isActivityOverdue, readFichaData, readFichaDataStrict, updateActivity,
   transitionActivity, writeFichaData
 } from "./ficha-store.js";
 
@@ -78,6 +78,7 @@ function mutationMessage(reason) {
     feedback_required: "Escribe la devolución que recibiste.",
     invalid_feedback: "Selecciona un tipo de devolución válido.",
     invalid_score: "La calificación debe ser numérica.",
+    invalid_evidence_url: "El enlace de evidencia debe ser una dirección HTTP o HTTPS segura.",
     existing_corrupt_storage: "Los datos locales están dañados. Restaura un respaldo antes de modificarlos.",
     existing_unsupported_schema: "Los datos pertenecen a una versión no compatible. No se sobrescribieron.",
     existing_invalid_records: "Hay registros locales que necesitan recuperación antes de editarlos.",
@@ -178,7 +179,11 @@ export function initFichaActivities() {
 
   function renderList() {
     const today = todayInBogota();
-    const data = currentData();
+    const stored = readFichaDataStrict();
+    const data = stored.ok ? stored.data : { activities: [] };
+    if (!stored.ok) {
+      setStatus(statusNode, "No se pueden leer los datos locales (" + stored.reason + "). Restaura un respaldo válido antes de continuar.", "error");
+    }
     const query = root.querySelector("#ficha-activity-search").value.trim().toLocaleLowerCase("es");
     const status = root.querySelector("#ficha-activity-filter").value;
     const dateFilter = root.querySelector("#ficha-activity-date-filter").value;
