@@ -16,6 +16,20 @@ test("la navegación declara portada y espacios de Mi ficha y Aprende", async ()
   assert.match(html, /data-subnav-section="aprende"/);
 });
 
+test("Inicio ofrece dos enlaces completos y accesibles sin accesos secundarios", async () => {
+  const html = await read("../index.html");
+  const home = html.match(/<section class="space-view home-view"[\s\S]*?<\/section>/)?.[0] || "";
+  const navigation = await read("../src/ui/navigation.js");
+  const shell = await read("../src/styles/shell.css");
+  assert.equal([...home.matchAll(/<a class="home-card"/g)].length, 2);
+  assert.match(home, /data-go="hoy"/);
+  assert.match(home, /data-go="learn"/);
+  assert.doesNotMatch(home, /home-continue|home-shortcut|home-learning-progress/);
+  assert.match(navigation, /event\.key !== " "[\s\S]*card\.click\(\)/);
+  assert.match(shell, /\.home-card-enter/);
+  assert.match(shell, /\.home-flow \.flow-ball/);
+});
+
 test("el simulador reserva las cuatro ventanas pedagógicas y el dock", async () => {
   const html = await read("../index.html");
   for (const marker of ["problem-panel", "diagram-panel", "scene-panel", "variables-panel", "execution-dock"]) {

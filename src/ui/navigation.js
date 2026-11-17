@@ -15,12 +15,6 @@ const FICHA_SPACES = new Set(["hoy", "semana", "calendario", "actividades", "bib
 const APRENDE_SPACES = new Set(["learn", "exercises", "simulator", "lab"]);
 const DEFAULT_LAST = { ficha: "hoy", aprende: "learn", section: "aprende" };
 const LAST_KEY = "traza:v4:last";
-const SPACE_LABELS = {
-  hoy: "Hoy", semana: "Semana", calendario: "Calendario",
-  actividades: "Actividades", biblioteca: "Biblioteca",
-  learn: "Aprende", exercises: "Ejercicios", simulator: "Simulador", lab: "Laboratorio"
-};
-
 function readLastViews() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(LAST_KEY) || "null");
@@ -56,34 +50,6 @@ export function initNavigation() {
 
   const lastViews = readLastViews();
 
-  function updateHomeResume() {
-    const resumeSpace = lastViews[lastViews.section] || DEFAULT_LAST[lastViews.section];
-    const resumeButton = document.querySelector("#home-continue-button");
-    const resumeDescription = document.querySelector("#home-continue-description");
-    const learnButton = document.querySelector("#home-learn-continue");
-    const fichaButton = document.querySelector("#home-open-ficha");
-    if (resumeButton) {
-      resumeButton.dataset.go = resumeSpace;
-      const label = resumeButton.querySelector("span");
-      if (label) label.textContent = "Continuar en " + SPACE_LABELS[resumeSpace];
-    }
-    if (resumeDescription) {
-      resumeDescription.textContent = "Último espacio: " +
-        (lastViews.section === "ficha" ? "Mi ficha · " : "Aprende · ") +
-        SPACE_LABELS[resumeSpace] + ".";
-    }
-    if (learnButton) {
-      learnButton.dataset.go = lastViews.aprende;
-      const label = learnButton.querySelector("span");
-      if (label) label.textContent = "Continuar en " + SPACE_LABELS[lastViews.aprende];
-    }
-    if (fichaButton) {
-      fichaButton.dataset.go = lastViews.ficha;
-      const label = fichaButton.querySelector("span");
-      if (label) label.textContent = "Abrir " + SPACE_LABELS[lastViews.ficha].toLocaleLowerCase("es");
-    }
-  }
-
   function activate(space, options = {}) {
     if (space === "builder") space = "lab";
     const meta = SPACE_META[space];
@@ -116,8 +82,6 @@ export function initNavigation() {
       lastViews[section] = space;
       lastViews.section = section;
       saveLastViews(lastViews);
-    } else {
-      updateHomeResume();
     }
 
     if (options.focus) {
@@ -162,6 +126,12 @@ export function initNavigation() {
     activate(space, { focus: true });
   });
 
-  updateHomeResume();
+  document.querySelectorAll(".home-card[data-go]").forEach(card => {
+    card.addEventListener("keydown", event => {
+      if (event.key !== " " && event.key !== "Spacebar") return;
+      event.preventDefault();
+      card.click();
+    });
+  });
   activate("home");
 }

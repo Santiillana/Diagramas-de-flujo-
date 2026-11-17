@@ -61,57 +61,36 @@
 
     <section class="space-view home-view" id="view-home" data-view="home" aria-labelledby="home-title" hidden>
       <header class="home-intro">
-        <p class="eyebrow">TRAZA · TU ESPACIO</p>
-        <h1 id="home-title">Tu ficha y tu aprendizaje, en un solo lugar.</h1>
-        <p>Organiza tu formación y desarrolla tus habilidades con un entorno conectado.</p>
+        <p class="eyebrow">ADSO · FICHA 3602557</p>
+        <h1 id="home-title">¿Qué vas a trabajar hoy?</h1>
       </header>
       <div class="home-grid">
-        <article class="home-card" data-home-section="ficha">
-          <div class="home-card-kicker"><span>MI FICHA</span><span class="home-card-mark" aria-hidden="true">01</span></div>
-          <h2>Qué me piden y cuándo.</h2>
-          <p>Organiza tus clases, actividades, entregas y materiales de estudio en un solo lugar.</p>
-          <div class="home-card-meta"><span>Horario y calendario</span><span>Seguimiento académico</span><span>Biblioteca</span></div>
-          <button class="button button-primary home-card-action" id="home-open-ficha" type="button" data-go="hoy"><span>Abrir mi ficha</span><span aria-hidden="true">→</span></button>
-        </article>
-        <article class="home-card" data-home-section="aprende">
-          <div class="home-card-kicker"><span>APRENDE</span><span class="home-card-mark" aria-hidden="true">02</span></div>
-          <h2>Cómo se entiende y se practica.</h2>
-          <p>Aprende lógica de programación, resuelve retos, ejecuta algoritmos y experimenta.</p>
-          <div class="home-card-stats">
-            <div><strong>17</strong><span>Lecciones</span></div>
-            <div><strong>45</strong><span>Ejercicios</span></div>
-            <div><strong>4</strong><span>Espacios</span></div>
-          </div>
-          <section class="home-learning-progress" aria-label="Progreso de aprendizaje">
-            <div class="home-learning-progress-heading">
-              <span>Tu avance en Aprende</span>
-              <strong id="home-learn-progress">0 de 17 completadas</strong>
-            </div>
-            <div class="home-learning-progress-track" id="home-learn-progress-bar" role="progressbar"
-              aria-label="Lecciones completadas" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0"
-              aria-valuetext="0 de 17 lecciones completadas">
-              <span id="home-learn-progress-fill"></span>
-            </div>
-            <div class="home-learning-progress-footer">
-              <span id="home-learn-progress-copy">Completa tu primera lección para iniciar tu progreso.</span>
-              <strong id="home-learn-progress-percent">0%</strong>
-            </div>
-          </section>
-          <button class="button button-primary home-card-action" id="home-learn-continue" type="button" data-go="learn"><span>Continuar en Aprende</span><span aria-hidden="true">→</span></button>
-        </article>
+        <a class="home-card" data-home-section="ficha" href="#view-hoy" data-go="hoy" aria-label="Abrir Mi ficha: tu horario, tus evidencias y tus documentos">
+          <span class="home-card-kicker">MI FICHA</span>
+          <h2>Mi ficha</h2>
+          <p>Tu horario, tus evidencias y tus documentos.</p>
+          <span class="home-illustration home-agenda" aria-hidden="true">
+            <span class="agenda-day agenda-day-left"><small>Lun</small><b>16</b></span>
+            <span class="agenda-day agenda-day-main"><small>Mar</small><b>17</b><i></i><em>2</em></span>
+            <span class="agenda-day agenda-day-right"><small>Mié</small><b>18</b></span>
+          </span>
+          <span class="home-card-enter" aria-hidden="true">↓</span>
+        </a>
+        <a class="home-card" data-home-section="aprende" href="#view-learn" data-go="learn" aria-label="Abrir Aprende: entiende la lógica, paso a paso">
+          <span class="home-card-kicker">APRENDE</span>
+          <h2>Aprende</h2>
+          <p>Entiende la lógica, paso a paso.</p>
+          <svg class="home-illustration home-flow" viewBox="0 0 360 230" aria-hidden="true">
+            <path class="flow-line" d="M180 42v24m0 34v24m0 36v24"/>
+            <ellipse class="flow-shape" cx="180" cy="24" rx="48" ry="18"/><text x="180" y="29">Inicio</text>
+            <path class="flow-shape" d="m133 71 14-9h66l14 9-14 20h-66z"/><text x="180" y="84">Leer A</text>
+            <path class="flow-shape flow-decision" d="m180 122 43 24-43 24-43-24z"/><text x="180" y="150">¿A &gt; 0?</text>
+            <text class="flow-yes" x="237" y="143">Sí ✓</text><text class="flow-no" x="91" y="143">No ✗</text>
+            <circle class="flow-ball" r="7" cx="180" cy="24"/>
+          </svg>
+          <span class="home-card-enter" aria-hidden="true">↓</span>
+        </a>
       </div>
-      <section class="home-continue" aria-label="Continuar actividad">
-        <div><p class="eyebrow">CONTINUAR DONDE QUEDASTE</p><p id="home-continue-description">Elige un espacio para empezar tu recorrido.</p></div>
-        <button class="button button-secondary" id="home-continue-button" type="button" data-go="learn"><span>Ir a Aprende</span><span aria-hidden="true">↗</span></button>
-      </section>
-      <nav class="home-shortcuts" aria-label="Accesos rápidos a Aprende">
-        <p class="eyebrow">ACCESOS RÁPIDOS</p>
-        <div class="home-shortcuts-grid">
-          <button type="button" class="home-shortcut" data-go="exercises"><span aria-hidden="true">▤</span><span><strong>Ejercicios</strong><small>Resolver retos</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
-          <button type="button" class="home-shortcut" data-go="simulator"><span aria-hidden="true">⌘</span><span><strong>Simulador</strong><small>Ejecutar pasos</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
-          <button type="button" class="home-shortcut" data-go="lab"><span aria-hidden="true">⌑</span><span><strong>Laboratorio</strong><small>Experimentar</small></span><span class="home-shortcut-arrow" aria-hidden="true">↗</span></button>
-        </div>
-      </nav>
     </section>
 
     <section class="space-view exercises-view" id="view-exercises" data-view="exercises" aria-labelledby="exercise-title" hidden>
