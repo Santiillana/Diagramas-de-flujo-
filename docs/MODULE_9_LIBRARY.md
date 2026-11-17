@@ -1,7 +1,7 @@
 # Módulo 9 · Biblioteca
 
 **Rama:** `v4/module-7-activities`  
-**Estado:** interfaz personal y almacenamiento local implementados; fuente editorial oficial preparada, todavía sin recursos publicados. Validación en SHA `5c3419b`: 292 pruebas Node y 113 pruebas Playwright aprobadas.
+**Estado:** interfaz personal y almacenamiento local implementados; fuente editorial oficial preparada, todavía sin recursos publicados. Validación en SHA `856df59`: 300 pruebas Node y 116 pruebas Playwright aprobadas en la suite conjunta de la rama. El check externo de Cloudflare Workers falló para ese SHA.
 
 ## Separación de catálogos
 
