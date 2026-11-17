@@ -48,3 +48,18 @@ test("Actividades muestra el aviso de demostración y la sección de documentos 
   await expect(page.locator("#ficha-activity-detail")).toContainText("Documentos y materiales");
   await expect(page.locator("#ficha-activity-detail")).toContainText("Sin documentos publicados");
 });
+
+test("Actividades se adapta a móvil y no sobrescribe almacenamiento dañado", async ({ page }) => {
+  for (const width of [760, 390, 320]) {
+    await page.setViewportSize({ width, height: 850 });
+    await page.goto("/");
+    await goToSpace(page, "actividades");
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, "desbordamiento de Actividades en " + width).toBeLessThanOrEqual(1);
+  }
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("traza:v4:ficha", "{dañado"));
+  await goToSpace(page, "actividades");
+  await expect(page.locator("#ficha-activity-detail .ficha-storage-error")).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("traza:v4:ficha"))).toBe("{dañado");
+});
