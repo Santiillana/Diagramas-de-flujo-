@@ -51,3 +51,14 @@
 .ficha-library-view button:focus-visible,.ficha-library-view input:focus-visible,.ficha-library-view textarea:focus-visible,.ficha-library-view select:focus-visible,.ficha-library-view a:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px}
 @media(max-width:900px){.ficha-library-layout{grid-template-columns:1fr}}
 @media(max-width:620px){.ficha-library-toolbar{align-items:stretch}.ficha-library-toolbar .ficha-primary-button{width:100%}.ficha-library-form-grid,.ficha-library-filters,.ficha-library-backup{grid-template-columns:1fr}.ficha-library-backup-actions{width:100%}.ficha-library-backup-actions button{flex:1}.ficha-library-detail-heading{flex-direction:column}}
+
+.ficha-official-library{display:grid;gap:10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface-soft)}
+.ficha-official-library h2{margin:0;font-size:1.12rem}
+.ficha-official-library>div:first-child>p:not(.eyebrow){margin:5px 0 0;color:var(--muted);font-size:.8rem}
+.ficha-official-empty{margin:0;color:var(--muted);font-size:.8rem}
+.ficha-official-resource{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.ficha-official-resource h3{margin:0;font-size:.9rem}
+.ficha-official-resource p{margin:5px 0;color:var(--muted);font-size:.8rem;white-space:pre-wrap}
+.ficha-official-resource small{color:var(--muted);font-size:.7rem}
+.ficha-official-resource a{flex:0 0 auto;color:var(--ink);font-size:.78rem;font-weight:750}
+@media(max-width:560px){.ficha-official-resource{flex-direction:column}}
