@@ -5,7 +5,7 @@ export const SECCIONES_DOCUMENTO = Object.freeze(["clases", "actividades", "bibl
 const esObjeto = valor => valor !== null && typeof valor === "object" && !Array.isArray(valor);
 
 function ubicacionSegura(url) {
-  if (typeof url !== "string" || !url.trim() || /[\\s<>"']/.test(url)) return false;
+  if (typeof url !== "string" || !url.trim() || /[\s<>"]/.test(url) || url.includes("'")) return false;
   if (/^https:\/\//i.test(url)) {
     try {
       const parsed = new URL(url);
