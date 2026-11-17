@@ -29,22 +29,22 @@ function renderClases(fecha, filtros) {
   const notas = FICHA.horarioNotas.filter(item => item.dia === dia && competenciaPasaFiltro(item.competenciaId, filtros));
   const notaHTML = notas.map(item => {
     const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
-    return \`<div class="ficha-schedule-note"><strong>\${escaparHTML(item.titulo)}</strong>
-      <span>\${escaparHTML(instructor?.nombre ?? "Instructor por confirmar")} · \${escaparHTML(item.nota)}</span></div>\`;
+    return `<div class="ficha-schedule-note"><strong>${escaparHTML(item.titulo)}</strong>
+      <span>${escaparHTML(instructor?.nombre ?? "Instructor por confirmar")} · ${escaparHTML(item.nota)}</span></div>`;
   }).join("");
   if (!FICHA.horario.length) {
-    return \`<div class="ficha-empty-inline"><strong>Horario pendiente de publicación</strong>
-      <span>El moderador aún no ha registrado los bloques oficiales de clase.</span></div>\${notaHTML}\`;
+    return `<div class="ficha-empty-inline"><strong>Horario pendiente de publicación</strong>
+      <span>El moderador aún no ha registrado los bloques oficiales de clase.</span></div>${notaHTML}`;
   }
   const lista = clases.length
-    ? \`<ul class="ficha-class-list">\${clases.map(item => \`<li class="ficha-class-item">
-        <time>\${escaparHTML(item.inicio)}–\${escaparHTML(item.fin)}</time>
-        <div><strong>\${escaparHTML(item.competencia?.nombre ?? "Competencia")}</strong>
-          <span>\${escaparHTML(item.ambiente || "Ambiente por confirmar")}</span>
-          <small>\${escaparHTML(item.instructor?.nombre ?? "Instructor por confirmar")}</small></div>
-      </li>\`).join("")}</ul>\`
-    : \`<div class="ficha-empty-inline"><strong>Sin clases este día</strong>
-        <span>No hay bloques programados para hoy con los filtros actuales.</span></div>\`;
+    ? `<ul class="ficha-class-list">${clases.map(item => `<li class="ficha-class-item">
+        <time>${escaparHTML(item.inicio)}–${escaparHTML(item.fin)}</time>
+        <div><strong>${escaparHTML(item.competencia?.nombre ?? "Competencia")}</strong>
+          <span>${escaparHTML(item.ambiente || "Ambiente por confirmar")}</span>
+          <small>${escaparHTML(item.instructor?.nombre ?? "Instructor por confirmar")}</small></div>
+      </li>`).join("")}</ul>`
+    : `<div class="ficha-empty-inline"><strong>Sin clases este día</strong>
+        <span>No hay bloques programados para hoy con los filtros actuales.</span></div>`;
   return notaHTML + lista;
 }
 
