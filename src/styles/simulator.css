@@ -561,6 +561,15 @@ body[data-active-space="simulator"] #RC{font-size:calc(var(--fs)*1px)}
   body[data-active-space="simulator"] #dock .dock-speed select{min-height:36px}
   body[data-active-space="simulator"] #PR .variables-content{max-height:160px}
 }
+
+body[data-active-space="simulator"] .diagram-active-target{
+  position:absolute;z-index:35;top:12px;left:50%;transform:translateX(-50%);min-height:40px;padding:0 14px;
+  border:1px solid var(--line);border-radius:999px;color:var(--text);background:var(--card);
+  box-shadow:0 6px 20px color-mix(in srgb,var(--text) 12%,transparent);font-family:inherit;font-size:14px;font-weight:600;line-height:1.2;cursor:pointer
+}
+body[data-active-space="simulator"] .diagram-active-target:hover{border-color:var(--struct);color:var(--struct)}
+body[data-active-space="simulator"] .diagram-active-target:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+body[data-active-space="simulator"] .diagram-active-target[hidden]{display:none}
 @media(max-width:430px){
   body[data-active-space="simulator"] .sim-tool-button{flex-basis:34px;min-width:34px;height:38px;padding:0 3px}
   body[data-active-space="simulator"] .sim-exercise-strip{max-width:115px}

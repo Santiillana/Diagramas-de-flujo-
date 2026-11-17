@@ -28,7 +28,7 @@ function readPseudocodeSize(){
 
 
 function stop(){
-  if(timer!==null){clearInterval(timer);timer=null;}
+  if(timer!==null){clearTimeout(timer);timer=null;}
   cancelChoreography();
   const b=$("#simulator-play");
   if(b){b.textContent="▶";b.title="Reproducir";b.setAttribute("aria-label","Reproducir");}
@@ -668,6 +668,7 @@ function centerActiveNode(event,behavior){
   if(cameraRaf)cancelAnimationFrame(cameraRaf);
   const finish=()=>{
     panOffset=goal;cameraRaf=0;applyCanvasTransform();
+    updateActiveNodeHint(timeline?.current);
     if(!$("#simulator-controls-panel")?.hidden)requestAnimationFrame(positionControlsPanel);
   };
   if(behavior==="auto"||reducedMotion()||Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y)<1)finish();
@@ -679,6 +680,7 @@ function centerActiveNode(event,behavior){
       const alpha=1-Math.exp(-dt/(210/currentSpeedFactor()));
       panOffset={x:panOffset.x+(goal.x-panOffset.x)*alpha,y:panOffset.y+(goal.y-panOffset.y)*alpha};
       applyCanvasTransform();
+      updateActiveNodeHint(timeline?.current);
       const distance=Math.hypot(goal.x-panOffset.x,goal.y-panOffset.y);
       if(distance<1.2||now-started>Math.min(5000,1700/currentSpeedFactor()))finish();
       else cameraRaf=requestAnimationFrame(step);
@@ -976,13 +978,14 @@ function setCameraFollowing(){
 function zoomAt(nextZoom,clientX,clientY){
   const stage=$("#diagram-stage");
   if(!stage)return;
-  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.3,Math.min(3,nextZoom));
+  const box=stage.getBoundingClientRect(),oldZoom=zoom,target=Math.max(.4,Math.min(2.5,nextZoom));
   const anchorX=clientX-box.left,anchorY=clientY-box.top;
   const worldX=(anchorX-panOffset.x)/oldZoom,worldY=(anchorY-panOffset.y)/oldZoom;
   zoom=target;
   panOffset={x:anchorX-worldX*zoom,y:anchorY-worldY*zoom};
   stage.dataset.zoomCount=String((Number(stage.dataset.zoomCount)||0)+1);
   applyCanvasTransform();
+  updateActiveNodeHint(timeline?.current);
 }
 function zoomDiagram(direction){
   if(!diagramFitWidth)fitDiagram();
@@ -994,6 +997,15 @@ function zoomDiagram(direction){
 function centerDiagram(){
   if(!diagram)return;
   fitDiagram();setCameraFollowing();
+}
+function updateActiveNodeHint(event){
+  const hint=$("#diagram-active-target"),stage=$("#diagram-stage");
+  if(!hint||!stage)return;
+  const model=diagram?.nodes.find(item=>String(item.sourceId)===String(event?.nodeId)||String(item.id)===String(event?.nodeId));
+  const node=model?document.getElementById("flow-node-"+model.id):null;
+  if(cameraAuto||!node){hint.hidden=true;return;}
+  const bounds=stage.getBoundingClientRect(),rect=node.getBoundingClientRect(),margin=18;
+  hint.hidden=rect.right>bounds.left+margin&&rect.left<bounds.right-margin&&rect.bottom>bounds.top+margin&&rect.top<bounds.bottom-margin;
 }
 function renderOperationBreakdown(event){
   let expression=null;
@@ -1055,6 +1067,7 @@ function render(){
   document.documentElement.style.setProperty("--sim-animation-duration",Math.round(Math.max(100,Math.min(5000,500/currentSpeedFactor())))+"ms");
   updateCameraButton();
   if(cameraAuto&&cameraReady)centerActiveNode(e);
+  updateActiveNodeHint(e);
   /* La escena presenta una figura y una sola explicación del evento actual. */
   const sceneView=renderScene(e,{events:execution.events,inputValues:parseInputs(),execution});
   const scene=sceneView.model?.scene??e.scene??{title:typeName(e.type)};
@@ -1268,7 +1281,6 @@ function run(){
 function seek(index){
   if(!timeline)return;
   stop();timeline.seek(index);
-  cameraAuto=true;updateCameraButton();
   render();
 }
 function move(delta){
@@ -1279,7 +1291,7 @@ function move(delta){
     predictionResume=timer!==null;stop();showPredictionQuestion(destination);return;
   }
   stop();timeline.seek(destination);
-  cameraAuto=true;updateCameraButton();choreographyPlayback=true;
+  choreographyPlayback=true;
   try{render();}finally{choreographyPlayback=false;}
 }
 function play(){
@@ -1287,7 +1299,8 @@ function play(){
   if(timer!==null){stop();return;}
   if(timeline.index>=timeline.length-1)timeline.first();
   const button=$("#simulator-play");button.textContent="Ⅱ";button.title="Pausar";button.setAttribute("aria-label","Pausar");
-  timer=window.setInterval(()=>{
+  const advance=()=>{
+    timer=null;
     if(predictionPending)return;
     const destination=timeline.index+1;
     if(predictEnabled&&eventAskable(execution.events[destination])){
@@ -1295,11 +1308,16 @@ function play(){
     }
     cancelChoreography();
     timeline.next();
-    cameraAuto=true;updateCameraButton();
     choreographyPlayback=true;
     try{render();}finally{choreographyPlayback=false;}
     if(timeline.index>=timeline.length-1)stop();
-  },Math.min(12000,2400/currentSpeedFactor()));
+    else{
+      const speed=currentSpeedFactor();
+      const animation=Math.max(tokenTravelDuration,flightTravelDuration,Math.min(5000,500/speed));
+      timer=window.setTimeout(advance,Math.min(15000,Math.max(600,animation)+Math.max(100,120/speed)+600));
+    }
+  };
+  timer=window.setTimeout(advance,0);
 }
 function applyDiagramZoom(){
   const svg=$("#flow-svg");
@@ -1422,6 +1440,7 @@ function bindDiagramPan(){
     if(!drag.moved)return;
     panOffset={x:drag.originX+dx,y:drag.originY+dy};
     applyCanvasTransform();
+    updateActiveNodeHint(timeline?.current);
     stage.dataset.panMoved=String((Number(stage.dataset.panMoved)||0)+1);
   };
   const onUp=event=>{
@@ -1445,6 +1464,7 @@ function bindDiagramPan(){
       const multiplier=event.deltaMode===1?18:event.deltaMode===2?stage.clientHeight:1;
       panOffset={x:panOffset.x-event.deltaX*multiplier,y:panOffset.y-event.deltaY*multiplier};
       applyCanvasTransform();
+      updateActiveNodeHint(timeline?.current);
       stage.dataset.wheelPanCount=String((Number(stage.dataset.wheelPanCount)||0)+1);
     }
   },{passive:false});
@@ -1560,6 +1580,7 @@ function bind(){
     cameraAuto=!cameraAuto;updateCameraButton();
     if(cameraAuto&&timeline)centerActiveNode(timeline.current,"auto");
   });
+  $("#diagram-active-target")?.addEventListener("click",()=>setCameraFollowing());
   $("#diagram-fullscreen")?.addEventListener("click",toggleDiagramFullscreen);
   $("#diagram-fullscreen-exit")?.addEventListener("click",toggleDiagramFullscreen);
   $("#focus-previous")?.addEventListener("click",()=>{move(-1);showFocusControls();});
@@ -1645,6 +1666,8 @@ function bind(){
     else if(key==="ArrowLeft"){event.preventDefault();move(-1);}
     else if(key==="Home"){event.preventDefault();seek(0);}
     else if(key==="End"){event.preventDefault();seek((timeline?.length??1)-1);}
+    else if(key==="+"||key==="="){event.preventDefault();zoomDiagram(1);}
+    else if(key==="-"||key==="_"){event.preventDefault();zoomDiagram(-1);}
     else if(key==="0"){event.preventDefault();centerDiagram();}
     else if(key.toLowerCase()==="c"){event.preventDefault();if(cameraAuto)setCameraFree();else setCameraFollowing();}
     else if(key.toLowerCase()==="p"){event.preventDefault();togglePredictionMode();}

@@ -22,3 +22,39 @@ test("las figuras y bifurcaciones se leen sin recortes en móvil, tableta y escr
     if(width===1280)await page.locator("#diagram-stage").screenshot({path:"test-results/simulator-diagram-redesign.png"});
   }
 });
+
+test("la cámara fija conserva encuadre al avanzar y el zoom respeta sus límites",async({page})=>{
+  await page.setViewportSize({width:1280,height:860});
+  await page.goto("/");
+  await goToSpace(page,"simulator");
+  await page.locator("#simulator-controls-toggle").click();
+  await page.locator("#diagram-zoom-in").click();
+  const before=await page.locator("#flow-diagram-container").evaluate(node=>({
+    x:node.dataset.cameraX,y:node.dataset.cameraY,zoom:node.dataset.cameraZoom
+  }));
+  await page.locator("#simulator-next").click();
+  const after=await page.locator("#flow-diagram-container").evaluate(node=>({
+    x:node.dataset.cameraX,y:node.dataset.cameraY,zoom:node.dataset.cameraZoom
+  }));
+  expect(after).toEqual(before);
+  await page.keyboard.press("+");
+  for(let index=0;index<20;index++)await page.keyboard.press("+");
+  let zoom=await page.locator("#flow-diagram-container").evaluate(node=>Number(node.dataset.cameraZoom));
+  expect(zoom).toBeLessThanOrEqual(2.5);
+  for(let index=0;index<40;index++)await page.keyboard.press("-");
+  zoom=await page.locator("#flow-diagram-container").evaluate(node=>Number(node.dataset.cameraZoom));
+  expect(zoom).toBeGreaterThanOrEqual(.4);
+});
+
+test("la reproducción avanza por pasos y se puede pausar",async({page})=>{
+  await page.goto("/");
+  await goToSpace(page,"simulator");
+  await page.locator("#simulator-speed").selectOption("0.75");
+  const initial=await page.locator("#timeline-count").textContent();
+  await page.locator("#simulator-play").click();
+  await expect.poll(()=>page.locator("#timeline-count").textContent(),{timeout:5000}).not.toBe(initial);
+  await page.locator("#simulator-play").click();
+  const paused=await page.locator("#timeline-count").textContent();
+  await page.waitForTimeout(250);
+  await expect(page.locator("#timeline-count")).toHaveText(paused);
+});
