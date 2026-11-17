@@ -172,6 +172,36 @@ test("un respaldo con campos anidados que perderían información se rechaza", (
   assert.equal(validateFichaBackup(brokenEvent).ok, false);
 });
 
+test("el respaldo exige coherencia entre fechas, entregas, devoluciones y estado", () => {
+  const created = activity(createEmptyFichaData(), {
+    assignedOn: "2026-11-16",
+    dueOn: "2026-11-20"
+  });
+  const original = createFichaBackup(created.data);
+
+  const reversedDates = structuredClone(original);
+  reversedDates.data.activities[0].dueOn = "2026-11-15";
+  assert.equal(validateFichaBackup(reversedDates).reason, "invalid_records");
+
+  const forgedApproval = structuredClone(original);
+  forgedApproval.data.activities[0].status = "approved";
+  assert.equal(validateFichaBackup(forgedApproval).reason, "invalid_records");
+
+  const submitted = addSubmission(created.activity.id, {
+    summary: "Entrega válida"
+  }, created.data);
+  const emptyAttempt = createFichaBackup(submitted.data);
+  emptyAttempt.data.activities[0].attempts[0].summary = "";
+  assert.equal(validateFichaBackup(emptyAttempt).reason, "invalid_records");
+
+  const feedback = addFeedback(created.activity.id, {
+    result: "favorable", comment: "Cumple con los criterios."
+  }, submitted.data);
+  const emptyComment = createFichaBackup(feedback.data);
+  emptyComment.data.activities[0].feedbackEntries[0].comment = "   ";
+  assert.equal(validateFichaBackup(emptyComment).reason, "invalid_records");
+});
+
 test("un respaldo válido puede recuperar almacenamiento corrupto de forma explícita", () => {
   const created = activity();
   const backup = createFichaBackup(created.data);
