@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildArrowChallenge, buildGapChallenge, mixedModeOrder } from "../src/ui/lab/generators.js";
+import { buildArrowChallenge, buildGapChallenge, buildMatchChallenge, mixedModeOrder } from "../src/ui/lab/generators.js";
 
 test("el mismo ejercicio, método e intento generan el mismo hueco",()=>{
   const source="S=0|para i=1;i<=3;i++|S=S+i|fin|imp S";
@@ -39,4 +39,14 @@ test("la práctica mixta no repite el mismo modo en pasos consecutivos",()=>{
     const modes=mixedModeOrder(22,attempt).slice(0,5);
     for(let index=1;index<modes.length;index++)assert.notEqual(modes[index],modes[index-1]);
   }
+});
+
+test("Empareja genera seis parejas completas y deterministas",()=>{
+  const first=buildMatchChallenge(22,1,4),second=buildMatchChallenge(22,1,4);
+  assert.deepEqual(first,second);
+  assert.equal(first.left.length,6);
+  assert.equal(first.right.length,6);
+  assert.deepEqual(new Set(first.left.map(item=>item.id)),new Set(first.right.map(item=>item.id)));
+  assert.equal(new Set(first.left.map(item=>item.label)).size,6);
+  assert.equal(new Set(first.right.map(item=>item.label)).size,6);
 });

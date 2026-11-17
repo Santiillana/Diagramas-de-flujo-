@@ -281,15 +281,39 @@
 
     <section class="space-view lab-view" id="view-lab" data-view="lab" aria-labelledby="lab-title" hidden>
       <header class="section-intro lab-intro">
-        <div><p class="eyebrow">LABORATORIO · PRÁCTICA ACTIVA</p><h2 id="lab-title">Aprende haciendo: lee, construye y depura.</h2><p>Tres maneras de experimentar con la misma lógica, los diagramas reales y las variables de la ejecución.</p></div>
-        <span class="lab-intro-meta"><strong>3</strong><span>MODOS</span><i aria-hidden="true">·</i><strong>8</strong><span>ACTIVIDADES</span></span>
+        <div><p class="eyebrow">LABORATORIO · PRÁCTICA ACTIVA</p><h2 id="lab-title">Practica con retos cortos.</h2><p>Observa, construye e investiga con la misma ejecución del Simulador.</p></div>
       </header>
-      <section class="lab-mode-cards" id="lab-mode-cards" aria-label="Elige una forma de practicar">
-        <button type="button" class="lab-mode-card is-active" data-lab-mode="read" aria-pressed="true"><span class="lab-mode-number">01 <small>OBSERVA</small></span><span class="lab-mode-illustration lab-mode-read" aria-hidden="true"><i></i><b></b><em></em></span><strong>Sigue la ficha</strong><small>Lee el recorrido, anticipa decisiones y observa cómo cambian los valores.</small><span class="lab-mode-action">Practicar lectura <span aria-hidden="true">↗</span></span></button>
-        <button type="button" class="lab-mode-card" data-lab-mode="build" aria-pressed="false"><span class="lab-mode-number">02 <small>CONSTRUYE</small></span><span class="lab-mode-illustration lab-mode-build" aria-hidden="true"><i></i><b></b><em></em></span><strong>Arma el diagrama</strong><small>Organiza instrucciones y símbolos para formar un flujo correcto.</small><span class="lab-mode-action">Construir un flujo <span aria-hidden="true">↗</span></span></button>
-        <button type="button" class="lab-mode-card" data-lab-mode="debug" aria-pressed="false"><span class="lab-mode-number">03 <small>INVESTIGA</small></span><span class="lab-mode-illustration lab-mode-debug" aria-hidden="true"><i></i><b></b><em></em></span><strong>Caza el error</strong><small>Localiza el paso que falla y compara el resultado antes y después.</small><span class="lab-mode-action">Depurar un algoritmo <span aria-hidden="true">↗</span></span></button>
+      <div class="lab-catalog-filters" aria-label="Filtrar mecánicas"><div class="lab-filter-group"><span>Concepto</span><div id="lab-filter-concepts" role="group" aria-label="Filtrar por concepto"></div></div><div class="lab-filter-group"><span>Dificultad</span><div id="lab-filter-difficulty" role="group" aria-label="Filtrar por dificultad"></div></div><button type="button" id="lab-filter-clear" hidden>Limpiar</button></div>
+      <section class="lab-mode-cards" id="lab-mode-cards" aria-label="Mecánicas del Laboratorio">
+        <section class="lab-family-band" aria-labelledby="lab-observe-title"><header class="lab-family-heading"><span class="lab-family-symbol" aria-hidden="true">◉</span><div><h3 id="lab-observe-title">Observa</h3><p>Mira y anticipa</p></div></header><div class="lab-mechanics-grid">
+          <button type="button" class="lab-mode-card" data-lab-mode="read" data-lab-activity="predict"><span class="lab-mechanic-art" aria-hidden="true"><b>?</b><i></i></span><strong>Predice</strong><small>Anticipa el siguiente paso de una ejecución.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="predict" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="read" data-lab-activity="follow-arrow"><span class="lab-mechanic-art" aria-hidden="true"><b>↘</b><i></i></span><strong>Sigue la flecha</strong><small>Recorre las figuras en el orden del programa.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="follow-arrow" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="read" data-lab-activity="table"><span class="lab-mechanic-art" aria-hidden="true"><b>▦</b><i></i></span><strong>Tabla de seguimiento</strong><small>Completa los valores de cada paso.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="table" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+        </div></section>
+        <section class="lab-family-band" aria-labelledby="lab-build-title"><header class="lab-family-heading"><span class="lab-family-symbol" aria-hidden="true">◇</span><div><h3 id="lab-build-title">Construye</h3><p>Arma y completa</p></div></header><div class="lab-mechanics-grid">
+          <button type="button" class="lab-mode-card" data-lab-mode="build" data-lab-activity="order"><span class="lab-mechanic-art" aria-hidden="true"><b>↕</b><i></i></span><strong>Ordena</strong><small>Organiza instrucciones para reconstruir el algoritmo.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="order" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="build" data-lab-activity="fill-gap"><span class="lab-mechanic-art" aria-hidden="true"><b>＿</b><i></i></span><strong>Completa el hueco</strong><small>Elige qué instrucción completa el programa.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="fill-gap" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="build" data-lab-activity="build-diagram"><span class="lab-mechanic-art" aria-hidden="true"><b>⌘</b><i></i></span><strong>Arma el diagrama</strong><small>Coloca las piezas en un flujo estructurado.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span>Crear</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="build" data-lab-activity="symbol"><span class="lab-mechanic-art" aria-hidden="true"><b>◇</b><i></i></span><strong>Identifica el símbolo</strong><small>Relaciona una instrucción con su figura.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="symbol" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="build" data-lab-activity="match"><span class="lab-mechanic-art" aria-hidden="true"><b>⇄</b><i></i></span><strong>Empareja</strong><small>Une cada concepto con su ejemplo.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="match" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+        </div></section>
+        <section class="lab-family-band" aria-labelledby="lab-investigate-title"><header class="lab-family-heading"><span class="lab-family-symbol" aria-hidden="true">⌕</span><div><h3 id="lab-investigate-title">Investiga</h3><p>Busca y pregunta</p></div></header><div class="lab-mechanics-grid">
+          <button type="button" class="lab-mode-card" data-lab-mode="debug" data-lab-activity="error"><span class="lab-mechanic-art" aria-hidden="true"><b>⌕</b><i></i></span><strong>Encuentra el error</strong><small>Detecta el primer paso que produce un resultado distinto.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="error" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+          <button type="button" class="lab-mode-card" data-lab-mode="debug" data-lab-activity="whatif"><span class="lab-mechanic-art" aria-hidden="true"><b>¿…?</b><i></i></span><strong>¿Y si…?</strong><small>Cambia un dato y anticipa qué efecto tendrá.</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span data-topic-stars="whatif" aria-label="Hasta tres estrellas">☆☆☆</span></span></button>
+        </div></section>
       </section>
-      <p class="lab-mode-footnote"><span aria-hidden="true">⌁</span> Las tres modalidades comparten la traza del Simulador: diagrama, escena y variables siempre cuentan la misma ejecución.</p>
+      <p id="lab-filter-empty" class="lab-filter-empty" hidden>No hay mecánicas disponibles con estos filtros.</p>
+      <p class="lab-mode-footnote"><span aria-hidden="true">⌁</span> Los retos usan la ejecución del Simulador para mantener sincronizados el diagrama, la escena y las variables.</p>
+      <p class="lab-medal-announcement" id="lab-medal-announcement" role="status" hidden></p>
+      <dialog class="lab-prepare-dialog" id="lab-prepare-dialog" aria-labelledby="lab-prepare-title">
+        <form method="dialog" class="lab-prepare-card">
+          <button class="lab-prepare-close" value="cancel" aria-label="Cerrar">×</button>
+          <p class="eyebrow">PREPARA TU PARTIDA</p><h3 id="lab-prepare-title">Elige cómo practicar</h3>
+          <fieldset><legend>Concepto</legend><div class="lab-prepare-options" id="lab-prepare-concepts"></div></fieldset>
+          <fieldset><legend>Dificultad</legend><div class="lab-prepare-options lab-prepare-levels" id="lab-prepare-levels"></div></fieldset>
+          <button type="button" class="button button-primary" id="lab-prepare-play">Jugar</button>
+        </form>
+      </dialog>
       <div class="lab-practice-workspace" id="lab-practice-workspace" hidden>
         <div class="lab-practice-heading"><button type="button" class="text-link" id="lab-back-to-modes">← Las tres formas de practicar</button><div><p class="eyebrow" id="lab-mode-kicker">01 · LEER</p><h3 id="lab-mode-title">Sigue la ficha</h3><p id="lab-mode-description">Tú decides el siguiente movimiento; el programa te explica el porqué.</p></div></div>
         <div class="lab-layout lab-layout-live">
@@ -306,12 +330,12 @@
           </aside>
         </div>
         <section class="panel lab-task-panel" aria-live="polite">
-          <div class="panel-heading"><div><p class="eyebrow">RETO ACTUAL</p><h3 id="lab-task-title">Elige una actividad</h3></div></div>
+          <div class="panel-heading"><div><p class="eyebrow">RETO ACTUAL</p><h3 id="lab-task-title" tabindex="-1">Elige una actividad</h3></div></div>
           <div id="lab-task-content" class="lab-task-content"><p>Selecciona una actividad para empezar. La explicación y las pistas acompañarán cada paso.</p></div>
         </section>
       </div>
       <section id="lab-builder-stage" class="lab-builder-stage" hidden>
-        <div class="lab-builder-stage-heading"><button type="button" class="text-link" id="lab-builder-back">← Volver a Arma el diagrama</button><h3>Construye tu propio flujo</h3></div>
+        <div class="lab-builder-stage-heading"><button type="button" class="text-link" id="lab-builder-back">← Volver a Arma el diagrama</button><h3 id="lab-builder-title" tabindex="-1">Construye tu propio flujo</h3></div>
         <div class="builder-toolbar panel">
           <div><p class="eyebrow">PLANTILLAS DE INICIO</p><strong>Prueba con un flujo base o empieza desde cero.</strong></div>
           <div class="builder-presets"><button type="button" class="button button-secondary" id="builder-undo" aria-label="Deshacer último cambio" aria-keyshortcuts="Control+Z Meta+Z" title="Deshacer · Ctrl+Z" disabled>Deshacer</button><button type="button" class="button button-secondary" id="builder-redo" aria-label="Rehacer último cambio" aria-keyshortcuts="Control+Shift+Z Control+Y Meta+Shift+Z Meta+Y" title="Rehacer · Ctrl+Shift+Z o Ctrl+Y" disabled>Rehacer</button><button type="button" class="button button-secondary" data-builder-preset="sequence">Secuencia</button><button type="button" class="button button-secondary" data-builder-preset="decision">Decisión</button><button type="button" class="button button-secondary" data-builder-preset="for">Para</button><button type="button" class="button button-secondary" data-builder-preset="while">Mientras</button><button type="button" class="button button-secondary" data-builder-preset="doWhile">Hacer–Mientras</button><button type="button" class="button button-secondary" data-builder-preset="empty">Vacío</button></div>

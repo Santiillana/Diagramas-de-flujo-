@@ -8,3 +8,4 @@
 @media(max-width:440px){.theme-grid{grid-template-columns:1fr}.learn-catalog-controls>label{align-items:flex-start;flex-direction:column}.learn-catalog-controls select{width:100%}.learn-topic-crumb{font-size:12px}.learn-topic-tab{padding-inline:9px;font-size:13px}}
 :root[data-motion="reduced"] .theme-card,:root[data-motion="reduced"] .learn-topic-tab{transition:none}
 .learn-catalog-home[hidden],.learn-progress-page[hidden],.learn-topic-space[hidden],.learn-topic-empty[hidden],#learn-lessons-content[hidden]{display:none!important}
+ .learn-progress-topic .learn-topic-medals{padding:7px 9px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:9px;color:var(--accent-strong);background:var(--accent-soft);font-weight:650}

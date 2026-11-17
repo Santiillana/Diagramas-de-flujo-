@@ -75,7 +75,7 @@ test("el simulador reserva las cuatro ventanas pedagógicas y el dock", async ()
   }
 });
 
-test("el laboratorio organiza ocho actividades en tres formas de práctica", async () => {
+test("el laboratorio organiza diez mecánicas en tres familias", async () => {
   const html = await read("../index.html");
   const lab = await read("../src/ui/lab.js");
   for (const mode of ["read", "build", "debug"]) {
@@ -83,18 +83,21 @@ test("el laboratorio organiza ocho actividades en tres formas de práctica", asy
   }
   assert.match(html, /id="lab-activity-list"/);
   const activities = [
-    ["predict", "Predice el paso"],
+    ["predict", "Predice"],
     ["table", "Tabla de seguimiento"],
     ["follow-arrow", "Sigue la flecha"],
-    ["order", "Ordena instrucciones"],
-    ["symbol", "Elige la figura"],
+    ["order", "Ordena"],
+    ["symbol", "Identifica el símbolo"],
     ["fill-gap", "Completa el hueco"],
+    ["build-diagram", "Arma el diagrama"],
+    ["match", "Empareja"],
     ["error", "Encuentra el error"],
-    ["whatif", "Compara dos recorridos"]
+    ["whatif", "¿Y si…?"]
   ];
   for (const [id, title] of activities) {
     assert.ok(lab.includes('"'+id+'"'), "Falta registrar la actividad " + id);
-    assert.ok(lab.includes('"'+title+'"'), "Falta el título de la actividad " + title);
+    assert.ok(html.includes('data-lab-activity="'+id+'"'), "Falta la mecánica " + id);
+    assert.ok(html.includes(">"+title+"</strong>"), "Falta el título de la mecánica " + title);
   }
   assert.match(html, /id="lab-builder-stage"/, "El constructor debe estar dentro del Laboratorio");
   assert.match(html, /id="builder-canvas-list"/, "Falta el lienzo libre del constructor");

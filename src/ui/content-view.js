@@ -8,6 +8,7 @@ import { temas, competenciasAprende, temaPorId } from "../content/temas.js";
 import { conceptos, conceptoPorEtiqueta } from "../content/conceptos.js";
 import { normalizeLearnProgress, dateInBogota, currentStreak } from "../content/learn-progress.js";
 import { adaptLegacyExercise } from "../content/exercise-adapter.js";
+import { conceptMedals } from "./lab/progress.js";
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -203,11 +204,12 @@ function renderLearnProgress(){
   const ring=$("#learn-progress-ring"),text=$("#learn-progress-percent"),total=$("#learn-progress-total"),fill=$("#learn-progress-fill");
   if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(done));}
   if(text)text.textContent=percent+"%";if(total)total.textContent=done+" de "+lessons.length+" lecciones completadas";if(fill)fill.style.width=percent+"%";
-  let lab={};try{lab=JSON.parse(localStorage.getItem("traza:v2:progress")||"{}").exercises||{};}catch{}
+  let labData={};try{labData=JSON.parse(localStorage.getItem("traza:v2:progress")||"{}");}catch{}
+  const lab=labData.exercises||{};
   host.innerHTML=competenciasAprende.map(competence=>{
     const owned=temas.filter(theme=>theme.competenciaId===competence.id);
     const lessonIds=owned.flatMap(theme=>theme.lecciones);const completed=lessonIds.filter(id=>learnProgress.completed.includes(id)).length;
-    return `<article class="learn-progress-competence"><header><span class="competence-marker" data-forma="${competence.forma}" aria-hidden="true"></span><strong>${escapeHTML(competence.titulo)}</strong>${progressRing(completed,lessonIds.length)}</header>${owned.map(theme=>{const count=theme.lecciones.filter(id=>learnProgress.completed.includes(id)).length;const pct=theme.lecciones.length?Math.round(count/theme.lecciones.length*100):0;const stars=theme.ejercicios.reduce((sum,id)=>sum+Object.values(lab[String(id)]||{}).reduce((n,mode)=>n+(Number(mode?.stars)||0),0),0);return `<div class="learn-progress-topic"><span>${escapeHTML(theme.titulo)}</span><span class="learn-topic-track"><i style="width:${pct}%"></i></span><small>${count} de ${theme.lecciones.length} lecciones · ${stars} estrellas del Laboratorio</small></div>`;}).join("")||'<p>Próximamente</p>'}</article>`;
+    return `<article class="learn-progress-competence"><header><span class="competence-marker" data-forma="${competence.forma}" aria-hidden="true"></span><strong>${escapeHTML(competence.titulo)}</strong>${progressRing(completed,lessonIds.length)}</header>${owned.map(theme=>{const count=theme.lecciones.filter(id=>learnProgress.completed.includes(id)).length;const pct=theme.lecciones.length?Math.round(count/theme.lecciones.length*100):0;const stars=theme.ejercicios.reduce((sum,id)=>sum+Object.values(lab[String(id)]||{}).reduce((n,mode)=>n+(Number(mode?.stars)||0),0),0);const medals=conceptMedals(labData,theme.id);const medalNames=medals.map(id=>escapeHTML(conceptos.find(item=>item.id===id)?.titulo??id));return `<div class="learn-progress-topic"><span>${escapeHTML(theme.titulo)}</span><span class="learn-topic-track"><i style="width:${pct}%"></i></span><small>${count} de ${theme.lecciones.length} lecciones · ${stars} estrellas del Laboratorio · ${medals.length} medallas</small>${medalNames.length?`<small class="learn-topic-medals" aria-label="Medallas logradas">🏅 ${medalNames.join(" · ")}</small>`:""}</div>`;}).join("")||'<p>Próximamente</p>'}</article>`;
   }).join("");
 }
 function lessonList(){

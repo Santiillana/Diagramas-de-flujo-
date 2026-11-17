@@ -15,7 +15,7 @@ export const competenciasAprende = [
 const leccionesDiagramas = lessons.map(item => item.id);
 
 export const temas = [
-  { id: "diagramas-flujo", competenciaId: "evaluar-requisitos", titulo: "Diagramas de flujo", icono: "↘", dificultad: 1, estado: "disponible", conceptos: ["figuras", "flujo", "entrada", "salida", "variables", "asignacion", "operaciones", "decisiones", "ciclos"], lecciones: leccionesDiagramas, ejercicios: exercises.map(item => item.id), simulador: { tipo: "flujo" }, laboratorio: { mecanicas: ["predict", "table", "order", "symbol", "error", "whatif", "fill-gap", "follow-arrow"] } },
+  { id: "diagramas-flujo", competenciaId: "evaluar-requisitos", titulo: "Diagramas de flujo", icono: "↘", dificultad: 1, estado: "disponible", conceptos: ["figuras", "flujo", "entrada", "salida", "variables", "asignacion", "operaciones", "decisiones", "ciclos"], lecciones: leccionesDiagramas, ejercicios: exercises.map(item => item.id), simulador: { tipo: "flujo" }, laboratorio: { mecanicas: ["predict", "follow-arrow", "table", "order", "fill-gap", "build-diagram", "symbol", "match", "error", "whatif"] } },
   { id: "fuentes-informacion", competenciaId: "establecer-requisitos", titulo: "Fuentes de información", icono: "⌕", dificultad: 1, estado: "proximamente", conceptos: [], lecciones: [], ejercicios: [], simulador: null, laboratorio: null },
   ...["enteros", "racionales", "regla-de-tres"].map((id, index) => ({ id, competenciaId: "matematicas", titulo: ["Números enteros", "Números racionales", "Regla de tres"][index], icono: ["±", "½", "%"][index], dificultad: index + 1, estado: "proximamente", conceptos: [], lecciones: [], ejercicios: [], simulador: null, laboratorio: null }))
 ];
