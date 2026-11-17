@@ -4,7 +4,7 @@
 **Repositorio:** `Santiillana/Traza`  
 **Rama:** `v4/module-7-activities`  
 **Base:** integración del Módulo 6, commit `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
-**Estado:** catálogo y detalle funcionales en construcción avanzada dentro de esta rama: crear, editar, buscar, filtrar, registrar entregas, devoluciones transcritas, notas, bitácora y archivo lógico. La aceptación final depende de CI y de cerrar los casos E2E.
+**Estado:** catálogo y detalle funcionales implementados en esta rama: crear, editar, buscar, filtrar, registrar entregas, devoluciones transcritas, notas, bitácora y archivo lógico. E2E de navegador aprobados en el SHA `04b699f` (run 43996077312); la aceptación de publicación sigue condicionada al check externo de Workers.
 
 ## 1. Objetivo
 
@@ -33,7 +33,7 @@ La primera interfaz funcional está conectada desde `src/app.js` y `index.html`.
 - Notas personales, archivo lógico y conservación del historial.
 - Estados vacíos, mensajes de error, controles por teclado y diseño responsive.
 
-Los E2E de navegador de `e2e/module-7-activities.spec.js` cubren el ciclo de vida, filtros y la protección frente a almacenamiento corrupto. Deben pasar en el SHA final antes de aceptar el módulo.
+Los E2E de navegador de `e2e/module-7-activities.spec.js` cubren creación/edición, cambios de estado, entregas sucesivas, devoluciones, notas, filtros, archivo y protección del almacenamiento corrupto. Todos pasaron en la suite conjunta de SHA `04b699f`.
 
 **Límite deliberado:** las actividades personales son locales. Las actividades oficiales se editan en el archivo central de contenido, se revisan mediante PR y se muestran en solo lectura a todos los visitantes. El catálogo actual no segmenta cohortes ni usuarios. La edición global desde un panel requeriría un servicio central con autenticación y roles de moderador; no se simula con datos locales.
 
