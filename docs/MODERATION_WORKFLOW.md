@@ -24,18 +24,19 @@ Las devoluciones se etiquetan como transcripciones del estudiante. La aplicació
 
 ## Cómo publicar una actividad oficial
 
-1. Editar `src/content/ficha-activities.js` y añadir un objeto con `id` estable, `title`, `description`, `classId` válido o `null`, `assignedOn`, `dueOn` e `instructionsUrl` opcional.
-2. Mantener las fechas en `YYYY-MM-DD`; `null` significa que esa fecha no fue definida.
-3. Validar que la URL de instrucciones sea HTTP/HTTPS y que el contenido sea correcto.
-4. Ejecutar `npm test` y `npm run test:browser`, revisar la vista y abrir PR.
+1. Editar `src/content/ficha-activities.js` y añadir un objeto con `id` único y estable, `title`, `description`, `classId` válido o `null`, `assignedOn`, `dueOn` e `instructionsUrl` opcional.
+2. Mantener las fechas en `YYYY-MM-DD`; `null` significa que esa fecha no fue definida. La fecha de vencimiento no puede ser anterior a la asignación.
+3. Las instrucciones solo admiten HTTP/HTTPS y no aceptan credenciales en la URL. No añadir notas, entregas ni calificaciones de estudiantes.
+4. `validateOfficialActivities` comprueba IDs únicos, campos, clase existente, fechas y URL. Ejecutar `npm test` y `npm run test:browser`, revisar la vista y abrir PR.
 
 El catálogo actual es compartido y público para todos los visitantes. Todavía no segmenta por ficha, cohorte o usuario. No añadir información privada ni datos de calificación a este archivo.
 
 ## Cómo publicar un recurso oficial
 
-1. Editar `src/content/ficha-resources.js` y añadir un objeto con `id`, `title`, `kind`, `url`, `description`, `classId` y `tags`.
-2. Usar solo recursos revisados y enlaces HTTP/HTTPS. `url: ""` se reserva para referencias bibliográficas o apuntes sin enlace directo.
-3. Ejecutar las pruebas, revisar el catálogo en Biblioteca y publicar mediante PR.
+1. Editar `src/content/ficha-resources.js` y añadir un objeto con `id` único, `title`, `kind`, `url`, `description`, `classId` y `tags`.
+2. `kind` admite `link`, `video`, `document`, `book` o `note`. Usar solo recursos revisados y enlaces HTTP/HTTPS. `url: ""` se reserva para referencias bibliográficas o apuntes sin enlace directo, que deben incluir descripción.
+3. `classId` debe existir en el horario o ser `null`; las etiquetas deben ser únicas, no vacías y de hasta 32 caracteres. `validateOfficialResources` aplica estas reglas.
+4. Ejecutar las pruebas, revisar el catálogo en Biblioteca y publicar mediante PR.
 
 El estudiante puede abrir los recursos oficiales, pero no editarlos desde la aplicación. Sus propios recursos viven por separado en `traza:v4:library` y no modifican el catálogo común.
 
@@ -43,8 +44,9 @@ El estudiante puede abrir los recursos oficiales, pero no editarlos desde la apl
 
 1. Editar `src/content/ficha.js` en una rama de trabajo.
 2. Actualizar las fechas `vigenteDesde` y `vigenteHasta` del bloque afectado, sin borrar el historial anterior.
-3. Mantener horas en formato 24 h y la zona `America/Bogota`.
-4. Ejecutar `npm test` y `npm run test:browser`.
+3. Mantener horas en formato 24 h y la zona `America/Bogota`. La vigencia inicial y final son inclusivas; si un bloque reemplaza otro, el anterior debe terminar el día previo.
+4. `validateHorarioClases` comprueba IDs, días, horas, vigencias y solapamientos de bloques en el mismo día y período. Se permiten bloques contiguos y franjas iguales si sus vigencias no se cruzan.
+5. Ejecutar `npm test` y `npm run test:browser`.
 5. Revisar la vista Hoy, Semana y Calendario, incluidos el día del cambio y las fechas anteriores.
 6. Abrir una PR, revisar diferencias y checks; integrar solo cuando el build y el smoke test aplicable estén aprobados.
 
