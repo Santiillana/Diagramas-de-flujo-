@@ -182,3 +182,10 @@ Las actividades oficiales y los recursos públicos se mantienen separados de los
 
 ## D-054 · La biblioteca personal tiene respaldo independiente
 Los recursos personales se guardan bajo `traza:v4:library` y su respaldo es independiente del respaldo `traza-ficha-backup` de Actividades. La UI debe dejar visible esta diferencia y validar ambos formatos sin sobrescribir datos dañados.
+
+
+## D-055 · El respaldo integral combina las dos áreas personales
+La exportación integral reúne `traza:v4:ficha` y `traza:v4:library` en un solo formato validado. La importación valida ambas áreas antes de escribir y aplica rollback compensatorio si falla la segunda escritura. No se afirma atomicidad garantizada porque localStorage no ofrece transacciones multi-clave. Los respaldos granulares siguen disponibles para restauraciones selectivas.
+
+## D-056 · La vista Clases no infiere el currículo
+La vista Clases utiliza el horario y publicaciones oficiales por identificador exacto. Hasta recibir asociaciones curriculares comprobadas, las lecciones y ejercicios de Aprende permanecen sin vincular; no se relacionan por similitud de títulos o materias.
