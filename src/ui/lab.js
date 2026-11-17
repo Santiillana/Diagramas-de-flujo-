@@ -6,6 +6,7 @@ import { conceptos } from "../content/conceptos.js";
 import { temas } from "../content/temas.js";
 import { buildMathLabChallenge, mathLabCatalog, MATH_LAB } from "../math/lab-engine.js";
 import { formatDecimalOrRational, parseRationalAnswer } from "../math/exact.js";
+import { buildSourceLabChallenge, sourceLabMechanics, sourceLabMeta } from "../content/source-lab.js";
 
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -29,6 +30,7 @@ let activityStreak=0,activityErrors=0,selectedConcept="programa",selectedDifficu
 let pendingActivity=null;
 let catalogConcept="todos",catalogDifficulties=new Set();
 let mathLabActive=false,mathLabTopic=null,mathLabMechanic=null,mathLabDifficulty=1,mathLabSeed="",mathLabRound=0,mathLabScore=0,mathLabHints=0,mathLabChallenge=null,mathLabAnswered=false;
+let sourceLabActive=false,sourceLabMechanic=null,sourceLabSeed="",sourceLabRound=0,sourceLabScore=0,sourceLabHints=0,sourceLabChallenge=null,sourceLabAnswered=false;
 let originalLabCatalogMarkup=null;
 const activityConceptMap={
   predict:["flujo","entrada","variables","asignacion","operaciones","comparaciones","decisiones","ciclo-para","ciclo-mientras","ciclo-hacer-mientras","programa"],
@@ -77,8 +79,11 @@ function renderCatalogFilters(){
   let themeId="diagramas-flujo";
   try{themeId=JSON.parse(localStorage.getItem("traza:v2:learn")||"{}").theme||themeId;}catch{}
   const theme=temas.find(item=>item.id===themeId)??temas[0];
+  if(themeId==="fuentes-informacion"){renderSourceLabCatalog(themeId);return;}
   if(MATH_LAB[themeId]){renderMathLabCatalog(themeId);return;}
   $("#view-lab")?.classList.remove("lab-math-catalog");
+  $("#view-lab")?.classList.remove("lab-source-catalog");
+  $(".lab-catalog-filters")?.removeAttribute("hidden");
   const catalog=$("#lab-mode-cards");
   if(originalLabCatalogMarkup!==null&&catalog&&!catalog.querySelector("[data-lab-activity]"))catalog.innerHTML=originalLabCatalogMarkup;
   $(".lab-catalog-filters")?.classList.remove("is-math-filters");
@@ -89,6 +94,14 @@ function renderCatalogFilters(){
   $("#lab-filter-difficulty").innerHTML=[1,2,3,4].map(level=>'<button type="button" data-lab-filter-level="'+level+'" aria-pressed="'+String(catalogDifficulties.has(level))+'" aria-label="Dificultad '+level+'">'+"▮".repeat(level)+"▯".repeat(4-level)+'</button>').join("");
   applyCatalogFilters();
 }
+function renderSourceLabCatalog(topic){
+  const view=$("#view-lab"),cards=$("#lab-mode-cards");if(!view||!cards)return;
+  view.classList.add("lab-source-catalog");view.classList.remove("lab-math-catalog");
+  const families=["Observa","Construye","Investiga"],symbols={Observa:"◉",Construye:"◇",Investiga:"⌕"};
+  cards.innerHTML=families.map(family=>{const items=sourceLabMechanics.filter(id=>sourceLabMeta[id].family===family);if(!items.length)return "";return '<section class="lab-family-band"><header class="lab-family-heading"><span class="lab-family-symbol" aria-hidden="true">'+symbols[family]+'</span><div><h3>'+family+'</h3><p>'+({Observa:"Mira y clasifica",Construye:"Organiza evidencia",Investiga:"Busca y contrasta"}[family])+'</p></div></header><div class="lab-mechanics-grid">'+items.map(id=>{const item=sourceLabMeta[id],stars=labProgress.topics?.[topic]?.concepts?.recoleccion?.[id]?.stars??0;return '<button type="button" class="lab-mode-card" data-lab-source-mechanic="'+id+'"><span class="lab-mechanic-art" aria-hidden="true"><b>'+item.icon+'</b><i></i></span><strong>'+item.label+'</strong><small>'+item.description+'</small><span class="lab-mechanic-meta"><span>1 a 3 min</span><span aria-label="'+stars+' de tres estrellas">'+'★'.repeat(stars)+'☆'.repeat(3-stars)+'</span></span></button>';}).join("")+'</div></section>';}).join("");
+  $(".lab-catalog-filters")?.setAttribute("hidden","");$("#lab-start-mixed")?.setAttribute("hidden","");$("#lab-filter-empty")?.setAttribute("hidden","");
+  const footnote=$(".lab-mode-footnote");if(footnote)footnote.textContent="Cada reto conecta la procedencia, la técnica de recolección y el alcance de la evidencia.";
+}
 const mathLabTitles={enteros:"Números enteros",racionales:"Números racionales","regla-de-tres":"Regla de tres"};
 const mathLabDescriptions={
   order:"Organiza los pasos de una resolución exacta.","fill-gap":"Completa el resultado que falta.",error:"Detecta un error de signo, jerarquía o fracción.",whatif:"Cambia un dato y anticipa el resultado.",predict:"Resuelve un reto generado y comprobado.","number-line":"Lleva la ficha a la marca correcta.",match:"Relaciona expresiones, fracciones o proporciones.","fraction-bar":"Representa una fracción con partes iguales."
@@ -96,6 +109,7 @@ const mathLabDescriptions={
 function renderMathLabCatalog(topic){
   const view=$("#view-lab");if(!view)return;
   view.classList.add("lab-math-catalog");
+  view.classList.remove("lab-source-catalog");$(".lab-catalog-filters")?.removeAttribute("hidden");
   const cards=$("#lab-mode-cards");if(!cards)return;
   const data=mathLabCatalog(topic,labProgress);
   const families=["Observa","Construye","Investiga"];
@@ -401,6 +415,7 @@ function openSelectedActivity(){
   requestAnimationFrame(()=>$(chosen==="build-diagram"?"#lab-builder-title":"#lab-task-title")?.focus());
 }
 function returnToLabModes(){
+  if(sourceLabActive){sourceLabActive=false;$("#view-lab")?.classList.remove("lab-source-playing");$("#lab-mode-cards")?.removeAttribute("hidden");$("#lab-practice-workspace")?.setAttribute("hidden","");$(".lab-practice-heading")?.removeAttribute("hidden");$(".lab-layout")?.removeAttribute("hidden");$("#lab-task-panel")?.setAttribute("hidden","");renderCatalogFilters();return;}
   if(mathLabActive){
     mathLabActive=false;
     $("#view-lab")?.classList.remove("lab-math-playing");
@@ -418,6 +433,29 @@ function returnToLabModes(){
   if($("#lab-practice-workspace"))$("#lab-practice-workspace").hidden=true;
   if($("#lab-mode-cards"))$("#lab-mode-cards").hidden=false;
 }
+function sourceLabFeedback(message,correct){const status=$("#source-lab-feedback");if(!status)return;status.hidden=false;status.className="math-lab-feedback "+(correct?"is-correct":"is-incorrect");status.textContent=message;}
+function renderSourceLabRound(){
+  const challenge=sourceLabChallenge;if(!challenge)return;sourceLabAnswered=false;
+  const title=$("#lab-task-title"),content=$("#lab-task-content");if(title)title.textContent=challenge.mechanicLabel;if(!content)return;
+  const interaction=challenge.kind==="order"?'<ol class="math-lab-order-list" id="source-lab-order">'+challenge.items.map(item=>'<li data-order-id="'+esc(item.id)+'"><span>'+esc(item.label)+'</span><span class="math-lab-order-actions"><button type="button" data-source-order-move="up" aria-label="Subir paso">↑</button><button type="button" data-source-order-move="down" aria-label="Bajar paso">↓</button></span></li>').join("")+'</ol><button type="button" class="button button-primary" data-source-order-check>Comprobar orden</button>':(challenge.mechanic==="classify"?'<article class="source-lab-drag-card" draggable="true" data-source-drag-card><span aria-hidden="true">▤</span><strong>'+esc(challenge.sourceTitle)+'</strong><small>Arrastra a una categoría o selecciónala con los botones.</small></article>':'')+'<div class="math-lab-options"'+(challenge.mechanic==="classify"?' role="group" aria-label="Categorías de fuentes"':'')+'>'+challenge.options.map(option=>'<button type="button" class="math-lab-option" data-source-correct="'+option.correct+'"'+(challenge.mechanic==="classify"?' data-source-bin="'+({Primaria:"P",Secundaria:"S",Terciaria:"T"})[option.label]+'"':'')+'>'+esc(option.label)+'</button>').join("")+'</div>';
+  content.innerHTML='<section class="math-lab-session"><header class="math-lab-session-head"><button type="button" class="text-link" data-source-lab-back>← Volver a mecánicas</button><span>Reto '+(sourceLabRound+1)+' de 5 · '+sourceLabScore+' correctos</span><button type="button" class="text-link" data-source-lab-hint>Pista</button></header><div class="math-lab-prompt"><p class="eyebrow">'+esc(challenge.mechanicLabel.toLocaleUpperCase("es"))+'</p><h4>'+esc(challenge.question)+'</h4></div>'+interaction+'<p id="source-lab-feedback" class="math-lab-feedback" role="status" hidden></p><button type="button" class="button button-secondary math-lab-next" data-source-lab-next hidden>Siguiente reto</button></section>';
+  content.querySelector("[data-source-lab-back]")?.addEventListener("click",returnToLabModes);
+  content.querySelector("[data-source-lab-hint]")?.addEventListener("click",()=>{sourceLabHints++;sourceLabFeedback("Pista: "+challenge.hint,false);});
+  content.querySelectorAll("[data-source-correct]").forEach(button=>button.addEventListener("click",()=>answerSourceLab(button.dataset.sourceCorrect==="true")));
+  const dragCard=content.querySelector("[data-source-drag-card]");dragCard?.addEventListener("dragstart",event=>event.dataTransfer?.setData("text/plain",challenge.sourceType));
+  content.querySelectorAll("[data-source-bin]").forEach(bin=>{bin.addEventListener("dragover",event=>event.preventDefault());bin.addEventListener("drop",event=>{event.preventDefault();answerSourceLab(event.dataTransfer?.getData("text/plain")===bin.dataset.sourceBin);});});
+  content.querySelectorAll("[data-source-order-move]").forEach(button=>button.addEventListener("click",()=>{const item=button.closest("li"),list=item.parentElement;if(button.dataset.sourceOrderMove==="up"&&item.previousElementSibling)list.insertBefore(item,item.previousElementSibling);if(button.dataset.sourceOrderMove==="down"&&item.nextElementSibling)list.insertBefore(item.nextElementSibling,item);}));
+  content.querySelector("[data-source-order-check]")?.addEventListener("click",()=>answerSourceLab([...content.querySelectorAll("[data-order-id]")].every((item,index)=>item.dataset.orderId===challenge.answer[index])));
+  content.querySelector("[data-source-lab-next]")?.addEventListener("click",nextSourceLabRound);
+}
+function answerSourceLab(correct){if(sourceLabAnswered)return;sourceLabAnswered=true;if(correct)sourceLabScore++;sourceLabFeedback((correct?"¡Correcto! ":"Revisa la evidencia. ")+sourceLabChallenge.explanation,correct);const next=$("[data-source-lab-next]");if(next){next.hidden=false;next.textContent=sourceLabRound===4?"Ver resultado":"Siguiente reto";}$("#lab-task-content")?.querySelectorAll(".math-lab-option,[data-source-order-check],[data-source-order-move]").forEach(button=>button.disabled=true);}
+function nextSourceLabRound(){
+  sourceLabRound++;
+  if(sourceLabRound>=5){const topic="fuentes-informacion",sessionId=`SL-${sourceLabMechanic}-${hashSeed(sourceLabSeed).toString(16)}`,previous=new Set(conceptMedals(labProgress,topic));labProgress=recordLabResult(labProgress,{exerciseId:sessionId,mode:sourceLabMechanic,correct:sourceLabScore>0,completed:sourceLabScore>0,hints:sourceLabHints?Math.min(2,sourceLabHints):sourceLabScore===5?0:sourceLabScore>=3?1:2,topicId:topic,conceptId:"recoleccion"});saveLabProgress();if(sourceLabScore>0)document.dispatchEvent(new CustomEvent("traza:actividad-laboratorio"));if(!previous.has("recoleccion")&&conceptMedals(labProgress,topic).includes("recoleccion")){const notice=$("#lab-medal-announcement");if(notice){notice.hidden=false;notice.textContent="🏅 Medalla de recolección: tres mecánicas dominadas.";}}
+    const stars=sourceLabScore===5?3:sourceLabScore>=3?2:sourceLabScore>=1?1:0,content=$("#lab-task-content");content.innerHTML='<section class="lab-session-finish"><p class="eyebrow">PARTIDA COMPLETADA</p><h4>Terminaste los cinco retos.</h4><div class="lab-finish-stars" aria-label="'+stars+' estrellas">'+[1,2,3].map((value,index)=>'<span class="'+(value<=stars?"is-earned":"")+'" style="--star-delay:'+index*120+'ms">★</span>').join("")+'</div><p>'+sourceLabScore+' de 5 retos resueltos correctamente.</p><div class="lab-task-actions"><button type="button" class="button button-primary" data-source-lab-replay>Repetir</button><button type="button" class="button button-secondary" data-source-lab-back>Volver a mecánicas</button></div></section>';content.querySelector("[data-source-lab-replay]")?.addEventListener("click",()=>startSourceLab(sourceLabMechanic));content.querySelector("[data-source-lab-back]")?.addEventListener("click",returnToLabModes);return;}
+  sourceLabHints=0;sourceLabChallenge=buildSourceLabChallenge(sourceLabMechanic,sourceLabSeed,sourceLabRound);renderSourceLabRound();
+}
+function startSourceLab(mechanic){sourceLabActive=true;sourceLabMechanic=mechanic;sourceLabRound=0;sourceLabScore=0;sourceLabHints=0;sourceLabSeed=`${mechanic}:session-${labProgress.topics?.["fuentes-informacion"]?.concepts?.recoleccion?.[mechanic]?.partidas??0}`;$("#lab-mode-cards")?.setAttribute("hidden","");$("#lab-practice-workspace")?.removeAttribute("hidden");$(".lab-practice-heading")?.setAttribute("hidden","");$(".lab-layout")?.setAttribute("hidden","");$("#lab-task-panel")?.removeAttribute("hidden");$("#view-lab")?.classList.add("lab-source-playing");sourceLabChallenge=buildSourceLabChallenge(mechanic,sourceLabSeed,0);renderSourceLabRound();requestAnimationFrame(()=>$("#lab-task-title")?.focus());}
 function mathLabFeedback(message,correct){
   const status=$("#math-lab-feedback");if(!status)return;
   status.hidden=false;status.className="math-lab-feedback "+(correct?"is-correct":"is-incorrect");
@@ -1093,6 +1131,8 @@ export function initLab(){
   });
   $("#lab-filter-clear")?.addEventListener("click",clearCatalogFilters);
   $("#lab-mode-cards")?.addEventListener("click",event=>{
+    const sourceButton=event.target.closest("[data-lab-source-mechanic]");
+    if(sourceButton){startSourceLab(sourceButton.dataset.labSourceMechanic);return;}
     const mathButton=event.target.closest("[data-lab-math-mechanic]");
     if(mathButton){startMathLab(currentTopicId(),mathButton.dataset.labMathMechanic,catalogDifficulties.size===1?[...catalogDifficulties][0]:selectedDifficulty);return;}
     const button=event.target.closest("[data-lab-mode][data-lab-activity]");

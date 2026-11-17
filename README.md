@@ -2,33 +2,29 @@
 
 Traza es una plataforma educativa interactiva para analizar problemas, construir algoritmos y comprender su ejecución mediante diagramas de flujo, pseudocódigo y seguimiento de variables.
 
-## Estado de la versión
+## Contenido disponible
 
-- Repositorio: [Santiillana/Traza](https://github.com/Santiillana/Traza)
-- Rama principal: `main`
-- Módulos funcionales M1–M5 y las mejoras v4 del catálogo integrados en `main`.
-- **Módulo 6 · Inicio y pulido del Constructor:** implementado en la rama `v4/module-6-home-builder`, PR #21 abierta y CI aprobada; todavía no fusionado.
-- Publicación: no se considera activa hasta comprobar el origen HTTPS real con el flujo de verificación posterior al despliegue.
+La aplicación reúne **5 temas activos y 40 lecciones**: 17 de diagramas de flujo, 8 de recolección de información y 15 de matemáticas. El catálogo contiene **108 ejercicios**: 45 de algoritmos, 24 de fuentes y 39 de matemáticas. TICs y Comunicación se muestran como competencias próximas, sin temas vacíos.
 
 ## Espacios
 
 ### Inicio
-Acceso a Mi ficha y Aprende, continuidad del último espacio visitado y, en la entrega del Módulo 6, progreso de las 17 lecciones con porcentaje y barra accesible. Añade accesos directos a Ejercicios, Simulador y Laboratorio.
+Acceso a Mi ficha y Aprende, continuidad del último espacio visitado y progreso de las 40 lecciones con porcentaje y barra accesible. Añade accesos directos a Ejercicios, Simulador y Laboratorio.
 
 ### Mi ficha
-Cinco espacios para organizar el trabajo académico: **Hoy, Semana, Calendario, Actividades y Biblioteca**. La sección tiene identidad visual y preferencia de tema propias.
+Cinco espacios para organizar el trabajo académico: **Hoy, Semana, Calendario, Actividades y Biblioteca**. Incluye cuatro actividades publicadas; el seguimiento personal se conserva en este navegador.
 
 ### Aprende
 Cuatro espacios: **Aprende, Ejercicios, Simulador y Laboratorio**.
 
-- **Aprende:** 17 lecciones progresivas organizadas en cuatro bloques, con explicación intuitiva y técnica, escenas, ejemplos, errores frecuentes y comprobación. El progreso se conserva localmente.
-- **Ejercicios:** catálogo de 45 retos: 20 básicos, 10 intermedios, 10 avanzados y 5 expertos. Incluye búsqueda, accesos rápidos por dificultad, filtros por conceptos, filtro de ejercicios de clase, paginación y ficha protegida antes de revelar la solución.
+- **Aprende:** 40 lecciones por tema, con explicación intuitiva y técnica, escenas, ejemplos, errores frecuentes y comprobación. El progreso se conserva localmente.
+- **Ejercicios:** catálogo de 108 retos (45 algoritmos, 24 fuentes y 39 matemáticas), con búsqueda, filtros y ficha de solución.
 - **Simulador:** parser e intérprete restringidos para pseudocódigo educativo. Una traza determinista alimenta el diagrama SVG, el pseudocódigo activo, En escena, Variables, Pantalla, Historial y la línea de tiempo. Incluye avance, retroceso, reproducción, predicción, zoom, ajuste, cámara, pantalla completa, tema, tamaño de texto y movimiento reducido.
-- **Laboratorio:** ocho actividades en tres modalidades de práctica, más un constructor gráfico estructurado. El constructor compila al mismo motor del Simulador; no mantiene un intérprete paralelo.
+- **Laboratorio:** 10 mecánicas de diagramas, 6 de fuentes y 18 de matemáticas. Incluye además un constructor gráfico estructurado que compila al mismo motor del Simulador.
 
 ## Constructor · historial de cambios
 
-El Constructor conserva hasta 60 estados del modelo. Incluye Deshacer/Rehacer, atajos de teclado y controles accesibles. El historial está limitado a los últimos 60 snapshots; una edición posterior a deshacer descarta la rama futura. La entrega M6 añade regresiones específicas para comprobar estos límites.
+El Constructor conserva hasta 60 estados del modelo. Incluye Deshacer/Rehacer, atajos de teclado y controles accesibles. El historial está limitado a los últimos 60 estados; una edición posterior a deshacer descarta la rama futura.
 
 ## Arquitectura
 
@@ -74,6 +70,8 @@ La aplicación es estática. El workflow `.github/workflows/pages.yml` permite u
 - Informe de mejoras v2: `docs/INFORME_MEJORAS.md`
 - Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`
 - Informe M6: `docs/MODULE_6_HOME_BUILDER.md`
+- Contrato para añadir temas: `docs/CONTRATO_TEMA.md`
+- Mapa del repositorio y conteos: `docs/MAPA_DEL_REPO.md`
 - Decisiones técnicas: `docs/DECISIONS.md`
 - Auditoría de equivalencia original: `docs/ORIGINAL_FEATURE_AUDIT.md`
 - Aceptación y limitaciones: `docs/FINAL_ACCEPTANCE.md`

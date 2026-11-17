@@ -420,6 +420,13 @@
 
 /* Matemáticas: retos cortos con controles táctiles y de teclado. */
 #view-lab.lab-math-catalog .lab-mechanics-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+#view-lab.lab-source-catalog .lab-mechanics-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+#view-lab.lab-source-catalog .lab-mode-card{min-height:220px}
+#view-lab.lab-source-playing .lab-practice-workspace{max-width:960px;margin:28px auto}
+#view-lab.lab-source-playing .lab-task-panel{padding:clamp(20px,4vw,40px);border-radius:24px;background:var(--card);box-shadow:var(--shadow-soft,0 18px 48px rgba(20,35,55,.08))}
+.source-lab-drag-card{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;max-width:620px;margin:0 auto 16px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface,var(--card));color:var(--ink);cursor:grab;touch-action:none}
+.source-lab-drag-card>span{grid-row:span 2;color:var(--struct);font-size:24px}.source-lab-drag-card small{color:var(--muted)}
+.source-lab-drag-card:active{cursor:grabbing}.source-lab-drag-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 #view-lab.lab-math-catalog .lab-mode-card{min-height:220px}
 #view-lab.lab-math-catalog .lab-catalog-filters.is-math-filters{align-items:center}
 #view-lab.lab-math-playing .lab-practice-workspace{max-width:960px;margin:28px auto}
