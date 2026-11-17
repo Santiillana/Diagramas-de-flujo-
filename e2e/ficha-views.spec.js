@@ -40,7 +40,7 @@ test("Calendario ofrece navegación mensual, horario recurrente y detalle selecc
   await page.locator("[data-month-action='next']").click();
   expect(await page.locator("#view-calendario .ficha-month-title").textContent()).not.toBe(antes);
   await page.locator("[data-month-action='today']").click();
-  await page.locator("[data-calendar-day]").filter({ hasText: "17" }).first().click();
+  await page.locator('[data-calendar-day="2026-11-16"]').click();
   await expect(page.locator("#view-calendario .ficha-calendar-detail")).toContainText("Evaluar requisitos");
 });
 
