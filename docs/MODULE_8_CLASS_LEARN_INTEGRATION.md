@@ -1,6 +1,6 @@
 # Módulo 8 · Clases y conexión con Aprende
 
-**Estado:** vista Clases construida a partir del horario oficial, con histórico, actividades y recursos oficiales por bloque. La conexión pedagógica verificable con las 17 lecciones y 45 ejercicios de Aprende sigue pendiente; no se crean asociaciones por coincidencia de nombres.
+**Estado:** vista Clases implementada y cubierta por E2E. El mapa curricular verificable con las 17 lecciones y 45 ejercicios está preparado y validado, pero permanece vacío hasta recibir asociaciones confirmadas; no se crean enlaces por coincidencia de nombres.
 
 ## Fuentes confirmadas
 
@@ -17,7 +17,7 @@ La sección Clases debe permitir consultar, sin duplicar el calendario:
 
 - Materia y docente confirmados.
 - Día y franja horaria, con vigencias históricas.
-- Próxima sesión y estado temporal calculados en `America/Bogota`.
+- Próxima sesión y estado temporal se consultan desde Hoy/Semana/Calendario, que son la fuente única de agenda en `America/Bogota`.
 - Materiales y actividades oficiales publicados para la clase.
 - Vínculos de Aprende únicamente cuando se haya confirmado la relación pedagógica.
 
@@ -30,7 +30,7 @@ La sección Clases debe permitir consultar, sin duplicar el calendario:
 - Los catálogos oficiales de actividades y recursos se muestran en solo lectura cuando la entrada incluye un `classId` real.
 - Las URLs externas se limitan a HTTP/HTTPS sin credenciales.
 - Se muestra explícitamente “Sin asociación pedagógica confirmada para esta clase todavía” en vez de inventar relaciones con Aprende.
-- E2E: `e2e/module-8-classes.spec.js` valida el cambio de lunes, siete bloques vigentes en la fecha actual, historial, horarios del sábado y ausencia de asociaciones inventadas.
+- E2E: `e2e/module-8-classes.spec.js` valida el cambio de lunes, siete bloques vigentes en la fecha de prueba, historial, horarios del sábado y ausencia de asociaciones inventadas. La suite pasó en SHA `04b699f`.
 ## Registro explícito de relaciones
 
 Cuando exista evidencia del programa de formación, se añadirán asociaciones en `src/content/class-learning-map.js` con estructura explícita:
@@ -66,8 +66,7 @@ La prueba E2E `e2e/module-8-classes.spec.js` verifica el número de bloques vige
 
 ## Pendiente para cerrar M8
 
-- Recibir o localizar el plan oficial de formación / distribución de competencias por clase.
-- Confirmar qué lecciones y ejercicios corresponden a cada materia.
-- Crear asociaciones con IDs existentes y pruebas de integridad.
-- Construir la vista de Clases y sus enlaces de ida y vuelta con Aprende.
-- Verificar que no se alteren las 17 lecciones, 45 ejercicios, Simulador ni Laboratorio.
+- Recibir el plan de formación o una matriz oficial que relacione materias, competencias y resultados de aprendizaje.
+- Confirmar qué lecciones y ejercicios corresponden a cada materia; insertar esos IDs en `CLASS_LEARNING_MAP`.
+- Añadir E2E de navegación a los destinos exactos cuando exista al menos una asociación validada.
+- No vincular por aproximación ni completar el mapa con supuestos.
