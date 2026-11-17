@@ -7,5 +7,14 @@
 .lesson-static-sequence ol{display:grid;gap:8px;padding:0;list-style:none}
 .lesson-static-sequence li{display:grid;grid-template-columns:28px 1fr;align-items:start;gap:8px;color:var(--text)}
 .lesson-static-sequence li span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--struct);color:var(--on-struct);font-variant-numeric:tabular-nums}
+.lesson-recipe-svg{display:block;width:100%;height:auto;min-height:150px;overflow:visible}
+.recipe-node{fill:var(--card);stroke:var(--struct);stroke-width:2;transition:stroke-width 180ms ease,fill 180ms ease}
+.recipe-node.is-active{fill:color-mix(in srgb,var(--accent) 18%,var(--card));stroke:var(--accent-text);stroke-width:3}
+.recipe-node-label{fill:var(--text);font:500 14px ui-monospace,monospace}
+.recipe-order{fill:var(--text-2);font:500 12px ui-monospace,monospace}
+.recipe-arrow{fill:none;stroke:var(--line);stroke-width:2}
+.recipe-guide{fill:var(--accent);stroke:var(--card);stroke-width:2;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
+.recipe-static-sequence{margin-bottom:12px}
 @media(max-width:520px){.visual-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.visual-speed-label{grid-column:1/-1}}
 :root[data-motion="reduced"] .lesson-static-sequence{display:block}
+:root[data-motion="reduced"] .recipe-node,:root[data-motion="reduced"] .recipe-guide{transition:none}
