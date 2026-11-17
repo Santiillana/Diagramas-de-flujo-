@@ -62,7 +62,7 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 
 ### Auditoría de la secuencia v4 · Mi ficha
 
-La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos del Documento maestro V5 y de la Fase 6 del informe de mejoras v2. La PR #22 desarrolla los pasos 5–7; sigue abierta, en borrador y sin integrar en `main`.
+La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos del Documento maestro V5 y de la Fase 6 del informe de mejoras v2. La PR #22 desarrolla los pasos 5–10; sigue abierta, en borrador y sin integrar en `main`.
 
 | Paso v4 | Estado en `main` | Estado en PR #22 |
 |---|---|---|
@@ -73,9 +73,9 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 | 5. Núcleo de Mi ficha | No implementado | Repositorio común, persistencia local protegida, modelo de actividades y respaldo versionado; falta política de migraciones y E2E definitivo |
 | 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
 | 7. Actividades y detalle | No implementado | Catálogo de actividades oficiales de solo lectura y primera interfaz personal de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
-| 8. Clases y conexión con Aprende | No implementado | Pendiente; no se crean relaciones ficticias |
+| 8. Clases y conexión con Aprende | No implementado | Vista inicial de Clases, con horario vigente e historial y publicaciones oficiales; vínculos de Aprende pendientes por falta de asociaciones confirmadas |
 | 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; fuente oficial preparada y vacía. Pendiente aceptación E2E y publicación de materiales verificados |
-| 10. Respaldo, auditoría y documentación | Parcial | Controles de respaldo, validación estricta, documentación y auditoría iniciados; falta cierre integral |
+| 10. Respaldo, auditoría y documentación | Parcial avanzado | Respaldos granulares e integral de Actividades/Biblioteca, validación estricta y rollback compensatorio; faltan migraciones, pruebas de fallo extremo, auditoría completa y verificación externa de publicación |
 
 #### Paso 5 · núcleo y persistencia
 
@@ -113,12 +113,28 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 - Se agregaron pruebas de navegador en `e2e/module-7-activities.spec.js` para ciclo de vida, filtros y protección de datos corruptos.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
 
+#### Paso 8 · Clases y conexión con Aprende
+
+- `src/ui/ficha-classes.js` y `src/styles/ficha-classes.css` implementan una vista de Clases alimentada desde `src/content/ficha.js`.
+- Muestra las materias y docentes vigentes, los dos bloques del sábado como `Clase del sábado`, materiales y actividades oficiales asociadas por `classId`, y el historial de vigencias anteriores.
+- No asocia automáticamente lecciones ni ejercicios de Aprende. La vista declara explícitamente que la relación aún no está confirmada.
+- `e2e/module-8-classes.spec.js` cubre los siete bloques vigentes al 17 de noviembre de 2026 y el bloque histórico del lunes anterior al 2 de noviembre.
+- Para cerrar la conexión pedagógica hacen falta las asociaciones oficiales por competencia/materia y una validación de IDs reales en los catálogos.
+
 #### Paso 9 · Biblioteca
 
 - `src/ui/ficha-library.js` y `src/styles/ficha-library.css` implementan el catálogo personal, búsqueda, filtros, edición, archivo y apertura segura de enlaces.
 - `src/ui/ficha-library-store.js` mantiene el almacenamiento separado `traza:v4:library`, validación estricta, bloqueo de sobrescritura y respaldo/importación versionados.
 - `src/content/ficha-resources.js` contiene el catálogo oficial de solo lectura. Está vacío hasta que se incorporen recursos revisados.
 - La información personal de Biblioteca y la de Actividades se respalda en archivos separados; debe guardarse ambos para una copia completa.
+
+#### Paso 10 · Respaldo y auditoría
+
+- Se mantienen respaldos independientes para Actividades y Biblioteca, y se añadió el respaldo integral `traza-full-ficha-backup` que combina ambas áreas personales.
+- La importación integral valida los dos formatos antes de escribir, conserva snapshots de ambas claves y hace rollback compensatorio si falla la segunda escritura. No puede ofrecer atomicidad real multi-clave ante cierre abrupto del navegador.
+- `tests/ficha-full-backup.test.js` cubre exportación, validación, restauración integral, rechazo de contenido malformado y rollback ante fallo transitorio.
+- La interfaz ofrece exportar/restaurar el archivo integral desde Hoy; los archivos oficiales del horario y catálogos se recuperan del historial Git.
+- Pendiente: migraciones entre versiones, pruebas de cuota y fallos persistentes, recuperación ante rollback fallido, auditoría editorial completa y smoke test del build externo.
 
 #### Moderación y operación editorial
 
