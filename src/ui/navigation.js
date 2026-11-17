@@ -141,6 +141,11 @@ export function initNavigation() {
     });
   }
 
+  document.addEventListener("traza:navigate", event => {
+    const space = event.detail?.space;
+    if (SPACE_META[space]) activate(space, { focus: true });
+  });
+
   nav.addEventListener("keydown", event => {
     if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
     const visibleButtons = buttons.filter(button => !button.closest("[data-subnav-section]")?.hidden);
