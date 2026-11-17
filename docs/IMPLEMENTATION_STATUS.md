@@ -1,6 +1,6 @@
 # Estado de implementación · Traza
 
-**Actualizado:** 16 de noviembre de 2026  
+**Actualizado:** 17 de noviembre de 2026  
 **Repositorio:** `Santiillana/Traza`  
 **Rama principal:** `main`  
 **SHA de main después de M5:** `ea25db33153afbb6ee506647496a74e6dc0f9fde`  
@@ -19,6 +19,7 @@ Los módulos V5 y la ampliación v4 del catálogo están integrados en `main`. L
 | Simulador y motor | Integrados y revalidados | Parser/intérprete determinista, traza común y regresiones |
 | Laboratorio y constructor | Integrados y revalidados | Ocho actividades; Constructor estructurado sobre el motor común |
 | M5 · auditoría y release | **Integrado en main** | PR #20 fusionada; 267 Node y 99 Chromium aprobadas en el SHA de auditoría |
+| M5 v4 · Mi ficha (núcleo personal) | **Reforzado en esta entrega** | Lectura estricta, escritura protegida, respaldo versionado y recuperación validada; ver `docs/MODULE_5_FICHA_CORE.md` |
 | M5 · publicación pública | Pendiente externo | Falta origen HTTPS real y smoke test posterior al despliegue |
 | M6 · Inicio y Constructor | **CI aprobada; PR abierta** | 267/267 Node y 103/103 Playwright en PR #21 |
 

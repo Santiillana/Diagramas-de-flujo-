@@ -12,7 +12,9 @@ import {
   registrarResultadoInstructor, actualizarChecklist
 } from "../src/ficha/estados.js";
 import {
-  CLAVE_FICHA, crearFichaInicial, validarFichaPersonal, leerFicha, guardarFicha, borrarFicha
+  CLAVE_FICHA, crearFichaInicial, validarFichaPersonal, leerFicha, guardarFicha, borrarFicha,
+  leerFichaEstricto, crearRespaldoFicha, validarRespaldoFicha, importarRespaldoFicha,
+  FORMATO_RESPALDO_FICHA
 } from "../src/ficha/store.js";
 import { clasificar, panel, clasesDelDia, resumenPorCompetencia } from "../src/ficha/selectores.js";
 import { validarDocumentoOficial, documentosPublicados } from "../src/ficha/documentos.js";
@@ -302,4 +304,56 @@ test("la metadata de documentos impide publicar archivos sin URL segura y filtra
   };
   assert.deepEqual(documentosPublicados("clases", {}, ficha).map(item => item.id), ["doc-1"]);
   assert.deepEqual(documentosPublicados("actividades", { actividadId: "actividad-diagrama" }, ficha).map(item => item.id), ["doc-3"]);
+});
+
+
+test("la lectura estricta distingue vacío, corrupción, versión futura y almacenamiento inaccesible", () => {
+  const storage = crearAlmacenamiento();
+  assert.equal(leerFichaEstricto(storage).vacia, true);
+  storage.setItem(CLAVE_FICHA, "{roto");
+  assert.equal(leerFichaEstricto(storage).razon, "json_corrupto");
+  storage.setItem(CLAVE_FICHA, JSON.stringify({ v: 99 }));
+  assert.equal(leerFichaEstricto(storage).razon, "version_desconocida");
+  storage.setItem(CLAVE_FICHA, JSON.stringify({ ...crearFichaInicial(), favoritos: "inválido" }));
+  assert.equal(leerFichaEstricto(storage).razon, "estructura_invalida");
+  assert.equal(leerFichaEstricto(null).razon, "almacenamiento_no_disponible");
+});
+
+test("el guardado normal no sobrescribe datos corruptos ni esquemas desconocidos", () => {
+  const storage = crearAlmacenamiento();
+  storage.setItem(CLAVE_FICHA, "{no reemplazar");
+  const raw = storage.getItem(CLAVE_FICHA);
+  assert.equal(guardarFicha(crearFichaInicial(), storage).ok, false);
+  assert.equal(storage.getItem(CLAVE_FICHA), raw);
+  storage.setItem(CLAVE_FICHA, JSON.stringify({ v: 88 }));
+  const future = storage.getItem(CLAVE_FICHA);
+  assert.equal(guardarFicha(crearFichaInicial(), storage).ok, false);
+  assert.equal(storage.getItem(CLAVE_FICHA), future);
+});
+
+test("el respaldo versionado solo exporta una ficha íntegra", () => {
+  const storage = crearAlmacenamiento();
+  const data = crearFichaInicial();
+  data.favoritos.push("recurso-uno");
+  assert.equal(guardarFicha(data, storage).ok, true);
+  const result = crearRespaldoFicha(storage, () => new Date("2026-11-17T12:00:00.000Z"));
+  assert.equal(result.ok, true);
+  assert.equal(result.respaldo.formato, FORMATO_RESPALDO_FICHA);
+  assert.deepEqual(validarRespaldoFicha(result.respaldo), { ok: true, datos: data });
+  storage.setItem(CLAVE_FICHA, "{corrupto");
+  assert.equal(crearRespaldoFicha(storage).ok, false);
+  assert.equal(validarRespaldoFicha({ ...result.respaldo, datos: { v: 99 } }).ok, false);
+});
+
+test("la importación validada recupera almacenamiento dañado sin aceptar respaldos inválidos", () => {
+  const storage = crearAlmacenamiento();
+  storage.setItem(CLAVE_FICHA, "{dañado");
+  const data = crearFichaInicial();
+  data.guardados.push("leccion-terminals");
+  const backup = { formato: FORMATO_RESPALDO_FICHA, version: 1,
+    exportadoEn: "2026-11-17T12:00:00.000Z", datos: data };
+  assert.equal(importarRespaldoFicha({ ...backup, datos: { v: 99 } }, storage).ok, false);
+  assert.equal(storage.getItem(CLAVE_FICHA), "{dañado");
+  assert.equal(importarRespaldoFicha(backup, storage).ok, true);
+  assert.deepEqual(leerFicha(storage), data);
 });

@@ -3,6 +3,8 @@ import { ESTADOS_PERSISTIBLES } from "./estados.js";
 
 export const CLAVE_FICHA = "traza:v4:ficha";
 export const VERSION_FICHA = 1;
+export const FORMATO_RESPALDO_FICHA = "traza-ficha-personal-backup";
+export const VERSION_RESPALDO_FICHA = 1;
 const CAMPOS_CHECKLIST = ["subida", "enviada", "confirmada"];
 const esObjeto = valor => valor !== null && typeof valor === "object" && !Array.isArray(valor);
 
@@ -108,33 +110,81 @@ export function validarFichaPersonal(datos) {
   return { ok: errores.length === 0, errores };
 }
 
-export function leerFicha(almacenamiento = almacenamientoPorDefecto()) {
-  const inicial = crearFichaInicial();
-  if (!almacenamiento || typeof almacenamiento.getItem !== "function") return inicial;
+export function leerFichaEstricto(almacenamiento = almacenamientoPorDefecto()) {
+  if (!almacenamiento || typeof almacenamiento.getItem !== "function") {
+    return { ok: false, razon: "almacenamiento_no_disponible", datos: null };
+  }
+  let serializado;
+  try { serializado = almacenamiento.getItem(CLAVE_FICHA); }
+  catch { return { ok: false, razon: "almacenamiento_no_disponible", datos: null }; }
+  if (serializado === null || serializado === "") {
+    return { ok: true, vacia: true, datos: crearFichaInicial() };
+  }
+  let datos;
+  try { datos = JSON.parse(serializado); }
+  catch { return { ok: false, razon: "json_corrupto", datos: null }; }
+  if (!esObjeto(datos) || datos.v !== VERSION_FICHA) {
+    return { ok: false, razon: "version_desconocida", version: datos?.v ?? null, datos: null };
+  }
+  const validacion = validarFichaPersonal(datos);
+  if (!validacion.ok) return { ok: false, razon: "estructura_invalida", errores: validacion.errores, datos: null };
+  return { ok: true, vacia: false, datos };
+}
 
+/** El fallback vacío es solo visual y nunca autoriza a sobrescribir. */
+export function leerFicha(almacenamiento = almacenamientoPorDefecto()) {
+  const lectura = leerFichaEstricto(almacenamiento);
+  return lectura.ok ? lectura.datos : crearFichaInicial();
+}
+
+function guardarFichaInterno(datos, almacenamiento, permitirReemplazoInvalido = false) {
+  const validacion = validarFichaPersonal(datos);
+  if (!validacion.ok) return { ok: false, razon: "datos_invalidos", errores: validacion.errores };
+  if (!almacenamiento || typeof almacenamiento.setItem !== "function") {
+    return { ok: false, razon: "almacenamiento_no_disponible", errores: ["El almacenamiento local no está disponible."] };
+  }
+  const existente = leerFichaEstricto(almacenamiento);
+  if (!existente.ok && !permitirReemplazoInvalido) {
+    return { ok: false, razon: "datos_existentes_no_validos", detalle: existente.razon,
+      errores: ["Los datos existentes están dañados o usan una versión desconocida. Importa un respaldo validado antes de continuar."] };
+  }
   try {
-    const serializado = almacenamiento.getItem(CLAVE_FICHA);
-    if (!serializado) return inicial;
-    const datos = JSON.parse(serializado);
-    return validarFichaPersonal(datos).ok ? datos : inicial;
+    almacenamiento.setItem(CLAVE_FICHA, JSON.stringify(datos));
+    return { ok: true, razon: null, errores: [] };
   } catch {
-    return inicial;
+    return { ok: false, razon: "fallo_escritura", errores: ["No fue posible guardar la ficha en este navegador."] };
   }
 }
 
 export function guardarFicha(datos, almacenamiento = almacenamientoPorDefecto()) {
-  const validacion = validarFichaPersonal(datos);
-  if (!validacion.ok) return { ok: false, errores: validacion.errores };
-  if (!almacenamiento || typeof almacenamiento.setItem !== "function") {
-    return { ok: false, errores: ["El almacenamiento local no está disponible."] };
-  }
+  return guardarFichaInterno(datos, almacenamiento);
+}
 
-  try {
-    almacenamiento.setItem(CLAVE_FICHA, JSON.stringify(datos));
-    return { ok: true, errores: [] };
-  } catch {
-    return { ok: false, errores: ["No fue posible guardar la ficha en este navegador."] };
-  }
+export function crearRespaldoFicha(almacenamiento = almacenamientoPorDefecto(), reloj = () => new Date()) {
+  const lectura = leerFichaEstricto(almacenamiento);
+  if (!lectura.ok) return { ok: false, razon: lectura.razon };
+  const instante = reloj();
+  if (!(instante instanceof Date) || !Number.isFinite(instante.getTime())) return { ok: false, razon: "reloj_invalido" };
+  return { ok: true, respaldo: {
+    formato: FORMATO_RESPALDO_FICHA, version: VERSION_RESPALDO_FICHA,
+    exportadoEn: instante.toISOString(), datos: lectura.datos
+  }};
+}
+
+export function validarRespaldoFicha(respaldo) {
+  if (!esObjeto(respaldo) || respaldo.formato !== FORMATO_RESPALDO_FICHA ||
+      respaldo.version !== VERSION_RESPALDO_FICHA || typeof respaldo.exportadoEn !== "string" ||
+      !Number.isFinite(Date.parse(respaldo.exportadoEn))) return { ok: false, razon: "respaldo_invalido" };
+  const validacion = validarFichaPersonal(respaldo.datos);
+  return validacion.ok ? { ok: true, datos: respaldo.datos } :
+    { ok: false, razon: "datos_invalidos", errores: validacion.errores };
+}
+
+export function importarRespaldoFicha(respaldo, almacenamiento = almacenamientoPorDefecto()) {
+  const validacion = validarRespaldoFicha(respaldo);
+  if (!validacion.ok) return validacion;
+  const guardado = guardarFichaInterno(validacion.datos, almacenamiento, true);
+  return guardado.ok ? { ok: true, datos: validacion.datos } : guardado;
 }
 
 export function borrarFicha(almacenamiento = almacenamientoPorDefecto()) {
