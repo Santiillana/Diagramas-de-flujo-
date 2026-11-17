@@ -22,9 +22,10 @@ function todayInBogota() {
   return values.year + "-" + values.month + "-" + values.day;
 }
 
-function isActiveOnDate(item, date) {
-  return (!item.vigenteDesde || item.vigenteDesde <= date) &&
-    (!item.vigenteHasta || item.vigenteHasta >= date);
+export function classVigencyState(item, date) {
+  if (item?.vigenteDesde && item.vigenteDesde > date) return "upcoming";
+  if (item?.vigenteHasta && item.vigenteHasta < date) return "historical";
+  return "active";
 }
 
 function formatTime(value) {
@@ -74,12 +75,15 @@ export function initFichaClasses() {
 
   function render() {
   const today = todayInBogota();
-  const active = HORARIO_CLASES.filter(item => isActiveOnDate(item, today))
-    .slice().sort((a, b) => a.diaSemana - b.diaSemana ||
-      a.horaInicio.localeCompare(b.horaInicio));
-  const historical = HORARIO_CLASES.filter(item => !isActiveOnDate(item, today))
-    .slice().sort((a, b) => a.diaSemana - b.diaSemana ||
-      a.horaInicio.localeCompare(b.horaInicio));
+  const sortByWeekday = (a, b) => a.diaSemana - b.diaSemana ||
+    a.horaInicio.localeCompare(b.horaInicio);
+  const active = HORARIO_CLASES.filter(item => classVigencyState(item, today) === "active")
+    .slice().sort(sortByWeekday);
+  const historical = HORARIO_CLASES.filter(item => classVigencyState(item, today) === "historical")
+    .slice().sort(sortByWeekday);
+  const upcoming = HORARIO_CLASES.filter(item => classVigencyState(item, today) === "upcoming")
+    .slice().sort((a, b) => (a.vigenteDesde || "").localeCompare(b.vigenteDesde || "") ||
+      sortByWeekday(a, b));
 
   const activitiesValidation = validateOfficialActivities();
   const resourcesValidation = validateOfficialResources();
@@ -123,6 +127,14 @@ export function initFichaClasses() {
     '<span>' + active.length + ' bloques vigentes</span></header>' +
     (cards ? '<div class="ficha-classes-grid">' + cards + '</div>' :
       '<p class="ficha-class-empty">No hay bloques de clase vigentes para hoy.</p>') +
+    (upcoming.length ? '<details class="ficha-classes-upcoming"><summary>Próximas vigencias (' +
+      upcoming.length + ')</summary><ul>' + upcoming.map(item =>
+        '<li><strong>' + escapeHtml(classTitle(item)) + '</strong> · ' +
+        DAY_LABELS[item.diaSemana] + ' · ' + escapeHtml(formatTime(item.horaInicio)) +
+        '–' + escapeHtml(formatTime(item.horaFin)) + ' · ' +
+        escapeHtml(item.instructor) + ' · Vigente desde ' +
+        escapeHtml(item.vigenteDesde || "fecha no indicada") + '</li>'
+      ).join("") + '</ul></details>' : "") +
     (historical.length ? '<details class="ficha-classes-history"><summary>Historial de bloques con vigencia terminada (' +
       historical.length + ')</summary><ul>' + historical.map(item =>
         '<li><strong>' + escapeHtml(classTitle(item)) + '</strong> · ' +
