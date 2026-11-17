@@ -68,6 +68,23 @@ export function buildArrowChallenge(events,index,exerciseId,attempt=0) {
   return {seed,current,next,correct,options};
 }
 
+const symbolMatches=[
+  {id:"input",left:"Leer datos",right:"Paralelogramo"},
+  {id:"process",left:"Asignar o calcular",right:"Rectángulo"},
+  {id:"decision",left:"Evaluar una condición",right:"Rombo"},
+  {id:"terminal",left:"Indicar inicio o fin",right:"Óvalo"},
+  {id:"for",left:"Repetir un número fijo de veces",right:"Hexágono"},
+  {id:"output",left:"Mostrar un resultado",right:"Documento de salida"}
+];
+export function buildMatchChallenge(exerciseId,methodIndex=0,attempt=0){
+  const seed=hashSeed([exerciseId,methodIndex,attempt,"match"]);
+  return {
+    seed,
+    left:shuffled(symbolMatches,seed).map(({id,left})=>({id,label:left})),
+    right:shuffled(symbolMatches,seed^0x85ebca6b).map(({id,right})=>({id,label:right}))
+  };
+}
+
 
 export function mixedModeOrder(exerciseId,attempt=0,modes=["predict","order","symbol","error","fill-gap","follow-arrow"]) {
   const available=[...new Set(modes)].filter(Boolean);

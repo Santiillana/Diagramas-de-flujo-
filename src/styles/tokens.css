@@ -374,3 +374,62 @@ a{color:inherit}
   --home-aprende-accent:#FFC400;
   --home-aprende-accent-text:#805800;
 }
+
+/* API semántica compartida: Mi ficha usa papel liso y Aprende usa cuadrícula. */
+:root{
+  --lienzo:var(--surface);
+  --card:var(--surface);
+  --struct:var(--accent-strong);
+  --on-struct:var(--on-accent);
+  --grid:var(--grid-line);
+  --grid-major:color-mix(in srgb,var(--grid-line) 180%,var(--line));
+  --text-2:var(--muted-strong);
+  --focus:var(--accent-strong);
+  --font-ui:ui-sans-serif,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-code:ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+}
+:root[data-section="aprende"]{
+  --lienzo:var(--surface-raised);
+  --card:var(--surface);
+  --grid:var(--grid-line);
+  --grid-major:color-mix(in srgb,var(--grid-line) 180%,var(--line-strong));
+  --struct:var(--teal);
+  --on-struct:var(--bg);
+}
+:root[data-section="ficha"]{
+  --lienzo:var(--surface);
+  --card:var(--surface);
+  --struct:var(--accent-strong);
+  --on-struct:var(--on-accent);
+}
+body{font-family:var(--font-ui);font-size:17px;line-height:1.55;font-variant-numeric:tabular-nums}
+code,kbd,samp,pre{font-family:var(--font-code)}
+body{background-size:24px 24px}
+:root[data-section="aprende"] body{
+  background-image:
+    linear-gradient(var(--grid-major) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-major) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:120px 120px,120px 120px,24px 24px,24px 24px;
+}
+:root[data-section="ficha"] body{background-image:none}
+
+:root{
+  --competence-logica:#4B7A65;
+  --competence-establecer:#806BAE;
+  --competence-evaluar:#397F76;
+  --competence-tics:#4B78AE;
+  --competence-comunicacion:#A95F51;
+  --competence-matematicas:#6D842D;
+  --competence-pendiente:#65736A;
+}
+:root[data-theme="dark"]{
+  --competence-logica:#8CC3A2;
+  --competence-establecer:#B4A1E3;
+  --competence-evaluar:#83CBBE;
+  --competence-tics:#91B6EA;
+  --competence-comunicacion:#E6A092;
+  --competence-matematicas:#B2CC75;
+  --competence-pendiente:#ADB8B1;
+}

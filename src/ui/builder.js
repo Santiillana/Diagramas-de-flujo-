@@ -342,6 +342,7 @@ function runBuilder(){
     $("#builder-code").textContent=compiled.source.split("|").join("\n");
     $("#builder-runtime-message").textContent=runtime.ok?"El flujo se ejecutó. Recorre sus pasos.":"Ejecución detenida: "+runtime.error?.message;
     renderBuilderTimeline();
+    document.dispatchEvent(new CustomEvent("traza:lab-builder-result",{detail:{ok:runtime.ok,outputs:runtime.outputs,variables:runtime.variables}}));
   }catch(error){
     runtime=null;runtimeTimeline=null;runtimeDiagram=null;
     $("#builder-runtime-message").textContent=error.message;

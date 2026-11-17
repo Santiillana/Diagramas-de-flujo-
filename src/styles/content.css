@@ -761,3 +761,31 @@ body.has-exercise-modal{overflow:hidden}
 :root[data-motion="reduced"] .exercise-level-shortcut,
 :root[data-motion="reduced"] .exercise-filter-panel .concept-filter-chip,
 :root[data-motion="reduced"] .exercises-view .exercise-card{transition:none!important}
+
+/* Catálogo de práctica: filtro compacto, tarjetas legibles y detalle de lectura. */
+.exercises-view .exercise-workspace{grid-template-columns:minmax(0,1.8fr) minmax(320px,.8fr);gap:20px;max-width:1440px}
+.exercises-view .exercise-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.exercises-view .exercise-card{min-height:170px;padding:17px;gap:12px;border-radius:16px;text-align:left;transition:transform 180ms var(--ease),border-color 180ms var(--ease),box-shadow 180ms var(--ease)}
+.exercises-view .exercise-card:hover,.exercises-view .exercise-card:focus-visible{transform:translateY(-3px);border-color:var(--struct);box-shadow:var(--shadow-md)}
+.exercises-view .exercise-card>strong{display:-webkit-box;overflow:hidden;min-height:42px;font:650 17px/1.25 ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.exercises-view .exercise-card .exercise-number{width:40px;height:40px;font-size:20px}
+.exercise-card-difficulty,.exercise-card-concepts{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.exercise-card-difficulty i,.exercise-difficulty-filter i{display:block;width:15px;height:5px;border-radius:5px;background:var(--line-strong)}
+.exercise-card-difficulty i.is-filled,.exercise-difficulty-filter i.is-filled{background:var(--struct)}
+.exercises-view .exercise-card-concepts i{padding:4px 7px;border-radius:999px;font-size:11px}
+.exercise-difficulty-filter{display:grid;gap:6px}.exercise-difficulty-filter>span{color:var(--muted);font-size:11px;font-weight:750}
+#exercise-difficulty-options{display:flex;gap:5px}#exercise-difficulty-options button{display:flex;align-items:center;gap:2px;min-width:44px;min-height:44px;justify-content:center;border:1px solid var(--line);border-radius:10px;background:var(--surface-raised)}
+#exercise-difficulty-options button[aria-pressed="true"]{border-color:var(--struct);background:var(--accent-soft)}
+.exercise-concept-search{display:grid;gap:5px;margin:10px 0;color:var(--muted);font-size:12px}
+.exercise-concept-search input{min-height:40px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface-raised);font:inherit}
+.exercise-concept-group{margin:10px 0}.exercise-concept-group h4{margin:0 0 7px;color:var(--muted);font-size:12px}.exercise-concept-group>div{display:flex;flex-wrap:wrap;gap:7px}
+.exercise-view-toggle{display:flex;gap:5px}.exercise-view-toggle button{width:40px;height:40px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface)}.exercise-view-toggle button[aria-pressed="true"]{border-color:var(--struct);color:var(--on-struct);background:var(--struct)}
+.exercises-view .exercise-grid.is-list{grid-template-columns:1fr}.exercises-view .exercise-grid.is-list .exercise-card{min-height:84px;grid-template-columns:48px 1fr auto;align-items:center}.exercises-view .exercise-grid.is-list .exercise-card-top{grid-row:1/4}.exercises-view .exercise-grid.is-list .exercise-card>strong{min-height:0}
+.exercise-detail-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.exercise-detail-nav button{min-height:40px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface)}.exercise-detail-nav button:disabled{opacity:.45}
+.exercise-static-preview{display:grid;place-items:center;margin:16px 0;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--lienzo,var(--surface-soft))}.exercise-static-preview svg{width:min(100%,280px);height:96px;overflow:visible}.exercise-static-preview svg ellipse,.exercise-static-preview svg rect,.exercise-static-preview svg path:last-child{fill:var(--card);stroke:var(--struct);stroke-width:2}.exercise-static-preview svg path:not(:last-child){fill:none;stroke:var(--struct);stroke-width:2}
+.exercise-prompt,.exercise-sample,.exercise-guide,.exercise-solution{margin:15px 0;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}.exercise-prompt>p:last-child{margin:5px 0;font-size:19px;line-height:1.6}.exercise-sample ul,.exercise-guide ol{margin:7px 0;padding-left:22px;color:var(--ink-soft);font-size:16px;line-height:1.6}.exercise-guide li{padding:3px 0}.exercise-solution{animation:exercise-reveal 250ms var(--ease) both}.exercise-solution pre{overflow:auto;padding:12px;border-radius:9px;color:var(--ink);background:var(--surface-soft);font:15px/1.6 ui-monospace,"Cascadia Code",Menlo,Consolas,monospace}.exercise-open-simulator{width:100%;min-height:48px;margin:8px 0}.exercise-detail-note{display:none}
+@keyframes exercise-reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1120px){.exercises-view .exercise-workspace{grid-template-columns:1fr}.exercises-view .exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.exercises-view .exercise-detail-panel{position:static;max-height:none}.exercises-view .exercise-detail-scroll{max-height:none}}
+@media(max-width:520px){.exercises-view .exercise-grid{grid-template-columns:1fr}.exercise-filter-main{grid-template-columns:1fr}.exercises-view .exercise-card{min-height:150px}.exercises-view .exercise-grid.is-list .exercise-card{grid-template-columns:42px 1fr}.exercise-static-preview{margin:10px 0}}
+:root[data-motion="reduced"] .exercise-solution{animation:none}
+.catalog-concept-filter[hidden]{display:none!important}

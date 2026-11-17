@@ -1,0 +1,30 @@
+import { FICHA } from "./ficha.js";
+import { lessons } from "./lessons.js";
+import { exercises } from "./exercises.js";
+import { mathLessonsByTopic } from "./math-lessons.js";
+import { mathExercisesByTopic } from "../math/exercises.js";
+import { MATH_LAB } from "../math/lab-engine.js";
+import { sourceLessonsByTopic } from "./sources-lessons.js";
+import { sourceExercises } from "./source-exercises.js";
+import { sourceLabMechanics } from "./source-lab.js";
+
+const competencia = id => FICHA.competencias.find(item => item.id === id);
+
+export const competenciasAprende = [
+  { id: "establecer-requisitos", titulo: "Establecer requisitos", forma: "circulo" },
+  { id: "evaluar-requisitos", titulo: "Evaluación de requisitos", forma: "rombo" },
+  { id: "tics", titulo: "TICs", forma: "cuadrado" },
+  { id: "comunicacion", titulo: "Comunicación", forma: "triangulo" },
+  { id: "matematicas", titulo: "Matemáticas", forma: "hexagono" }
+].map(item => ({ ...item, fuente: competencia(item.id) })).filter(item => item.fuente);
+
+const leccionesDiagramas = lessons.map(item => item.id);
+const mecanicasMatematicas=MATH_LAB;
+
+export const temas = [
+  { id: "diagramas-flujo", competenciaId: "evaluar-requisitos", titulo: "Diagramas de flujo", icono: "↘", dificultad: 1, estado: "disponible", conceptos: ["figuras", "flujo", "entrada", "salida", "variables", "asignacion", "operaciones", "decisiones", "ciclos"], lecciones: leccionesDiagramas, ejercicios: exercises.map(item => item.id), simulador: { tipo: "flujo" }, laboratorio: { mecanicas: ["predict", "follow-arrow", "table", "order", "fill-gap", "build-diagram", "symbol", "match", "error", "whatif"] } },
+  { id: "fuentes-informacion", competenciaId: "establecer-requisitos", titulo: "Formas de recolectar información", icono: "⌕", dificultad: 1, estado: "disponible", nota: "Según el autor, las fronteras entre fuentes primarias, secundarias y terciarias pueden cambiar.", conceptos: [], lecciones: sourceLessonsByTopic, ejercicios: sourceExercises.map(item=>item.id), simulador: {tipo:"recoleccion-fuentes",escenarios:3}, laboratorio: {mecanicas:sourceLabMechanics} },
+  ...["enteros", "racionales", "regla-de-tres"].map((id, index) => ({ id, competenciaId: "matematicas", titulo: ["Números enteros", "Números racionales", "Regla de tres"][index], icono: ["±", "½", "%"][index], dificultad: index + 1, estado: "disponible", conceptos: [], lecciones: mathLessonsByTopic[id], ejercicios: mathExercisesByTopic[id].map(item=>item.id), simulador: null, laboratorio: { mecanicas: mecanicasMatematicas[id] } }))
+];
+
+export function temaPorId(id) { return temas.find(item => item.id === id) ?? null; }

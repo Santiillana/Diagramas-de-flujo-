@@ -16,13 +16,19 @@ import { escaparHTML, formatearFecha, renderEstado } from "./view-utils.js";
 
 let seleccionada = FICHA.actividades[0]?.id ?? null;
 let busqueda = "";
-let filtroEstado = "todas";
 let filtroCompetencia = "todas";
+let vistaLista = "pendientes";
+let detalleMovil = false;
 let mensajeGuardado = "";
 
 const ETIQUETAS_JUICIO = {
-  aprobado: "Resultado favorable",
-  no_aprobado: "Solicita correcciones"
+  aprobado: "Aprobada",
+  no_aprobado: "Por corregir"
+};
+const RESULTADOS = {
+  aprobada: { icono: "✓", etiqueta: "Aprobada" },
+  por_corregir: { icono: "✎", etiqueta: "Por corregir" },
+  no_aprobada: { icono: "✗", etiqueta: "No aprobada" }
 };
 
 function hoyISO() {
@@ -60,35 +66,23 @@ function actividadesFiltradas(personal) {
       ].join(" ").toLocaleLowerCase("es");
 
       if (!texto.includes(consulta)) return false;
-      if (filtroEstado !== "todas" && estadoActividad(actividad, personal) !== filtroEstado) {
-        return false;
-      }
       if (filtroCompetencia !== "todas" && actividad.competenciaId !== filtroCompetencia) {
         return false;
       }
-      return true;
+      const culminada = [ESTADO.APROBADA, ESTADO.POR_CORREGIR].includes(estadoActividad(actividad, personal)) ||
+        ["aprobada", "por_corregir", "no_aprobada"].includes(actividad.resultado);
+      return vistaLista === "culminadas" ? culminada : !culminada;
     })
     .sort((a, b) =>
+      (vistaLista === "culminadas" && (estadoActividad(a, personal) === ESTADO.POR_CORREGIR || a.resultado === "por_corregir") ? -1 : 0) -
+      (vistaLista === "culminadas" && (estadoActividad(b, personal) === ESTADO.POR_CORREGIR || b.resultado === "por_corregir") ? -1 : 0) ||
       (a.limite || "9999-99-99").localeCompare(b.limite || "9999-99-99") ||
       a.id.localeCompare(b.id)
     );
 }
 
 function renderFiltros() {
-  const opcionesEstado = Object.entries(ESTADOS)
-    .map(([id, meta]) =>
-      '<option value="' + escaparHTML(id) + '"' +
-      (id === filtroEstado ? " selected" : "") + ">" +
-      escaparHTML(meta.etiqueta) + "</option>"
-    ).join("");
-
-  const opcionesCompetencia = FICHA.competencias
-    .map(competencia =>
-      '<option value="' + escaparHTML(competencia.id) + '"' +
-      (competencia.id === filtroCompetencia ? " selected" : "") + ">" +
-      escaparHTML(competencia.nombre) + "</option>"
-    ).join("");
-
+  const chips = FICHA.competencias.map(competencia => `<button type="button" class="ficha-competence-filter${filtroCompetencia === competencia.id ? " is-active" : ""}" data-activity-competence="${escaparHTML(competencia.id)}" aria-pressed="${filtroCompetencia === competencia.id}"><i data-comp="${competencia.comp || 1}" aria-hidden="true"></i>${escaparHTML(competencia.nombre)}</button>`).join("");
   return `
     <div class="ficha-activities-filters">
       <label>
@@ -96,21 +90,8 @@ function renderFiltros() {
         <input type="search" id="activity-search" value="${escaparHTML(busqueda)}"
           placeholder="Nombre o descripción" autocomplete="off">
       </label>
-      <label>
-        Estado
-        <select id="activity-status-filter">
-          <option value="todas">Todos</option>${opcionesEstado}
-        </select>
-      </label>
-      <label>
-        Competencia
-        <select id="activity-competence-filter">
-          <option value="todas">Todas</option>${opcionesCompetencia}
-        </select>
-      </label>
-      <button type="button" class="ficha-filter-clear" data-activity-clear>
-        Limpiar filtros
-      </button>
+      <div class="ficha-competence-filters" role="group" aria-label="Filtrar por competencia"><button type="button" class="ficha-competence-filter${filtroCompetencia === "todas" ? " is-active" : ""}" data-activity-competence="todas" aria-pressed="${filtroCompetencia === "todas"}">Todas</button>${chips}</div>
+      <button type="button" class="ficha-filter-clear" data-activity-clear>Limpiar filtros</button>
     </div>`;
 }
 
@@ -124,12 +105,14 @@ function renderLista(personal) {
     seleccionada = actividades[0]?.id ?? null;
   }
 
-  count.textContent = actividades.length +
-    (actividades.length === 1 ? " actividad" : " actividades");
+  count.textContent = actividades.length + (actividades.length === 1 ? " actividad" : " actividades");
 
+  const hasFilters = Boolean(busqueda.trim()) || filtroCompetencia !== "todas";
+  const emptyTitle = hasFilters ? "Ninguna actividad coincide" : vistaLista === "pendientes" ? "Sin actividades pendientes" : "Aún no hay actividades culminadas";
   root.innerHTML = actividades.length
     ? actividades.map(actividad => {
       const estado = estadoActividad(actividad, personal);
+      const resultado = RESULTADOS[actividad.resultado] || (estado === ESTADO.POR_CORREGIR ? RESULTADOS.por_corregir : estado === ESTADO.APROBADA ? RESULTADOS.aprobada : null);
       const activa = actividad.id === seleccionada;
       return `
         <button type="button" class="ficha-activity-option${activa ? " is-active" : ""}"
@@ -137,17 +120,17 @@ function renderLista(personal) {
           <span class="ficha-activity-option-main">
             <strong>${escaparHTML(actividad.titulo)}</strong>
             <small>${escaparHTML(nombreCompetencia(actividad.competenciaId))}</small>
-            <small>${escaparHTML(textoFechaLimite(actividad))}</small>
+            <small>${actividad.limite ? "Límite · " : "Entrega · "}${escaparHTML(textoFechaLimite(actividad))}</small>
           </span>
-          <span class="ficha-activity-option-status">
-            ${escaparHTML(ESTADOS[estado]?.etiqueta ?? "Pendiente")}
+          <span class="ficha-activity-option-status"${resultado ? ` data-result="${actividad.resultado || estado}"` : ""}>
+            ${resultado ? `${resultado.icono} ${resultado.etiqueta}` : escaparHTML(ESTADOS[estado]?.etiqueta ?? "Pendiente")}
           </span>
         </button>`;
     }).join("")
     : `
       <div class="ficha-empty-inline">
-        <strong>No hay resultados</strong>
-        <span>Prueba otra búsqueda o limpia los filtros.</span>
+        <strong>${emptyTitle}</strong>
+        ${hasFilters ? '<span>Prueba otra búsqueda o limpia los filtros.</span><button type="button" class="ficha-filter-clear" data-activity-clear>Limpiar filtros</button>' : ""}
       </div>`;
 
   renderDetalle(personal);
@@ -272,6 +255,7 @@ function renderDetalle(personal) {
 
   const registro = registroActividad(personal, actividad.id);
   const estado = estadoActividad(actividad, personal);
+  const resultado = RESULTADOS[actividad.resultado];
   const bloqueada = registro.estado === ESTADO.APROBADA;
   const instrucciones = (actividad.instrucciones ?? [])
     .map(texto => "<li>" + escaparHTML(texto) + "</li>").join("");
@@ -279,6 +263,7 @@ function renderDetalle(personal) {
     .map(texto => "<li>" + escaparHTML(texto) + "</li>").join("");
 
   root.innerHTML = `
+    <button type="button" class="activity-mobile-back" data-activity-back>‹ Volver</button>
     <article class="ficha-activity-detail">
       <header class="ficha-activity-detail-heading">
         <div>
@@ -286,7 +271,7 @@ function renderDetalle(personal) {
           <h2>${escaparHTML(actividad.titulo)}</h2>
           <p>${escaparHTML(nombreCompetencia(actividad.competenciaId))}</p>
         </div>
-        ${renderEstado(estado)}
+        ${resultado ? `<span class="activity-result" data-result="${actividad.resultado}">${resultado.icono} ${resultado.etiqueta}</span>` : renderEstado(estado)}
       </header>
 
       <div class="ficha-activity-summary">
@@ -361,8 +346,8 @@ function renderDetalle(personal) {
             Resultado recibido
             <select name="juicio" required>
               <option value="">Selecciona</option>
-              <option value="aprobado">Favorable</option>
-              <option value="no_aprobado">Solicita correcciones</option>
+              <option value="aprobado">Aprobada</option>
+              <option value="no_aprobado">Por corregir</option>
             </select>
           </label>
           <label>
@@ -432,6 +417,7 @@ export function renderActividades() {
   const lectura = leerFichaEstricto();
   const personal = lectura.ok ? lectura.datos : leerFicha();
   const actividades = actividadesFiltradas(personal);
+  const culminadas = FICHA.actividades.filter(item => [ESTADO.APROBADA, ESTADO.POR_CORREGIR].includes(estadoActividad(item, personal)) || ["aprobada", "por_corregir", "no_aprobada"].includes(item.resultado)).length;
 
   if (!actividades.some(item => item.id === seleccionada)) {
     seleccionada = actividades[0]?.id ?? null;
@@ -443,9 +429,9 @@ export function renderActividades() {
         <div>
           <p class="eyebrow">MI FICHA · SEGUIMIENTO</p>
           <h2 id="actividades-title">Actividades</h2>
-          <p>Consulta las consignas y registra tu avance personal.</p>
+          <p>Consulta qué falta y revisa las actividades culminadas.</p>
         </div>
-        <span id="ficha-activity-count"></span>
+        <div class="ficha-activity-counts"><button type="button" data-activity-view="pendientes" aria-pressed="${vistaLista === "pendientes"}">Pendientes (${FICHA.actividades.length - culminadas})</button><button type="button" data-activity-view="culminadas" aria-pressed="${vistaLista === "culminadas"}">Culminadas (${culminadas})</button><span id="ficha-activity-count" aria-live="polite"></span></div>
       </header>
 
       ${FICHA.meta.esDemostracion
@@ -458,7 +444,7 @@ export function renderActividades() {
 
       ${renderFiltros()}
 
-      <div class="ficha-activities-layout">
+      <div class="ficha-activities-layout${detalleMovil ? " is-detail-open" : ""}">
         <aside class="ficha-activity-list-panel" aria-label="Catálogo de actividades">
           <div id="ficha-activity-list"></div>
         </aside>
@@ -469,6 +455,7 @@ export function renderActividades() {
         Tu seguimiento, notas y resultados transcritos se guardan solo en este navegador.
       </footer>
     </div>`;
+  root.classList.toggle("is-detail-open", detalleMovil);
 
   renderLista(personal);
 }
@@ -491,16 +478,6 @@ export function initActividades() {
   });
 
   root.addEventListener("change", event => {
-    if (event.target.id === "activity-status-filter") {
-      filtroEstado = event.target.value;
-      renderActividades();
-      return;
-    }
-    if (event.target.id === "activity-competence-filter") {
-      filtroCompetencia = event.target.value;
-      renderActividades();
-      return;
-    }
     if (!event.target.matches("[data-checklist-field]")) return;
 
     const lectura = leerFichaEstricto();
@@ -526,15 +503,21 @@ export function initActividades() {
   root.addEventListener("click", event => {
     if (event.target.closest("[data-activity-clear]")) {
       busqueda = "";
-      filtroEstado = "todas";
       filtroCompetencia = "todas";
       renderActividades();
       return;
     }
 
+    const view = event.target.closest("[data-activity-view]");
+    if (view) { vistaLista = view.dataset.activityView; detalleMovil = false; renderActividades(); return; }
+    const competence = event.target.closest("[data-activity-competence]");
+    if (competence) { filtroCompetencia = competence.dataset.activityCompetence; detalleMovil = false; renderActividades(); return; }
+    if (event.target.closest("[data-activity-back]")) { detalleMovil = false; renderActividades(); return; }
+
     const button = event.target.closest("[data-activity-select]");
     if (button) {
       seleccionada = button.dataset.activitySelect;
+      detalleMovil = true;
       mensajeGuardado = "";
       renderActividades();
     }
@@ -575,5 +558,13 @@ export function initActividades() {
   });
 
   document.addEventListener("traza:filtros-ficha-cambiados", renderActividades);
+  document.addEventListener("traza:space-change", event => {
+    if (event.detail?.space !== "actividades") return;
+    busqueda = "";
+    filtroCompetencia = "todas";
+    vistaLista = "pendientes";
+    detalleMovil = false;
+    renderActividades();
+  });
   renderActividades();
 }

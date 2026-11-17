@@ -5,6 +5,8 @@ import { initSimulator } from "./ui/simulator.js";
 import { initLab } from "./ui/lab.js";
 import { initBuilder } from "./ui/builder.js";
 import { initFicha } from "./ficha/init.js";
+import { initMathPlayer } from "./ui/player/math-player.js";
+import { initSourceSimulator } from "./ui/source-simulator.js";
 
 initFicha();
 initNavigation();
@@ -13,3 +15,5 @@ initContentViews();
 initSimulator();
 initLab();
 initBuilder();
+initMathPlayer();
+initSourceSimulator();

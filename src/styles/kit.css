@@ -1,0 +1,55 @@
+.visual-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.visual-speed-label{display:flex;align-items:center;gap:7px;min-height:44px;color:var(--text-2);font-size:14px}
+.visual-speed-label select{min-height:40px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit}
+.visual-controls:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:10px}
+.lesson-static-sequence{margin:12px auto;max-width:760px;color:var(--text-2);font-size:14px}
+.lesson-static-sequence summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.lesson-static-sequence ol{display:grid;gap:8px;padding:0;list-style:none}
+.lesson-static-sequence li{display:grid;grid-template-columns:28px 1fr;align-items:start;gap:8px;color:var(--text)}
+.lesson-static-sequence li span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--struct);color:var(--on-struct);font-variant-numeric:tabular-nums}
+.lesson-recipe-svg{display:block;width:100%;height:auto;min-height:150px;overflow:visible}
+.recipe-node{fill:var(--card);stroke:var(--struct);stroke-width:2;transition:stroke-width 180ms ease,fill 180ms ease}
+.recipe-node.is-active{fill:color-mix(in srgb,var(--accent) 18%,var(--card));stroke:var(--accent-text);stroke-width:3}
+.recipe-node-label{fill:var(--text);font:500 14px ui-monospace,monospace}
+.recipe-loop-label tspan.is-active{text-decoration:underline;text-decoration-color:var(--accent-text);text-decoration-thickness:3px;text-underline-offset:4px}
+.recipe-order{fill:var(--text-2);font:500 12px ui-monospace,monospace}
+.recipe-arrow{fill:none;stroke:var(--line);stroke-width:2}
+.recipe-guide{fill:var(--accent);stroke:var(--card);stroke-width:2;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
+.recipe-choice-arrow{fill:none;stroke:var(--line);stroke-width:2}
+.recipe-return{fill:none;stroke:var(--struct);stroke-width:2}
+.recipe-choice rect{stroke-width:2}
+.recipe-choice text{font:600 14px ui-sans-serif,system-ui;fill:var(--text)}
+.recipe-choice-yes rect{fill:color-mix(in srgb,var(--status-approved) 18%,var(--card));stroke:var(--status-approved)}
+.recipe-choice-no rect{fill:color-mix(in srgb,var(--status-overdue) 14%,var(--card));stroke:var(--status-overdue)}
+.recipe-static-sequence{margin-bottom:12px}
+.math-scene{display:grid;gap:14px;max-width:680px;min-height:190px;margin:0 auto;padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,color-mix(in srgb,var(--struct) 8%,var(--card)),var(--card));color:var(--text);transition:background-color 300ms ease}
+.math-scene-kicker{color:var(--text-2);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.math-scene>strong{font-size:20px;line-height:1.35}
+.math-scene>p{margin:0;color:var(--text-2);font-size:16px;line-height:1.5}
+.math-scene-track{display:flex;gap:7px;margin-top:auto}
+.math-scene-track i{height:4px;flex:1;border-radius:99px;background:var(--line);transition:background-color 250ms ease,transform 250ms ease}
+.math-scene-track i.is-active{background:var(--struct);transform:scaleY(1.4)}
+.math-number-line{position:relative;display:grid;grid-template-columns:repeat(25,minmax(0,1fr));align-items:center;min-height:34px;color:var(--text-2);font:600 11px ui-monospace,monospace}
+.math-number-line i{position:relative;display:grid;place-items:center;height:8px;border-left:1px solid var(--line);font-style:normal}
+.math-number-line i:first-child{border-left:0}.math-number-line i.is-zero{height:24px;border-color:var(--struct);border-left-width:2px;color:var(--text)}
+.math-number-line i.is-marked::after{position:absolute;top:-4px;width:13px;height:13px;border:2px solid var(--card);border-radius:50%;background:var(--accent);content:""}
+.math-number-line .math-number-token{position:absolute;z-index:1;left:var(--math-position);top:2px;width:12px;height:12px;border:2px solid var(--card);border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--struct);transform:translateX(-50%);transition:left 400ms cubic-bezier(.22,1,.36,1)}
+.math-fraction-bar{display:grid;grid-template-columns:repeat(var(--math-parts,4),1fr);gap:3px;height:30px}
+.math-fraction-bar i{border:1px solid var(--struct);border-radius:4px;background:var(--card)}
+.math-fraction-bar i.is-filled{background:color-mix(in srgb,var(--struct) 55%,var(--card))}
+.math-proportion-grid{display:grid;grid-template-columns:repeat(2,minmax(60px,100px));gap:5px;justify-content:center;text-align:center;font:600 14px ui-monospace,monospace}
+.math-proportion-grid span,.math-proportion-grid strong{padding:6px;border-radius:6px;background:color-mix(in srgb,var(--struct) 12%,var(--card))}
+.math-proportion-grid strong{color:var(--accent-text)}
+.math-sign-pairs{display:grid;grid-template-columns:repeat(6,32px);justify-content:center;gap:8px}
+.math-sign-pairs span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;color:#102038;font-weight:800}
+.math-sign-pairs .is-positive{background:#6C9CFF}.math-sign-pairs .is-negative{background:#E58B7A}
+.math-expression-tree,.math-nested-groups,.math-decision-tree{display:grid;gap:12px;justify-items:center;padding:8px;color:var(--text);text-align:center}
+.math-tree-root,.math-nested-groups span,.math-decision-tree span,.math-decision-tree b,.math-decision-tree strong{padding:8px 12px;border:1px solid var(--struct);border-radius:10px;background:var(--card);font:600 15px ui-monospace,monospace}
+.math-tree-branches,.math-decision-tree>div{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.math-tree-branches span,.math-decision-tree strong{padding:6px 9px;border-radius:8px;background:color-mix(in srgb,var(--struct) 10%,var(--card));font-size:13px}
+.math-nested-groups b{display:inline-block;padding:8px;border:1px solid var(--accent);border-radius:8px}
+.math-constant-area{display:grid;grid-template-columns:repeat(var(--math-columns),minmax(8px,22px));justify-content:center;gap:3px}
+.math-constant-area i{aspect-ratio:1;border:1px solid var(--struct);border-radius:3px;background:color-mix(in srgb,var(--struct) 28%,var(--card))}
+@media(max-width:520px){.visual-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.visual-speed-label{grid-column:1/-1}}
+:root[data-motion="reduced"] .lesson-static-sequence{display:block}
+:root[data-motion="reduced"] .recipe-node,:root[data-motion="reduced"] .recipe-guide{transition:none}

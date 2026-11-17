@@ -50,12 +50,13 @@ export function initPreferences() {
   }
 
   function applyMotion(motion) {
-    root.dataset.motion = motion;
+    const normalized = ["full", "soft", "reduced"].includes(motion) ? motion : "full";
+    root.dataset.motion = normalized;
     if (motionButton) {
-      const reduced = motion === "reduced";
-      motionButton.setAttribute("aria-pressed", String(reduced));
-      motionButton.setAttribute("aria-label", reduced ? "Activar movimiento" : "Reducir movimiento");
-      motionButton.title = reduced ? "Activar movimiento" : "Reducir movimiento";
+      const labels = { full: "Movimiento completo", soft: "Movimiento suave", reduced: "Movimiento reducido" };
+      motionButton.setAttribute("aria-pressed", String(normalized === "reduced"));
+      motionButton.setAttribute("aria-label", "Nivel de movimiento: " + labels[normalized]);
+      motionButton.title = labels[normalized];
     }
     savePreference(STORAGE_KEYS.motion, motion);
   }
@@ -65,7 +66,8 @@ export function initPreferences() {
     applyTheme(root.dataset.theme === "dark" ? "light" : "dark", section);
   });
   motionButton?.addEventListener("click", () => {
-    applyMotion(root.dataset.motion === "reduced" ? "full" : "reduced");
+    const levels = ["full", "soft", "reduced"];
+    applyMotion(levels[(levels.indexOf(root.dataset.motion) + 1) % levels.length]);
   });
 
   document.addEventListener("traza:space-change", event => {
@@ -79,5 +81,5 @@ export function initPreferences() {
     STORAGE_KEYS.motion,
     prefersReduced ? "reduced" : "full",
     "traza-motion"
-  ) === "reduced" ? "reduced" : "full");
+  ) );
 }

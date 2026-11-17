@@ -1,81 +1,59 @@
-import { test, expect } from "@playwright/test";
-import { goToSpace } from "./navigation.js";
+import { test, expect, goToSpace } from "./navigation.js";
 
-test("Hoy presenta actividades, filtros compartidos y horario del día", async ({ page }) => {
+test("Clases abre en hoy y omite el domingo", async ({ page }) => {
   await page.goto("/");
-  await goToSpace(page, "hoy");
-  await expect(page.locator("#view-hoy .ficha-demo-notice")).toBeVisible();
-  await expect(page.locator("#view-hoy .ficha-activity-card").first()).toBeVisible();
-  await expect(page.locator("#hoy-competencia")).toHaveValue("todas");
-  const weekday = await page.evaluate(() => new Date().getDay());
-  const classesExpected = weekday === 0 ? 0 : weekday === 6 ? 2 : 1;
-  await expect(page.locator("#view-hoy .ficha-class-item")).toHaveCount(classesExpected);
-  await page.locator("#hoy-competencia").selectOption("matematicas");
-  await goToSpace(page, "semana");
-  await expect(page.locator("#semana-competencia")).toHaveValue("matematicas");
-  await page.locator("#semana-competencia").selectOption("todas");
-  await expect(page.locator("#view-semana .ficha-week-block")).toHaveCount(7);
+  await goToSpace(page, "clases");
+  await expect(page.locator("#view-clases .class-rail")).toBeVisible();
+  await expect(page.locator("#view-clases .class-day-card")).toHaveCount(6);
+  await expect(page.locator("#view-clases .class-day-card.is-selected")).toHaveCount(1);
+  await expect(page.locator("#view-clases .class-detail")).toBeVisible();
 });
 
-test("Semana permite navegar y muestra los bloques transcritos del lunes al sábado", async ({ page }) => {
+test("las vistas diaria, semana y mes conservan el día seleccionado", async ({ page }) => {
   await page.goto("/");
-  await goToSpace(page, "semana");
-  await expect(page.locator("#view-semana .ficha-week-desktop")).toBeVisible();
-  await expect(page.locator("#view-semana .ficha-week-block")).toHaveCount(7);
-  await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "Matemáticas" })).toBeVisible();
-  await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "Comunicación" })).toBeVisible();
-  await expect(page.locator("#view-semana .ficha-week-block").filter({ hasText: "TICS" })).toBeVisible();
-  const antes = await page.locator("#view-semana .ficha-date-range").textContent();
-  await page.locator("[data-week-action='next']").click();
-  expect(await page.locator("#view-semana .ficha-date-range").textContent()).not.toBe(antes);
-  await page.locator("[data-week-action='today']").click();
-  await expect(page.locator("#view-semana .ficha-date-range")).toBeVisible();
+  await goToSpace(page, "clases");
+  const selected = page.locator("#view-clases .class-day-card").nth(2);
+  await selected.click();
+  const date = await selected.getAttribute("data-class-date");
+  await page.locator('[data-class-view="semana"]').click();
+  await expect(page.locator("#view-clases .class-week-card[data-class-date='" + date + "']")).toHaveAttribute("aria-pressed", "true");
+  await page.locator('[data-class-view="mes"]').click();
+  await expect(page.locator("#view-clases .class-month-day.is-selected")).toHaveAttribute("data-class-date", date);
+  await page.locator('[data-class-view="diaria"]').click();
+  await expect(page.locator("#view-clases .class-day-card.is-selected")).toHaveAttribute("data-class-date", date);
 });
 
-test("Calendario ofrece navegación mensual, horario recurrente y detalle seleccionable", async ({ page }) => {
+test("la semana y el mes permiten cambiar de periodo", async ({ page }) => {
   await page.goto("/");
-  await goToSpace(page, "calendario");
-  await expect(page.locator("#view-calendario .ficha-calendar-grid")).toBeVisible();
-  await expect(page.locator("#view-calendario .ficha-calendar-cell")).toHaveCount(42);
-  await expect(page.locator("#view-calendario .ficha-calendar-event--class").first()).toBeVisible();
-  const antes = await page.locator("#view-calendario .ficha-month-title").textContent();
-  await page.locator("[data-month-action='next']").click();
-  expect(await page.locator("#view-calendario .ficha-month-title").textContent()).not.toBe(antes);
-  await page.locator("[data-month-action='today']").click();
-  const monday = await page.evaluate(() => {
-    const date = new Date();
-    date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
-    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
-  });
-  await page.locator('[data-calendar-day="' + monday + '"]').click();
-  await expect(page.locator("#view-calendario .ficha-calendar-detail")).toContainText("Matemáticas");
+  await goToSpace(page, "clases");
+  await page.locator('[data-class-view="semana"]').click();
+  const week = page.locator("#view-clases .class-month-heading h3");
+  const weekBefore = await week.innerText();
+  await page.locator('[data-class-week="1"]').click();
+  await expect(week).not.toHaveText(weekBefore);
+  await page.locator('[data-class-view="mes"]').click();
+  const month = page.locator("#view-clases .class-month-heading h3");
+  const monthBefore = await month.innerText();
+  await page.locator('[data-class-month="1"]').click();
+  await expect(month).not.toHaveText(monthBefore);
 });
 
-test("Semana y Calendario responden en tableta y móvil sin desbordamiento", async ({ page }) => {
-  for (const width of [760, 390, 320]) {
+test("Clases no desborda en tablet ni móvil", async ({ page }) => {
+  for (const width of [1280, 760, 390, 375]) {
     await page.setViewportSize({ width, height: 850 });
     await page.goto("/");
-    await goToSpace(page, "semana");
-    if (width <= 760) {
-      await expect(page.locator("#view-semana .ficha-mobile-week")).toBeVisible();
-      await expect(page.locator("#view-semana [data-mobile-day]")).toHaveCount(6);
-    } else {
-      await expect(page.locator("#view-semana .ficha-week-desktop")).toBeVisible();
-    }
-    let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, "desbordamiento de Semana en " + width).toBeLessThanOrEqual(1);
-    await goToSpace(page, "calendario");
-    overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, "desbordamiento de Calendario en " + width).toBeLessThanOrEqual(1);
+    await goToSpace(page, "clases");
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, "desbordamiento de Clases en " + width).toBeLessThanOrEqual(1);
   }
 });
 
-test("el filtro por estado y Limpiar funcionan", async ({ page }) => {
+test("el botón Hoy vuelve al día actual después de navegar", async ({ page }) => {
   await page.goto("/");
-  await goToSpace(page, "hoy");
-  await page.locator("#hoy-estado").selectOption("atrasada");
-  await expect(page.locator("#view-hoy .ficha-activity-card")).toHaveCount(1);
-  await page.locator("#view-hoy [data-ficha-filter-clear]").click();
-  await expect(page.locator("#hoy-estado")).toHaveValue("todos");
-  await expect(page.locator("#hoy-competencia")).toHaveValue("todas");
+  await goToSpace(page, "clases");
+  await page.locator("#view-clases .class-day-card").first().click();
+  await page.locator('[data-class-view="semana"]').click();
+  await page.locator('[data-class-week="1"]').click();
+  await page.locator("[data-class-today]").click();
+  await expect(page.locator("#view-clases .class-week-card.is-today")).toHaveAttribute("aria-pressed", "true");
 });

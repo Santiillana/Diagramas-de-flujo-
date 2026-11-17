@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { modeStars, normalizeProgress, recordLabResult } from "../src/ui/lab/progress.js";
+import { conceptMedals, modeStars, normalizeProgress, recordLabResult } from "../src/ui/lab/progress.js";
 
 test("el progreso de laboratorio tiene versión y tolera datos inválidos",()=>{
   assert.equal(normalizeProgress(null).version,2);
@@ -20,4 +20,15 @@ test("un fallo entra en repaso y se retira al acertar",()=>{
   assert.deepEqual(failed.failed,[{exerciseId:23,mode:"follow-arrow"}]);
   const recovered=recordLabResult(failed,{exerciseId:23,mode:"follow-arrow",correct:true});
   assert.deepEqual(recovered.failed,[]);
+});
+
+test("registra partidas por tema y concepto y calcula medalla con tres mecánicas",()=>{
+  let progress=normalizeProgress(null);
+  progress=recordLabResult(progress,{exerciseId:1,mode:"predict",correct:false,topicId:"diagramas-flujo",conceptId:"variables"});
+  assert.equal(progress.topics["diagramas-flujo"].concepts.variables.predict.partidas,0);
+  for(const mode of ["predict","table"])progress=recordLabResult(progress,{exerciseId:1,mode,correct:true,topicId:"diagramas-flujo",conceptId:"variables"});
+  assert.deepEqual(conceptMedals(progress),[]);
+  progress=recordLabResult(progress,{exerciseId:2,mode:"match",correct:true,topicId:"diagramas-flujo",conceptId:"variables"});
+  assert.deepEqual(conceptMedals(progress),["variables"]);
+  assert.equal(progress.topics["diagramas-flujo"].concepts.variables.match.partidas,1);
 });

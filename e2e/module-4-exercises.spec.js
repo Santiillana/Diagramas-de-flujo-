@@ -1,109 +1,122 @@
 import { test, expect, goToSpace } from "./navigation.js";
 
-async function openExercises(page){
-  await page.goto("/");
-  await goToSpace(page,"exercises");
-}
+async function openExercises(page){await page.goto("/");await goToSpace(page,"exercises");}
 
-test("el catálogo presenta 45 retos y los cinco accesos rápidos por nivel",async({page})=>{
+test("el catálogo es compacto y ordena las tarjetas por dificultad y número",async({page})=>{
   await openExercises(page);
-  await expect(page.locator("#exercise-count")).toHaveText("45 de 45 ejercicios");
-  await expect(page.locator("#exercise-level-shortcuts [data-exercise-level-shortcut]")).toHaveCount(5);
-  await expect(page.locator('[data-exercise-level-shortcut="all"]')).toContainText("45");
-  await expect(page.locator('[data-exercise-level-shortcut="basic"]')).toContainText("20");
-  await expect(page.locator('[data-exercise-level-shortcut="intermediate"]')).toContainText("10");
-  await expect(page.locator('[data-exercise-level-shortcut="advanced"]')).toContainText("10");
-  await expect(page.locator('[data-exercise-level-shortcut="expert"]')).toContainText("5");
-  await expect(page.locator("[data-select-exercise]")).toHaveCount(12);
+  await expect(page.locator("#exercise-count")).toHaveCount(0);
+  await expect(page.locator("#exercise-level-shortcuts")).toHaveCount(0);
+  await expect(page.locator("#exercise-grid [data-select-exercise]")).toHaveCount(45);
+  const ids=await page.locator("#exercise-grid [data-select-exercise]").evaluateAll(cards=>cards.map(card=>Number(card.dataset.selectExercise)));
+  expect(ids).toHaveLength(45);expect(new Set(ids).size).toBe(45);
+  await expect(page.locator("#exercise-grid .exercise-card-concepts i").first()).toBeVisible();
+  await expect(page.locator("[data-exercise-view=grid]")).toHaveAttribute("aria-pressed","true");
 });
 
-test("los accesos rápidos por dificultad permanecen sincronizados con el selector",async({page})=>{
+test("dificultad, conceptos, clase y búsqueda se combinan y se limpian",async({page})=>{
   await openExercises(page);
-  for(const [level,count] of [["basic",20],["intermediate",10],["advanced",10],["expert",5],["all",45]]){
-    await page.locator('[data-exercise-level-shortcut="'+level+'"]').click();
-    await expect(page.locator("#exercise-level")).toHaveValue(level);
-    await expect(page.locator("#exercise-count")).toHaveText(count+" de 45 ejercicios");
-    await expect(page.locator('[data-exercise-level-shortcut="'+level+'"]')).toHaveAttribute("aria-pressed","true");
-  }
-  await page.locator("#exercise-level").selectOption("expert");
-  await expect(page.locator('[data-exercise-level-shortcut="expert"]')).toHaveAttribute("aria-pressed","true");
-  await expect(page.locator("#exercise-count")).toHaveText("5 de 45 ejercicios");
-});
-
-test("el filtro de ejercicios de clase conserva exactamente los cuatro retos asignados",async({page})=>{
-  await openExercises(page);
+  await page.locator('[data-exercise-difficulty="2"]').click();
+  await expect(page.locator("#exercise-grid [data-select-exercise]")).toHaveCount(10);
+  await page.locator('[data-exercise-difficulty="2"]').click();
   await page.locator("#exercise-class-only").check();
-  await expect(page.locator("#exercise-count")).toHaveText("4 de 45 ejercicios");
-  const ids=await page.locator("[data-select-exercise]").evaluateAll(cards=>cards.map(card=>Number(card.getAttribute("data-select-exercise"))).sort((a,b)=>a-b));
+  const ids=await page.locator("#exercise-grid [data-select-exercise]").evaluateAll(cards=>cards.map(card=>Number(card.dataset.selectExercise)).sort((a,b)=>a-b));
   expect(ids).toEqual([22,23,24,28]);
-  await page.locator("#exercise-class-only").uncheck();
-  await expect(page.locator("#exercise-count")).toHaveText("45 de 45 ejercicios");
-});
-
-test("la búsqueda por número o título y la paginación recorren los 45 identificadores sin duplicados",async({page})=>{
-  await openExercises(page);
-  await page.locator("#exercise-search").fill("23");
-  await expect(page.locator("#exercise-count")).toHaveText("1 de 45 ejercicios");
-  await expect(page.locator('[data-select-exercise="23"]')).toBeVisible();
-  await page.locator("#exercise-filters-clear").click();
-  await expect(page.locator("#exercise-count")).toHaveText("45 de 45 ejercicios");
-
-  const ids=[];
-  for(let index=0;index<4;index++){
-    const current=await page.locator("[data-select-exercise]").evaluateAll(cards=>cards.map(card=>Number(card.getAttribute("data-select-exercise"))));
-    ids.push(...current);
-    if(index<3)await page.locator("[data-page-next]").click();
-  }
-  expect(ids).toHaveLength(45);
-  expect(new Set(ids).size).toBe(45);
-  expect([...ids].sort((a,b)=>a-b)).toEqual(Array.from({length:45},(_,index)=>index+1));
-});
-
-test("los conceptos se combinan y los filtros activos se pueden limpiar",async({page})=>{
-  await openExercises(page);
   await page.locator("#exercise-concept-details > summary").click();
   await page.locator('[data-concept-filter="Ciclo Para"]').click();
-  await expect(page.locator("#exercise-concepts-summary")).toHaveText("1 seleccionado(s)");
-  await expect(page.locator("#exercise-filter-summary")).toContainText("1 concepto(s)");
   await expect(page.locator("#exercise-active-filters")).toContainText("Ciclo Para");
-  await page.locator('[data-concept-mode="any"]').click();
-  await page.locator('[data-concept-filter="Decisiones"]').click();
-  await expect(page.locator("#exercise-filter-summary")).toContainText("2 concepto(s)");
-  await expect(page.locator("#exercise-active-filters .exercise-active-filter")).toHaveCount(2);
-  await page.locator("#exercise-filters-clear").click();
-  await expect(page.locator("#exercise-count")).toHaveText("45 de 45 ejercicios");
-  await expect(page.locator("#exercise-active-filters")).toBeHidden();
-  await expect(page.locator("#exercise-concepts-summary")).toHaveText("Todos los conceptos");
+  await page.locator("#exercise-search").fill("no existe");
+  await expect(page.getByText("Ningún ejercicio coincide")).toBeVisible();
+  await page.locator("#exercise-empty-clear").click();
+  await expect(page.locator("#exercise-grid [data-select-exercise]")).toHaveCount(45);
 });
 
-test("la ficha amplía el contexto sin revelar pseudocódigo ni solución antes de la confirmación",async({page})=>{
+test("el detalle guía el intento y revela el pseudocódigo solo al pedirlo",async({page})=>{
   await openExercises(page);
-  await page.locator("#exercise-search").fill("Fibonacci");
   await page.locator('[data-select-exercise="23"]').click();
   await expect(page.locator("#exercise-detail h3")).toHaveText("Fibonacci: términos que no superen 40");
-  await expect(page.locator(".exercise-detail-stats")).toContainText("método(s)");
-  await expect(page.locator("#exercise-detail")).toContainText("DATOS DE ENTRADA");
-  await expect(page.locator("#exercise-detail")).toContainText("RESULTADOS ESPERADOS");
-  await expect(page.locator("#exercise-detail")).toContainText("CONDICIONES Y RESTRICCIONES");
-  await expect(page.locator("#exercise-detail")).not.toContainText("PSEUDOCÓDIGO");
+  await expect(page.locator("#exercise-detail")).toContainText("DATOS DE EJEMPLO");
+  await expect(page.locator("#exercise-detail .exercise-guide li")).toHaveCount(3);
+  await expect(page.locator("#exercise-detail svg")).toBeVisible();
+  await expect(page.locator("#exercise-detail pre")).toHaveCount(0);
+  await page.locator("[data-reveal-solution]").click();
+  await expect(page.locator("#exercise-detail .exercise-solution pre")).toBeVisible();
   await page.locator("[data-start-exercise]").click();
-  await expect(page.locator("#exercise-try-modal")).toBeVisible();
-  await expect(page.locator("#exercise-try-statement")).toContainText("40");
-  await page.locator("#exercise-try-back").click();
-  await expect(page.locator("#exercise-try-modal")).toBeHidden();
-  await page.locator("[data-start-exercise]").click();
-  await page.locator("#exercise-try-confirm").click();
   await expect(page.locator('[data-view="simulator"]')).toBeVisible();
   await expect(page.locator("#simulator-exercise-title")).toContainText("Fibonacci");
 });
 
-test("el catálogo, sus filtros y la ficha no producen desbordamiento en móvil",async({page})=>{
-  await page.setViewportSize({width:390,height:844});
-  await openExercises(page);
-  await page.locator("#exercise-concept-details > summary").click();
-  await page.locator('[data-concept-filter="Ciclo Para"]').click();
-  await page.locator('[data-select-exercise]').first().click();
+test("la vista de lista y los filtros se adaptan a móvil sin desbordar",async({page})=>{
+  await page.setViewportSize({width:390,height:844});await openExercises(page);
+  await page.locator('[data-exercise-view="list"]').click();
+  await expect(page.locator("#exercise-grid")).toHaveClass(/is-list/);
+  await page.locator('[data-select-exercise="1"]').click();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
-  await expect(page.locator("#exercise-detail")).toBeVisible();
+  await expect(page.locator("#exercise-detail")).toContainText("ANTES DE EMPEZAR");
+});
+
+test("el banco matemático verifica respuestas exactas y abre el reproductor dedicado",async({page})=>{
+  await openExercises(page);
+  await page.locator("#exercise-bank").selectOption("matematicas");
+  await expect(page.locator("#exercise-grid [data-select-math-exercise]")).toHaveCount(39);
+  await expect(page.locator("#exercise-concept-details")).toBeHidden();
+  await page.locator('[data-select-math-exercise="MAT-ENT-01"]').click();
+  await expect(page.locator("#exercise-detail .math-exercise-expression")).toContainText("15−8(2)+24÷6");
+  await expect(page.locator("#exercise-detail .exercise-solution")).toHaveCount(0);
+  await page.locator("#math-answer").fill("3");
+  await page.locator("#exercise-detail [type=submit]").click();
+  await expect(page.locator("#math-answer-feedback")).toContainText("Correcto");
+  await expect(page.locator("#exercise-detail .exercise-solution")).toHaveCount(0);
+  await page.locator("[data-reveal-math-solution]").click();
+  await expect(page.locator("#exercise-detail .math-exercise-solution")).toContainText("Resultado: 3");
+  await page.locator("[data-start-math-exercise]").click();
+  await expect(page.locator("#view-simulator")).toBeVisible();
+  await expect(page.locator("#math-player")).toBeVisible();
+  await expect(page.locator("#math-player h2")).toHaveText("Enteros · Ejercicio 01");
+  await page.locator('#math-player [data-math-predict="16"]').click();
+  await expect(page.locator(".math-predict-feedback")).toContainText("Correcto");
+  await page.locator('#math-player [data-math-player-action="next"]').click();
+  await expect(page.locator("#math-player .math-player-progress")).toContainText("PASO 2");
+});
+
+test("la fracción equivalente se acepta y el ejercicio pendiente permanece sin resolver",async({page})=>{
+  await openExercises(page);
+  await page.locator("#exercise-bank").selectOption("matematicas");
+  await page.locator('#exercise-math-topic').selectOption("racionales");
+  await page.locator('[data-select-math-exercise="MAT-RAC-01"]').click();
+  await page.locator("#math-answer").fill("3/6");
+  await page.locator("#exercise-detail [type=submit]").click();
+  await expect(page.locator("#math-answer-feedback")).toContainText("se puede simplificar a 1/2");
+  await expect(page.locator("#exercise-detail .exercise-solution")).toHaveCount(0);
+  await page.locator('#exercise-math-topic').selectOption("enteros");
+  await page.locator('[data-select-math-exercise="MAT-ENT-15"]').click();
+  await expect(page.locator("#exercise-detail")).toContainText("no se calcula ni se corrige");
+  await expect(page.locator("#exercise-detail [data-start-math-exercise]")).toHaveCount(0);
+});
+
+test("las pestañas de cada tema abren directamente su banco de matemáticas",async({page})=>{
+  await page.goto("/");await goToSpace(page,"learn");
+  await page.locator('[data-learn-competence="matematicas"]').click();
+  await page.locator('[data-topic-open="racionales"]').click();
+  await page.locator('[data-topic-tab="ejercicios"]').click();
+  await expect(page.locator('[data-view="exercises"]')).toBeVisible();
+  await expect(page.locator("#exercise-bank")).toHaveValue("matematicas");
+  await expect(page.locator("#exercise-math-topic")).toHaveValue("racionales");
+  await expect(page.locator("#exercise-grid [data-select-math-exercise]")).toHaveCount(9);
+});
+
+test("la regla de tres inversa verifica el producto constante en el simulador",async({page})=>{
+  await openExercises(page);
+  await page.locator("#exercise-bank").selectOption("matematicas");
+  await page.locator("#exercise-math-topic").selectOption("regla-de-tres");
+  await page.locator('[data-select-math-exercise="MAT-R3-01"]').click();
+  await expect(page.locator("#exercise-detail")).toContainText("Proporción inversa");
+  await page.locator("#math-answer").fill("10");
+  await page.locator("#exercise-detail [type=submit]").click();
+  await expect(page.locator("#math-answer-feedback")).toContainText("Correcto");
+  await page.locator("[data-start-math-exercise]").click();
+  await expect(page.locator("#math-player .math-player-area")).toBeVisible();
+  await expect(page.locator("#math-player .math-player-area")).toContainText("120");
+  await page.locator('#math-player [data-math-predict="inversa"]').click();
+  await expect(page.locator(".math-predict-feedback")).toContainText("Correcto");
 });

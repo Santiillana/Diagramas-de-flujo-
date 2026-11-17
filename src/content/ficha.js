@@ -44,6 +44,8 @@ export const FICHA = {
     { id: "sabado-tarde-por-confirmar", dia: 6, inicio: "16:00", fin: "22:00", competenciaId: "clase-sabado-por-confirmar", titulo: "Clase por confirmar", instructorId: "jair-castaneda", fuente: "Horario compartido por el usuario" }
   ],
   horarioNotas: [],
+  // El vocero publica comunicados editando este manifiesto; sin backend ni acceso de edición.
+  comunicados: [],
   actividades: [
     {
       id: "actividad-diagrama",
