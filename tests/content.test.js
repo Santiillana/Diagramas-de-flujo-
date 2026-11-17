@@ -108,7 +108,12 @@ test("el catálogo de temas comparte competencias y conserva el mapa de 17 lecci
   assert.deepEqual(competenciasAprende.map(item=>item.id),["establecer-requisitos","evaluar-requisitos","tics","comunicacion","matematicas"]);
   assert.ok(competenciasAprende.every(item=>FICHA.competencias.some(source=>source.id===item.id)));
   assert.equal(temas.find(item=>item.id==="diagramas-flujo").lecciones.length,17);
-  assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),["fuentes-informacion","enteros","racionales","regla-de-tres"]);
+  assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),["fuentes-informacion"]);
+  for(const id of ["enteros","racionales","regla-de-tres"]){
+    const topic=temas.find(item=>item.id===id);
+    assert.equal(topic.estado,"disponible");
+    assert.equal(topic.lecciones.length,5);
+  }
 });
 
 test("cada etiqueta de conceptos encontrada en los ejercicios tiene un identificador",()=>{

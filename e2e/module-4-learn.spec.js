@@ -1,4 +1,4 @@
-import { test, expect, openDiagramLessons } from "./navigation.js";
+import { test, expect, openDiagramLessons, goToSpace } from "./navigation.js";
 
 test("Aprende organiza las 17 lecciones en cuatro bloques y una ruta lateral",async({page})=>{
   await page.goto("/");
@@ -79,4 +79,25 @@ test("las lecciones se mantienen dentro del ancho en móvil",async({page})=>{
   expect(overflow).toBeLessThanOrEqual(1);
   await page.locator("[data-learn-list]").click();
   await expect(page.locator(".lesson-catalog-panel")).toBeVisible();
+});
+
+test("los tres temas de matemáticas abren sus cinco lecciones con escenas recorribles",async({page})=>{
+  await page.goto("/");
+  await goToSpace(page,"learn");
+  await page.locator('[data-learn-competence="matematicas"]').click();
+  for(const [id,title] of [["enteros","Números enteros"],["racionales","Números racionales"],["regla-de-tres","Regla de tres"]]){
+    await page.locator('[data-topic-open="'+id+'"]').click();
+    await expect(page.locator("#learn-topic-title")).toHaveText(title);
+    await expect(page.locator("#lesson-catalog [data-lesson-id]")).toHaveCount(5);
+    await page.locator("#lesson-catalog [data-lesson-id]").first().click();
+    await expect(page.locator("#lesson-detail .lesson-visual .math-scene")).toBeVisible();
+    await expect(page.locator("#lesson-detail [data-visual-player]")).toBeVisible();
+    await expect(page.locator("#lesson-detail #lesson-term")).toContainText("Glosario del tema");
+    const scene=page.locator("#lesson-detail .lesson-visual .math-scene");
+    const initial=await scene.getAttribute("data-math-step");
+    await page.locator("#lesson-detail [data-visual-next]").click();
+    await expect(scene).not.toHaveAttribute("data-math-step",initial);
+    await page.locator('#learn-topic-space [data-learn-back]').click();
+    await page.locator('[data-learn-competence="matematicas"]').click();
+  }
 });
