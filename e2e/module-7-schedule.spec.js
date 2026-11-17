@@ -122,3 +122,88 @@ test("el respaldo se descarga y la importación válida reemplaza con confirmaci
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("traza:v4:ficha")));
   expect(stored.activities[0].title).toBe("Actividad restaurada");
 });
+
+test("el respaldo completo reúne y restaura Actividades y Biblioteca", async ({ page }) => {
+  const timestamp = "2026-11-17T12:00:00.000Z";
+  const activities = {
+    version: 1,
+    activities: [{
+      id: "activity-complete",
+      title: "Actividad del respaldo integral",
+      description: "",
+      classId: null,
+      competencyId: null,
+      assignedOn: null,
+      dueOn: null,
+      status: "pending",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      attempts: [],
+      feedbackEntries: [],
+      notes: "",
+      archivedAt: null,
+      events: []
+    }]
+  };
+  const library = {
+    version: 1,
+    resources: [{
+      id: "resource-complete",
+      title: "Recurso del respaldo integral",
+      kind: "note",
+      url: "",
+      classId: null,
+      description: "Recurso personal de prueba.",
+      tags: ["prueba"],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      archivedAt: null
+    }]
+  };
+  const backup = {
+    format: "traza-full-ficha-backup",
+    version: 1,
+    exportedAt: timestamp,
+    personalData: {
+      activities: {
+        format: "traza-ficha-backup",
+        version: 1,
+        exportedAt: timestamp,
+        data: activities
+      },
+      library: {
+        format: "traza-library-backup",
+        version: 1,
+        exportedAt: timestamp,
+        data: library
+      }
+    }
+  };
+
+  await page.addInitScript(() => {
+    localStorage.setItem("traza:v4:ficha", JSON.stringify({ version: 1, activities: [] }));
+    localStorage.setItem("traza:v4:library", JSON.stringify({ version: 1, resources: [] }));
+  });
+  await openFicha(page);
+  await page.getByRole("button", { name: "Hoy", exact: true }).click();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.locator("#ficha-full-backup-export").click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^traza-mi-ficha-completa-.*\.json$/);
+  await expect(page.locator("#ficha-full-backup-status")).toContainText("Respaldo completo descargado");
+
+  await page.once("dialog", dialog => dialog.accept());
+  await page.locator("#ficha-full-backup-file").setInputFiles({
+    name: "mi-ficha-completa.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup))
+  });
+  await expect(page.locator("#ficha-full-backup-status")).toContainText("1 actividad(es) y 1 recurso(s)");
+  const stored = await page.evaluate(() => ({
+    activities: JSON.parse(localStorage.getItem("traza:v4:ficha")),
+    library: JSON.parse(localStorage.getItem("traza:v4:library"))
+  }));
+  expect(stored.activities.activities[0].title).toBe("Actividad del respaldo integral");
+  expect(stored.library.resources[0].title).toBe("Recurso del respaldo integral");
+});
