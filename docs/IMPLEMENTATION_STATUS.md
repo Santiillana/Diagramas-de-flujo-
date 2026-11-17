@@ -160,6 +160,9 @@ No fusionar ni publicar la PR #22 mientras falle el build externo o queden incom
 - Informe M5: `docs/MODULE_5_RELEASE_AUDIT.md`.
 - Informe M6: `docs/MODULE_6_HOME_BUILDER.md`.
 - Especificación M7: `docs/MODULE_7_ACTIVITY_DETAIL.md`.
+- Integración Clases ↔ Aprende: `docs/MODULE_8_CLASS_LEARN_INTEGRATION.md`.
+- Biblioteca M9: `docs/MODULE_9_LIBRARY.md`.
+- Respaldo y auditoría M10: `docs/MODULE_10_BACKUP_AUDIT.md`.
 - Horario oficial: `docs/OFFICIAL_CLASS_SCHEDULE.md`.
 - Informe acumulado v2: `docs/INFORME_MEJORAS.md`.
 - Aceptación: `docs/FINAL_ACCEPTANCE.md`.
