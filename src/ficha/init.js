@@ -28,5 +28,6 @@ export function initFicha() {
     renderHoy();
     renderSemana();
     renderCalendario();
+    renderActividades();
   });
 }
