@@ -4,9 +4,7 @@ import {
   updateLibraryResource, validateLibraryBackup, writeLibraryData
 } from "./ficha-library-store.js";
 import { HORARIO_CLASES } from "../content/ficha.js";
-import {
-  RECURSOS_OFICIALES, validateOfficialResources
-} from "../content/ficha-resources.js";
+import { validateOfficialResources } from "../content/ficha-resources.js";
 
 const KIND_LABELS = Object.freeze({
   link: "Enlace", video: "Video", document: "Documento o PDF",
