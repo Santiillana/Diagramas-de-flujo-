@@ -175,5 +175,31 @@
   .ficha-calendar-cell button,.ficha-date-controls button,.ficha-filter-clear{transition:none}
 }
 
+/* Paso 3: Centro de control de Mi ficha. */
+.control-view{gap:20px}
+.control-view .ficha-view-heading h2{text-transform:capitalize}
+.control-view .ficha-view-heading{margin-bottom:0}
+.control-summary{margin:6px 0;color:var(--text-2);font-size:17px}
+.control-demo{display:inline-flex;margin-top:6px;padding:4px 9px;border:1px solid var(--line);border-radius:999px;color:var(--text-2);font-size:13px}
+.control-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:24px;grid-template-areas:"schedule evidences" "instructors announcements"}
+.control-panel{min-width:0;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow-sm)}
+.control-panel h3{margin:0 0 14px;font:600 21px/1.3 var(--font-ui)}
+.control-schedule{grid-area:schedule}.control-evidences{grid-area:evidences}.control-instructors-list{grid-area:instructors}.control-announcements-list{grid-area:announcements}
+.control-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.control-day{min-width:0;padding:10px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+.control-day.is-today{border:2px solid var(--struct);background:color-mix(in srgb,var(--struct) 7%,var(--surface))}
+.control-day header{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:14px}
+.control-day header time{font-variant-numeric:tabular-nums}.control-today{color:var(--struct);font-size:12px;font-weight:600}
+.control-class{display:grid;gap:3px;padding:8px 0;border-top:1px solid var(--line)}.control-class time{font-size:14px;font-variant-numeric:tabular-nums}.control-class strong{font-size:15px;line-height:1.35}.control-class span,.control-confirm{margin:0;color:var(--text-2);font-size:14px}.control-confirm{padding:8px 0;border-top:1px dashed var(--line)}
+.control-link{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;color:var(--accent-text);font-size:14px;font-weight:600;text-decoration:none}.control-link:hover{text-decoration:underline}
+.control-evidence{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:64px;border-bottom:1px solid var(--line);cursor:pointer}
+.control-evidence input{width:20px;height:20px;accent-color:var(--struct)}.control-evidence-copy{display:grid;gap:4px;min-width:0}.control-evidence-copy strong{display:-webkit-box;overflow:hidden;font-size:16px;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.control-evidence:has(input:checked) .control-evidence-copy strong{text-decoration:line-through}.control-evidence-copy small{display:flex;align-items:center;gap:6px;color:var(--text-2);font-size:13px}.control-evidence-copy i{width:10px;height:10px;border-radius:50%;background:var(--comp-2)}.control-date{color:var(--text-2);font-size:13px;white-space:nowrap}.control-empty{display:grid;place-items:center;min-height:80px;margin:0;color:var(--text-2);font-size:15px;text-align:center}
+.control-done{margin-top:10px;color:var(--text-2);font-size:14px}.control-done summary{min-height:36px;cursor:pointer}.control-done p{margin:4px 0}
+.control-instructor{display:flex;align-items:center;gap:12px;min-height:68px;border-bottom:1px solid var(--line)}.control-instructor>span:last-child{display:grid;gap:3px;min-width:0}.control-instructor strong{font-size:16px}.control-instructor small{color:var(--text-2);font-size:13px}.control-avatar{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;color:var(--struct);background:color-mix(in srgb,var(--struct) 14%,var(--surface));font-size:14px;font-weight:600}
+.control-announcement{display:grid;grid-template-columns:1fr auto;gap:7px 10px;padding:12px 0;border-bottom:1px solid var(--line)}.control-announce-type{justify-self:start;padding:3px 8px;border-radius:999px;font-size:12px}.control-announce-type[data-type="importante"]{color:var(--on-struct);background:var(--struct)}.control-announce-type[data-type="informativo"]{border:1px solid var(--line);color:var(--text-2)}.control-announcement time{color:var(--text-2);font-size:13px}.control-announcement strong{grid-column:1/-1;font-size:16px}.control-announcement p{grid-column:1/-1;display:-webkit-box;overflow:hidden;margin:0;color:var(--text-2);font-size:15px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}.control-announcement.is-expanded p{-webkit-line-clamp:unset}
+.control-read-more{justify-self:start;min-height:36px;padding:0;border:0;color:var(--accent-text);background:transparent;font:600 14px var(--font-ui);cursor:pointer}
+@media(max-width:900px){.control-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"evidences" "schedule" "announcements" "instructors"}.control-days{display:flex;overflow:auto;scroll-snap-type:x mandatory}.control-day{flex:0 0 min(78%,260px);scroll-snap-align:center}}
+@media(max-width:440px){.control-panel{padding:16px}.control-evidence{grid-template-columns:24px minmax(0,1fr);gap:8px}.control-date{grid-column:2}.control-days{margin-inline:-4px}.control-day{flex-basis:78%}}
+
 .ficha-calendar-event--note{background:var(--warning-soft);color:var(--warning)}
 .ficha-calendar-detail-item .ficha-calendar-detail-icon{flex:none}

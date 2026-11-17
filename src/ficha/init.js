@@ -1,5 +1,5 @@
 import { initFiltros } from "./filtros.js";
-import { initHoy, renderHoy } from "./view-hoy.js";
+import { initControl, renderControl } from "./view-control.js";
 import { initSemana, renderSemana } from "./view-semana.js";
 import { initCalendario, renderCalendario } from "./view-calendario.js";
 import { initActividades, renderActividades } from "./view-actividades.js";
@@ -11,13 +11,13 @@ export function initFicha() {
   if (inicializada || typeof document === "undefined") return;
   inicializada = true;
   initFiltros();
-  initHoy();
+  initControl();
   initSemana();
   initCalendario();
   initActividades();
 
   document.addEventListener("traza:ficha-actualizada", () => {
-    renderHoy();
+    renderControl();
     renderSemana();
     renderCalendario();
     renderActividades();
@@ -25,7 +25,7 @@ export function initFicha() {
 
   window.addEventListener("storage", event => {
     if (event.key !== CLAVE_FICHA && event.key !== null) return;
-    renderHoy();
+    renderControl();
     renderSemana();
     renderCalendario();
     renderActividades();

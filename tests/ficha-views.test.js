@@ -77,10 +77,21 @@ test("las vistas de Mi ficha están conectadas a la aplicación y tienen estilos
   assert.match(html, /styles\/ficha\.css/);
   assert.match(app, /import \{ initFicha \}/);
   assert.match(app, /initFicha\(\)/);
-  for (const marker of ["initHoy", "initSemana", "initCalendario", "traza:ficha-actualizada"]) {
+  for (const marker of ["initControl", "renderControl", "initSemana", "initCalendario", "traza:ficha-actualizada"]) {
     assert.ok(init.includes(marker), "Falta conectar " + marker);
   }
   for (const selector of [".ficha-week-grid", ".ficha-calendar-grid", ".ficha-activity-card", ".ficha-day-picker"]) {
     assert.ok(css.includes(selector), "Falta estilo " + selector);
   }
+});
+
+test("Centro de control usa paneles de horario, evidencias, comunicados e instructores", async () => {
+  const view = await read("../src/ficha/view-control.js");
+  assert.match(view, /function renderHorario/);
+  assert.match(view, /function renderEvidencias/);
+  assert.match(view, /function renderComunicados/);
+  assert.match(view, /function renderInstructores/);
+  assert.match(view, /KEY_HECHAS = "traza:v4:evidencias-hechas"/);
+  assert.match(view, /data-evidence-undo/);
+  assert.deepEqual(FICHA.comunicados, []);
 });
