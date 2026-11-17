@@ -37,6 +37,17 @@ function restore(storage, key, previous) {
   else storage.setItem(key, previous);
 }
 
+function announceRestoreRollback() {
+  if (typeof globalThis.window === "undefined" ||
+      typeof globalThis.CustomEvent === "undefined") return;
+  window.dispatchEvent(new CustomEvent("traza:ficha-change", {
+    detail: { type: "restored", rollback: true }
+  }));
+  window.dispatchEvent(new CustomEvent("traza:library-change", {
+    detail: { type: "restored", rollback: true }
+  }));
+}
+
 export function createFullFichaBackup(targetStorage) {
   const storage = getStorage(targetStorage);
   if (!storage) throw new Error("storage_unavailable");
@@ -116,6 +127,7 @@ export function importFullFichaBackup(value, targetStorage) {
     try {
       restore(storage, FICHA_KEY, oldFicha.value);
       restore(storage, LIBRARY_KEY, oldLibrary.value);
+      announceRestoreRollback();
     } catch {
       return { ok: false, reason: "rollback_failed", cause: library.reason };
     }
