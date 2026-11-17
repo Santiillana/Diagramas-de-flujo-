@@ -57,6 +57,12 @@ La UI debe mostrar “Contenido de Aprende aún no vinculado” cuando no exista
 5. No relacionar automáticamente Matemáticas con una lección homónima, ni TICS con un recurso por similitud textual.
 6. Probar vigencias, cambios de fecha, fechas civiles y zona `America/Bogota`.
 
+## Implementación inicial disponible
+
+La vista `Clases` está conectada a la navegación Mi ficha desde `index.html` y `src/app.js`. Consume `src/content/ficha.js` como única fuente de horarios; presenta bloques vigentes y bloques históricos, y muestra actividades y recursos oficiales cuyo `classId` coincide exactamente con el bloque. Los catálogos oficiales vacíos se identifican como tales. Para Aprende muestra el mensaje de ausencia de asociación confirmada y no crea enlaces ficticios.
+
+La prueba E2E `e2e/module-8-classes.spec.js` verifica el número de bloques vigentes, el historial del lunes, los dos bloques del sábado, los instructores y la ausencia de relaciones inventadas.
+
 ## Pendiente para cerrar M8
 
 - Recibir o localizar el plan oficial de formación / distribución de competencias por clase.
