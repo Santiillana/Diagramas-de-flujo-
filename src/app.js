@@ -7,6 +7,7 @@ import { initBuilder } from "./ui/builder.js";
 import { initFichaSchedule } from "./ui/ficha-schedule.js";
 import { initFichaBackup } from "./ui/ficha-backup.js";
 import { initFichaActivities } from "./ui/ficha-activities.js";
+import { initFichaLibrary } from "./ui/ficha-library.js";
 
 initNavigation();
 initPreferences();
@@ -17,3 +18,4 @@ initBuilder();
 initFichaSchedule();
 initFichaBackup();
 initFichaActivities();
+initFichaLibrary();
