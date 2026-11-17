@@ -181,7 +181,7 @@ test("el respaldo exige coherencia entre fechas, entregas, devoluciones y estado
 
   const reversedDates = structuredClone(original);
   reversedDates.data.activities[0].dueOn = "2026-11-15";
-  assert.equal(validateFichaBackup(reversedDates).reason, "invalid_records");
+  assert.equal(validateFichaBackup(reversedDates).reason, "invalid_date_order");
 
   const forgedApproval = structuredClone(original);
   forgedApproval.data.activities[0].status = "approved";
