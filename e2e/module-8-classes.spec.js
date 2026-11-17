@@ -6,7 +6,7 @@ test("Clases presenta el horario vigente, los bloques del sábado y el historial
   await page.getByRole("button", { name: "Clases", exact: true }).click();
 
   await expect(page.getByRole("heading", { name: "Mis clases" })).toBeVisible();
-  const cards = page.locator(".ficha-class-card");
+  const cards = page.locator("#ficha-clases .ficha-class-card");
   await expect(cards).toHaveCount(7);
 
   await expect(page.locator("#ficha-clases")).toContainText("Matemáticas");
@@ -20,7 +20,7 @@ test("Clases presenta el horario vigente, los bloques del sábado y el historial
   await expect(page.locator("#ficha-clases")).toContainText("6 p. m. – 10 p. m.");
   await expect(page.locator("#ficha-clases")).toContainText("Sin asociación pedagógica confirmada");
 
-  const history = page.locator(".ficha-classes-history");
+  const history = page.locator("#ficha-clases .ficha-classes-history");
   await expect(history).toContainText("Evaluar requisitos");
   await expect(history).toContainText("Jair Castañeda");
   await expect(history).toContainText("Vigente hasta 2026-11-01");
@@ -31,7 +31,7 @@ test("Clases nunca inventa materias para los bloques del sábado ni vínculos co
   await page.getByRole("button", { name: "Mi ficha" }).click();
   await page.getByRole("button", { name: "Clases", exact: true }).click();
 
-  const saturday = page.locator(".ficha-class-card").filter({ hasText: "Clase del sábado" });
+  const saturday = page.locator("#ficha-clases .ficha-class-card").filter({ hasText: "Clase del sábado" });
   await expect(saturday).toHaveCount(2);
   await expect(saturday.nth(0)).toContainText("12 p. m. – 4 p. m.");
   await expect(saturday.nth(0)).toContainText("Gloria Romero");
