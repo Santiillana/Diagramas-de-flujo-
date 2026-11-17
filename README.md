@@ -38,10 +38,10 @@ Requiere Node.js 22 o superior y Python 3 para servir los módulos ES.
 
 ```bash
 npm install
-python3 -m http.server 8000
+npm run dev
 ```
 
-Abre http://localhost:8000.
+Abre http://localhost:8000. El servidor sirve los módulos estáticos y se detiene con `Ctrl+C`.
 
 ## Pruebas
 
