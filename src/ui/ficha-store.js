@@ -457,6 +457,9 @@ export function addFeedback(id, input, current = readFichaData()) {
   if (!["favorable", "correction_requested", "informational"].includes(input?.result)) {
     return { ok: false, reason: "invalid_feedback" };
   }
+  if (activity.attempts.length === 0) {
+    return { ok: false, reason: "feedback_requires_submission" };
+  }
   const comment = cleanText(input.comment);
   if (!comment) return { ok: false, reason: "feedback_required" };
   const submissionId = input.submissionId || null;
@@ -466,7 +469,7 @@ export function addFeedback(id, input, current = readFichaData()) {
   const entry = {
     id: makeId("feedback"),
     activityId: id,
-    submissionId,
+    submissionId: submissionId || activity.attempts.at(-1).id,
     recordedAt: nowIso(),
     source: "student_transcription",
     result: input.result,
