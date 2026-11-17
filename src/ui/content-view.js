@@ -513,6 +513,14 @@ function selectLesson(id){
   saveLearnProgress();lessonList();renderLesson();
 }
 function bindContentEvents(){
+  document.addEventListener("traza:select-lesson", event => {
+    const id = event.detail?.lessonId;
+    if (typeof id === "string") selectLesson(id);
+  });
+  document.addEventListener("traza:select-exercise", event => {
+    const id = event.detail?.exerciseId;
+    if (id !== undefined && id !== null) selectExercise(id);
+  });
   $("#learn-continue-current")?.addEventListener("click",event=>{
     const id=event.currentTarget.dataset.lessonContinue;
     if(id)selectLesson(id);
