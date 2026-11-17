@@ -95,7 +95,8 @@ export function validateLibraryData(value) {
     return { ok: false, reason: "invalid_data" };
   }
   const resources = value.resources.map(normalizeResource);
-  if (resources.some(item => !item) || resources.length !== value.resources.length) {
+  if (resources.some(item => !item || (!item.url && !item.description)) ||
+      resources.length !== value.resources.length) {
     return { ok: false, reason: "invalid_records" };
   }
   const ids = resources.map(item => item.id);
