@@ -1,5 +1,7 @@
 import { lessons as flowLessons } from "../content/lessons.js";
 import { mathLessons, mathLessonById } from "../content/math-lessons.js";
+import { sourceLessons, sourceLessonById, sourceLessonGlossary } from "../content/sources-lessons.js";
+import { renderSourceScene } from "./lessons/sources.js";
 import { rutas } from "../content/rutas.js";
 import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
@@ -25,7 +27,7 @@ const LEVELS = {
   advanced:{label:"Avanzado",className:"level-advanced"},
   expert:{label:"Experto",className:"level-expert"}
 };
-const lessons = [...flowLessons, ...mathLessons];
+const lessons = [...flowLessons, ...mathLessons, ...sourceLessons];
 let selectedLesson = lessons[0].id;
 let lessonVisualStep = 0;
 let lessonScreenStep = 0;
@@ -62,6 +64,7 @@ const LESSON_TERMS = {
   "do-while":"Ciclo Hacer–Mientras","nested-loops":"Ciclos anidados","validation-sentinel":"Validación con centinela"
 };
 for (const lesson of mathLessons) LESSON_TERMS[lesson.id] = lesson.term;
+for (const lesson of sourceLessons) LESSON_TERMS[lesson.id] = lesson.term;
 
 export function exerciseConceptLabels(item){
   const labels=new Set();
@@ -178,7 +181,7 @@ function renderTopicTabs(){
     ["ejercicios","Ejercicios",theme.ejercicios.length,"exercises"],
     ["simulador","Simulador",theme.simulador?1:0,"simulator"],
     ["laboratorio","Laboratorio",theme.laboratorio?.mecanicas.length||0,"lab"]
-  ];
+  ].filter(([id,,count])=>id==="lecciones"||count>0);
   host.innerHTML=entries.map(([id,label,count,space])=>`<button type="button" class="learn-topic-tab${topicTab===id?" is-active":""}" data-topic-tab="${id}"${space?` data-go="${space}"`:""} aria-current="${topicTab===id?"page":"false"}"><span aria-hidden="true">${({lecciones:"▤",ejercicios:"◇",simulador:"⌘",laboratorio:"⌑"})[id]}</span>${label}<small>${count}</small></button>`).join("");
 }
 function setMathExerciseContext(topicId){
@@ -194,6 +197,7 @@ function renderTopicSpace(){
   const label=$("#learn-topic-competence"),title=$("#learn-topic-title"),select=$("#learn-topic-select");
   if(label)label.textContent=competence?.titulo||"Aprende";
   if(title)title.textContent=theme.titulo;
+  const note=$("#learn-topic-note");if(note){note.hidden=!theme.nota;note.textContent=theme.nota??"";}
   const count=$("#learn-catalog-count");
   const topicConcepts=conceptos.filter(item=>theme.conceptos.includes(item.id));
   if(count)count.textContent=theme.lecciones.length+" lecciones"+(topicConcepts.length?" · "+topicConcepts.length+" conceptos":"");
@@ -210,7 +214,8 @@ function openTheme(id){
   const theme=temaPorId(id);if(!theme||theme.estado!=="disponible")return;
   selectedTheme=id;
   if(!theme.lecciones.includes(selectedLesson)){selectedLesson=theme.lecciones[0]||lessons[0].id;lessonScreenStep=0;lessonVisualStep=0;}
-  topicTab=learnProgress.tab||"lecciones";
+  const availableTabs=new Set(["lecciones",...(theme.ejercicios.length?["ejercicios"]:[]),...(theme.simulador?["simulador"]:[]),...(theme.laboratorio?.mecanicas.length?["laboratorio"]:[])]);
+  topicTab=availableTabs.has(learnProgress.tab)?learnProgress.tab:"lecciones";
   saveLearnProgress();
   showLearnPanel("topic");
   lessonList();renderLesson();renderTopicSpace();
@@ -220,7 +225,8 @@ function renderLearnProgress(){
   const host=$("#learn-progress-topics");if(!host)return;
   const done=learnProgress.completed.length;const percent=Math.round(done/lessons.length*100);
   const ring=$("#learn-progress-ring"),text=$("#learn-progress-percent"),total=$("#learn-progress-total"),fill=$("#learn-progress-fill");
-  if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(done));}
+  if(ring){ring.style.setProperty("--learn-progress",percent+"%");ring.setAttribute("aria-valuenow",String(done));ring.setAttribute("aria-valuemax",String(lessons.length));ring.setAttribute("aria-label","Progreso de las "+lessons.length+" lecciones");}
+  const lessonCount=$(".learn-progress-count");if(lessonCount)lessonCount.innerHTML=lessons.length+' <small>LECCIONES</small>';
   if(text)text.textContent=percent+"%";if(total)total.textContent=done+" de "+lessons.length+" lecciones completadas";if(fill)fill.style.width=percent+"%";
   let labData={};try{labData=JSON.parse(localStorage.getItem("traza:v2:progress")||"{}");}catch{}
   const lab=labData.exercises||{};
@@ -239,7 +245,7 @@ function lessonList(){
   const current=Math.max(0,topicLessons.findIndex(item=>item.id===selectedLesson))+1;
   if(routeCount){routeCount.textContent=current+" de "+topicLessons.length;routeCount.parentElement?.setAttribute("role","progressbar");routeCount.parentElement?.setAttribute("aria-valuemin","0");routeCount.parentElement?.setAttribute("aria-valuemax",String(topicLessons.length));routeCount.parentElement?.setAttribute("aria-valuenow",String(current));}
   if(routeFill)routeFill.style.width=Math.round(current/Math.max(1,topicLessons.length)*100)+"%";
-  const groups=theme?.id==="diagramas-flujo"||!theme?rutas:[{id:theme.id,title:theme.titulo,description:"Cinco lecciones para comprender y practicar el tema.",ids:topicLessons.map(item=>item.id)}];
+  const groups=theme?.id==="diagramas-flujo"||!theme?rutas:[{id:theme.id,title:theme.titulo,description:topicLessons.length+" lecciones para comprender y practicar el tema.",ids:topicLessons.map(item=>item.id)}];
   host.innerHTML=groups.map(group=>{
     const done=group.ids.filter(id=>learnProgress.completed.includes(id)).length;
     const items=topicLessons.filter(lesson=>group.ids.includes(lesson.id)).map((lesson,index)=>{
@@ -255,13 +261,13 @@ function lessonList(){
       '<div class="lesson-catalog-group-heading"><div><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p><small>'+escapeHTML(group.description)+'</small></div>'+
       '<span class="lesson-group-progress" aria-label="'+done+' de '+group.ids.length+' lecciones completadas">'+done+'/'+group.ids.length+'</span></div>'+
       '<div class="lesson-catalog-items">'+items+'</div></section>';
-  }).join("")+'<details class="lesson-glossary"><summary>Glosario del tema</summary><dl>'+topicLessons.map(lesson=>'<dt>'+escapeHTML(LESSON_TERMS[lesson.id]??lesson.title)+'</dt><dd>'+escapeHTML(lesson.technical)+'</dd>').join("")+'</dl></details>';
+  }).join("")+'<details class="lesson-glossary"><summary>Glosario del tema</summary><dl>'+(theme?.id==="fuentes-informacion"?sourceLessonGlossary.map(([term,definition])=>'<dt>'+escapeHTML(term)+'</dt><dd>'+escapeHTML(definition)+'</dd>').join(""):topicLessons.map(lesson=>'<dt>'+escapeHTML(LESSON_TERMS[lesson.id]??lesson.title)+'</dt><dd>'+escapeHTML(lesson.technical)+'</dd>').join(""))+'</dl></details>';
 }
 function lessonInputs(value){
   return String(value??"").split(/[;,]/).map(part=>part.trim()).filter(Boolean).map(Number);
 }
 function runLesson(lesson,values=lesson.miniProgram.sample){
-  if(mathLessonById(lesson.id))return {ok:true,events:lesson.visual.steps.map(([title,body],index)=>({type:"math-step",sourceLine:index+1,message:title,scene:{body:title+". "+body}})),outputs:[],variables:{}};
+  if(mathLessonById(lesson.id)||sourceLessonById(lesson.id))return {ok:true,events:lesson.visual.steps.map(([title,body],index)=>({type:mathLessonById(lesson.id)?"math-step":"source-step",sourceLine:index+1,message:title,scene:{body:title+". "+body}})),outputs:[],variables:{}};
   try{return executePseudocode(lesson.miniProgram.code,values);}
   catch(error){return {ok:false,error:{message:error.message},events:[],outputs:[],variables:{}};}
 }
@@ -281,6 +287,7 @@ function relevantLessonEvents(lesson,execution){
 }
 function lessonScene(lesson,position=0){
   const mathLesson=mathLessonById(lesson.id);
+  if(sourceLessonById(lesson.id))return renderSourceScene(lesson,position);
   if(mathLesson)return mathSceneMarkup(lesson,position);
   const recipe=lessonRecipe(lesson.id);
   if(recipe)return '<div class="lesson-scene-host" role="img" aria-label="'+escapeHTML(recipe.cierre)+'">'+recipeSceneMarkup(recipe,0)+'</div>';
@@ -334,10 +341,11 @@ function lessonPhaseForEvent(event){
 }
 function visualMarkup(lesson){
   const execution=runLesson(lesson);
+  const sourceLesson=sourceLessonById(lesson.id);
   const events=execution.ok?relevantLessonEvents(lesson,execution):[];
   const index=Math.min(lessonVisualStep,Math.max(0,events.length-1));
   const event=events[index];
-  const scene=event&&!mathLessonById(lesson.id)?renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample}):null;
+  const scene=event&&!mathLessonById(lesson.id)&&!sourceLesson?renderScene(event,{execution,events:execution.events,inputValues:lesson.miniProgram.sample}):null;
   const recipe=lessonRecipe(lesson.id);
   const frame=recipe?recipeFrame(recipe,index,events.length):0;
   const declared=Array.isArray(lesson.visual.steps)&&lesson.visual.steps.length>0;
@@ -366,7 +374,7 @@ function visualMarkup(lesson){
     '<div class="lesson-visual-head"><div><p class="eyebrow">EXPERIMENTO VISUAL</p><strong>'+escapeHTML(lesson.visual.caption)+'</strong></div>'+
     '<span class="visual-step-count">'+(recipe?"Momento "+(recipeMomentIndex(recipe,index,events.length)+1)+"/"+recipe.moments.length+" · Paso "+(events.length?index+1:0)+"/"+events.length:"Paso "+(events.length?index+1:0)+" / "+events.length)+'</span></div>'+
     '<div class="lesson-phase-rail">'+phaseRail+'</div>'+
-    (mathLessonById(lesson.id)?mathSceneMarkup(lesson,index):recipe?'<div class="lesson-scene-host" role="img" aria-label="'+escapeHTML(recipe.cierre)+'">'+recipeSceneMarkup(recipe,frame,recipeMomentIndex(recipe,index,events.length))+'</div>':scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
+    (mathLessonById(lesson.id)?mathSceneMarkup(lesson,index):sourceLesson?renderSourceScene(lesson,index):recipe?'<div class="lesson-scene-host" role="img" aria-label="'+escapeHTML(recipe.cierre)+'">'+recipeSceneMarkup(recipe,frame,recipeMomentIndex(recipe,index,events.length))+'</div>':scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
     '<p class="lesson-scene-caption">'+escapeHTML(recipe?recipeMoment(recipe,index,events.length):event?.scene?.body??event?.message??event?.sourceText??"")+'</p>'+
     '<details class="lesson-static-sequence" '+((document.documentElement.dataset.motion==="reduced"||window.matchMedia("(prefers-reduced-motion: reduce)").matches)?"open":"")+'><summary>Ver secuencia estática</summary>'+(recipe?'<ol class="recipe-static-sequence">'+recipe.moments.map((moment,position)=>'<li><span>'+String(position+1)+'</span>'+escapeHTML(moment)+'</li>').join("")+'</ol>':"")+'<ol>'+events.map((item,position)=>'<li><span>'+String(position+1)+'</span>'+escapeHTML(item.scene?.body??item.message??item.sourceText??"Paso del algoritmo")+'</li>').join("")+'</ol></details>'+
     '<div class="visual-controls" tabindex="0" aria-label="Controles de la escena. Usa espacio para reproducir o pausar y las flechas para avanzar o retroceder." data-visual-player><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
@@ -405,6 +413,8 @@ function startLessonPlayback(){
 function renderLesson(){
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
   const mathLesson=mathLessonById(lesson.id);
+  const sourceLesson=sourceLessonById(lesson.id);
+  const sceneLesson=Boolean(mathLesson||sourceLesson);
   const topicLessonCount=temaPorId(selectedTheme)?.lecciones.length??flowLessons.length;
   const host=$("#lesson-detail");if(!host)return;
   const route=rutas.find(group=>group.ids.includes(lesson.id));
@@ -413,17 +423,17 @@ function renderLesson(){
   const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
   const steps=events.map((item,index)=>'<li><span>'+String(index+1).padStart(2,"0")+'</span><p>'+escapeHTML(item.scene?.body??item.message??item.sourceText??"Paso del algoritmo")+'</p></li>').join("");
   const activeLine=events[Math.min(lessonVisualStep,Math.max(0,events.length-1))]?.sourceLine;
-  const codeLines=(mathLesson?lesson.example.steps:lesson.miniProgram.code.split("|")).map((line,index)=>'<li class="'+(activeLine===index+1?"is-active":"")+'"><span>'+(index+1)+'</span><code>'+escapeHTML(line)+'</code></li>').join("");
+  const codeLines=(sceneLesson?lesson.example.steps:lesson.miniProgram.code.split("|")).map((line,index)=>'<li class="'+(activeLine===index+1?"is-active":"")+'"><span>'+(index+1)+'</span><code>'+escapeHTML(line)+'</code></li>').join("");
   const options=lesson.check.options.map((option,index)=>'<button type="button" class="lesson-option" data-check-option="'+index+'"><span>'+String.fromCharCode(65+index)+'</span>'+escapeHTML(option)+'</button>').join("");
   const prereq=lesson.id==="process"?"Variables":lesson.id==="arithmetic"?"Asignación":lesson.id==="for"?"Contador y acumulador":"";
   const idea='<section class="lesson-reading-section" id="lesson-idea"><p class="eyebrow">01 · IDEA</p><p class="lesson-intuitive">'+escapeHTML(recipe?.idea??lesson.intuitive)+'</p><div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+(prereq?'<p class="lesson-prerequisite">Antes conviene ver: <button type="button" data-prerequisite="'+escapeHTML(prereq)+'">'+escapeHTML(prereq)+'</button></p>':"")+'</section>';
   const concept='<section class="lesson-reading-section" id="lesson-concept"><p class="eyebrow">02 · CONCEPTO</p><p class="lesson-support-copy">'+escapeHTML(lesson.visual.caption)+'</p>'+visualMarkup(lesson)+'</section>';
-  const term='<section class="lesson-reading-section" id="lesson-term"><p class="eyebrow">03 · PALABRA TÉCNICA</p><h4 class="lesson-term-title">'+escapeHTML(recipe?.term??LESSON_TERMS[lesson.id]??lesson.title)+'</h4><p class="lesson-term-definition">'+escapeHTML(lesson.technical)+'</p><p class="lesson-key-idea"><b>En pocas palabras</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p>'+(mathLesson?'<details class="lesson-technical"><summary>Glosario del tema</summary><p>Entero, racional, numerador, denominador, mcm, razón, proporción, directa e inversa.</p></details>':'<details class="lesson-technical"><summary>Cómo se escribe o se representa</summary><p>'+escapeHTML(lesson.example.code.split("|").join(" · "))+'</p></details>')+'</section>';
-  const example='<section class="lesson-reading-section" id="lesson-example"><p class="eyebrow">04 · EJEMPLO PASO A PASO</p><h4>'+escapeHTML(mathLesson?lesson.title:lesson.miniProgram.title)+'</h4><div class="lesson-worked-layout"><ol class="lesson-code-lines" aria-label="'+(mathLesson?"Momentos de la escena":"Pseudocódigo con la línea activa")+'">'+codeLines+'</ol><ol class="lesson-worked-steps">'+steps+'</ol></div><p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p>'+(mathLesson?"":'<details class="lesson-interactive-test"><summary>Probar con otros datos</summary><label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label><div class="lesson-example-output" id="lesson-data-result" role="status"></div><button type="button" class="button button-primary" data-run-mini-program>Ejecutar prueba</button></details>')+'</section>';
+  const term='<section class="lesson-reading-section" id="lesson-term"><p class="eyebrow">03 · PALABRA TÉCNICA</p><h4 class="lesson-term-title">'+escapeHTML(recipe?.term??LESSON_TERMS[lesson.id]??lesson.title)+'</h4><p class="lesson-term-definition">'+escapeHTML(lesson.technical)+'</p><p class="lesson-key-idea"><b>En pocas palabras</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p>'+(mathLesson?'<details class="lesson-technical"><summary>Glosario del tema</summary><p>Entero, racional, numerador, denominador, mcm, razón, proporción, directa e inversa.</p></details>':sourceLesson?'<details class="lesson-technical"><summary>Nota de clasificación</summary><p>Según el autor, las fronteras entre fuentes primarias, secundarias y terciarias pueden cambiar. Revisa siempre de dónde viene el dato y cómo se obtuvo.</p></details>':'<details class="lesson-technical"><summary>Cómo se escribe o se representa</summary><p>'+escapeHTML(lesson.example.code.split("|").join(" · "))+'</p></details>')+'</section>';
+  const example='<section class="lesson-reading-section" id="lesson-example"><p class="eyebrow">04 · EJEMPLO PASO A PASO</p><h4>'+escapeHTML(sceneLesson?lesson.title:lesson.miniProgram.title)+'</h4><div class="lesson-worked-layout"><ol class="lesson-code-lines" aria-label="'+(sceneLesson?"Momentos de la escena":"Pseudocódigo con la línea activa")+'">'+codeLines+'</ol><ol class="lesson-worked-steps">'+steps+'</ol></div><p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p>'+(sceneLesson?"":'<details class="lesson-interactive-test"><summary>Probar con otros datos</summary><label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label><div class="lesson-example-output" id="lesson-data-result" role="status"></div><button type="button" class="button button-primary" data-run-mini-program>Ejecutar prueba</button></details>')+'</section>';
   const practice='<section class="lesson-reading-section" id="lesson-practice"><p class="eyebrow">05 · INTÉNTALO</p><h4>'+escapeHTML(lesson.tryIt?.prompt??"Predice antes de ver la respuesta.")+'</h4><p class="lesson-common-error"><b>Error común:</b> '+escapeHTML(lesson.commonError??"Revisa el orden de las instrucciones.")+'</p><p>'+escapeHTML(lesson.check.question)+'</p><div class="lesson-options">'+options+'</div><p class="lesson-feedback" id="lesson-feedback" role="status"></p><button type="button" class="text-link" data-skip-practice>Saltar la práctica</button></section>';
-  const summary='<section class="lesson-reading-section lesson-summary-section" id="lesson-summary"><p class="eyebrow">06 · RESUMEN</p><h4>'+escapeHTML(lesson.title)+'</h4><div class="lesson-summary-points"><p><span aria-hidden="true">◇</span>'+escapeHTML(lesson.intuitive.split(/[.!?]/)[0])+'.</p><p><span aria-hidden="true">⌘</span>'+escapeHTML(lesson.summary??lesson.objective)+'</p><p><span aria-hidden="true">✓</span>'+escapeHTML(lesson.objective)+'</p></div><button type="button" class="button button-primary" data-lesson-complete '+(!lessonTryResolved&&!completed?"disabled":"")+'>'+(completed?"Lección completada":"Entendido")+'</button>'+(completed?'<button type="button" class="button button-secondary" data-lesson-next>Siguiente lección</button><button type="button" class="button button-secondary" data-go="lab">Practicar en el Laboratorio</button>':"")+'</section>';
+  const summary='<section class="lesson-reading-section lesson-summary-section" id="lesson-summary"><p class="eyebrow">06 · RESUMEN</p><h4>'+escapeHTML(lesson.title)+'</h4><div class="lesson-summary-points"><p><span aria-hidden="true">◇</span>'+escapeHTML(lesson.intuitive.split(/[.!?]/)[0])+'.</p><p><span aria-hidden="true">⌘</span>'+escapeHTML(lesson.summary??lesson.objective)+'</p><p><span aria-hidden="true">✓</span>'+escapeHTML(lesson.objective)+'</p></div><button type="button" class="button button-primary" data-lesson-complete '+(!lessonTryResolved&&!completed?"disabled":"")+'>'+(completed?"Lección completada":"Entendido")+'</button>'+(completed?(lesson.order<topicLessonCount?'<button type="button" class="button button-secondary" data-lesson-next>Siguiente lección</button>':"")+(temaPorId(selectedTheme)?.laboratorio?'<button type="button" class="button button-secondary" data-go="lab">Practicar en el Laboratorio</button>':""):"")+'</section>';
   host.innerHTML='<div class="lesson-reader">'+
-    '<nav class="lesson-breadcrumb" aria-label="Ubicación de la lección"><button type="button" data-learn-list>‹ Lista</button><span>›</span><span>Aprende</span><span aria-hidden="true">›</span><span>'+escapeHTML(route?.title??"Ruta de aprendizaje")+'</span><span aria-hidden="true">›</span><strong>Lección '+String(lesson.order).padStart(2,"0")+'</strong></nav>'+
+    '<nav class="lesson-breadcrumb" aria-label="Ubicación de la lección"><button type="button" data-learn-list>‹ Lista</button><span>›</span><span>Aprende</span><span aria-hidden="true">›</span><span>'+escapeHTML(route?.title??temaPorId(selectedTheme)?.titulo??"Ruta de aprendizaje")+'</span><span aria-hidden="true">›</span><strong>Lección '+String(lesson.order).padStart(2,"0")+'</strong></nav>'+
     '<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / '+topicLessonCount+' · '+escapeHTML(lesson.duration.toUpperCase())+'</p><h3>'+escapeHTML(lesson.title)+'</h3><p>'+escapeHTML(lesson.objective)+'</p></div><span class="lesson-completion">'+(completed?"COMPLETADA":"EN CURSO")+'</span></header>'+
     '<div class="lesson-reading-progress" role="progressbar" aria-label="Progreso de lectura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>'+idea+concept+term+example+practice+summary+'</div>';
   if($("#lesson-data-input"))updateLessonData();

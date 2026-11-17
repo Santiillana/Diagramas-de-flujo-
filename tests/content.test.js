@@ -108,7 +108,11 @@ test("el catálogo de temas comparte competencias y conserva el mapa de 17 lecci
   assert.deepEqual(competenciasAprende.map(item=>item.id),["establecer-requisitos","evaluar-requisitos","tics","comunicacion","matematicas"]);
   assert.ok(competenciasAprende.every(item=>FICHA.competencias.some(source=>source.id===item.id)));
   assert.equal(temas.find(item=>item.id==="diagramas-flujo").lecciones.length,17);
-  assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),["fuentes-informacion"]);
+  const sources=temas.find(item=>item.id==="fuentes-informacion");
+  assert.equal(sources.estado,"disponible");
+  assert.equal(sources.lecciones.length,8);
+  assert.match(sources.nota,/fronteras.*pueden cambiar/i);
+  assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),[]);
   for(const id of ["enteros","racionales","regla-de-tres"]){
     const topic=temas.find(item=>item.id===id);
     assert.equal(topic.estado,"disponible");
