@@ -1,6 +1,10 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
-import { ACTIVIDADES_OFICIALES } from "../content/ficha-activities.js";
-import { RECURSOS_OFICIALES } from "../content/ficha-resources.js";
+import {
+  ACTIVIDADES_OFICIALES, validateOfficialActivities
+} from "../content/ficha-activities.js";
+import {
+  RECURSOS_OFICIALES, validateOfficialResources
+} from "../content/ficha-resources.js";
 import { lessons } from "../content/lessons.js";
 import { exercises } from "../content/exercises.js";
 import { learningForClass } from "../content/class-learning-map.js";
@@ -49,7 +53,10 @@ function safeExternalUrl(value) {
   }
 }
 
-function renderOfficialItems(items, type) {
+function renderOfficialItems(items, type, isValid = true) {
+  if (!isValid) {
+    return '<p class="ficha-class-empty">El catálogo oficial necesita revisión antes de mostrarse.</p>';
+  }
   if (!items.length) {
     return '<p class="ficha-class-empty">Aún no hay ' +
       (type === "activity" ? "actividades oficiales" : "recursos oficiales") +
@@ -78,9 +85,14 @@ export function initFichaClasses() {
     .slice().sort((a, b) => a.diaSemana - b.diaSemana ||
       a.horaInicio.localeCompare(b.horaInicio));
 
+  const activitiesValidation = validateOfficialActivities();
+  const resourcesValidation = validateOfficialResources();
+  const officialActivities = activitiesValidation.ok ? activitiesValidation.data : [];
+  const officialResources = resourcesValidation.ok ? resourcesValidation.data : [];
+
   const cards = active.map(item => {
-    const activities = ACTIVIDADES_OFICIALES.filter(entry => entry.classId === item.id);
-    const resources = RECURSOS_OFICIALES.filter(entry => entry.classId === item.id);
+    const activities = officialActivities.filter(entry => entry.classId === item.id);
+    const resources = officialResources.filter(entry => entry.classId === item.id);
     const learning = learningForClass(item.id);
     const linkedLessons = learning ? learning.lessonIds
       .map(id => lessons.find(entry => entry.id === id)).filter(Boolean) : [];
@@ -104,8 +116,8 @@ export function initFichaClasses() {
       formatTime(item.horaFin) + '</strong><small>' + escapeHtml(item.horaInicio) +
       '–' + escapeHtml(item.horaFin) + ' · Hora de Colombia</small></div>' +
       '<div class="ficha-class-published"><section><h4>Actividades oficiales</h4>' +
-      renderOfficialItems(activities, "activity") + '</section><section><h4>Biblioteca oficial</h4>' +
-      renderOfficialItems(resources, "resource") + '</section></div>' +
+      renderOfficialItems(activities, "activity", activitiesValidation.ok) + '</section><section><h4>Biblioteca oficial</h4>' +
+      renderOfficialItems(resources, "resource", resourcesValidation.ok) + '</section></div>' +
       '<div class="ficha-class-learn"><strong>Contenido de Aprende</strong>' +
       learningMarkup + '</div></article>';
   }).join("");
