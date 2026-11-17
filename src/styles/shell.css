@@ -101,6 +101,7 @@
 .home-card-enter{position:absolute;right:24px;bottom:22px;display:grid;place-items:center;width:56px;height:56px;border:1px solid currentColor;border-radius:50%;font-size:26px;opacity:.85}
 @keyframes home-flow{0%,8%{offset-distance:0%}20%,25%{offset-distance:25%}40%,45%{offset-distance:50%}62%,68%{offset-distance:72%}86%,100%{offset-distance:100%}}
 :root[data-motion="soft"] .home-flow .flow-ball{animation-play-state:paused;offset-distance:50%}
+:root[data-motion="soft"] .home-card:hover .flow-ball,:root[data-motion="soft"] .home-card:focus-visible .flow-ball{animation-play-state:running}
 :root[data-motion="reduced"] .home-flow .flow-ball{animation:none;offset-distance:50%}
 
 /* Vistas de Mi ficha mientras se implementan sus módulos de datos. */

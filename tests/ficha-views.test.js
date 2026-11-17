@@ -6,6 +6,7 @@ import {
   obtenerFiltros, actualizarFiltro, limpiarFiltros,
   actividadPasaFiltros, competenciaPasaFiltro, renderFiltros
 } from "../src/ficha/filtros.js";
+import { initClases } from "../src/ficha/view-clases.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -70,17 +71,17 @@ test("las vistas de Mi ficha están conectadas a la aplicación y tienen estilos
   const app = await read("../src/app.js");
   const init = await read("../src/ficha/init.js");
   const css = await read("../src/styles/ficha.css");
-  for (const id of ["view-hoy", "view-semana", "view-calendario"]) {
+  for (const id of ["view-hoy", "view-clases"]) {
     assert.match(html, new RegExp('id="' + id + '"'));
     assert.doesNotMatch(html, new RegExp('id="' + id + '"[^>]*ficha-placeholder'));
   }
   assert.match(html, /styles\/ficha\.css/);
   assert.match(app, /import \{ initFicha \}/);
   assert.match(app, /initFicha\(\)/);
-  for (const marker of ["initControl", "renderControl", "initSemana", "initCalendario", "traza:ficha-actualizada"]) {
+  for (const marker of ["initControl", "renderControl", "initClases", "renderClases", "traza:ficha-actualizada"]) {
     assert.ok(init.includes(marker), "Falta conectar " + marker);
   }
-  for (const selector of [".ficha-week-grid", ".ficha-calendar-grid", ".ficha-activity-card", ".ficha-day-picker"]) {
+  for (const selector of [".class-week-grid", ".class-month-grid", ".ficha-activity-card", ".class-rail"]) {
     assert.ok(css.includes(selector), "Falta estilo " + selector);
   }
 });
@@ -94,4 +95,31 @@ test("Centro de control usa paneles de horario, evidencias, comunicados e instru
   assert.match(view, /KEY_HECHAS = "traza:v4:evidencias-hechas"/);
   assert.match(view, /data-evidence-undo/);
   assert.deepEqual(FICHA.comunicados, []);
+});
+
+test("Clases conserva la fecha al cambiar entre las tres vistas y omite el domingo", () => {
+  const listeners = {};
+  const root = {
+    dataset: {}, innerHTML: "",
+    addEventListener(name, callback) { listeners[name] = callback; },
+    querySelector() { return null; }
+  };
+  const previousDocument = globalThis.document;
+  globalThis.document = { querySelector(selector) { return selector === "#view-clases" ? root : null; }, documentElement: { dataset: { motion: "reduced" } } };
+  try {
+    initClases();
+    const initial = root.innerHTML;
+    assert.equal([...initial.matchAll(/role="option"/g)].length, 6);
+    assert.match(initial, /aria-activedescendant="class-day-/);
+    const date = initial.match(/aria-activedescendant="class-day-(\d{4}-\d{2}-\d{2})"/)[1];
+    const click = match => listeners.click({ target: { closest(selector) { return selector === match.selector ? match.value : null; } } });
+    click({ selector: "[data-class-view]", value: { dataset: { classView: "semana" } } });
+    assert.match(root.innerHTML, new RegExp(`data-class-date="${date}"`));
+    click({ selector: "[data-class-view]", value: { dataset: { classView: "mes" } } });
+    assert.match(root.innerHTML, new RegExp(`data-class-date="${date}"`));
+    click({ selector: "[data-class-view]", value: { dataset: { classView: "diaria" } } });
+    assert.match(root.innerHTML, new RegExp(`aria-activedescendant="class-day-${date}"`));
+  } finally {
+    globalThis.document = previousDocument;
+  }
 });

@@ -1,8 +1,7 @@
 const SPACE_META = {
   home: { title: "Traza", description: "Tu ficha y tu aprendizaje, en un solo lugar." },
-  hoy: { title: "Hoy", description: "Tu agenda académica y lo que requiere tu atención." },
-  semana: { title: "Semana", description: "Tu horario de clases y fechas de entrega." },
-  calendario: { title: "Calendario", description: "Tus fechas académicas y actividades." },
+  hoy: { title: "Centro de control", description: "Tu agenda académica y lo que requiere tu atención." },
+  clases: { title: "Clases", description: "Consulta tus clases por día, semana o mes." },
   actividades: { title: "Actividades", description: "Tus entregas, estados y retroalimentación." },
   biblioteca: { title: "Biblioteca", description: "Tus materiales y recursos de estudio." },
   learn: { title: "Aprende", description: "Comprende cada figura, decisión y ciclo con ejemplos y escenas propias." },
@@ -11,7 +10,7 @@ const SPACE_META = {
   lab: { title: "Laboratorio", description: "Sigue la ficha, arma diagramas y encuentra errores." }
 };
 
-const FICHA_SPACES = new Set(["hoy", "semana", "calendario", "actividades", "biblioteca"]);
+const FICHA_SPACES = new Set(["hoy", "clases", "actividades", "biblioteca"]);
 const APRENDE_SPACES = new Set(["learn", "exercises", "simulator", "lab"]);
 const DEFAULT_LAST = { ficha: "hoy", aprende: "learn", section: "aprende" };
 const LAST_KEY = "traza:v4:last";

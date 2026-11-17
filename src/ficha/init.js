@@ -1,7 +1,6 @@
 import { initFiltros } from "./filtros.js";
 import { initControl, renderControl } from "./view-control.js";
-import { initSemana, renderSemana } from "./view-semana.js";
-import { initCalendario, renderCalendario } from "./view-calendario.js";
+import { initClases, renderClases } from "./view-clases.js";
 import { initActividades, renderActividades } from "./view-actividades.js";
 import { CLAVE_FICHA } from "./store.js";
 
@@ -12,22 +11,19 @@ export function initFicha() {
   inicializada = true;
   initFiltros();
   initControl();
-  initSemana();
-  initCalendario();
+  initClases();
   initActividades();
 
   document.addEventListener("traza:ficha-actualizada", () => {
     renderControl();
-    renderSemana();
-    renderCalendario();
+    renderClases();
     renderActividades();
   });
 
   window.addEventListener("storage", event => {
     if (event.key !== CLAVE_FICHA && event.key !== null) return;
     renderControl();
-    renderSemana();
-    renderCalendario();
+    renderClases();
     renderActividades();
   });
 }

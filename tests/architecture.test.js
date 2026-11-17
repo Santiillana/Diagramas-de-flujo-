@@ -8,8 +8,8 @@ test("la navegación declara portada y espacios de Mi ficha y Aprende", async ()
   const html = await read("../index.html");
   const spaces = [...html.matchAll(/data-space="([^"]+)"/g)].map(([,space]) => space);
   const views = [...html.matchAll(/data-view="([^"]+)"/g)].map(([,space]) => space);
-  assert.deepEqual(spaces, ["home", "hoy", "semana", "calendario", "actividades", "biblioteca", "learn", "exercises", "simulator", "lab"]);
-  assert.deepEqual(new Set(views), new Set(["home", "hoy", "semana", "calendario", "actividades", "biblioteca", "learn", "exercises", "simulator", "lab"]));
+  assert.deepEqual(spaces, ["home", "hoy", "clases", "biblioteca", "learn", "exercises", "simulator", "lab"]);
+  assert.deepEqual(new Set(views), new Set(["home", "hoy", "clases", "actividades", "biblioteca", "learn", "exercises", "simulator", "lab"]));
   assert.doesNotMatch(html, /data-space="builder"/);
   assert.doesNotMatch(html, /data-view="builder"/);
   assert.match(html, /data-subnav-section="ficha"/);
@@ -115,18 +115,15 @@ test("Ejercicios conserva 45 retos y expone filtros, accesos rápidos y ficha pr
 });
 
 
-test("Mi ficha implementa Hoy, Semana y Calendario con filtros y horario común", async () => {
+test("Mi ficha consolida Clases en vistas diaria, semanal y mensual", async () => {
   const html = await read("../index.html");
   const app = await read("../src/app.js");
-  const filters = await read("../src/ficha/filtros.js");
-  const week = await read("../src/ficha/view-semana.js");
-  const calendar = await read("../src/ficha/view-calendario.js");
-  for (const view of ["hoy", "semana", "calendario"]) {
-    assert.match(html, new RegExp('id="view-' + view + '"'));
-    assert.doesNotMatch(html, new RegExp('id="view-' + view + '"[^>]*ficha-placeholder'));
-  }
+  const classes = await read("../src/ficha/view-clases.js");
+  assert.match(html, /data-space="clases"/);
+  assert.match(html, /id="view-clases" data-view="clases"/);
   assert.match(app, /initFicha/);
-  assert.match(filters, /competenciaId !== "todas"/);
-  assert.match(week, /data-week-action/);
-  assert.match(calendar, /data-month-action/);
+  for (const marker of ["data-class-view", "data-class-week", "data-class-month", "data-class-date", "aria-activedescendant", "Sin registro de este día"]) {
+    assert.ok(classes.includes(marker), "Falta el comportamiento de Clases: " + marker);
+  }
+  assert.doesNotMatch(html, /data-space="semana"|data-space="calendario"/);
 });

@@ -73,7 +73,7 @@ export function renderControl() {
   root.innerHTML = `<div class="ficha-view-content control-view">
     <header class="ficha-view-heading"><div><p class="eyebrow">MI FICHA · CENTRO DE CONTROL</p><h2 id="hoy-title">${escaparHTML(formatearFecha(fecha, { weekday: "long", day: "numeric", month: "long" }))}</h2><p class="control-summary">${escaparHTML(resumen)}</p>${FICHA.meta.esDemostracion ? '<span class="control-demo">Datos de demostración</span>' : ""}</div></header>
     <div class="control-grid">
-      <section class="control-panel control-schedule"><h3>Horario</h3><div class="control-days">${renderHorario(fecha)}</div><a class="control-link" href="#view-semana" data-go="semana">Ver clases</a></section>
+      <section class="control-panel control-schedule"><h3>Horario</h3><div class="control-days">${renderHorario(fecha)}</div><a class="control-link" href="#view-clases" data-go="clases">Ver clases</a></section>
       <section class="control-panel control-evidences"><h3>Evidencias pendientes</h3>${renderEvidencias(fecha, personal)}</section>
       <section class="control-panel control-announcements-list"><h3>Comunicados</h3>${renderComunicados(fecha)}</section>
       <section class="control-panel control-instructors-list"><h3>Instructores</h3>${renderInstructores()}</section>
