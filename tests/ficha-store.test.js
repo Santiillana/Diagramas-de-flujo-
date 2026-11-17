@@ -82,12 +82,16 @@ test("cada entrega crea un intento independiente y conserva el anterior", () => 
 
 test("la devolución se identifica como transcripción y solo ella puede aprobar", () => {
   const created = activity();
+  assert.equal(addFeedback(created.activity.id, {
+    result: "favorable", comment: "No hay entrega vinculada"
+  }, created.data).reason, "feedback_requires_submission");
   const submitted = addSubmission(created.activity.id, { summary: "Entrega" }, created.data);
   const feedback = addFeedback(created.activity.id, {
     result: "favorable", comment: "Cumple los criterios", score: 4.5, scoreScale: "0 a 5"
   }, submitted.data);
   assert.equal(feedback.activity.status, "approved");
   assert.equal(feedback.feedback.source, "student_transcription");
+  assert.equal(feedback.feedback.submissionId, submitted.attempt.id);
   assert.equal(feedback.activity.events.at(-1).type, "feedback");
   assert.equal(addFeedback(created.activity.id, {
     result: "informational", comment: "Nota adicional"
