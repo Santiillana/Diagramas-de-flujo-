@@ -1,5 +1,5 @@
 import {
-  createFichaBackup, importFichaBackup, readFichaData, validateFichaBackup
+  createFichaBackup, importFichaBackup, readFichaDataStrict, validateFichaBackup
 } from "./ficha-store.js";
 
 const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
@@ -20,16 +20,15 @@ function localDateKey() {
 }
 
 function downloadBackup() {
-  let storageAvailable = false;
-  try {
-    window.localStorage.getItem("traza:v4:ficha");
-    storageAvailable = true;
-  } catch {
-    storageAvailable = false;
-  }
-  if (!storageAvailable) return { ok: false, reason: "storage_unavailable" };
+  const stored = readFichaDataStrict();
+  if (!stored.ok) return { ok: false, reason: stored.reason };
 
-  const backup = createFichaBackup(readFichaData());
+  let backup;
+  try {
+    backup = createFichaBackup(stored.data);
+  } catch {
+    return { ok: false, reason: "invalid_data" };
+  }
   const blob = new Blob([JSON.stringify(backup, null, 2)], {
     type: "application/json;charset=utf-8"
   });
@@ -56,7 +55,9 @@ export function initFichaBackup() {
     const result = downloadBackup();
     setStatus(status,
       result.ok ? "Respaldo descargado. Guárdalo en un lugar seguro." :
-        "No se pudo leer el almacenamiento local; no se generó un respaldo vacío.",
+        result.reason === "corrupt_storage" || result.reason === "unsupported_schema" || result.reason === "invalid_records"
+        ? "Los datos locales necesitan recuperación o actualización. No se generó un respaldo vacío."
+        : "No se pudo leer el almacenamiento local; no se generó un respaldo vacío.",
       result.ok ? "success" : "error");
   });
 
