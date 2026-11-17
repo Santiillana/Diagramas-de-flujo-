@@ -6,6 +6,8 @@ test("Actividades permite consultar, filtrar y registrar seguimiento personal", 
   await goToSpace(page, "actividades");
   await expect(page.locator("#view-actividades #actividades-title")).toHaveText("Actividades");
   await expect(page.locator("#ficha-activity-list [data-activity-select]")).toHaveCount(4);
+  await expect(page.locator("#ficha-activity-detail")).toContainText("Contenidos relacionados");
+  await expect(page.locator("#ficha-activity-detail [data-go=learn]")).toBeVisible();
   await page.locator("#activity-search").fill("ciclos");
   await expect(page.locator("#ficha-activity-list [data-activity-select]")).toHaveCount(1);
   await expect(page.locator("#ficha-activity-detail")).toContainText("Practicar ciclos");
