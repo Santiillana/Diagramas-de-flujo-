@@ -145,6 +145,8 @@ test("los datos corruptos o de una versión futura no se silencian ni se sobresc
   const blockedWrite = writeFichaData(created.data, corrupt);
   assert.equal(blockedWrite.ok, false);
   assert.equal(blockedWrite.reason, "existing_corrupt_storage");
+  const publicOverride = writeFichaData(created.data, corrupt, { replaceInvalid: true });
+  assert.equal(publicOverride.reason, "existing_corrupt_storage");
   assert.equal(corrupt.value, "{");
 
   const future = memoryStorage(JSON.stringify({ version: 99, activities: [] }));
