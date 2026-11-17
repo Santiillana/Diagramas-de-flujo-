@@ -202,12 +202,18 @@ export function validateFichaData(value) {
   for (const activity of value.activities) {
     if (activityIds.has(activity.id)) return { ok: false, reason: "duplicate_ids" };
     activityIds.add(activity.id);
+    if (activity.assignedOn && activity.dueOn && activity.assignedOn > activity.dueOn) {
+      return { ok: false, reason: "invalid_date_order" };
+    }
 
     const attemptIds = new Set();
-    for (const attempt of activity.attempts) {
+    for (const [index, attempt] of activity.attempts.entries()) {
+      const hasContent = Boolean(
+        attempt.summary.trim() || attempt.evidenceUrl.trim() || attempt.studentNote.trim()
+      );
       if (attemptIds.has(attempt.id) || attempt.activityId !== activity.id ||
           !validTimestamp(attempt.submittedAt) ||
-          attempt.attemptNumber < 1 ||
+          attempt.attemptNumber !== index + 1 || !hasContent ||
           ![attempt.summary, attempt.evidenceUrl, attempt.studentNote].every(item => typeof item === "string")) {
         return { ok: false, reason: "invalid_records" };
       }
@@ -215,15 +221,30 @@ export function validateFichaData(value) {
     }
 
     const feedbackIds = new Set();
+    const feedbackResults = new Set();
     for (const feedback of activity.feedbackEntries) {
       if (feedbackIds.has(feedback.id) || feedback.activityId !== activity.id ||
           (feedback.submissionId && !attemptIds.has(feedback.submissionId)) ||
           !validTimestamp(feedback.recordedAt) ||
           feedback.source !== "student_transcription" ||
+          !feedback.comment.trim() ||
+          !["favorable", "correction_requested", "informational"].includes(feedback.result) ||
           (feedback.score !== null && !Number.isFinite(feedback.score))) {
         return { ok: false, reason: "invalid_records" };
       }
       feedbackIds.add(feedback.id);
+      feedbackResults.add(feedback.result);
+    }
+
+    if (["submitted", "needs_correction", "approved"].includes(activity.status) &&
+        activity.attempts.length === 0) {
+      return { ok: false, reason: "invalid_records" };
+    }
+    if (activity.status === "needs_correction" && !feedbackResults.has("correction_requested")) {
+      return { ok: false, reason: "invalid_records" };
+    }
+    if (activity.status === "approved" && !feedbackResults.has("favorable")) {
+      return { ok: false, reason: "invalid_records" };
     }
 
     const eventIds = new Set();
@@ -231,6 +252,7 @@ export function validateFichaData(value) {
       if (eventIds.has(event.id) || event.activityId !== activity.id ||
           !validTimestamp(event.occurredAt) ||
           !EVENT_TYPES.has(event.type) ||
+          !event.description.trim() ||
           !["student", "backup_import"].includes(event.source)) {
         return { ok: false, reason: "invalid_records" };
       }
