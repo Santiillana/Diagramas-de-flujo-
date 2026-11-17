@@ -72,9 +72,9 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 | 4. Ejercicios | Integrado; 45 ejercicios | Sin cambios previstos |
 | 5. Núcleo de Mi ficha | No implementado | Repositorio común, persistencia local protegida, modelo de actividades y respaldo versionado; falta política de migraciones y E2E definitivo |
 | 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
-| 7. Actividades y detalle | No implementado | Primera interfaz funcional de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
+| 7. Actividades y detalle | No implementado | Catálogo de actividades oficiales de solo lectura y primera interfaz personal de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
 | 8. Clases y conexión con Aprende | No implementado | Pendiente; no se crean relaciones ficticias |
-| 9. Biblioteca | No implementado | Pendiente |
+| 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; fuente oficial preparada y vacía. Pendiente aceptación E2E y publicación de materiales verificados |
 | 10. Respaldo, auditoría y documentación | Parcial | Controles de respaldo, validación estricta, documentación y auditoría iniciados; falta cierre integral |
 
 #### Paso 5 · núcleo y persistencia
@@ -98,6 +98,7 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 #### Paso 7 · Actividades
 
 - `src/ui/ficha-activities.js` y `src/styles/ficha-activities.css` implementan la primera interfaz funcional.
+- `src/content/ficha-activities.js` contiene el catálogo público oficial de solo lectura. Está vacío hasta que el moderador incorpore actividades verificadas mediante PR.
 - La pantalla permite crear/editar, buscar, filtrar, registrar intentos, transcribir devoluciones, guardar notas personales y archivar sin borrar la bitácora.
 - Los enlaces de evidencia admiten solo HTTP/HTTPS.
 - El estado Aprobada solo se refleja a partir de una devolución favorable transcrita, claramente identificada como no verificada por Traza.
@@ -111,6 +112,13 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 - El check externo Workers Builds había fallado en commits anteriores (`3116f55` y `db8db1f`); no se declara publicación ni despliegue aprobado. El nuevo build debe terminar correctamente.
 - Se agregaron pruebas de navegador en `e2e/module-7-activities.spec.js` para ciclo de vida, filtros y protección de datos corruptos.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
+
+#### Paso 9 · Biblioteca
+
+- `src/ui/ficha-library.js` y `src/styles/ficha-library.css` implementan el catálogo personal, búsqueda, filtros, edición, archivo y apertura segura de enlaces.
+- `src/ui/ficha-library-store.js` mantiene el almacenamiento separado `traza:v4:library`, validación estricta, bloqueo de sobrescritura y respaldo/importación versionados.
+- `src/content/ficha-resources.js` contiene el catálogo oficial de solo lectura. Está vacío hasta que se incorporen recursos revisados.
+- La información personal de Biblioteca y la de Actividades se respalda en archivos separados; debe guardarse ambos para una copia completa.
 
 #### Moderación y operación editorial
 
