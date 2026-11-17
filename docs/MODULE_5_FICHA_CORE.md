@@ -1,7 +1,7 @@
 # Módulo 5 v4 · Núcleo y persistencia de Mi ficha
 
 **Rama de trabajo:** `v4/module-7-activities`  
-**Estado:** repositorio común, agenda conectada, controles de respaldo y primera interfaz de Actividades implementados en esta rama. La aceptación definitiva aún depende de CI, cobertura E2E y una política explícita de migraciones.
+**Estado:** repositorio común, agenda, interfaz de Actividades y respaldos granulares/integral implementados en esta rama. La persistencia y recuperación tienen pruebas de Node y navegador aprobadas; antes de cambiar la versión de esquema será necesaria una migración explícita.
 
 ## Objetivo y límites
 
@@ -67,7 +67,7 @@ El formato versionado es `traza-ficha-backup`, versión 1. La validación comple
 
 ## Pruebas
 
-`tests/ficha-store.test.js` cubre fechas civiles, creación, edición, transiciones, aprobación por devolución transcrita, entregas consecutivas, atraso calculado, almacenamiento bloqueado/corrupto, esquemas futuros, protección contra sobrescritura, validación anidada del respaldo, recuperación explícita e historial de archivo.
+`tests/ficha-store.test.js` cubre fechas civiles, creación, edición, transiciones, aprobación por devolución transcrita, entregas consecutivas, atraso calculado, almacenamiento bloqueado/corrupto, esquemas futuros, protección contra sobrescritura, integridad cruzada de fechas/entregas/estados, validación anidada del respaldo, recuperación explícita e historial de archivo. `tests/ficha-full-backup.test.js` cubre restauración conjunta y rollback.
 
 ## Pendiente para aceptar el paso 5
 
