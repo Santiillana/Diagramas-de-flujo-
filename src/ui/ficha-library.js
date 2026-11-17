@@ -353,6 +353,7 @@ export function initFichaLibrary() {
     }
   });
 
+  window.addEventListener("traza:library-change", renderList);
   renderOfficialResources();
   renderList();
 }
