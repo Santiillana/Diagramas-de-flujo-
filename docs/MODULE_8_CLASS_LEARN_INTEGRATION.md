@@ -4,7 +4,7 @@
 
 ## Fuentes confirmadas
 
-- `src/content/ficha.js`: bloques semanales, instructor, materia, horas y vigencias.
+- `src/content/ficha.js`: bloques semanales, instructor, materia, horas y vigencias; `validateHorarioClases` impide IDs duplicados, horas inválidas, vigencias invertidas y solapamientos.
 - `src/content/lessons.js`: catálogo de lecciones reales de Aprende.
 - `src/content/exercises.js`: catálogo de ejercicios reales.
 - `src/content/class-learning-map.js`: esquema validado para asociaciones explícitas; se mantiene vacío hasta recibir un mapa curricular confirmado.
@@ -23,14 +23,14 @@ La sección Clases debe permitir consultar, sin duplicar el calendario:
 
 ## Vista de Clases implementada
 
-- `src/ui/ficha-classes.js` renderiza solo bloques vigentes en la fecha de Colombia y conserva bloques terminados en un historial.
+- `src/ui/ficha-classes.js` renderiza bloques vigentes en la fecha de Colombia, muestra vigencias futuras en “Próximas vigencias” y conserva los bloques terminados en el historial. Una vigencia futura ya no se clasifica erróneamente como historial.
 - `src/styles/ficha-classes.css` aporta tarjetas responsive.
 - La sección se incorpora a la navegación Mi ficha mediante `src/ui/navigation.js`, `index.html` y `src/app.js`.
 - Cada tarjeta presenta materia, instructor, día y horario en 12 horas; los sábados conservan sus dos bloques como “Clase del sábado”.
 - Los catálogos oficiales de actividades y recursos se muestran en solo lectura cuando la entrada incluye un `classId` real.
 - Las URLs externas se limitan a HTTP/HTTPS sin credenciales.
 - Se muestra explícitamente “Sin asociación pedagógica confirmada para esta clase todavía” en vez de inventar relaciones con Aprende.
-- E2E: `e2e/module-8-classes.spec.js` valida el cambio de lunes, siete bloques vigentes en la fecha de prueba, historial, horarios del sábado y ausencia de asociaciones inventadas. La suite pasó en SHA `04b699f`.
+- Pruebas: `tests/ficha-classes.test.js` comprueba la separación entre vigencias futuras, actuales e históricas; `e2e/module-8-classes.spec.js` comprueba navegación a una lección y ejercicio exactos cuando la vista recibe referencias válidas, además de horarios y ausencia de asociaciones inventadas.
 ## Registro explícito de relaciones
 
 Cuando exista evidencia del programa de formación, se añadirán asociaciones en `src/content/class-learning-map.js` con estructura explícita:
@@ -62,7 +62,7 @@ La UI debe mostrar “Contenido de Aprende aún no vinculado” cuando no exista
 
 La vista `Clases` está conectada a la navegación Mi ficha desde `index.html` y `src/app.js`. Consume `src/content/ficha.js` como única fuente de horarios; presenta bloques vigentes y bloques históricos, y muestra actividades y recursos oficiales cuyo `classId` coincide exactamente con el bloque. Los catálogos oficiales vacíos se identifican como tales. Usa `learningForClass` y `validateClassLearningMap` para validar referencias a lecciones y ejercicios; cuando existe una asociación confirmada muestra un acceso al elemento exacto de Aprende. Mientras el mapa permanezca vacío, muestra la ausencia de asociación y no crea enlaces ficticios.
 
-La prueba E2E `e2e/module-8-classes.spec.js` verifica el número de bloques vigentes, el historial del lunes, los dos bloques del sábado, los instructores y la ausencia de relaciones inventadas.
+Las pruebas `e2e/module-8-classes.spec.js` verifican el número de bloques vigentes, el historial del lunes, los dos bloques del sábado, los instructores, la ausencia de relaciones inventadas y la navegación a IDs exactos de Aprende cuando se proporciona un vínculo válido.
 
 ## Pendiente para cerrar M8
 
