@@ -28,13 +28,21 @@ function eventosDelDia(iso, personal, filtros) {
       const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
       return { tipo: "horario", item: { ...item, titulo: item.titulo || competencia?.nombre || "Clase", nombreCompetencia: competencia?.nombre, nombreInstructor: instructor?.nombre } };
     });
+  const notasHorario = FICHA.horarioNotas.filter(item => item.dia === dia).map(item => {
+    const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
+    return { tipo: "nota", item: { ...item, nombreInstructor: instructor?.nombre } };
+  });
   const clasesRegistradas = FICHA.clases
     .filter(item => item.fecha === iso && competenciaPasaFiltro(item.competenciaId, filtros))
     .map(item => ({ tipo: "clase", item }));
-  return [...clasesHorario, ...clasesRegistradas, ...actividades];
+  return [...clasesHorario, ...notasHorario, ...clasesRegistradas, ...actividades];
 }
 
 function etiquetaEvento(evento, personal, iso) {
+  if (evento.tipo === "nota") {
+    return `<span class="ficha-calendar-event ficha-calendar-event--note" title="${escaparHTML(evento.item.titulo)}">
+      <span aria-hidden="true">•</span><span>${escaparHTML(evento.item.titulo)} · ${escaparHTML(evento.item.nombreInstructor || "Instructor")}</span></span>`;
+  }
   if (evento.tipo === "clase" || evento.tipo === "horario") {
     const hora = evento.item.inicio ? " · " + evento.item.inicio : "";
     return `<span class="ficha-calendar-event ficha-calendar-event--class" title="${escaparHTML(evento.item.titulo)}">
@@ -79,6 +87,12 @@ function renderDetalle(personal, filtros) {
   return `<aside class="ficha-calendar-detail ${detalleVisible ? "is-open" : "is-closed"}" aria-live="polite" aria-label="Detalle del día seleccionado">
     <header><p class="eyebrow">DETALLE DEL DÍA</p><button type="button" class="ficha-detail-close" data-calendar-detail-close aria-label="Cerrar detalle">×</button><h3>${escaparHTML(formatearFecha(date, { weekday: "long", day: "numeric", month: "long" }))}</h3></header>
     ${events.length ? events.map(event => {
+      if (event.tipo === "nota") {
+        return `<article class="ficha-calendar-detail-item"><span class="ficha-calendar-detail-icon" aria-hidden="true">•</span>
+          <div><strong>${escaparHTML(event.item.titulo)}</strong>
+          <span>${escaparHTML(event.item.nombreInstructor || "Instructor por confirmar")}</span>
+          <p>${escaparHTML(event.item.nota)}</p></div></article>`;
+      }
       if (event.tipo === "horario") {
         return `<article class="ficha-calendar-detail-item"><span class="ficha-calendar-detail-icon" aria-hidden="true">▣</span>
           <div><strong>${escaparHTML(event.item.titulo)}</strong>

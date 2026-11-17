@@ -174,3 +174,6 @@
 @media(prefers-reduced-motion:reduce){
   .ficha-calendar-cell button,.ficha-date-controls button,.ficha-filter-clear{transition:none}
 }
+
+.ficha-calendar-event--note{background:var(--warning-soft);color:var(--warning)}
+.ficha-calendar-detail-item .ficha-calendar-detail-icon{flex:none}

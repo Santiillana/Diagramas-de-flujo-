@@ -21,8 +21,7 @@ export function avisoFuente() {
   if (meta.esDemostracion) {
     return `<aside class="ficha-demo-notice" role="note">
       <strong>Datos de demostración.</strong>
-      Las actividades, fechas y clases visibles son ejemplos de desarrollo, no una programación oficial.
-      El moderador debe reemplazarlos y publicar la fuente confirmada.
+      Las actividades, fechas y temas de clase son datos de demostración. El horario semanal se transcribió de la imagen compartida; los detalles que no aparecen especificados permanecen por confirmar.
       <span>Última edición del ejemplo: ${fecha} · ${fuente}</span>
     </aside>`;
   }
