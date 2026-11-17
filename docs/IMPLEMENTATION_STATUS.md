@@ -73,9 +73,9 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 | 5. Núcleo de Mi ficha | No implementado | Repositorio común y persistencia local protegida; E2E de ciclo de vida y recuperación aprobados. Falta definir migraciones antes de cambiar el esquema |
 | 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
 | 7. Actividades y detalle | No implementado | Catálogo oficial separado e interfaz personal completa; ciclo de vida, filtros, edición y protección de datos corruptos cubiertos por E2E aprobados |
-| 8. Clases y conexión con Aprende | Parcial implementado | Vista Clases, horario vigente e historial, publicaciones oficiales y mapa curricular con validación de IDs; enlaces exactos de Aprende se activarán solo cuando existan asociaciones verificadas |
+| 8. Clases y conexión con Aprende | Vista implementada; mapa vacío por falta de fuente curricular | Vista Clases con vigencias futuras/actuales/históricas, validación de mapa, y navegación probada hacia una lección o ejercicio exactos cuando se entrega un vínculo válido |
 | 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; E2E de creación, edición, filtros, archivo y restauración aprobados. Fuente oficial preparada y vacía |
-| 10. Respaldo, auditoría y documentación | Parcial avanzado | Respaldos granulares e integral de Actividades/Biblioteca, validación estricta y rollback compensatorio; faltan migraciones, pruebas de fallo extremo, auditoría completa y verificación externa de publicación |
+| 10. Respaldo, auditoría y documentación | Parcial avanzado | Respaldos granulares e integral de Actividades/Biblioteca, validadores del horario y catálogos y pruebas de rollback; faltan migraciones, fallos extremos, auditoría integral y verificación de publicación |
 
 #### Paso 5 · núcleo y persistencia
 
@@ -107,11 +107,11 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 #### Resultado de validación de la rama
 
 - PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta, en borrador y sin fusionar.
-- SHA validado por GitHub Actions: `04b699f737ba1866a025c6aaed79dbfa956598a3`.
-- GitHub Actions: run [43996077312](https://github.com/Santiillana/Traza/actions/runs/43996077312), **300/300 pruebas Node y 116/116 pruebas Playwright aprobadas**, cero fallos.
-- El check externo **Workers Builds: diagramas-de-flujo** para este SHA terminó en **failure** (build Cloudflare `60f5ad16-c73d-4434-997e-2b5fedc869aa`). GitHub no recibió anotaciones ni causa técnica de Cloudflare.
-- El mismo check externo también aparece fallido en el SHA base de `main` (`cd9c7598969d9487c779234451a32d9e5f3d67c6`, build `726475b5-3558-4061-a5b4-bc4b58cdb949`). Por tanto, el fallo ya estaba presente en la base; sigue siendo un bloqueo operativo que debe revisarse desde el panel de Cloudflare antes de publicar.
-- No se ha ejecutado un smoke test del sitio desplegado. La CI de GitHub no sustituye el build externo ni el smoke test.
+- SHA validado por GitHub Actions: `f84374f6d040d6d998828895bc1c34fe64ab490f`.
+- GitHub Actions: run [43998449769](https://github.com/Santiillana/Traza/actions/runs/43998449769), **309/309 pruebas Node y 117/117 pruebas Playwright aprobadas**, cero fallos.
+- El check externo **Workers Builds: diagramas-de-flujo** terminó en **failure** para ese SHA (build Cloudflare `388e89e8-40d6-4720-9d9e-daaaee9fa26e`). GitHub no recibió anotaciones ni causa técnica de Cloudflare.
+- El check externo también aparece fallido en el SHA base de `main` (`cd9c7598969d9487c779234451a32d9e5f3d67c6`, build `726475b5-3558-4061-a5b4-bc4b58cdb949`). El fallo no está demostrado como regresión de esta PR, pero sigue bloqueando la aprobación del despliegue.
+- No se ha ejecutado un smoke test del sitio desplegado. La CI de GitHub no sustituye el build externo ni el smoke test real.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
 
 #### Paso 8 · Clases y conexión con Aprende
