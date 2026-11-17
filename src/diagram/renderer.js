@@ -23,28 +23,57 @@ function shape(node){
   if (node.type==="body") return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="12" stroke-dasharray="5 4"/>';
   return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="5"/>';
 }
-function edgePath(edge,diagram){
+export function edgePath(edge,diagram){
   const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
   if (!from||!to) return "";
   const fx=from.x, fy=from.y+from.height/2, tx=to.x, ty=to.y+to.height/2;
-  if (edge.kind==="false") {
+  const leftX=node=>node.type==="merge"?node.x-9:node.x-node.width/2;
+  const rightX=node=>node.type==="merge"?node.x+9:node.x+node.width/2;
+  const bottomY=node=>node.type==="merge"?node.y+node.height/2+9:node.y+node.height;
+  const topY=node=>node.type==="merge"?node.y+node.height/2-9:node.y;
+  if (edge.kind==="false"&&to.type!=="merge") {
     const y=from.y+from.height/2;
     return "M "+(from.x+from.width/2)+" "+y+" L "+tx+" "+y+" L "+tx+" "+to.y;
   }
   if (edge.kind==="back") {
-    // El retorno sale por el borde izquierdo de ambas figuras; nunca atraviesa sus símbolos.
-    const startX=from.x-from.width/2;
-    const endX=to.x-to.width/2;
-    const bendX=Math.min(startX,endX)-42;
+    // El retorno usa un carril exterior a todas las figuras que encuentra en su tramo vertical.
+    const startX=leftX(from);
+    const endX=leftX(to);
     const startY=from.y+from.height/2;
     const endY=to.y+to.height/2;
+    const top=Math.min(startY,endY),bottom=Math.max(startY,endY);
+    const occupied=diagram.nodes.filter(node=>node.y+node.height>top&&node.y<bottom);
+    const outerLane=(diagram.maxRouteLane??0)-(edge.routeLane??0);
+    const bendX=Math.min(startX,endX,...occupied.map(node=>node.x-node.width/2))-32-outerLane*24;
     return "M "+startX+" "+startY+" L "+bendX+" "+startY+" L "+bendX+" "+endY+" L "+endX+" "+endY;
   }
+  if(edge.kind==="merge"||(edge.kind==="false"&&to.type==="merge")){
+    const side=edge.kind==="false"?1:from.x<=to.x?-1:1;
+    const startX=side<0?leftX(from):rightX(from),startY=from.y+from.height/2;
+    const targetY=to.y+to.height/2-9,top=Math.min(startY,targetY),bottom=Math.max(startY,targetY);
+    const occupied=diagram.nodes.filter(node=>node.y+node.height>top&&node.y<bottom);
+    const outerLane=(diagram.maxRouteLane??0)-(edge.routeLane??0);
+    const laneX=side<0?Math.min(startX,...occupied.map(node=>node.x-node.width/2))-32-outerLane*24:Math.max(startX,...occupied.map(node=>node.x+node.width/2))+32+outerLane*24;
+    const laneY=targetY-12;
+    return "M "+startX+" "+startY+" L "+laneX+" "+startY+" L "+laneX+" "+laneY+" L "+to.x+" "+laneY+" L "+to.x+" "+targetY;
+  }
   if (Math.abs(fx-tx)<4) {
-    return "M "+fx+" "+(from.y+from.height)+" L "+tx+" "+to.y;
+    return "M "+fx+" "+bottomY(from)+" L "+tx+" "+topY(to);
   }
   const mid=(fy+ty)/2;
-  return "M "+fx+" "+(from.y+from.height)+" L "+fx+" "+mid+" L "+tx+" "+mid+" L "+tx+" "+to.y;
+  return "M "+fx+" "+bottomY(from)+" L "+fx+" "+mid+" L "+tx+" "+mid+" L "+tx+" "+topY(to);
+}
+export function edgeLabelBox(edge,from){
+  if(!edge.label)return null;
+  const text=edge.label==="V"?"Sí ✓":edge.label==="F"?"No ✗":edge.label;
+  const width=edge.label==="V"||edge.label==="F"?52:Math.max(42,[...text].length*8+18),height=24;
+  const x=edge.kind==="false"?from.x+from.width/2+8:from.x-width-10;
+  const y=edge.kind==="false"?from.y+from.height/2-height/2:from.y+from.height+1;
+  return {x,y,width,height,text};
+}
+function edgeLabel(edge,from){
+  const box=edgeLabelBox(edge,from);if(!box)return "";
+  return '<g class="diagram-edge-label-wrap" aria-label="'+escape(box.text)+'"><rect x="'+box.x+'" y="'+box.y+'" width="'+box.width+'" height="'+box.height+'" rx="12"/><text class="diagram-edge-label" x="'+(box.x+box.width/2)+'" y="'+(box.y+17)+'">'+escape(box.text)+'</text></g>';
 }
 export function renderDiagram(container,diagram,options={}){
   if (!container||!diagram) return;
@@ -56,15 +85,17 @@ export function renderDiagram(container,diagram,options={}){
     const from=diagram.byId.get(edge.from),to=diagram.byId.get(edge.to);
     const activeEdge=active&&(from.sourceId===Number(active)||to.sourceId===Number(active));
     const cls="diagram-edge "+(edge.kind==="back"?"is-back":"")+(activeEdge?" is-near-active":"");
-    const label=edge.label?'<text class="diagram-edge-label" x="'+((from.x+to.x)/2)+'" y="'+((from.y+from.height+to.y)/2-8)+'">'+escape(edge.label)+'</text>':"";
+    const label=edgeLabel(edge,from);
     return '<g data-edge-id="'+escape(edge.id)+'" class="'+cls+'"><path d="'+d+'" marker-end="url(#flow-arrow)"/>'+label+'</g>';
   }).join("");
   const nodeMarkup=diagram.nodes.map(node=>{
     const isActive=active===String(node.sourceId);
     const isVisited=node.sourceId!==null&&visited.has(String(node.sourceId));
-    const lines=wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?14:16);
+    const lines=node.labelLines??wrapped(node.label,node.type==="if"||node.type==="while"||node.type==="doWhile"?14:16);
     const y=node.y+node.height/2-(lines.length-1)*10;
-    const text= node.type==="merge" ? "" : lines.map((line,i)=>'<text x="'+node.x+'" y="'+(y+i*20+5)+'">'+escape(line)+'</text>').join("");
+    const text=node.type==="merge"?"":node.type==="for"&&node.labelParts?.length===3&&lines.length===1
+      ?'<text class="for-label" x="'+(node.x+8)+'" y="'+(y+5)+'">'+node.labelParts.map((part,index)=>'<tspan class="for-part for-part-'+index+'">'+(index?'; ':'')+escape(part)+'</tspan>').join("")+'</text>'
+      :lines.map((line,i)=>'<text x="'+node.x+'" y="'+(y+i*20+5)+'">'+escape(line)+'</text>').join("");
     return '<g id="flow-node-'+escape(node.id)+'" class="diagram-node node-'+escape(node.type)+(isActive?" is-active":"")+(isVisited?" is-visited":"")+'">'+shape(node)+text+'</g>';
   }).join("");
   const svg='<svg class="flow-svg" id="flow-svg" role="img" aria-label="Diagrama de flujo generado desde el pseudocódigo" viewBox="0 0 '+diagram.width+' '+diagram.height+'" xmlns="http://www.w3.org/2000/svg">'+
@@ -82,6 +113,7 @@ export function highlightDiagram(container,diagram,options={}) {
   const routeNodeId=options.routeNodeId==null?null:String(options.routeNodeId);
   const route=options.route??null;
   const previous=options.previousNodeId==null?null:String(options.previousNodeId);
+  const activePart=Number.isInteger(options.activePart)?options.activePart:-1;
   const edgeElements=[...container.querySelectorAll(".diagram-edge")];
   const walkedEdges=new Set((options.walkEdgeIds??[]).map(String));
   edgeElements.forEach(element=>element.classList.toggle("is-token-route",walkedEdges.has(String(element.dataset.edgeId))));
@@ -90,6 +122,7 @@ export function highlightDiagram(container,diagram,options={}) {
     const model=diagram.byId.get(id);
     element.classList.toggle("is-active",Boolean(model&&active===String(model.sourceId)));
     element.classList.toggle("is-visited",Boolean(model&&model.sourceId!==null&&visited.has(String(model.sourceId))));
+    element.querySelectorAll(".for-part").forEach((part,index)=>part.classList.toggle("is-active-part",Boolean(model&&active===String(model.sourceId)&&index===activePart)));
   });
   edgeElements.forEach(element=>{
     const edge=diagram.edges.find(candidate=>candidate.id===element.dataset.edgeId);

@@ -568,10 +568,10 @@ function routeCoordinates(route){
 }
 function clearDiagramTrail(){
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
-  $("#flow-trail")?.setAttribute("points","");
-  $("#flow-active-trail")?.setAttribute("points","");
-  $("#flow-token-ring")?.setAttribute("visibility","hidden");
-  $("#flow-token-label")?.setAttribute("visibility","hidden");
+  $("#flow-diagram-container #flow-trail")?.setAttribute("points","");
+  $("#flow-diagram-container #flow-active-trail")?.setAttribute("points","");
+  $("#flow-diagram-container #flow-token-ring")?.setAttribute("visibility","hidden");
+  $("#flow-diagram-container #flow-token-label")?.setAttribute("visibility","hidden");
   $("#flow-diagram-container .flow-token")?.setAttribute("visibility","hidden");
 }
 function drawExecutionTrail(events){
@@ -586,7 +586,7 @@ function drawExecutionTrail(events){
     previous=event.nodeId;
   }
   const polyline=points.slice(-1200).map(point=>point.x+","+point.y).join(" ");
-  $("#flow-trail")?.setAttribute("points",polyline);
+  $("#flow-diagram-container #flow-trail")?.setAttribute("points",polyline);
   const stage=$("#diagram-stage");
   if(stage){
     stage.dataset.trailPointCount=String(points.length);
@@ -596,7 +596,7 @@ function drawExecutionTrail(events){
 function animateTokenRoute(route,event,animate=choreographyPlayback){
   tokenTravelDuration=0;
   const token=$("#flow-diagram-container .flow-token");
-  const trail=$("#flow-active-trail"),ring=$("#flow-token-ring");
+  const trail=$("#flow-diagram-container #flow-active-trail"),ring=$("#flow-diagram-container #flow-token-ring");
   if(!token)return;
   if(tokenRaf){cancelAnimationFrame(tokenRaf);tokenRaf=0;}
   const points=routeCoordinates(route);
@@ -1045,7 +1045,8 @@ function render(){
     highlightDiagram($("#flow-diagram-container"),diagram,{
       activeNodeId:e.nodeId,visitedNodeIds:seen.map(x=>x.nodeId).filter(x=>x!==null&&x!==undefined),
       route:routeEvent?.route??null,routeNodeId:routeEvent?.nodeId??null,previousNodeId:previousSource??null,
-      walkEdgeIds:walked.map(item=>item.edgeId)
+      walkEdgeIds:walked.map(item=>item.edgeId),
+      activePart:e.type==="loop-init"?0:e.type==="loop-condition"?1:e.type==="loop-update"?2:-1
     });
     drawExecutionTrail(seen);
     animateTokenRoute(walked,e);
