@@ -164,7 +164,7 @@ La aceptación automatizada de M5 se registra contra el SHA `ee804803354a8ea5cf6
 
 
 ## D-049 · Horario oficial y datos personales no comparten almacenamiento
-El horario de clases es contenido editable del repositorio (\`src/content/ficha.js\`). Actividades, entregas, devoluciones y notas son datos personales locales bajo \`traza:v4:ficha\`. Las vistas consultan un único repositorio y no mantienen copias paralelas. El respaldo versionado valida esquema y referencias antes de reemplazar datos; no promete sincronización entre dispositivos.
+El horario de clases es contenido editable del repositorio (`src/content/ficha.js`). Actividades, entregas, devoluciones y notas son datos personales locales bajo `traza:v4:ficha`. Las vistas consultan un único repositorio y no mantienen copias paralelas. El respaldo versionado valida esquema y referencias antes de reemplazar datos; no promete sincronización entre dispositivos.
 
 ## D-050 · La devolución académica se registra como transcripción
-Traza no autentica instructores ni se conecta a plataformas institucionales. Las devoluciones introducidas manualmente por el estudiante llevan \`source: student_transcription\`; el sistema no las presenta como verificadas. El estudiante no puede aprobar directamente una actividad.
+Traza no autentica instructores ni se conecta a plataformas institucionales. Las devoluciones introducidas manualmente por el estudiante llevan `source: student_transcription`; el sistema no las presenta como verificadas. El estudiante no puede aprobar directamente una actividad.
