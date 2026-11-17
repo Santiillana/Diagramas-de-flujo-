@@ -1,6 +1,6 @@
 # Módulo 10 · Respaldo, auditoría y publicación
 
-**Estado:** controles de respaldo locales y documentación implementados parcialmente en la rama `v4/module-7-activities`. Cierre de auditoría, migraciones, respaldo integral unificado y validación de publicación pendientes.
+**Estado:** respaldos granulares e integral de datos personales implementados en la rama `v4/module-7-activities`. Migraciones, pruebas de fallos extremos, auditoría integral y validación de publicación siguen pendientes.
 
 ## Datos y límites actuales
 
