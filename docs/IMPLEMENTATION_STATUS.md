@@ -1,6 +1,6 @@
 # Estado de implementación · Traza
 
-**Actualizado:** 16 de noviembre de 2026  
+**Actualizado:** 17 de noviembre de 2026  
 **Repositorio:** `Santiillana/Traza`  
 **Rama principal:** `main`  
 **SHA de main después de M6:** `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
@@ -61,30 +61,73 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 - Artefacto visual: `ui-audit-7ff31ec21cce8e9256bd5be23ce0f204181c52ca`, ID `14274866581`, 18 capturas.
 
 ### Auditoría de la secuencia v4 · Mi ficha
-La existencia de rutas de navegación no equivale a la implementación de las vistas. En `main`, `index.html` contiene los contenedores de Hoy, Semana, Calendario, Actividades y Biblioteca, pero todos siguen siendo placeholders (`shell-placeholder`). `src/app.js` no inicializa un módulo de Mi ficha y no existe `src/content/ficha.js` en `main`.
 
-- **Paso 5 v4 · Núcleo y persistencia:** en desarrollo en esta rama. Se creó `src/ui/ficha-store.js` con modelo Activity, entregas, devoluciones, bitácora, reglas de estado, persistencia tolerante y contrato de respaldo versionado. `src/ui/ficha-backup.js` ya ofrece descarga e importación validada con confirmación. Pendientes: formularios/selectores de Actividades, migraciones futuras y E2E final.
-- **Paso 6 v4 · Hoy, Semana y Calendario:** integración inicial en esta rama con horario oficial en `America/Bogota`, navegación semanal/mensual y estados temporales. Las fechas de asignación/vencimiento ya se leen del repositorio M5 y aparecen en Hoy, Semana y Calendario; falta cerrar las pruebas E2E del flujo completo.
-- **Paso 7 v4 · Actividades:** no implementado en `main`; la vista es un placeholder.
-- **Biblioteca y puente Clases ↔ Aprende:** no implementados.
+La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos del Documento maestro V5 y de la Fase 6 del informe de mejoras v2. La PR #22 desarrolla los pasos 5–7; sigue abierta, en borrador y sin integrar en `main`.
 
-No confundir el M6 de la Fase 6 del informe de mejoras v2 (Inicio/Constructor, ya integrado) con el paso 6 de la secuencia v4 de Mi ficha (Hoy/Semana/Calendario, pendiente).
+| Paso v4 | Estado en `main` | Estado en PR #22 |
+|---|---|---|
+| 1. Sistema visual y temas | Integrado parcialmente con el shell v4 | Sin regresión conocida; pendiente auditoría global de preferencias independientes |
+| 2. Portada y navegación | Integrado mediante PR #21 | Conservado |
+| 3. Aprende y Laboratorio | Integrados; 17 lecciones y 8 actividades de laboratorio | Sin cambios previstos |
+| 4. Ejercicios | Integrado; 45 ejercicios | Sin cambios previstos |
+| 5. Núcleo de Mi ficha | No implementado | Repositorio común, persistencia local protegida, modelo de actividades y respaldo versionado; falta política de migraciones y E2E definitivo |
+| 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
+| 7. Actividades y detalle | No implementado | Primera interfaz funcional de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
+| 8. Clases y conexión con Aprende | No implementado | Pendiente; no se crean relaciones ficticias |
+| 9. Biblioteca | No implementado | Pendiente |
+| 10. Respaldo, auditoría y documentación | Parcial | Controles de respaldo, validación estricta, documentación y auditoría iniciados; falta cierre integral |
 
-### Horario oficial de clases
-- Fuente de contenido creada en `src/content/ficha.js`, con ocho bloques y zona `America/Bogota`.
-- El horario es contenido oficial editable del proyecto, no dato personal del navegador.
-- Supuestos y reglas documentados en `docs/OFFICIAL_CLASS_SCHEDULE.md`.
-- La prueba `tests/ficha-schedule.test.js` valida la estructura, el cambio de lunes y las materias no informadas del sábado.
-- **En `main`:** las vistas Hoy, Semana y Calendario siguen siendo placeholders.
-- **En esta rama M7:** `src/ui/ficha-schedule.js` y `src/styles/ficha-schedule.css` conectan el horario a Hoy, Semana y Calendario; `index.html` y `src/app.js` inicializan estas vistas. CI de arquitectura y navegador aprobada en el run 43964672938 para el SHA 3116f55.
-- Esto no completa el paso 5 v4 ni la persistencia personal, Actividades o Biblioteca.
+#### Paso 5 · núcleo y persistencia
 
-### M7 · Actividades y detalle de Mi ficha
-- Rama de trabajo: `v4/module-7-activities`.
-- Especificación técnica creada en `docs/MODULE_7_ACTIVITY_DETAIL.md`. El repositorio M5 ya tiene una primera implementación en esta rama; la interfaz M7 sigue pendiente.
-- La especificación define catálogo, detalle, entregas, devoluciones, estados, bitácora, persistencia, fechas, accesibilidad e integración.
-- **No implementado todavía:** la vista Actividades continúa siendo provisional.
-- Dependencia obligatoria: cerrar la integración y aceptación de los pasos 5 y 6 de Mi ficha antes de cerrar M7. La interfaz M7 debe consumir `src/ui/ficha-store.js` y no crear almacenamiento paralelo.
+- Fuente de contenido oficial: `src/content/ficha.js`; no se copia a `localStorage`.
+- Clave personal: `traza:v4:ficha`, esquema 1.
+- La lectura estricta diferencia datos corruptos, registros inválidos y esquemas futuros.
+- Las escrituras se bloquean cuando el estado existente no es válido, para impedir que una lectura de emergencia como “vacío” destruya información.
+- Los respaldos validan estructura completa y campos anidados. La restauración de un respaldo válido es el único flujo que puede reemplazar explícitamente un estado local dañado.
+- La información sigue siendo local a cada navegador. No hay sincronización multiusuario.
+
+#### Paso 6 · horario y agenda
+
+- Archivo oficial: `src/content/ficha.js`; zona `America/Bogota`; ocho bloques semanales.
+- `src/ui/ficha-schedule.js` conecta Hoy, Semana y Calendario.
+- Las fechas de asignación y vencimiento se consultan desde el mismo repositorio personal.
+- Se probaron recurrencias pasadas/futuras, vigencia histórica del lunes, dos bloques del sábado, domingo sin clases y estados Ahora/Próxima/Ya terminó.
+- Se corrigió la selección del calendario para que corresponda al mes visible.
+- El horario es editable en el repositorio, no desde un panel de moderación.
+
+#### Paso 7 · Actividades
+
+- `src/ui/ficha-activities.js` y `src/styles/ficha-activities.css` implementan la primera interfaz funcional.
+- La pantalla permite crear/editar, buscar, filtrar, registrar intentos, transcribir devoluciones, guardar notas personales y archivar sin borrar la bitácora.
+- Los enlaces de evidencia admiten solo HTTP/HTTPS.
+- El estado Aprobada solo se refleja a partir de una devolución favorable transcrita, claramente identificada como no verificada por Traza.
+- Estos registros pertenecen al estudiante local. No son actividades oficiales publicadas para todo un grupo.
+
+#### Resultado de validación de la rama
+
+- PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta y en borrador.
+- SHA actual documentado al actualizar esta sección: `727119c692b5e491bc7cdba5bdf873a09b36ec96`.
+- GitHub Actions: run [43991025389](https://github.com/Santiillana/Traza/actions/runs/43991025389), en ejecución al momento de esta actualización.
+- El check externo Workers Builds había fallado en commits anteriores (`3116f55` y `db8db1f`); no se declara publicación ni despliegue aprobado. El nuevo build debe terminar correctamente.
+- Se agregaron pruebas de navegador en `e2e/module-7-activities.spec.js` para ciclo de vida, filtros y protección de datos corruptos.
+- Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
+
+#### Moderación y operación editorial
+
+- `docs/MODERATION_WORKFLOW.md` define cómo actualizar el horario y separa contenido oficial de datos personales.
+- Todavía no existe panel seguro de moderador. Para publicar actividades globales, biblioteca y cambios compartidos hacen falta autenticación, roles, API y base de datos; no se debe simular seguridad solo con JavaScript.
+
+#### Pendiente para cerrar Mi ficha
+
+1. Obtener CI verde en el SHA final y resolver el check externo de Workers Builds.
+2. Corregir cualquier fallo que aparezca en las pruebas E2E y completar accesibilidad de los formularios.
+3. Implementar Biblioteca con fuente de contenido central y recursos verificables.
+4. Implementar el puente Clases ↔ Aprende solo con asociaciones reales.
+5. Diseñar el backend y el panel de moderador antes de permitir cambios globales desde la aplicación.
+6. Ejecutar auditoría de aceptación y smoke test real posterior al despliegue.
+
+No fusionar ni publicar la PR #22 mientras falle el build externo o queden incompletos los criterios de aceptación.
+
 
 ## Arquitectura y comandos
 
