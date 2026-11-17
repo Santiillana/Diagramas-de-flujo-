@@ -18,6 +18,7 @@ test("crear, consultar, editar y archivar un recurso", async ({ page }) => {
   await page.locator("#ficha-library-create-form [name=tags]").fill("algoritmos, estructuras");
   await page.locator("#ficha-library-create-form button[type=submit]").click();
 
+  await expect(page.locator("#ficha-library-status")).toContainText("Recurso guardado");
   await expect(page.locator("#ficha-library-list")).toContainText("Video de estructuras");
   await expect(page.locator("#ficha-library-detail")).toContainText("Introducción a las estructuras");
   await expect(page.locator("#ficha-library-detail")).toContainText("jueves-tics");
@@ -42,6 +43,7 @@ test("búsqueda, filtros y respaldo de biblioteca funcionan", async ({ page }) =
   await page.locator("#ficha-library-create-form [name=tags]").fill("lógica, evaluación");
   await page.locator("#ficha-library-create-form button[type=submit]").click();
 
+  await expect(page.locator("#ficha-library-status")).toContainText("Recurso guardado");
   await page.locator("#ficha-library-search").fill("tablas de verdad");
   await expect(page.locator("#ficha-library-list")).toContainText("Apunte de lógica");
   await page.locator("#ficha-library-kind-filter").selectOption("book");
@@ -79,6 +81,17 @@ test("restaurar respaldo válido recupera biblioteca y corrupción no se sobresc
   };
   await page.addInitScript(() => localStorage.setItem("traza:v4:library", "{"));
   await openLibrary(page);
+
+  await page.locator("#ficha-library-export").click();
+  await expect(page.locator("#ficha-library-backup-status")).toContainText("No se exportó un archivo vacío");
+
+  await page.getByRole("button", { name: /Añadir recurso/ }).click();
+  await page.locator("#ficha-library-create-form [name=title]").fill("No debe reemplazar la biblioteca dañada");
+  await page.locator("#ficha-library-create-form [name=kind]").selectOption("note");
+  await page.locator("#ficha-library-create-form [name=description]").fill("Intento bloqueado.");
+  await page.locator("#ficha-library-create-form button[type=submit]").click();
+  await expect(page.locator("#ficha-library-status")).toContainText("está dañada");
+  expect(await page.evaluate(() => localStorage.getItem("traza:v4:library"))).toBe("{");
 
   await page.locator("#ficha-library-import").click();
   page.once("dialog", dialog => dialog.accept());
