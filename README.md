@@ -12,7 +12,7 @@ Traza es una plataforma educativa interactiva para analizar problemas, construir
 
 ## Continuidad v4 · Mi ficha
 
-La rama `v4/module-7-activities` contiene la primera integración del horario oficial `America/Bogota` en Hoy, Semana y Calendario, además del repositorio local común para actividades y el respaldo versionado. Estos cambios siguen en revisión en la PR #22; no forman parte de `main` hasta su integración.
+La rama `v4/module-7-activities` contiene el horario oficial `America/Bogota` conectado a Hoy, Semana y Calendario, el repositorio local protegido, el respaldo versionado y la primera interfaz funcional de Actividades (catálogo, detalle, entregas y devoluciones transcritas). Estos cambios siguen en revisión en la PR #22, todavía en borrador; no forman parte de `main` hasta su integración.
 
 ## Espacios
 
