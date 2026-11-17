@@ -21,7 +21,7 @@ test("crear, consultar, editar y archivar un recurso", async ({ page }) => {
   await expect(page.locator("#ficha-library-status")).toContainText("Recurso guardado");
   await expect(page.locator("#ficha-library-list")).toContainText("Video de estructuras");
   await expect(page.locator("#ficha-library-detail")).toContainText("Introducción a las estructuras");
-  await expect(page.locator("#ficha-library-detail")).toContainText("jueves-tics");
+  await expect(page.locator("#ficha-library-detail")).toContainText("TICS · Yonel Torres");
 
   await page.locator("#ficha-library-detail details summary").filter({ hasText: "Editar recurso" }).click();
   await page.locator("#ficha-library-edit-form [name=title]").fill("Video actualizado");
