@@ -1,10 +1,10 @@
 import {
   FICHA_BACKUP_FORMAT, createFichaBackup, importFichaBackup,
-  validateFichaBackup
+  readFichaDataStrict, validateFichaBackup
 } from "./ficha-store.js";
 import {
   LIBRARY_BACKUP_FORMAT, createLibraryBackup, importLibraryBackup,
-  validateLibraryBackup
+  readLibraryDataStrict, validateLibraryBackup
 } from "./ficha-library-store.js";
 
 export const FULL_FICHA_BACKUP_FORMAT = "traza-full-ficha-backup";
@@ -44,8 +44,12 @@ export function createFullFichaBackup(targetStorage) {
   const libraryRaw = snapshot(storage, LIBRARY_KEY);
   if (!fichaRaw.ok || !libraryRaw.ok) throw new Error("storage_unavailable");
 
-  const ficha = createFichaBackup();
-  const library = createLibraryBackup();
+  const fichaData = readFichaDataStrict(storage);
+  if (!fichaData.ok) throw new Error("activities_" + fichaData.reason);
+  const libraryData = readLibraryDataStrict(storage);
+  if (!libraryData.ok) throw new Error("library_" + libraryData.reason);
+  const ficha = createFichaBackup(fichaData.data);
+  const library = createLibraryBackup(libraryData.data);
   if (ficha.format !== FICHA_BACKUP_FORMAT ||
       library.format !== LIBRARY_BACKUP_FORMAT) throw new Error("backup_format_error");
 
