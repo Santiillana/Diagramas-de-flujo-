@@ -98,3 +98,77 @@ export const HORARIO_CLASES = [
 ];
 
 export const DIAS_SIN_CLASES = [0];
+
+
+function isCivilDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day;
+}
+
+function minutesOfDay(value) {
+  if (typeof value !== "string" || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) return null;
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function dateRangesOverlap(a, b) {
+  const aStart = a.vigenteDesde || "0000-01-01";
+  const aEnd = a.vigenteHasta || "9999-12-31";
+  const bStart = b.vigenteDesde || "0000-01-01";
+  const bEnd = b.vigenteHasta || "9999-12-31";
+  return aStart <= bEnd && bStart <= aEnd;
+}
+
+/**
+ * Validate the official timetable before it is rendered or published.
+ * Time intervals are treated as [start, end); vigency dates are inclusive.
+ */
+export function validateHorarioClases(items = HORARIO_CLASES) {
+  if (!Array.isArray(items)) return { ok: false, reason: "invalid_collection" };
+  const ids = new Set();
+  const intervals = [];
+
+  for (const [index, item] of items.entries()) {
+    const start = minutesOfDay(item?.horaInicio);
+    const end = minutesOfDay(item?.horaFin);
+    if (!item || typeof item !== "object" || Array.isArray(item) ||
+        typeof item.id !== "string" || !item.id.trim() || item.id.length > 100 ||
+        !Number.isInteger(item.diaSemana) || item.diaSemana < 0 || item.diaSemana > 6 ||
+        DIAS_SIN_CLASES.includes(item.diaSemana) ||
+        start === null || end === null || start >= end ||
+        !(item.materia === null ||
+          (typeof item.materia === "string" && item.materia.trim())) ||
+        typeof item.instructor !== "string" || !item.instructor.trim() ||
+        !(item.vigenteDesde === null || isCivilDate(item.vigenteDesde)) ||
+        !(item.vigenteHasta === null || isCivilDate(item.vigenteHasta))) {
+      return { ok: false, reason: "invalid_entry", index };
+    }
+    if (ids.has(item.id)) return { ok: false, reason: "duplicate_id", index };
+    ids.add(item.id);
+    if (item.vigenteDesde && item.vigenteHasta &&
+        item.vigenteDesde > item.vigenteHasta) {
+      return { ok: false, reason: "invalid_vigency_order", index };
+    }
+
+    for (const previous of intervals) {
+      if (previous.item.diaSemana !== item.diaSemana ||
+          !dateRangesOverlap(previous.item, item)) continue;
+      const overlaps = start < previous.end && end > previous.start;
+      if (overlaps) {
+        return {
+          ok: false,
+          reason: "overlapping_class_blocks",
+          index,
+          conflictingId: previous.item.id
+        };
+      }
+    }
+    intervals.push({ item, start, end });
+  }
+
+  return { ok: true, data: items };
+}
