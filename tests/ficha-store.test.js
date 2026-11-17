@@ -50,6 +50,9 @@ test("editar actividad registra una nueva entrada de bitácora", () => {
   assert.equal(edited.activity.title, "Guía corregida");
   assert.equal(edited.activity.events.at(-1).type, "edited");
   assert.equal(updateActivity(created.activity.id, { title: "" }, created.data).reason, "title_required");
+  const notesCleared = updateActivity(created.activity.id, { notes: "" }, edited.data);
+  assert.equal(notesCleared.ok, true);
+  assert.equal(writeFichaData(notesCleared.data, memoryStorage()).ok, true);
 });
 
 test("las transiciones no permiten que el estudiante se autoapruebe", () => {
