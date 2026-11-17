@@ -3,6 +3,7 @@ import { HORARIO_CLASES } from "../content/ficha.js";
 export const LIBRARY_STORAGE_KEY = "traza:v4:library";
 export const LIBRARY_BACKUP_FORMAT = "traza-library-backup";
 export const LIBRARY_SCHEMA_VERSION = 1;
+const RESTORE_CORRUPT_LIBRARY = Symbol("restore-corrupt-library-from-validated-backup");
 export const LIBRARY_KINDS = Object.freeze(["link", "video", "document", "book", "note"]);
 
 const CLASS_IDS = new Set(HORARIO_CLASES.map(item => item.id));
@@ -135,13 +136,13 @@ export function readLibraryData(targetStorage) {
   return result.ok ? result.data : createEmptyLibraryData();
 }
 
-export function writeLibraryData(value, targetStorage, options = {}) {
+export function writeLibraryData(value, targetStorage, restoreToken = null) {
   const storage = storageFrom(targetStorage);
   if (!storage) return { ok: false, reason: "unavailable" };
   const incoming = validateLibraryData(value);
   if (!incoming.ok) return incoming;
   const existing = readLibraryDataStrict(storage);
-  if (!existing.ok && options.replaceInvalid !== true) {
+  if (!existing.ok && restoreToken !== RESTORE_CORRUPT_LIBRARY) {
     return { ok: false, reason: "existing_" + existing.reason };
   }
   try {
@@ -257,6 +258,6 @@ export function validateLibraryBackup(value) {
 export function importLibraryBackup(value, targetStorage) {
   const validation = validateLibraryBackup(value);
   if (!validation.ok) return validation;
-  const saved = writeLibraryData(validation.data, targetStorage, { replaceInvalid: true });
+  const saved = writeLibraryData(validation.data, targetStorage, RESTORE_CORRUPT_LIBRARY);
   return saved.ok ? { ok: true, data: saved.data } : saved;
 }
