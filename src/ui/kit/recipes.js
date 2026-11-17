@@ -95,6 +95,22 @@ const recipes = {
     moments:["El cuerpo se ejecuta primero", "La condición se comprueba después", "Si es verdadera, comienza otra vuelta", "Cuando es falsa, el ciclo termina"],
     figures:[["process","Hacer: jugar"],["decision","¿Sigue habiendo sol?"],["process","Repetir"],["output","Fin"]],
     choices:["Sí ✓","No ✗"]
+  },
+  "nested-loops": {
+    id:"R16-nested-loops", idea:"En ciclos anidados, la pista interior se recorre completa dentro de cada vuelta exterior.", term:"Ciclos anidados",
+    cierre:"El ciclo interior termina antes de que avance el contador exterior.",
+    moments:["Empieza una vuelta exterior", "El contador interior vuelve a empezar", "El ciclo interior completa sus vueltas", "Avanza el contador exterior"],
+    figures:[["loop","I=1; I<=2; I++"],["process","J = 1"],["process","Cuerpo interior"],["process","J++"],["process","I++"]],
+    loopPartByMoment:[0,1,2,2],
+    returnLink:[3,1]
+  },
+  "validation-sentinel": {
+    id:"R17-validation", idea:"Un valor centinela marca el final de una serie y no se procesa como un dato normal.", term:"Validación y centinela",
+    cierre:"El centinela detiene la repetición y queda fuera de los datos procesados.",
+    moments:["Leer un dato", "Comprobar si es el centinela", "Procesar el dato válido", "Repetir hasta encontrar el centinela"],
+    figures:[["input","Leer dato"],["decision","¿dato = -1?"],["process","Procesar dato"],["output","Terminar"]],
+    choices:["Sí ✓","No ✗"],
+    returnLink:[2,0]
   }
 };
 
@@ -125,7 +141,9 @@ export function recipeSceneMarkup(recipe,frame=0,momentIndex=0){
   const shapes=nodes.map(([kind,label],index)=>shape(kind,xs[index],y,label,index===current,index,kind==="loop"?activePart:-1)).join("");
   const choiceIndex=nodes.findIndex(([kind])=>kind==="decision"),choiceX=xs[choiceIndex];
   const choices=recipe.choices&&choiceIndex>=0?'<path class="recipe-choice-arrow" d="M'+(choiceX-20)+' 143L'+(choiceX-62)+' 183M'+(choiceX+20)+' 143L'+(choiceX+62)+' 183"/><g class="recipe-choice recipe-choice-yes"><rect x="'+(choiceX-122)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX-92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[0])+'</text></g><g class="recipe-choice recipe-choice-no"><rect x="'+(choiceX+62)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX+92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[1])+'</text></g>':'';
-  return '<svg class="lesson-recipe-svg" viewBox="0 0 '+width+' '+(recipe.choices?240:220)+'" role="img" aria-label="'+escapeHTML(recipe.cierre)+'"><defs><marker id="recipe-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>'+arrows+choices+shapes+'<circle class="recipe-guide" cx="'+xs[0]+'" cy="55" r="8" transform="translate('+(xs[current]-xs[0])+' 0)" aria-hidden="true"/></svg>';
+  const [from,to]=recipe.returnLink??[];
+  const returnPath=Number.isInteger(from)&&Number.isInteger(to)?'<path class="recipe-return" d="M'+(xs[from]+halfWidth(nodes[from][0])-3)+' '+y+'H'+(width-12)+'V30H'+xs[to]+'V'+(y-(nodes[to][0]==="decision"?39:32))+'" marker-end="url(#recipe-arrowhead)"/>':'';
+  return '<svg class="lesson-recipe-svg" viewBox="0 0 '+width+' '+(recipe.choices?240:220)+'" role="img" aria-label="'+escapeHTML(recipe.cierre)+'"><defs><marker id="recipe-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>'+arrows+returnPath+choices+shapes+'<circle class="recipe-guide" cx="'+xs[0]+'" cy="55" r="8" transform="translate('+(xs[current]-xs[0])+' 0)" aria-hidden="true"/></svg>';
 }
 
 export function recipeFrame(recipe,step,eventCount=1){
