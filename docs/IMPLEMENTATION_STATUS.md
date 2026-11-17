@@ -107,9 +107,9 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 #### Resultado de validación de la rama
 
 - PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta y en borrador.
-- SHA actual documentado al actualizar esta sección: `727119c692b5e491bc7cdba5bdf873a09b36ec96`.
-- GitHub Actions: run [43991025389](https://github.com/Santiillana/Traza/actions/runs/43991025389), en ejecución al momento de esta actualización.
-- El check externo Workers Builds había fallado en commits anteriores (`3116f55` y `db8db1f`); no se declara publicación ni despliegue aprobado. El nuevo build debe terminar correctamente.
+- SHA validado: `5c3419b06ecde00019ebef2743966312d32464f0`.
+- GitHub Actions: run [43993117362](https://github.com/Santiillana/Traza/actions/runs/43993117362), **success**: 292/292 pruebas Node y 113/113 pruebas Playwright.
+- Los builds externos de Cloudflare Workers fallaron en commits anteriores (`db8db1f` y `727119c`). No se recibió una confirmación externa de Workers para el SHA validado; antes de integrar o publicar debe revisarse el estado del build en Cloudflare y hacer smoke test.
 - Se agregaron pruebas de navegador en `e2e/module-7-activities.spec.js` para ciclo de vida, filtros y protección de datos corruptos.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
 
@@ -127,12 +127,12 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 
 #### Pendiente para cerrar Mi ficha
 
-1. Obtener CI verde en el SHA final y resolver el check externo de Workers Builds.
-2. Corregir cualquier fallo que aparezca en las pruebas E2E y completar accesibilidad de los formularios.
-3. Implementar Biblioteca con fuente de contenido central y recursos verificables.
-4. Implementar el puente Clases ↔ Aprende solo con asociaciones reales.
-5. Diseñar el backend y el panel de moderador antes de permitir cambios globales desde la aplicación.
-6. Ejecutar auditoría de aceptación y smoke test real posterior al despliegue.
+1. Repetir CI después de cualquier cambio posterior al SHA validado y mantener los checks verdes.
+2. Revisar el build de Cloudflare Workers de forma directa y hacer smoke test de la previsualización; no se da por aprobada su publicación solo por la CI de GitHub.
+3. Completar el puente Clases ↔ Aprende solo con asociaciones reales y verificadas.
+4. Diseñar el backend, segmentación de cohortes y panel de moderador antes de permitir administración global desde la aplicación.
+5. Añadir recursos y actividades oficiales verificados; ambos catálogos centrales están preparados pero vacíos.
+6. Ejecutar auditoría integral y smoke test de aceptación antes de fusionar/desplegar.
 
 No fusionar ni publicar la PR #22 mientras falle el build externo o queden incompletos los criterios de aceptación.
 
