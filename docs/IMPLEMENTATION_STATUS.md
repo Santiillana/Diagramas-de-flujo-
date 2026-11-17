@@ -66,15 +66,15 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 
 | Paso v4 | Estado en `main` | Estado en PR #22 |
 |---|---|---|
-| 1. Sistema visual y temas | Integrado parcialmente con el shell v4 | Sin regresión conocida; pendiente auditoría global de preferencias independientes |
+| 1. Sistema visual y temas | Integrado con el shell v4 | Tema independiente para Inicio, Aprende y Mi ficha; valores por defecto comprobados y preferencias separadas verificadas por Playwright |
 | 2. Portada y navegación | Integrado mediante PR #21 | Conservado |
 | 3. Aprende y Laboratorio | Integrados; 17 lecciones y 8 actividades de laboratorio | Sin cambios previstos |
 | 4. Ejercicios | Integrado; 45 ejercicios | Sin cambios previstos |
-| 5. Núcleo de Mi ficha | No implementado | Repositorio común, persistencia local protegida, modelo de actividades y respaldo versionado; falta política de migraciones y E2E definitivo |
+| 5. Núcleo de Mi ficha | No implementado | Repositorio común y persistencia local protegida; E2E de ciclo de vida y recuperación aprobados. Falta definir migraciones antes de cambiar el esquema |
 | 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
-| 7. Actividades y detalle | No implementado | Catálogo de actividades oficiales de solo lectura y primera interfaz personal de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
+| 7. Actividades y detalle | No implementado | Catálogo oficial separado e interfaz personal completa; ciclo de vida, filtros, edición y protección de datos corruptos cubiertos por E2E aprobados |
 | 8. Clases y conexión con Aprende | Parcial implementado | Vista Clases, horario vigente e historial, publicaciones oficiales y mapa curricular con validación de IDs; enlaces exactos de Aprende se activarán solo cuando existan asociaciones verificadas |
-| 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; fuente oficial preparada y vacía. Pendiente aceptación E2E y publicación de materiales verificados |
+| 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; E2E de creación, edición, filtros, archivo y restauración aprobados. Fuente oficial preparada y vacía |
 | 10. Respaldo, auditoría y documentación | Parcial avanzado | Respaldos granulares e integral de Actividades/Biblioteca, validación estricta y rollback compensatorio; faltan migraciones, pruebas de fallo extremo, auditoría completa y verificación externa de publicación |
 
 #### Paso 5 · núcleo y persistencia
@@ -107,9 +107,10 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 #### Resultado de validación de la rama
 
 - PR: [#22](https://github.com/Santiillana/Traza/pull/22), abierta, en borrador y sin fusionar.
-- SHA validado por GitHub Actions: `856df59cea40ead2dd3ecd55de8c4921f893fa88`.
-- GitHub Actions: run [43995672198](https://github.com/Santiillana/Traza/actions/runs/43995672198), **300/300 pruebas Node y 116/116 pruebas Playwright aprobadas**, cero fallos.
-- El check externo **Workers Builds: diagramas-de-flujo** para este SHA terminó en **failure** (build Cloudflare `9d85afc3-06fa-43c0-9c89-09415f3aac8d`). El check no entregó anotaciones ni causa técnica en GitHub; hay que abrir sus logs en Cloudflare y resolverlo antes de publicar.
+- SHA validado por GitHub Actions: `04b699f737ba1866a025c6aaed79dbfa956598a3`.
+- GitHub Actions: run [43996077312](https://github.com/Santiillana/Traza/actions/runs/43996077312), **300/300 pruebas Node y 116/116 pruebas Playwright aprobadas**, cero fallos.
+- El check externo **Workers Builds: diagramas-de-flujo** para este SHA terminó en **failure** (build Cloudflare `60f5ad16-c73d-4434-997e-2b5fedc869aa`). GitHub no recibió anotaciones ni causa técnica de Cloudflare.
+- El mismo check externo también aparece fallido en el SHA base de `main` (`cd9c7598969d9487c779234451a32d9e5f3d67c6`, build `726475b5-3558-4061-a5b4-bc4b58cdb949`). Por tanto, el fallo ya estaba presente en la base; sigue siendo un bloqueo operativo que debe revisarse desde el panel de Cloudflare antes de publicar.
 - No se ha ejecutado un smoke test del sitio desplegado. La CI de GitHub no sustituye el build externo ni el smoke test.
 - Ningún archivo protegido del Simulador está incluido en los cambios de la PR.
 
@@ -118,8 +119,8 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 - `src/ui/ficha-classes.js` y `src/styles/ficha-classes.css` implementan una vista de Clases alimentada desde `src/content/ficha.js`.
 - Muestra las materias y docentes vigentes, los dos bloques del sábado como `Clase del sábado`, materiales y actividades oficiales asociadas por `classId`, y el historial de vigencias anteriores.
 - No asocia automáticamente lecciones ni ejercicios de Aprende. `src/content/class-learning-map.js` define el mapa explícito y valida los IDs frente a horarios, 17 lecciones y 45 ejercicios; permanece vacío hasta contar con asociaciones oficiales.
-- `e2e/module-8-classes.spec.js` cubre los siete bloques vigentes al 17 de noviembre de 2026 y el bloque histórico del lunes anterior al 2 de noviembre.
-- Para cerrar la conexión pedagógica hacen falta las asociaciones oficiales por competencia/materia y una validación de IDs reales en los catálogos.
+- `e2e/module-8-classes.spec.js` cubre los siete bloques vigentes al 17 de noviembre de 2026, el bloque histórico del lunes anterior al 2 de noviembre, los dos bloques del sábado y la ausencia de asociaciones pedagógicas inventadas.
+- Para habilitar enlaces pedagógicos hacen falta las asociaciones oficiales por competencia/materia. El archivo y su validación de IDs reales ya están preparados.
 
 #### Paso 9 · Biblioteca
 
