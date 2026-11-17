@@ -417,6 +417,47 @@
 .lab-intro-meta strong{color:var(--accent-text);font:800 18px/1 ui-monospace,monospace;letter-spacing:0}
 .lab-intro-meta i{margin:0 3px;color:var(--line-strong);font-style:normal}
 .lab-mode-cards{max-width:1280px;gap:16px}
+
+/* Matemáticas: retos cortos con controles táctiles y de teclado. */
+#view-lab.lab-math-catalog .lab-mechanics-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+#view-lab.lab-math-catalog .lab-mode-card{min-height:220px}
+#view-lab.lab-math-catalog .lab-catalog-filters.is-math-filters{align-items:center}
+#view-lab.lab-math-playing .lab-practice-workspace{max-width:960px;margin:28px auto}
+#view-lab.lab-math-playing .lab-task-panel{padding:clamp(20px,4vw,40px);border-radius:24px;background:var(--card);box-shadow:var(--shadow-soft,0 18px 48px rgba(20,35,55,.08))}
+.math-lab-session{display:grid;gap:26px;max-width:760px;margin:0 auto}
+.math-lab-session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:14px}
+.math-lab-prompt{padding:clamp(20px,4vw,32px);border:1px solid var(--line);border-radius:18px;background:var(--surface,var(--card));text-align:center}
+.math-lab-prompt h4{max-width:58ch;margin:10px auto 0;font-size:clamp(20px,3vw,27px);line-height:1.45}
+.math-lab-expression{margin:20px auto 0;font:600 clamp(25px,5vw,40px)/1.3 ui-monospace,SFMono-Regular,monospace;color:var(--ink)}
+.math-lab-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.math-lab-option,.math-lab-order-list li{min-height:58px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-size:17px;text-align:left}
+.math-lab-answer-form{display:grid;gap:10px;max-width:540px;margin:0 auto}.math-lab-answer-form label{font-weight:650}.math-lab-answer-form>div{display:flex;gap:10px}.math-lab-answer-form input{flex:1;min-width:0;min-height:50px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:18px}.math-lab-answer-form input:focus-visible{outline:3px solid color-mix(in srgb,var(--struct) 40%,transparent);outline-offset:2px}
+.math-lab-option{cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}
+.math-lab-option:hover,.math-lab-option:focus-visible{transform:translateY(-2px);border-color:var(--struct)}
+.math-lab-option:disabled{cursor:default}
+.math-lab-number-game{display:grid;justify-items:center;gap:8px}.math-lab-token{width:52px;height:52px;border:2px solid var(--accent);border-radius:50%;background:var(--card);color:var(--ink);font-size:22px;font-weight:750;cursor:grab;touch-action:none}.math-lab-token:active{cursor:grabbing}
+.math-lab-number-line{display:flex;align-items:center;justify-content:space-around;gap:0;position:relative;width:100%;padding:30px 8px 12px}
+.math-lab-number-line:before{content:"";position:absolute;left:7%;right:7%;top:42px;height:3px;background:var(--struct);z-index:0}
+.math-lab-number-line button{position:relative;z-index:1;display:grid;justify-items:center;gap:12px;min-width:48px;border:0;background:none;color:var(--ink);font-size:16px;cursor:pointer}
+.math-lab-number-line button:before{content:"";width:16px;height:16px;border:3px solid var(--struct);border-radius:50%;background:var(--card)}
+.math-lab-number-line button:hover:before,.math-lab-number-line button:focus-visible:before{background:var(--accent);transform:scale(1.2)}
+.math-lab-number-line button:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:8px}
+.math-lab-fraction-bar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(22px,1fr);gap:4px;max-width:650px;margin:0 auto}
+.math-lab-fraction-bar button{min-height:62px;border:1px solid var(--struct);border-radius:7px;background:var(--card);cursor:pointer}
+.math-lab-fraction-bar button.is-shaded{background:var(--accent);box-shadow:inset 0 0 0 2px var(--card)}
+.math-lab-bar-count{text-align:center;color:var(--muted)}
+.math-lab-order-list{display:grid;gap:8px;margin:0;padding:0;list-style:none;counter-reset:order}
+.math-lab-order-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;counter-increment:order}
+.math-lab-order-list li:before{content:counter(order);display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface,var(--card));color:var(--muted);font-size:14px}
+.math-lab-order-list li>span:first-of-type{flex:1}
+.math-lab-order-actions{display:flex;gap:6px}
+.math-lab-order-actions button{width:40px;height:40px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font-size:20px;cursor:pointer}
+.math-lab-feedback{padding:16px 18px;border-radius:12px;line-height:1.55}
+.math-lab-feedback.is-correct{background:color-mix(in srgb,var(--success,#23866d) 12%,var(--card));color:var(--ink)}
+.math-lab-feedback.is-incorrect{background:color-mix(in srgb,var(--warning,#bd7a27) 13%,var(--card));color:var(--ink)}
+.math-lab-next{justify-self:end;min-height:48px}
+@media(max-width:620px){.math-lab-session-head{flex-wrap:wrap}.math-lab-number-line button{min-width:38px;font-size:14px}.math-lab-number-line{padding-inline:0}.math-lab-fraction-bar button{min-height:48px}.math-lab-order-list li{font-size:15px;padding:10px}}
+@media(prefers-reduced-motion:reduce){.math-lab-option{transition:none}}
 .lab-mode-card{
   min-height:320px;padding:20px;border-radius:16px;border-color:var(--line);
   background:var(--surface);box-shadow:var(--shadow-sm);
