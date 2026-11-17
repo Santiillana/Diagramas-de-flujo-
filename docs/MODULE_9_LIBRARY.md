@@ -19,6 +19,7 @@
 - Consultar, editar y archivar recursos.
 - Abrir enlaces externos solo si usan HTTP/HTTPS y no incluyen credenciales.
 - Exportar e importar respaldos independientes de la biblioteca, versión 1, con validación estricta y límite de 2 MB.
+- Incluir la biblioteca en el respaldo integral `traza-full-ficha-backup`, junto con las actividades personales, con restauración validada y rollback compensatorio.
 - Bloquear las escrituras normales si el almacenamiento está corrupto o tiene un esquema desconocido; solo un respaldo válido puede restaurarlo tras confirmación.
 
 ## Funciones del catálogo oficial
@@ -38,3 +39,4 @@ Para publicar un recurso oficial, añadir una entrada a `RECURSOS_OFICIALES` en 
 
 - `tests/ficha-library.test.js`: esquema, creación, URL segura, edición, archivo, corrupción, respaldo y restauración.
 - `e2e/module-7-library.spec.js`: flujo de usuario, filtros, exportación e importación de biblioteca.
+- `tests/ficha-full-backup.test.js` y `e2e/module-7-schedule.spec.js`: respaldo integral y refresco de las vistas tras restaurar ambas áreas.
