@@ -8,6 +8,7 @@ import { initFichaSchedule } from "./ui/ficha-schedule.js";
 import { initFichaBackup } from "./ui/ficha-backup.js";
 import { initFichaActivities } from "./ui/ficha-activities.js";
 import { initFichaLibrary } from "./ui/ficha-library.js";
+import { initFichaClasses } from "./ui/ficha-classes.js";
 
 initNavigation();
 initPreferences();
@@ -19,3 +20,4 @@ initFichaSchedule();
 initFichaBackup();
 initFichaActivities();
 initFichaLibrary();
+initFichaClasses();
