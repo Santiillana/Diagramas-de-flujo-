@@ -1,7 +1,5 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
-import {
-  ACTIVIDADES_OFICIALES, validateOfficialActivities
-} from "../content/ficha-activities.js";
+import { validateOfficialActivities } from "../content/ficha-activities.js";
 import {
   addFeedback, addSubmission, archiveActivity, createActivity,
   isActivityOverdue, readFichaData, readFichaDataStrict, updateActivity,
