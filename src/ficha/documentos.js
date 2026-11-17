@@ -5,11 +5,25 @@ export const SECCIONES_DOCUMENTO = Object.freeze(["clases", "actividades", "bibl
 const esObjeto = valor => valor !== null && typeof valor === "object" && !Array.isArray(valor);
 
 function ubicacionSegura(url) {
-  if (typeof url !== "string" || !url.trim()) return false;
-  if (/^https:\/\/[^\s]+$/i.test(url)) return true;
-  // Archivos alojados en el mismo sitio; se rechazan rutas de protocolo y traversal.
-  return /^(?:\/(?!\/)|\.\/)[A-Za-z0-9._~!$&'()*+,;=:@%/-]+$/.test(url) &&
-    !url.split("/").includes("..");
+  if (typeof url !== "string" || !url.trim() || /[\s<>"]/.test(url) || url.includes("'")) return false;
+  if (/^https:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" && Boolean(parsed.hostname) &&
+        !parsed.username && !parsed.password;
+    } catch {
+      return false;
+    }
+  }
+  // Solo rutas relativas al mismo sitio; rechaza rutas protocol-relative y traversal,
+  // incluso cuando los segmentos peligrosos están codificados.
+  if (!/^(?:\/(?!\/)|\.\/)[A-Za-z0-9._~!$&'()*+,;=:@%/-]+$/.test(url)) return false;
+  try {
+    const decoded = decodeURIComponent(url);
+    return !decoded.includes("\\") && !decoded.split("/").includes("..");
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -82,7 +96,13 @@ export function validarDocumentoOficial(documento, contexto = {}) {
 /** Devuelve únicamente documentos publicados que correspondan al contexto solicitado. */
 export function documentosPublicados(seccion, contexto = {}, ficha = FICHA) {
   if (!SECCIONES_DOCUMENTO.includes(seccion)) return [];
+  const validacionContexto = {
+    ...contexto,
+    clases: contexto.clases ?? ficha.clases,
+    actividades: contexto.actividades ?? ficha.actividades
+  };
   return (ficha.documentos ?? []).filter(documento => {
+    if (!validarDocumentoOficial(documento, validacionContexto).ok) return false;
     if (documento.estadoPublicacion !== "publicado" || !documento.secciones?.includes(seccion)) return false;
     if (documento.claseId && documento.claseId !== contexto.claseId) return false;
     if (documento.actividadId && documento.actividadId !== contexto.actividadId) return false;

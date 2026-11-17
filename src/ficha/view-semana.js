@@ -50,6 +50,11 @@ function renderEmptyGrid(start, due, filtros) {
     </section>`;
   }).join("")}</div>`;
 }
+function vigenteEnFecha(item, fecha) {
+  const clave = fechaISO(fecha);
+  return (!item.vigenteDesde || clave >= item.vigenteDesde) &&
+    (!item.vigenteHasta || clave <= item.vigenteHasta);
+}
 function renderDesktopGrid(start, horario, due, filtros) {
   const clases = horario.map(item => ({ ...item, start: minutos(item.inicio), end: minutos(item.fin) }))
     .filter(item => item.start !== null && item.end !== null && item.end > item.start);
@@ -72,7 +77,7 @@ function renderDesktopGrid(start, horario, due, filtros) {
     <div class="ficha-week-time-axis">${labelsHoras}</div>
     ${DIAS.map((day, index) => {
       const date = sumarDias(start, index);
-      const items = clases.filter(item => item.dia === day.dia);
+      const items = clases.filter(item => item.dia === day.dia && vigenteEnFecha(item, date));
       const blocks = items.map(item => {
         const top = item.start - primera * 60;
         const height = item.end - item.start;
@@ -94,7 +99,7 @@ function renderDesktopGrid(start, horario, due, filtros) {
 function renderMobile(start, horario, due, filtros) {
   const day = DIAS.find(item => item.dia === diaSeleccionado) ?? DIAS[0];
   const date = sumarDias(start, day.dia - 1);
-  const clases = horario.filter(item => item.dia === day.dia).sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const clases = horario.filter(item => item.dia === day.dia && vigenteEnFecha(item, date)).sort((a, b) => a.inicio.localeCompare(b.inicio));
   return `<div class="ficha-mobile-week">
     <div class="ficha-day-picker" role="group" aria-label="Seleccionar día de la semana">
       ${DIAS.map(item => `<button type="button" data-mobile-day="${item.dia}" aria-pressed="${item.dia === diaSeleccionado}">

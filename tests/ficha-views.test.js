@@ -40,10 +40,11 @@ test("el filtro de estado separa una actividad atrasada de su estado manual pend
 });
 
 test("el horario coincide con los días, horas, temas e instructores de la imagen compartida", () => {
-  assert.equal(FICHA.horario.length, 7);
+  assert.equal(FICHA.horario.length, 8);
   const porDia = dia => FICHA.horario.filter(item => item.dia === dia);
-  assert.deepEqual(porDia(1).map(item => [item.competenciaId, item.inicio, item.fin, item.instructorId]), [
-    ["evaluar-requisitos", "18:00", "22:00", "jair-castaneda"]
+  assert.deepEqual(porDia(1).map(item => [item.competenciaId, item.inicio, item.fin, item.instructorId, item.vigenteDesde, item.vigenteHasta]), [
+    ["evaluar-requisitos", "18:00", "22:00", "jair-castaneda", null, "2026-11-01"],
+    ["matematicas", "18:00", "22:00", "yilliam-romero", "2026-11-02", null]
   ]);
   assert.deepEqual(porDia(2).map(item => [item.competenciaId, item.inicio, item.fin, item.instructorId]), [
     ["comunicacion", "18:00", "22:00", "sandra-lizcano"]
@@ -61,11 +62,7 @@ test("el horario coincide con los días, horas, temas e instructores de la image
     ["12:00", "16:00", "gloria-romero"], ["16:00", "22:00", "jair-castaneda"]
   ]);
   assert.equal(porDia(7).length, 0);
-  assert.equal(FICHA.horarioNotas.length, 1);
-  assert.equal(FICHA.horarioNotas[0].titulo, "Matemáticas");
-  assert.equal(FICHA.horarioNotas[0].instructorId, "yilliam-romero");
-  assert.equal(FICHA.horarioNotas[0].competenciaId, "matematicas");
-  assert.match(FICHA.horarioNotas[0].nota, /hora ni año/);
+  assert.equal(FICHA.horarioNotas.length, 0);
 });
 
 test("las vistas de Mi ficha están conectadas a la aplicación y tienen estilos", async () => {
