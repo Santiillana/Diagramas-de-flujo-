@@ -301,6 +301,7 @@ test("la metadata de documentos impide publicar archivos sin URL segura y filtra
   assert.equal(validarDocumentoOficial({ ...base, estadoPublicacion: "borrador", url: null, publicadoEn: null }).ok, true);
 
   const ficha = {
+    actividades: [{ id: "actividad-diagrama" }],
     documentos: [
       base,
       { ...base, id: "doc-2", estadoPublicacion: "borrador" },
@@ -310,6 +311,7 @@ test("la metadata de documentos impide publicar archivos sin URL segura y filtra
   assert.deepEqual(documentosPublicados("clases", {}, ficha).map(item => item.id), ["doc-1"]);
   assert.deepEqual(documentosPublicados("actividades", { actividadId: "actividad-diagrama" }, ficha).map(item => item.id), ["doc-3"]);
   ficha.documentos.push({ ...base, id: "doc-inseguro", secciones: ["actividades"], actividadId: "actividad-diagrama", url: "javascript:alert(1)" });
+  ficha.documentos.push({ ...base, id: "doc-huerfano", secciones: ["actividades"], actividadId: "actividad-no-existente" });
   assert.deepEqual(documentosPublicados("actividades", { actividadId: "actividad-diagrama" }, ficha).map(item => item.id), ["doc-3"]);
 });
 
