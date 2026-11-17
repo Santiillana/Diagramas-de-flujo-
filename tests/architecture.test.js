@@ -43,6 +43,20 @@ test("Aprende separa catálogo, tema y progreso y guarda sus vistas en el progre
   assert.match(progress, /activityDays/);
 });
 
+test("la lección usa lectura continua con seis secciones y cierre explícito",async()=>{
+  const content=await read("../src/ui/content-view.js");
+  const styles=await read("../src/styles/lesson-reading.css");
+  for(const id of ["lesson-idea","lesson-concept","lesson-term","lesson-example","lesson-practice","lesson-summary"]){
+    assert.ok(content.includes('id="'+id+'"'),"Falta la sección "+id);
+  }
+  assert.match(content,/data-lesson-complete/);
+  assert.match(content,/data-skip-practice/);
+  assert.match(content,/lessonClock\.advance/);
+  assert.match(styles,/grid-template-columns:320px minmax\(0,1fr\)/);
+  assert.match(styles,/@media\(max-width:800px\)/);
+  assert.match(content,/LESSON_TERMS/);
+});
+
 test("el simulador reserva las cuatro ventanas pedagógicas y el dock", async () => {
   const html = await read("../index.html");
   for (const marker of ["problem-panel", "diagram-panel", "scene-panel", "variables-panel", "execution-dock"]) {

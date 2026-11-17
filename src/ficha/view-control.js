@@ -40,7 +40,7 @@ function renderEvidencias(fecha, personal) {
     return `<label class="control-evidence"><input type="checkbox" data-evidence-done="${escaparHTML(item.id)}" aria-label="Marcar como hecha: ${escaparHTML(item.titulo)}"><span class="control-evidence-copy"><strong>${escaparHTML(item.titulo)}</strong><small><i aria-hidden="true"></i>${escaparHTML(comp?.nombre ?? "Competencia por confirmar")}</small></span><span class="control-date">◷ ${escaparHTML(diferencia)}</span></label>`;
   }).join("");
   const hechosHTML = hechas.length ? `<details class="control-done"><summary>Hechas (${hechas.length})</summary>${hechas.map(id => FICHA.actividades.find(item => item.id === id)).filter(Boolean).map(item => `<p>✓ <s>${escaparHTML(item.titulo)}</s><button type="button" data-evidence-undo="${escaparHTML(item.id)}">Deshacer</button></p>`).join("")}</details>` : "";
-  return `${filas || '<p class="control-empty">✓ Estás al día con las evidencias</p>'}${hechasHTML}<a class="control-link" href="#view-actividades" data-go="actividades">Ver todas</a>`;
+  return `${filas || '<p class="control-empty">✓ Estás al día con las evidencias</p>'}${hechosHTML}<a class="control-link" href="#view-actividades" data-go="actividades">Ver todas</a>`;
 }
 
 function renderInstructores() {

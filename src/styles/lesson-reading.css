@@ -1,0 +1,72 @@
+.learn-workspace{grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+.lesson-catalog-panel{top:88px;border-radius:16px}
+.lesson-catalog-panel>.panel-heading{padding:20px 20px 12px}
+.lesson-route-progress{display:flex;align-items:center;gap:12px;margin:0 20px 12px;color:var(--text-2);font-size:14px;font-variant-numeric:tabular-nums}
+.lesson-route-progress>span{height:3px;flex:1;overflow:visible;border-radius:999px;background:var(--line)}
+.lesson-route-progress>span>i{position:relative;display:block;height:100%;border-radius:inherit;background:var(--struct)}
+.lesson-route-progress>span>i::after{position:absolute;right:-6px;top:-3px;width:9px;height:9px;border-radius:50%;background:var(--accent);content:""}
+.lesson-catalog{display:grid;gap:12px;max-height:calc(100svh - 230px);padding:0 12px 16px;overflow:auto}
+.lesson-catalog-items{grid-template-columns:1fr;gap:4px;padding:4px}
+.lesson-list-item{min-height:56px;grid-template-columns:28px minmax(0,1fr) 20px;gap:8px;padding:8px;border-radius:10px}
+.lesson-list-copy strong{font-size:14px;line-height:1.35}
+.lesson-list-state{width:20px;height:20px;font-size:15px}
+.lesson-list-difficulty{grid-column:2/4;display:flex;gap:3px}
+.lesson-list-difficulty i{width:14px;height:3px;border-radius:4px;background:var(--line)}
+.lesson-list-difficulty i.is-filled{background:var(--struct)}
+.lesson-detail-panel{min-width:0;padding:clamp(20px,3vw,40px);border-radius:16px;background:var(--lienzo)}
+.lesson-reader{max-width:100%;margin:0 auto}
+.lesson-breadcrumb{font-size:14px}
+.lesson-breadcrumb button{display:none;min-height:44px;padding:4px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit}
+.lesson-detail-heading h3{font:600 clamp(28px,3vw,36px)/1.2 ui-sans-serif,system-ui,sans-serif;color:var(--text)}
+.lesson-detail-heading>div>p:not(.eyebrow){font-size:17px;line-height:1.55;color:var(--text-2)}
+.lesson-reading-progress{position:sticky;top:0;z-index:3;height:3px;margin:8px 0 24px;background:var(--line)}
+.lesson-reading-progress>span{position:relative;background:var(--accent)}
+.lesson-reading-progress>span::after{position:absolute;right:-5px;top:-3px;width:9px;height:9px;border-radius:50%;background:var(--accent);content:""}
+.lesson-reading-section{max-width:64ch;margin:0 auto 24px;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);font-size:19px;line-height:1.65}
+.lesson-reading-section .eyebrow{font-size:14px}
+.lesson-reading-section h4{margin:8px 0 14px;color:var(--text);font-size:21px;line-height:1.3}
+.lesson-reading-section p{max-width:64ch}
+.lesson-intuitive{font-size:26px;line-height:1.45}
+.lesson-idea-scene,.lesson-visual .lesson-scene-host{max-width:760px}
+.lesson-visual{margin:16px 0}
+.lesson-visual .lesson-scene-host{min-height:250px}
+.lesson-support-copy,.lesson-term-definition{color:var(--text-2)}
+.lesson-term-title{font-size:33px!important;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:8px}
+.lesson-glossary{margin:8px 16px;padding:12px;border-top:1px solid var(--line);color:var(--text-2);font-size:14px}
+.lesson-glossary>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--text);font-weight:600}
+.lesson-glossary dl{display:grid;gap:6px;margin:8px 0;max-height:45vh;overflow:auto}
+.lesson-glossary dt{color:var(--text);font-weight:600}
+.lesson-glossary dd{margin:0 0 8px;line-height:1.45}
+.lesson-worked-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.lesson-code-lines{position:sticky;top:75px;display:grid;gap:4px;margin:0;padding:12px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--lienzo);list-style:none}
+.lesson-code-lines li{display:grid;grid-template-columns:24px 1fr;gap:8px;padding:5px;border-radius:6px;color:var(--text-2);font:15px/1.6 ui-monospace,monospace}
+.lesson-code-lines li>span{font-variant-numeric:tabular-nums;text-align:right}
+.lesson-code-lines li.is-active{background:color-mix(in srgb,var(--accent) 20%,var(--card));color:var(--text);box-shadow:inset 3px 0 var(--accent)}
+.lesson-code-lines code{overflow-wrap:anywhere;white-space:pre-wrap}
+.lesson-worked-steps{display:grid;gap:6px;padding:0;list-style:none}
+.lesson-worked-steps li{display:grid;grid-template-columns:32px 1fr;gap:8px;align-items:start}
+.lesson-worked-steps li>span{color:var(--text-2);font:500 14px/1.6 ui-monospace,monospace}
+.lesson-worked-steps li p{margin:0;font-size:17px;line-height:1.55}
+.lesson-reading-section .lesson-scene-caption,.lesson-reading-section .lesson-example-note{font-size:17px;line-height:1.55;color:var(--text-2)}
+.lesson-options{grid-template-columns:1fr}
+.lesson-option{min-height:48px;font-size:17px;text-align:left}
+.lesson-summary-points{display:grid;gap:8px;margin:18px 0}
+.lesson-summary-points p{display:grid;grid-template-columns:32px 1fr;gap:9px;margin:0;font-size:17px}
+.lesson-summary-points p span{color:var(--accent-text)}
+.lesson-reading-section [data-lesson-complete],.lesson-reading-section [data-lesson-next]{min-height:48px;margin:8px 8px 0 0}
+.lesson-prerequisite{font-size:14px;color:var(--text-2)}
+.lesson-prerequisite button{min-height:40px;padding:4px 8px;border:0;background:transparent;color:var(--struct);font-family:inherit;font-size:14px;font-weight:600;text-decoration:underline;cursor:pointer}
+@media(max-width:800px){
+ .learn-workspace{grid-template-columns:1fr;gap:12px}
+ .lesson-catalog-panel{display:none;position:static}
+ .learn-topic-space.is-list-open .lesson-catalog-panel{display:block}
+ .learn-topic-space.is-list-open .lesson-detail-panel{display:none}
+ .lesson-breadcrumb button{display:inline-flex;align-items:center}
+ .lesson-catalog{max-height:none}
+ .lesson-detail-panel{padding:16px}
+ .lesson-reading-section{padding:20px;font-size:18px}
+ .lesson-worked-layout{grid-template-columns:1fr}
+ .lesson-worked-layout .lesson-code{position:static}
+}
+@media(max-width:520px){.lesson-reading-section{padding:16px}.lesson-intuitive{font-size:22px}.lesson-term-title{font-size:28px!important}.lesson-visual .lesson-scene-host{min-height:180px}}
+:root[data-motion="reduced"] .lesson-reading-progress>span,:root[data-motion="reduced"] .lesson-route-progress>span>i{transition:none!important}

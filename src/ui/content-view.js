@@ -25,6 +25,7 @@ let lessonScreenStep = 0;
 let lessonPlaybackFrame = 0;
 let lessonClock = null;
 let lessonPlaying = false;
+let lessonTryResolved = false;
 let learnProgress = readLearnProgress();
 let selectedTheme = learnProgress.theme;
 let topicTab = learnProgress.tab;
@@ -41,6 +42,13 @@ let exercisePage = 0;
 let modalExercise = null;
 const PAGE_SIZE = 12;
 const CLASS_EXERCISES = new Set([22,23,24,28]);
+const LESSON_TERMS = {
+  algorithm:"Algoritmo",reading:"Flujo y secuencia",terminals:"Símbolos de diagrama",
+  input:"Entrada",process:"Proceso",output:"Salida",variables:"Variable",arithmetic:"Operación aritmética",
+  comparisons:"Operadores relacionales",decisions:"Decisión","nested-decisions":"Decisión anidada",
+  "counters-accumulators":"Contador y acumulador",for:"Ciclo Para",while:"Ciclo Mientras",
+  "do-while":"Ciclo Hacer–Mientras","nested-loops":"Ciclos anidados","validation-sentinel":"Validación con centinela"
+};
 
 export function exerciseConceptLabels(item){
   const labels=new Set();
@@ -209,23 +217,27 @@ function renderLearnProgress(){
 function lessonList(){
   const host=$("#lesson-catalog");
   if(!host)return;
-  const completed=learnProgress.completed.length;
-  const percent=Math.round(completed/lessons.length*100);
+  const routeCount=$("#lesson-route-count"),routeFill=$("#lesson-route-fill");
+  const current=lessons.findIndex(item=>item.id===selectedLesson)+1;
+  if(routeCount){routeCount.textContent=current+" de "+lessons.length;routeCount.parentElement?.setAttribute("role","progressbar");routeCount.parentElement?.setAttribute("aria-valuemin","0");routeCount.parentElement?.setAttribute("aria-valuemax",String(lessons.length));routeCount.parentElement?.setAttribute("aria-valuenow",String(current));}
+  if(routeFill)routeFill.style.width=Math.round(current/lessons.length*100)+"%";
   host.innerHTML=rutas.map(group=>{
     const done=group.ids.filter(id=>learnProgress.completed.includes(id)).length;
     const items=lessons.filter(lesson=>group.ids.includes(lesson.id)).map(lesson=>{
       const index=lessons.findIndex(item=>item.id===lesson.id);
       const completedLesson=learnProgress.completed.includes(lesson.id);
+      const difficulty=Math.max(1,rutas.findIndex(item=>item.ids.includes(lesson.id))+1);
       return '<button class="lesson-list-item '+(lesson.id===selectedLesson?"is-selected":"")+'" type="button" data-lesson-id="'+escapeHTML(lesson.id)+'" aria-current="'+(lesson.id===selectedLesson?"true":"false")+'" aria-label="Lección '+String(index+1)+': '+escapeHTML(lesson.title)+(completedLesson?", completada":", pendiente")+'">'+
         '<span class="lesson-list-number">'+String(index+1).padStart(2,"0")+'</span>'+
-        '<span class="lesson-list-copy"><strong>'+escapeHTML(lesson.title)+'</strong><small>'+escapeHTML(lesson.duration)+'</small></span>'+
-        '<span class="lesson-list-state" aria-hidden="true">'+(completedLesson?"✓":"○")+'</span></button>';
+        '<span class="lesson-list-copy"><strong>'+escapeHTML(lesson.title)+'</strong></span>'+
+        '<span class="lesson-list-state" aria-hidden="true">'+(completedLesson?"✓":lesson.id===selectedLesson?"◐":"○")+'</span>'+
+        '<span class="lesson-list-difficulty" aria-label="Dificultad '+difficulty+' de 4">'+[1,2,3,4].map(value=>'<i class="'+(value<=difficulty?"is-filled":"")+'"></i>').join("")+'</span></button>';
     }).join("");
     return '<section class="lesson-catalog-group" data-route-id="'+escapeHTML(group.id)+'" aria-label="'+escapeHTML(group.title)+'">'+
       '<div class="lesson-catalog-group-heading"><div><p class="lesson-catalog-group-title">'+escapeHTML(group.title)+'</p><small>'+escapeHTML(group.description)+'</small></div>'+
       '<span class="lesson-group-progress" aria-label="'+done+' de '+group.ids.length+' lecciones completadas">'+done+'/'+group.ids.length+'</span></div>'+
       '<div class="lesson-catalog-items">'+items+'</div></section>';
-  }).join("");
+  }).join("")+'<details class="lesson-glossary"><summary>Glosario del tema</summary><dl>'+lessons.map(lesson=>'<dt>'+escapeHTML(LESSON_TERMS[lesson.id]??lesson.title)+'</dt><dd>'+escapeHTML(lesson.technical)+'</dd>').join("")+'</dl></details>';
 }
 function lessonInputs(value){
   return String(value??"").split(/[;,]/).map(part=>part.trim()).filter(Boolean).map(Number);
@@ -347,62 +359,29 @@ function startLessonPlayback(){
 }
 function renderLesson(){
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
-  const host=$("#lesson-detail");
-  if(!host)return;
-  const screen=lessonScreenStep;
-  const stepNames=["Idea","Escena","Ejemplo","Inténtalo","Resumen"];
+  const host=$("#lesson-detail");if(!host)return;
   const route=rutas.find(group=>group.ids.includes(lesson.id));
-  const progressValue=learnProgress.completed.includes(lesson.id)?5:screen+1;
-  let body="";
-  if(screen===0){
-    body='<section class="lesson-screen lesson-screen-idea"><p class="eyebrow">¿PARA QUÉ SIRVE?</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p>'+
-      '<aside class="lesson-when-to-use" data-when-to-use><strong>Cuándo se utiliza</strong><p>'+escapeHTML(lesson.whenToUse??lesson.objective)+'</p></aside>'+
-      '<details class="lesson-technical"><summary>Versión técnica</summary><p>'+escapeHTML(lesson.technical)+'</p></details>'+
-      '<div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+
-      '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p></section>';
-  }else if(screen===1){
-    body=visualMarkup(lesson);
-  }else if(screen===2){
-    body='<section class="lesson-screen lesson-screen-example"><div class="lesson-section-heading"><div><p class="eyebrow">EJEMPLO CON VALORES</p><h4>'+escapeHTML(lesson.miniProgram.title)+'</h4></div></div>'+
-      '<pre class="lesson-code"><code>'+escapeHTML(lesson.example.code.split("|").join("\n"))+'</code></pre>'+
-      '<div class="lesson-worked-example"><p class="eyebrow">RESOLUCIÓN PASO A PASO</p><ol class="lesson-worked-steps">'+
-        (lesson.example.steps??lesson.manipulation.steps).map((step,index)=>'<li><span>'+String(index+1).padStart(2,"0")+'</span><p>'+escapeHTML(step)+'</p></li>').join("")+
-      '</ol><p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p></div>'+
-      '<details class="lesson-interactive-test"><summary>Probar el concepto con otros datos</summary>'+
-      '<p class="lesson-interactive-copy">'+escapeHTML(lesson.miniProgram.title)+'. Este ensayo ejecuta el pseudocódigo real de la lección.</p>'+
-      '<pre class="lesson-code lesson-code-compact"><code>'+escapeHTML(lesson.miniProgram.code.split("|").join("\n"))+'</code></pre>'+
-      '<label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label>'+
-      '<div class="lesson-example-output" id="lesson-data-result" role="status"></div>'+
-      '<button type="button" class="button button-primary" data-run-mini-program>Ejecutar prueba</button></details></section>';
-  }else if(screen===3){
-    body='<section class="lesson-screen lesson-screen-try"><p class="eyebrow">INTÉNTALO</p><h4>'+escapeHTML(lesson.tryIt?.prompt??"Predice antes de ver la respuesta.")+'</h4>'+
-      '<p class="lesson-common-error"><b>Error común:</b> '+escapeHTML(lesson.commonError??"Revisa el orden de las instrucciones.")+'</p>'+
-      '<div class="lesson-section-heading"><div><p class="eyebrow">COMPRUEBA TU COMPRENSIÓN</p><h4>'+escapeHTML(lesson.check.question)+'</h4></div></div>'+
-      '<div class="lesson-options">'+lesson.check.options.map((option,index)=>
-        '<button type="button" class="lesson-option" data-check-option="'+index+'"><span>'+String.fromCharCode(65+index)+'</span>'+escapeHTML(option)+'</button>'
-      ).join("")+'</div><p class="lesson-feedback" id="lesson-feedback" role="status"></p></section>';
-  }else{
-    body='<section class="lesson-screen lesson-screen-summary"><p class="eyebrow">LO QUE YA SABES</p><h4>'+escapeHTML(lesson.title)+'</h4>'+
-      '<p class="lesson-summary-text">'+escapeHTML(lesson.summary??lesson.objective)+'</p>'+
-      '<p class="lesson-key-idea"><b>Idea clave</b> '+escapeHTML(lesson.objective)+'</p>'+
-      '<button type="button" class="button button-primary" data-lesson-complete>'+(learnProgress.completed.includes(lesson.id)?"Lección completada":"Marcar lección completada")+'</button></section>';
-  }
-  const currentIndex=lessons.findIndex(item=>item.id===lesson.id);
+  const completed=learnProgress.completed.includes(lesson.id);
+  const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
+  const steps=events.map((item,index)=>'<li><span>'+String(index+1).padStart(2,"0")+'</span><p>'+escapeHTML(item.scene?.body??item.message??item.sourceText??"Paso del algoritmo")+'</p></li>').join("");
+  const activeLine=events[Math.min(lessonVisualStep,Math.max(0,events.length-1))]?.sourceLine;
+  const codeLines=lesson.miniProgram.code.split("|").map((line,index)=>'<li class="'+(activeLine===index+1?"is-active":"")+'"><span>'+(index+1)+'</span><code>'+escapeHTML(line)+'</code></li>').join("");
+  const options=lesson.check.options.map((option,index)=>'<button type="button" class="lesson-option" data-check-option="'+index+'"><span>'+String.fromCharCode(65+index)+'</span>'+escapeHTML(option)+'</button>').join("");
+  const prereq=lesson.id==="process"?"Variables":lesson.id==="arithmetic"?"Asignación":lesson.id==="for"?"Contador y acumulador":"";
+  const idea='<section class="lesson-reading-section" id="lesson-idea"><p class="eyebrow">01 · IDEA</p><p class="lesson-intuitive">'+escapeHTML(lesson.intuitive)+'</p><div class="lesson-idea-scene lesson-idea-scene-'+escapeHTML(lesson.visual.kind)+'" data-lesson-kind="'+escapeHTML(lesson.visual.kind)+'">'+lessonScene(lesson,0)+'</div>'+(prereq?'<p class="lesson-prerequisite">Antes conviene ver: <button type="button" data-prerequisite="'+escapeHTML(prereq)+'">'+escapeHTML(prereq)+'</button></p>':"")+'</section>';
+  const concept='<section class="lesson-reading-section" id="lesson-concept"><p class="eyebrow">02 · CONCEPTO</p><p class="lesson-support-copy">'+escapeHTML(lesson.visual.caption)+'</p>'+visualMarkup(lesson)+'</section>';
+  const term='<section class="lesson-reading-section" id="lesson-term"><p class="eyebrow">03 · PALABRA TÉCNICA</p><h4 class="lesson-term-title">'+escapeHTML(LESSON_TERMS[lesson.id]??lesson.title)+'</h4><p class="lesson-term-definition">'+escapeHTML(lesson.technical)+'</p><p class="lesson-key-idea"><b>En pocas palabras</b> '+escapeHTML(lesson.summary??lesson.objective)+'</p><details class="lesson-technical"><summary>Cómo se escribe o se representa</summary><p>'+escapeHTML(lesson.example.code.split("|").join(" · "))+'</p></details></section>';
+  const example='<section class="lesson-reading-section" id="lesson-example"><p class="eyebrow">04 · EJEMPLO PASO A PASO</p><h4>'+escapeHTML(lesson.miniProgram.title)+'</h4><div class="lesson-worked-layout"><ol class="lesson-code-lines" aria-label="Pseudocódigo con la línea activa">'+codeLines+'</ol><ol class="lesson-worked-steps">'+steps+'</ol></div><p class="lesson-example-note">'+escapeHTML(lesson.example.explanation)+'</p><details class="lesson-interactive-test"><summary>Probar con otros datos</summary><label class="lesson-data-control"><span>Datos de entrada</span><input id="lesson-data-input" type="text" value="'+escapeHTML(lesson.miniProgram.sample.join(", "))+'" aria-label="Datos de entrada separados por coma"></label><div class="lesson-example-output" id="lesson-data-result" role="status"></div><button type="button" class="button button-primary" data-run-mini-program>Ejecutar prueba</button></details></section>';
+  const practice='<section class="lesson-reading-section" id="lesson-practice"><p class="eyebrow">05 · INTÉNTALO</p><h4>'+escapeHTML(lesson.tryIt?.prompt??"Predice antes de ver la respuesta.")+'</h4><p class="lesson-common-error"><b>Error común:</b> '+escapeHTML(lesson.commonError??"Revisa el orden de las instrucciones.")+'</p><p>'+escapeHTML(lesson.check.question)+'</p><div class="lesson-options">'+options+'</div><p class="lesson-feedback" id="lesson-feedback" role="status"></p><button type="button" class="text-link" data-skip-practice>Saltar la práctica</button></section>';
+  const summary='<section class="lesson-reading-section lesson-summary-section" id="lesson-summary"><p class="eyebrow">06 · RESUMEN</p><h4>'+escapeHTML(lesson.title)+'</h4><div class="lesson-summary-points"><p><span aria-hidden="true">◇</span>'+escapeHTML(lesson.intuitive.split(/[.!?]/)[0])+'.</p><p><span aria-hidden="true">⌘</span>'+escapeHTML(lesson.summary??lesson.objective)+'</p><p><span aria-hidden="true">✓</span>'+escapeHTML(lesson.objective)+'</p></div><button type="button" class="button button-primary" data-lesson-complete '+(!lessonTryResolved&&!completed?"disabled":"")+'>'+(completed?"Lección completada":"Entendido")+'</button>'+(completed?'<button type="button" class="button button-secondary" data-lesson-next>Siguiente lección</button><button type="button" class="button button-secondary" data-go="lab">Practicar en el Laboratorio</button>':"")+'</section>';
   host.innerHTML='<div class="lesson-reader">'+
-    '<nav class="lesson-breadcrumb" aria-label="Ubicación de la lección"><span>Aprende</span><span aria-hidden="true">›</span><span>'+escapeHTML(route?.title??"Ruta de aprendizaje")+'</span><span aria-hidden="true">›</span><strong>Lección '+String(lesson.order).padStart(2,"0")+'</strong></nav>'+
-    '<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / 17 · '+escapeHTML(lesson.duration.toUpperCase())+'</p>'+
-    '<h3>'+escapeHTML(lesson.title)+'</h3><p>'+escapeHTML(lesson.objective)+'</p></div><span class="lesson-completion">'+(learnProgress.completed.includes(lesson.id)?"COMPLETADA":"PANTALLA "+(screen+1)+" DE 5")+'</span></header>'+
-    '<div class="lesson-reading-progress" role="progressbar" aria-label="Progreso de esta lección" aria-valuemin="0" aria-valuemax="5" aria-valuenow="'+progressValue+'"><span style="width:'+(progressValue*20)+'%"></span></div>'+
-    '<nav class="lesson-screen-tabs" aria-label="Pantallas de la lección">'+stepNames.map((name,index)=>
-      '<span class="lesson-screen-step '+(index===screen?"is-current":index<screen?"is-past":"")+'">'+(index+1)+". "+name+'</span>'
-    ).join("")+'</nav>'+body+
-    '<nav class="lesson-screen-navigation" aria-label="Navegación de la lección">'+
-      '<button type="button" class="button button-secondary" data-lesson-prev '+(screen===0?"disabled":"")+'>← Anterior</button>'+
-      '<span class="lesson-screen-count">'+(screen+1)+' de 5</span>'+
-      '<button type="button" class="button button-primary" data-lesson-next>'+(screen===4?(currentIndex<lessons.length-1?"Siguiente lección":"Terminar ruta"):"Siguiente")+' <span aria-hidden="true">→</span></button></nav></div>';
-  if(screen===2)updateLessonData();
+    '<nav class="lesson-breadcrumb" aria-label="Ubicación de la lección"><button type="button" data-learn-list>‹ Lista</button><span>›</span><span>Aprende</span><span aria-hidden="true">›</span><span>'+escapeHTML(route?.title??"Ruta de aprendizaje")+'</span><span aria-hidden="true">›</span><strong>Lección '+String(lesson.order).padStart(2,"0")+'</strong></nav>'+
+    '<header class="lesson-detail-heading"><div><p class="eyebrow">LECCIÓN '+String(lesson.order).padStart(2,"0")+' / 17 · '+escapeHTML(lesson.duration.toUpperCase())+'</p><h3>'+escapeHTML(lesson.title)+'</h3><p>'+escapeHTML(lesson.objective)+'</p></div><span class="lesson-completion">'+(completed?"COMPLETADA":"EN CURSO")+'</span></header>'+
+    '<div class="lesson-reading-progress" role="progressbar" aria-label="Progreso de lectura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>'+idea+concept+term+example+practice+summary+'</div>';
+  if($("#lesson-data-input"))updateLessonData();
   saveLearnProgress();
 }
+
 function updateLessonData(){
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
   const input=$("#lesson-data-input");
@@ -568,8 +547,9 @@ function selectExercise(id){
 
 function selectLesson(id){
   if(!lessons.some(lesson=>lesson.id===id))return;
-  stopLessonPlayback();selectedLesson=id;lessonVisualStep=0;lessonScreenStep=0;
+  stopLessonPlayback();selectedLesson=id;lessonVisualStep=0;lessonScreenStep=0;lessonTryResolved=false;
   saveLearnProgress();lessonList();renderLesson();
+  $("#learn-topic-space")?.classList.remove("is-list-open");
 }
 function bindContentEvents(){
   $("#learn-open-progress")?.addEventListener("click",()=>{renderLearnProgress();showLearnPanel("progress");});
@@ -609,6 +589,13 @@ function bindContentEvents(){
     if(!button)return;
     selectLesson(button.dataset.lessonId);
   });
+  $("#lesson-detail")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-learn-list]")){$("#learn-topic-space")?.classList.add("is-list-open");return;}
+    if(event.target.closest("[data-skip-practice]")){lessonTryResolved=true;const feedback=$("#lesson-feedback");if(feedback)feedback.textContent="Práctica saltada. Puedes seguir al resumen.";const done=$("[data-lesson-complete]");if(done)done.disabled=false;return;}
+    if(event.target.closest("[data-prerequisite]")){const name=event.target.closest("[data-prerequisite]").dataset.prerequisite;const match=lessons.find(item=>item.title.toLocaleLowerCase("es").includes(name.toLocaleLowerCase("es")));if(match)selectLesson(match.id);return;}
+    if(event.target.closest("[data-lesson-next]")){const index=lessons.findIndex(item=>item.id===selectedLesson);if(index<lessons.length-1)selectLesson(lessons[index+1].id);return;}
+    if(event.target.closest("[data-lesson-complete]")){if(lessonTryResolved||learnProgress.completed.includes(selectedLesson))completeLesson();return;}
+  });
   $("#lesson-detail")?.addEventListener("input",event=>{
     if(event.target.id==="lesson-data-input")updateLessonData();
   });
@@ -630,19 +617,6 @@ function bindContentEvents(){
       else startLessonPlayback();
     }
     if(event.target.closest("[data-run-mini-program]"))updateLessonData();
-    if(event.target.closest("[data-lesson-prev]")&&lessonScreenStep>0){
-      stopLessonPlayback();lessonScreenStep--;lessonVisualStep=0;renderLesson();
-    }
-    if(event.target.closest("[data-lesson-next]")){
-      stopLessonPlayback();
-      if(lessonScreenStep<4){lessonScreenStep++;lessonVisualStep=0;renderLesson();}
-      else{
-        completeLesson();
-        const index=lessons.findIndex(item=>item.id===selectedLesson);
-        if(index<lessons.length-1){selectedLesson=lessons[index+1].id;lessonScreenStep=0;lessonVisualStep=0;saveLearnProgress();lessonList();renderLesson();}
-      }
-    }
-    if(event.target.closest("[data-lesson-complete]"))completeLesson();
     const answer=event.target.closest("[data-check-option]");
     if(answer){
       const lesson=lessons.find(item=>item.id===selectedLesson);
@@ -654,9 +628,11 @@ function bindContentEvents(){
         button.disabled=true;
       });
       const feedback=$("#lesson-feedback");
-      feedback.textContent=chosen===lesson.check.answer?"Correcto. "+lesson.check.why:"No todavía. "+lesson.check.why;
+      feedback.textContent=chosen===lesson.check.answer?"Correcto. "+lesson.check.why:"Revisa la pista. "+lesson.check.why;
       feedback.classList.toggle("is-correct",chosen===lesson.check.answer);
       feedback.classList.toggle("is-wrong",chosen!==lesson.check.answer);
+      lessonTryResolved=true;
+      const done=$("[data-lesson-complete]");if(done)done.disabled=false;
     }
   });
   $("#lesson-detail")?.addEventListener("change",event=>{
@@ -669,6 +645,13 @@ function bindContentEvents(){
     else if(event.key==="ArrowLeft"){event.preventDefault();$("[data-visual-prev]",event.currentTarget)?.click();}
     else if(event.key.toLowerCase()==="r"){event.preventDefault();$("[data-visual-reset]",event.currentTarget)?.click();}
   });
+  window.addEventListener("scroll",()=>{
+    const reader=$(".lesson-reader"),bar=$(".lesson-reading-progress",reader??undefined);if(!reader||!bar)return;
+    const top=reader.getBoundingClientRect().top+window.scrollY;
+    const range=Math.max(1,reader.offsetHeight-window.innerHeight);
+    const value=Math.max(0,Math.min(100,Math.round((window.scrollY-top)/range*100)));
+    bar.setAttribute("aria-valuenow",String(value));$("span",bar).style.width=value+"%";
+  },{passive:true});
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-class-only")?.addEventListener("change",event=>{exerciseClassOnly=event.target.checked;exercisePage=0;renderExerciseCards();});

@@ -3,10 +3,9 @@ import { test, expect, goToSpace, openDiagramLessons } from "./navigation.js";
 test("Aprende conserva las 17 lecciones y cada escena tiene identidad visual",async({page})=>{
   await page.goto("/");
   await openDiagramLessons(page);
-  await expect(page.locator("[data-lesson-id]")).toHaveCount(17);
-  await page.locator('[data-lesson-id="variables"]').click();
+  await expect(page.locator("#lesson-catalog [data-lesson-id]")).toHaveCount(17);
+  await page.locator('#lesson-catalog [data-lesson-id="variables"]').click();
   await expect(page.locator("#lesson-detail h3")).toHaveText("Variables y asignación");
-  await page.locator("[data-lesson-next]").click();
   await expect(page.locator(".lesson-visual")).toBeVisible();
   await expect(page.locator(".lesson-visual .lesson-scene-host")).toBeVisible();
   await expect(page.locator(".lesson-visual [data-visual-next]")).toBeVisible();
@@ -15,8 +14,7 @@ test("Aprende conserva las 17 lecciones y cada escena tiene identidad visual",as
 test("la escena de Aprende permite retroceder, avanzar y reproducir",async({page})=>{
   await page.goto("/");
   await openDiagramLessons(page);
-  await page.locator('[data-lesson-id="variables"]').click();
-  await page.locator("[data-lesson-next]").click();
+  await page.locator('#lesson-catalog [data-lesson-id="variables"]').click();
   const initial=Number((await page.locator(".visual-step-count").innerText()).match(/\d+/)?.[0]??1);
   await page.locator("[data-visual-next]").click();
   await expect(page.locator(".visual-step-count")).toContainText(String(initial+1));
@@ -30,11 +28,10 @@ test("la escena de Aprende permite retroceder, avanzar y reproducir",async({page
 test("las 17 lecciones presentan fases visuales y una escena vinculada a eventos",async({page})=>{
   await page.goto("/");
   await openDiagramLessons(page);
-  const lessons=page.locator("[data-lesson-id]");
+  const lessons=page.locator("#lesson-catalog [data-lesson-id]");
   await expect(lessons).toHaveCount(17);
   for(let index=0;index<17;index++){
     await lessons.nth(index).click();
-    await page.locator("[data-lesson-next]").click();
     const visual=page.locator(".lesson-visual");
     await expect(visual).toBeVisible();
     await expect(visual.locator(".lesson-phase")).not.toHaveCount(0);
