@@ -4,6 +4,7 @@ import {
   updateLibraryResource, validateLibraryBackup, writeLibraryData
 } from "./ficha-library-store.js";
 import { HORARIO_CLASES } from "../content/ficha.js";
+import { RECURSOS_OFICIALES } from "../content/ficha-resources.js";
 
 const KIND_LABELS = Object.freeze({
   link: "Enlace", video: "Video", document: "Documento o PDF",
@@ -98,7 +99,11 @@ export function initFichaLibrary() {
   const root = document.querySelector("#ficha-biblioteca");
   if (!root) return;
 
-  root.innerHTML = '<div class="ficha-library-toolbar"><div><p class="eyebrow">RECURSOS DE ESTUDIO</p>' +
+  root.innerHTML = '<section class="ficha-official-library" aria-labelledby="ficha-official-library-title">' +
+    '<div><p class="eyebrow">PUBLICADOS POR TRAZA</p><h2 id="ficha-official-library-title">Recursos oficiales</h2>' +
+    '<p>Materiales revisados y compartidos para todos los estudiantes.</p></div>' +
+    '<div id="ficha-official-library-list"></div></section>' +
+    '<div class="ficha-library-toolbar"><div><p class="eyebrow">RECURSOS PERSONALES</p>' +
     '<h2>Mi biblioteca</h2><p>Guarda enlaces, videos, documentos, libros y apuntes relacionados con tus clases.</p></div>' +
     '<button type="button" class="ficha-primary-button" data-library-create-toggle aria-expanded="false" aria-controls="ficha-library-create">+ Añadir recurso</button></div>' +
     '<p class="ficha-library-local-note">Biblioteca personal de este navegador. Los recursos oficiales compartidos por Traza se publicarán por separado.</p>' +
@@ -135,6 +140,27 @@ export function initFichaLibrary() {
 
   function readStrict() {
     return readLibraryDataStrict();
+  }
+
+  function renderOfficialResources() {
+    const target = root.querySelector("#ficha-official-library-list");
+    const entries = RECURSOS_OFICIALES.filter(item =>
+      item && typeof item.id === "string" && typeof item.title === "string" && item.title.trim()
+    );
+    if (!entries.length) {
+      target.innerHTML = '<p class="ficha-official-empty">Todavía no hay recursos oficiales publicados.</p>';
+      return;
+    }
+    target.innerHTML = entries.map(item => {
+      const link = item.url ? safeExternalUrl(item.url) : null;
+      const tags = Array.isArray(item.tags) ? item.tags : [];
+      return '<article class="ficha-official-resource"><div><h3>' + escapeHtml(item.title) +
+        '</h3><p>' + escapeHtml(item.description || "Sin descripción") + '</p><small>' +
+        escapeHtml(KIND_LABELS[item.kind] || "Recurso") + ' · ' + escapeHtml(classLabel(item.classId)) +
+        (tags.length ? ' · ' + escapeHtml(tags.join(" · ")) : "") + '</small></div>' +
+        (link ? '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">Abrir recurso ↗</a>' : "") +
+        '</article>';
+    }).join("");
   }
 
   function renderList() {
@@ -327,5 +353,6 @@ export function initFichaLibrary() {
     }
   });
 
+  renderOfficialResources();
   renderList();
 }
