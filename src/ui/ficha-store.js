@@ -156,22 +156,110 @@ export function normalizeFichaData(value) {
   };
 }
 
+function stableStringify(value) {
+  if (Array.isArray(value)) return "[" + value.map(stableStringify).join(",") + "]";
+  if (value && typeof value === "object") {
+    return "{" + Object.keys(value).sort().map(key =>
+      JSON.stringify(key) + ":" + stableStringify(value[key])
+    ).join(",") + "}";
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Strictly validates the complete persisted schema before it is read, exported,
+ * or written. Normalization is not allowed to silently discard nested records.
+ */
+export function validateFichaData(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return { ok: false, reason: "invalid_data" };
+  }
+  if (value.version !== FICHA_SCHEMA_VERSION) {
+    return { ok: false, reason: "unsupported_schema" };
+  }
+  if (!Array.isArray(value.activities)) {
+    return { ok: false, reason: "invalid_data" };
+  }
+  const normalized = normalizeFichaData(value);
+  if (normalized.activities.length !== value.activities.length ||
+      stableStringify(normalized) !== stableStringify(value)) {
+    return { ok: false, reason: "invalid_records" };
+  }
+  const activityIds = new Set();
+  for (const activity of value.activities) {
+    if (activityIds.has(activity.id)) return { ok: false, reason: "duplicate_ids" };
+    activityIds.add(activity.id);
+
+    const attemptIds = new Set();
+    for (const attempt of activity.attempts) {
+      if (attemptIds.has(attempt.id) || attempt.activityId !== activity.id ||
+          !validTimestamp(attempt.submittedAt) ||
+          attempt.attemptNumber < 1 ||
+          ![attempt.summary, attempt.evidenceUrl, attempt.studentNote].every(item => typeof item === "string")) {
+        return { ok: false, reason: "invalid_records" };
+      }
+      attemptIds.add(attempt.id);
+    }
+
+    const feedbackIds = new Set();
+    for (const feedback of activity.feedbackEntries) {
+      if (feedbackIds.has(feedback.id) || feedback.activityId !== activity.id ||
+          (feedback.submissionId && !attemptIds.has(feedback.submissionId)) ||
+          !validTimestamp(feedback.recordedAt) ||
+          feedback.source !== "student_transcription" ||
+          (feedback.score !== null && !Number.isFinite(feedback.score))) {
+        return { ok: false, reason: "invalid_records" };
+      }
+      feedbackIds.add(feedback.id);
+    }
+
+    const eventIds = new Set();
+    for (const event of activity.events) {
+      if (eventIds.has(event.id) || event.activityId !== activity.id ||
+          !validTimestamp(event.occurredAt) ||
+          !EVENT_TYPES.has(event.type) ||
+          !["student", "backup_import"].includes(event.source)) {
+        return { ok: false, reason: "invalid_records" };
+      }
+      eventIds.add(event.id);
+    }
+  }
+  return { ok: true, data: normalized };
+}
+
 function storageFrom(target) {
   if (target) return target;
   try { return globalThis.window?.localStorage ?? null; }
   catch { return null; }
 }
 
-export function readFichaData(targetStorage) {
+export function readFichaDataStrict(targetStorage) {
   const storage = storageFrom(targetStorage);
-  if (!storage) return createEmptyFichaData();
+  if (!storage) return { ok: false, reason: "unavailable" };
+  let raw;
   try {
-    const raw = storage.getItem(FICHA_STORAGE_KEY);
-    if (!raw) return createEmptyFichaData();
-    return normalizeFichaData(JSON.parse(raw));
+    raw = storage.getItem(FICHA_STORAGE_KEY);
   } catch {
-    return createEmptyFichaData();
+    return { ok: false, reason: "unavailable" };
   }
+  if (raw === null || raw === "") {
+    return { ok: true, data: createEmptyFichaData(), empty: true };
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { ok: false, reason: "corrupt_storage" };
+  }
+  const validation = validateFichaData(parsed);
+  return validation.ok
+    ? { ok: true, data: validation.data, empty: false }
+    : { ok: false, reason: validation.reason, rawVersion: parsed?.version };
+}
+
+export function readFichaData(targetStorage) {
+  const result = readFichaDataStrict(targetStorage);
+  return result.ok ? result.data : createEmptyFichaData();
 }
 
 function emitChange(detail) {
@@ -180,16 +268,24 @@ function emitChange(detail) {
   globalThis.window.dispatchEvent(new CustomEvent("traza:ficha-change", { detail }));
 }
 
-export function writeFichaData(value, targetStorage) {
+export function writeFichaData(value, targetStorage, options = {}) {
   const storage = storageFrom(targetStorage);
   if (!storage) return { ok: false, reason: "unavailable", data: createEmptyFichaData() };
-  const data = normalizeFichaData(value);
+
+  const incoming = validateFichaData(value);
+  if (!incoming.ok) return { ok: false, reason: incoming.reason, data: createEmptyFichaData() };
+
+  const existing = readFichaDataStrict(storage);
+  if (!existing.ok && options.replaceInvalid !== true) {
+    return { ok: false, reason: "existing_" + existing.reason, data: createEmptyFichaData() };
+  }
+
   try {
-    storage.setItem(FICHA_STORAGE_KEY, JSON.stringify(data));
-    emitChange({ type: "updated", data });
-    return { ok: true, data };
+    storage.setItem(FICHA_STORAGE_KEY, JSON.stringify(incoming.data));
+    emitChange({ type: "updated", data: incoming.data });
+    return { ok: true, data: incoming.data };
   } catch {
-    return { ok: false, reason: "write_failed", data: readFichaData(storage) };
+    return { ok: false, reason: "write_failed", data: existing.ok ? existing.data : createEmptyFichaData() };
   }
 }
 
@@ -388,12 +484,22 @@ export function isActivityOverdue(activity, today) {
     activity.status !== "approved" && !activity.archivedAt);
 }
 
-export function createFichaBackup(current = readFichaData()) {
+export function createFichaBackup(current) {
+  let data;
+  if (arguments.length === 0) {
+    const stored = readFichaDataStrict();
+    if (!stored.ok) throw new Error("No se puede crear el respaldo: " + stored.reason);
+    data = stored.data;
+  } else {
+    const validated = validateFichaData(current);
+    if (!validated.ok) throw new Error("Los datos no son válidos para respaldar: " + validated.reason);
+    data = validated.data;
+  }
   return {
     format: FICHA_BACKUP_FORMAT,
     version: FICHA_SCHEMA_VERSION,
     exportedAt: nowIso(),
-    data: normalizeFichaData(current)
+    data
   };
 }
 
@@ -406,10 +512,9 @@ export function validateFichaBackup(value) {
     return { ok: false, reason: "invalid_backup" };
   }
   const source = value.data.activities;
-  const normalized = normalizeFichaData(value.data);
-  if (normalized.activities.length !== source.length) {
-    return { ok: false, reason: "invalid_records" };
-  }
+  const dataValidation = validateFichaData(value.data);
+  if (!dataValidation.ok) return dataValidation;
+  const normalized = dataValidation.data;
   const ids = source.map(item => item?.id);
   if (new Set(ids).size !== ids.length) return { ok: false, reason: "duplicate_ids" };
   for (const item of source) {
@@ -459,6 +564,6 @@ export function validateFichaBackup(value) {
 export function importFichaBackup(value, targetStorage) {
   const validated = validateFichaBackup(value);
   if (!validated.ok) return validated;
-  const result = writeFichaData(validated.data, targetStorage);
+  const result = writeFichaData(validated.data, targetStorage, { replaceInvalid: true });
   return result.ok ? { ok: true, data: result.data } : result;
 }
