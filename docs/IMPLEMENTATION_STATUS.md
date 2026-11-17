@@ -90,7 +90,7 @@ El alcance procede de la Fase 6 del informe de mejoras v2. La PR #7 fue fusionad
 ## Continuidad v4 · Mi ficha, pasos 5–7
 
 - Paso 5: lectura estricta, escritura protegida y respaldo versionado en `src/ficha/store.js`; CI del SHA `a0f6210f2945100fc1d2418a598e6cd059f9d927` aprobada (run 44015538141).
-- Paso 6: Hoy, Semana y Calendario ya están integrados en `main` mediante PR #24.
+- Paso 6: Hoy, Semana y Calendario ya están integrados en `main` mediante PR #24. Esta PR corrige la vigencia del lunes según el horario compartido: Evaluar requisitos hasta 1-11-2026 y Matemáticas desde 2-11-2026, ambos de 18:00 a 22:00.
 - Paso 7: Actividades y detalle integrados en esta PR, con checklist, notas, resultados transcritos, documentos asociados y pruebas.
 - La rama antigua PR #22 se cerró por duplicar arquitectura. Se mantiene una sola fuente de persistencia en `src/ficha/store.js`.
 - No hay panel seguro de carga de archivos; los documentos oficiales se publican mediante contenido versionado y URL compartida HTTPS. Una carga autenticada requiere backend.
