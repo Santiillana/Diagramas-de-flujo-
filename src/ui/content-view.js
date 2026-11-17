@@ -2,7 +2,7 @@ import { lessons } from "../content/lessons.js";
 import { rutas } from "../content/rutas.js";
 import { exercises } from "../content/exercises.js";
 import { executePseudocode } from "../core/interpreter.js";
-import { renderScene } from "./scenes/index.js";
+import { renderScene, createClock } from "./kit/index.js";
 import { parsePseudocode } from "../core/parser.js";
 import { temas, competenciasAprende, temaPorId } from "../content/temas.js";
 import { conceptos } from "../content/conceptos.js";
@@ -22,7 +22,8 @@ const LEVELS = {
 let selectedLesson = lessons[0].id;
 let lessonVisualStep = 0;
 let lessonScreenStep = 0;
-let lessonPlaybackTimer = 0;
+let lessonPlaybackFrame = 0;
+let lessonClock = null;
 let lessonPlaying = false;
 let learnProgress = readLearnProgress();
 let selectedTheme = learnProgress.theme;
@@ -310,14 +311,16 @@ function visualMarkup(lesson){
     '<div class="lesson-phase-rail">'+phaseRail+'</div>'+
     (scene?'<div class="lesson-scene-host" role="img" aria-label="'+scene.alt+'">'+scene.markup+'</div>':'<p>'+escapeHTML(execution.error?.message??"No se pudo ejecutar el ejemplo.")+'</p>')+
     '<p class="lesson-scene-caption">'+escapeHTML(event?.scene?.body??event?.message??event?.sourceText??"")+'</p>'+
-    '<div class="visual-controls"><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
+    '<details class="lesson-static-sequence" '+((document.documentElement.dataset.motion==="reduced"||window.matchMedia("(prefers-reduced-motion: reduce)").matches)?"open":"")+'><summary>Ver secuencia estática</summary><ol>'+events.map((item,position)=>'<li><span>'+String(position+1)+'</span>'+escapeHTML(item.scene?.body??item.message??item.sourceText??"Paso del algoritmo")+'</li>').join("")+'</ol></details>'+
+    '<div class="visual-controls" tabindex="0" aria-label="Controles de la escena. Usa espacio para reproducir o pausar y las flechas para avanzar o retroceder." data-visual-player><button type="button" class="button button-secondary" data-visual-reset>Reiniciar</button>'+
     '<button type="button" class="button button-secondary" data-visual-prev '+(index<=0?"disabled":"")+'>← Anterior</button>'+
     '<button type="button" class="button button-secondary" data-visual-play aria-pressed="'+String(lessonPlaying)+'">'+(lessonPlaying?"Ⅱ Pausar":"▶ Reproducir")+'</button>'+
-    '<button type="button" class="button button-primary" data-visual-next '+(!events.length||index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button></div></section>';
+    '<button type="button" class="button button-primary" data-visual-next '+(!events.length||index>=events.length-1?"disabled":"")+' >Siguiente paso <span aria-hidden="true">→</span></button>'+
+    '<label class="visual-speed-label">Velocidad<select data-visual-speed aria-label="Velocidad de reproducción"><option value="0.5" '+(lessonClock?.speed===0.5?"selected":"")+'>0,5×</option><option value="1" '+((lessonClock?.speed??1)===1?"selected":"")+'>1×</option><option value="2" '+(lessonClock?.speed===2?"selected":"")+'>2×</option></select></label></div></section>';
 }
 function stopLessonPlayback(){
-  if(lessonPlaybackTimer)clearTimeout(lessonPlaybackTimer);
-  lessonPlaybackTimer=0;lessonPlaying=false;
+  if(lessonPlaybackFrame)cancelAnimationFrame(lessonPlaybackFrame);
+  lessonPlaybackFrame=0;lessonClock?.pause();lessonPlaying=false;
 }
 function startLessonPlayback(){
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches||document.documentElement.dataset.motion==="reduced")return;
@@ -325,17 +328,22 @@ function startLessonPlayback(){
   const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
   if(!events.length)return;
   if(lessonVisualStep>=events.length-1)lessonVisualStep=0;
-  lessonPlaying=true;renderLesson();
-  const next=()=>{
-    if(!lessonPlaying)return;
-    if(lessonVisualStep>=events.length-1){stopLessonPlayback();renderLesson();return;}
-    lessonPlaybackTimer=window.setTimeout(()=>{
-      lessonVisualStep++;
-      renderLesson();
-      next();
-    },1300);
+  lessonClock=createClock({duration:events.length*1300});
+  lessonClock.seek(lessonVisualStep*1300);lessonClock.play();lessonPlaying=true;renderLesson();
+  let previous=null;
+  const frame=timestamp=>{
+    if(!lessonPlaying||!lessonClock)return;
+    if(previous!==null){
+      const oldStep=lessonVisualStep;
+      lessonClock.advance(Math.min(100,Math.max(0,timestamp-previous)));
+      lessonVisualStep=Math.min(events.length-1,Math.floor(lessonClock.time/1300));
+      if(lessonVisualStep!==oldStep)renderLesson();
+    }
+    previous=timestamp;
+    if(lessonClock.playing)lessonPlaybackFrame=requestAnimationFrame(frame);
+    else{lessonPlaying=false;lessonPlaybackFrame=0;renderLesson();}
   };
-  next();
+  lessonPlaybackFrame=requestAnimationFrame(frame);
 }
 function renderLesson(){
   const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
@@ -609,13 +617,13 @@ function bindContentEvents(){
       stopLessonPlayback();
       const lesson=lessons.find(item=>item.id===selectedLesson)??lessons[0];
       const execution=runLesson(lesson),events=execution.ok?relevantLessonEvents(lesson,execution):[];
-      lessonVisualStep=Math.min(Math.max(0,events.length-1),lessonVisualStep+1);renderLesson();
+      lessonVisualStep=Math.min(Math.max(0,events.length-1),lessonVisualStep+1);lessonClock?.seek(lessonVisualStep*1300);renderLesson();
     }
     if(event.target.closest("[data-visual-prev]")){
-      stopLessonPlayback();lessonVisualStep=Math.max(0,lessonVisualStep-1);renderLesson();
+      stopLessonPlayback();lessonVisualStep=Math.max(0,lessonVisualStep-1);lessonClock?.seek(lessonVisualStep*1300);renderLesson();
     }
     if(event.target.closest("[data-visual-reset]")){
-      stopLessonPlayback();lessonVisualStep=0;renderLesson();
+      stopLessonPlayback();lessonVisualStep=0;lessonClock?.restart();renderLesson();
     }
     if(event.target.closest("[data-visual-play]")){
       if(lessonPlaying){stopLessonPlayback();renderLesson();}
@@ -650,6 +658,16 @@ function bindContentEvents(){
       feedback.classList.toggle("is-correct",chosen===lesson.check.answer);
       feedback.classList.toggle("is-wrong",chosen!==lesson.check.answer);
     }
+  });
+  $("#lesson-detail")?.addEventListener("change",event=>{
+    if(event.target.matches("[data-visual-speed]"))lessonClock?.setSpeed(Number(event.target.value));
+  });
+  $("#lesson-detail")?.addEventListener("keydown",event=>{
+    if(!event.target.closest("[data-visual-player]"))return;
+    if(event.code==="Space"){event.preventDefault();if(lessonPlaying){stopLessonPlayback();renderLesson();}else startLessonPlayback();}
+    else if(event.key==="ArrowRight"){event.preventDefault();$("[data-visual-next]",event.currentTarget)?.click();}
+    else if(event.key==="ArrowLeft"){event.preventDefault();$("[data-visual-prev]",event.currentTarget)?.click();}
+    else if(event.key.toLowerCase()==="r"){event.preventDefault();$("[data-visual-reset]",event.currentTarget)?.click();}
   });
   $("#exercise-search")?.addEventListener("input",event=>{exerciseQuery=event.target.value;exercisePage=0;renderExerciseCards();});
   $("#exercise-level")?.addEventListener("change",event=>{exerciseLevel=event.target.value;exercisePage=0;renderExerciseCards();});
