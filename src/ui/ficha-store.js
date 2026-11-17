@@ -49,6 +49,19 @@ function validNullableDate(value) {
   return value === null || value === undefined || isCivilDate(value);
 }
 
+function normalizeEvidenceUrl(value) {
+  const candidate = cleanText(value, 2048);
+  if (!candidate) return "";
+  try {
+    const parsed = new URL(candidate);
+    if (!["http:", "https:"].includes(parsed.protocol) ||
+        parsed.username || parsed.password) return null;
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
 function normalizeAttempt(item, activityId, index) {
   if (!item || typeof item !== "object") return null;
   const submittedAt = validTimestamp(item.submittedAt) ? item.submittedAt : null;
@@ -58,7 +71,7 @@ function normalizeAttempt(item, activityId, index) {
     activityId,
     submittedAt,
     summary: cleanText(item.summary),
-    evidenceUrl: cleanText(item.evidenceUrl, 2048),
+    evidenceUrl: normalizeEvidenceUrl(item.evidenceUrl) ?? "",
     studentNote: cleanText(item.studentNote),
     attemptNumber: Number.isInteger(item.attemptNumber) && item.attemptNumber > 0
       ? item.attemptNumber : index + 1
@@ -416,12 +429,14 @@ export function addSubmission(id, input, current = readFichaData()) {
   if (!["pending", "in_progress", "needs_correction"].includes(activity.status)) {
     return { ok: false, reason: "invalid_transition" };
   }
+  const evidenceUrl = normalizeEvidenceUrl(input?.evidenceUrl);
+  if (evidenceUrl === null) return { ok: false, reason: "invalid_evidence_url" };
   const attempt = {
     id: makeId("attempt"),
     activityId: id,
     submittedAt: nowIso(),
     summary: cleanText(input?.summary),
-    evidenceUrl: cleanText(input?.evidenceUrl, 2048),
+    evidenceUrl,
     studentNote: cleanText(input?.studentNote),
     attemptNumber: activity.attempts.length + 1
   };
@@ -506,8 +521,10 @@ export function createFichaBackup(current) {
 
 export function validateFichaBackup(value) {
   if (!value || typeof value !== "object" ||
+      stableStringify(Object.keys(value).sort()) !== stableStringify(["data", "exportedAt", "format", "version"]) ||
       value.format !== FICHA_BACKUP_FORMAT ||
       value.version !== FICHA_SCHEMA_VERSION ||
+      !validTimestamp(value.exportedAt) ||
       !value.data || value.data.version !== FICHA_SCHEMA_VERSION ||
       !Array.isArray(value.data.activities)) {
     return { ok: false, reason: "invalid_backup" };
