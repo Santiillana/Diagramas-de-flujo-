@@ -77,3 +77,8 @@ La aplicación es estática. El workflow `.github/workflows/pages.yml` permite u
 - Decisiones técnicas: `docs/DECISIONS.md`
 - Auditoría de equivalencia original: `docs/ORIGINAL_FEATURE_AUDIT.md`
 - Aceptación y limitaciones: `docs/FINAL_ACCEPTANCE.md`
+
+
+## Mi ficha · Actividades
+
+La vista Actividades reúne consignas, instrucciones, entregables y documentos publicados; permite buscar y filtrar, registrar el checklist, notas y devoluciones transcritas. El seguimiento personal permanece en el navegador. El contenido oficial se publica mediante cambios versionados revisados; la carga autenticada de archivos requiere un backend.
