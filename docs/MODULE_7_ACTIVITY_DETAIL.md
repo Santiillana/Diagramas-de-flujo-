@@ -24,7 +24,7 @@ Por tanto, este módulo no debe inventar una segunda base de datos ni implementa
 
 ## Estado de implementación de la interfaz
 
-La primera interfaz funcional está conectada desde `src/app.js` y `index.html`:
+La primera interfaz funcional está conectada desde `src/app.js` y `index.html`. Incluye un bloque independiente de actividades oficiales publicadas desde `src/content/ficha-activities.js` (solo lectura y compartidas) y un catálogo personal almacenado localmente:
 
 - Catálogo con búsqueda, filtros por estado y condición temporal, y orden por vencimiento.
 - Creación y edición de una actividad, con fechas opcionales y clase relacionada opcional.
@@ -35,7 +35,7 @@ La primera interfaz funcional está conectada desde `src/app.js` y `index.html`:
 
 Los E2E de navegador de `e2e/module-7-activities.spec.js` cubren el ciclo de vida, filtros y la protección frente a almacenamiento corrupto. Deben pasar en el SHA final antes de aceptar el módulo.
 
-**Límite deliberado:** esta pantalla permite que cada estudiante organice sus propias actividades. El alta de tareas oficiales para todo un grupo requiere un servicio central con autenticación y roles de moderador; no se simula con datos locales.
+**Límite deliberado:** las actividades personales son locales. Las actividades oficiales se editan en el archivo central de contenido, se revisan mediante PR y se muestran en solo lectura a todos los visitantes. El catálogo actual no segmenta cohortes ni usuarios. La edición global desde un panel requeriría un servicio central con autenticación y roles de moderador; no se simula con datos locales.
 
 ## 3. Experiencia de usuario
 
