@@ -1,7 +1,7 @@
 # Módulo 5 v4 · Núcleo y persistencia de Mi ficha
 
 **Rama de trabajo:** `v4/module-7-activities`  
-**Estado:** repositorio, integración de agenda y controles visibles de respaldo implementados en esta rama; formularios de Actividades y aceptación E2E final pendientes.
+**Estado:** repositorio común, agenda conectada, controles de respaldo y primera interfaz de Actividades implementados en esta rama. La aceptación definitiva aún depende de CI, cobertura E2E y una política explícita de migraciones.
 
 ## Objetivo y límites
 
@@ -14,8 +14,9 @@ Los registros personales no son calificaciones oficiales ni una conexión con pl
 - Clave: `traza:v4:ficha`.
 - Esquema: versión 1.
 - Persistencia: `localStorage`, aislada del horario oficial y de las claves de progreso de Aprende.
-- Lectura tolerante: almacenamiento bloqueado, JSON corrupto o esquema desconocido producen un estado vacío seguro.
-- Escritura: valida y normaliza antes de persistir; devuelve un resultado explícito si el almacenamiento falla.
+- Lectura estricta: `readFichaDataStrict` distingue almacenamiento no disponible, JSON corrupto, registros inválidos y versiones desconocidas. La vista puede usar `readFichaData` como fallback visual, pero ese fallback nunca autoriza a sobrescribir datos.
+- Escritura protegida: `writeFichaData` valida el estado completo y rechaza escribir sobre datos corruptos o de esquema futuro. El contenido previo permanece intacto.
+- Recuperación: solo una importación de respaldo ya validado puede reemplazar explícitamente un almacenamiento dañado (`replaceInvalid` interno); el usuario confirma la sustitución.
 - Notificación: evento `traza:ficha-change` después de una escritura confirmada.
 
 ## Entidades
@@ -52,7 +53,7 @@ La bitácora conserva creación, edición, cambios de estado, entregas, devoluci
 
 En `src/ui/ficha-store.js`:
 
-- `createEmptyFichaData`, `normalizeFichaData`, `readFichaData`, `writeFichaData`.
+- `createEmptyFichaData`, `normalizeFichaData`, `validateFichaData`, `readFichaDataStrict`, `readFichaData`, `writeFichaData`.
 - `createActivity`, `updateActivity`, `transitionActivity`.
 - `addSubmission`, `addFeedback`, `archiveActivity`.
 - `isCivilDate`, `isActivityOverdue`.
@@ -62,14 +63,14 @@ Las operaciones de dominio son puras respecto al almacenamiento: devuelven el nu
 
 ## Respaldo
 
-El formato versionado es `traza-ficha-backup`, versión 1. La validación se realiza antes de sustituir el contenido local. Se rechazan versiones desconocidas, registros inválidos, IDs duplicados y referencias a clases o entregas inexistentes. La implementación actual ofrece el contrato de exportación/importación; los controles visibles de respaldo y pruebas de archivo descargado quedan para la integración de interfaz.
+El formato versionado es `traza-ficha-backup`, versión 1. La validación completa se realiza antes de sustituir el contenido local. Se rechazan versiones desconocidas, campos anidados que se normalizarían con pérdida, IDs duplicados, tipos incorrectos y referencias a clases o entregas inexistentes. La exportación usa lectura estricta y no genera un JSON vacío cuando el almacenamiento está dañado. La importación validada puede actuar como recuperación explícita tras confirmación.
 
 ## Pruebas
 
-`tests/ficha-store.test.js` cubre fechas civiles, creación, edición, transiciones, aprobación por devolución transcrita, entregas consecutivas, atraso calculado, almacenamiento bloqueado/corrupto, normalización, respaldo e historial de archivo.
+`tests/ficha-store.test.js` cubre fechas civiles, creación, edición, transiciones, aprobación por devolución transcrita, entregas consecutivas, atraso calculado, almacenamiento bloqueado/corrupto, esquemas futuros, protección contra sobrescritura, validación anidada del respaldo, recuperación explícita e historial de archivo.
 
 ## Pendiente para aceptar el paso 5
 
-- Integrar los formularios y selectores compartidos en Mi ficha.
-- Añadir migraciones explícitas si se publica una versión futura del esquema.
-- Cerrar E2E de persistencia, restauración, almacenamiento bloqueado y accesibilidad.
+- Definir y probar las migraciones explícitas antes de publicar una futura versión del esquema.
+- Cerrar E2E de recuperación, importación/exportación, fallos de almacenamiento y accesibilidad.
+- Evaluar cifrado o backend solo si se decide sincronizar datos personales entre dispositivos; la implementación actual es local al navegador.
