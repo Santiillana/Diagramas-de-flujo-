@@ -1,5 +1,7 @@
 import { HORARIO_CLASES } from "../content/ficha.js";
-import { ACTIVIDADES_OFICIALES } from "../content/ficha-activities.js";
+import {
+  ACTIVIDADES_OFICIALES, validateOfficialActivities
+} from "../content/ficha-activities.js";
 import {
   addFeedback, addSubmission, archiveActivity, createActivity,
   isActivityOverdue, readFichaData, readFichaDataStrict, updateActivity,
@@ -184,9 +186,12 @@ export function initFichaActivities() {
 
   function renderOfficialActivities() {
     const target = root.querySelector("#ficha-official-activities-list");
-    const entries = ACTIVIDADES_OFICIALES.filter(item =>
-      item && typeof item.id === "string" && typeof item.title === "string" && item.title.trim()
-    );
+    const validation = validateOfficialActivities();
+    if (!validation.ok) {
+      target.innerHTML = '<p class="ficha-official-empty">El catálogo oficial necesita revisión antes de mostrarse.</p>';
+      return;
+    }
+    const entries = validation.data;
     if (!entries.length) {
       target.innerHTML = '<p class="ficha-official-empty">Todavía no hay actividades oficiales publicadas.</p>';
       return;
