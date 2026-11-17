@@ -31,3 +31,8 @@
 .ficha-classes-view a:focus-visible,.ficha-classes-view button:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px}
 @media(max-width:860px){.ficha-classes-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.ficha-classes-heading{align-items:flex-start;flex-direction:column}.ficha-class-published{grid-template-columns:1fr}.ficha-class-card{padding:14px}}
+
+.ficha-class-learning-links{display:grid;gap:7px;margin-top:8px}
+.ficha-class-learning-links button{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);color:var(--ink);font:inherit;font-size:.72rem;font-weight:700;text-align:left;cursor:pointer}
+.ficha-class-learning-links button:hover{border-color:var(--accent-strong);background:var(--accent-soft)}
+.ficha-class-learning-links button:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px}
