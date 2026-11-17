@@ -20,25 +20,26 @@ No existe backend, sincronización entre dispositivos ni almacenamiento central 
 - Escritura normal bloqueada cuando el contenido anterior está corrupto o usa un esquema no compatible.
 - Validación estricta de campos anidados para evitar que la normalización descarte silenciosamente información.
 - Respaldo JSON de Actividades y restauración validada con confirmación.
-- Respaldo JSON separado de Biblioteca, validado, limitado a 2 MB y restaurable con confirmación.
+- Respaldo JSON independiente de Biblioteca, validado, limitado a 2 MB y restaurable con confirmación.
+- Respaldo integral `traza-full-ficha-backup` que reúne ambas áreas personales en un solo archivo y valida ambos formatos antes de importar.
+- Restauración integral con snapshot de las dos claves y rollback compensatorio si falla la segunda escritura; se notifica el rollback a las vistas abiertas.
 - Los enlaces guardados o importados solo admiten HTTP/HTTPS sin credenciales.
 - La actividad oficial y los recursos oficiales se auditan mediante historial de commits y revisión de PR.
 
 ## Limitación de respaldo
 
-Los respaldos de Actividades y Biblioteca son independientes. El usuario debe descargar los dos archivos para tener una copia completa de sus datos personales de Mi ficha. Los archivos oficiales están en el repositorio y se recuperan con el historial Git.
+Se conservan los respaldos granulares de Actividades y Biblioteca para restauración selectiva. Además, la vista Hoy ofrece un respaldo integral en un único archivo para las dos áreas personales. El almacenamiento local no admite transacciones multi-clave: la restauración integral valida ambos datos y usa rollback compensatorio si falla la segunda escritura. No es una garantía transaccional del navegador ante cierre abrupto durante la operación. El horario, actividades oficiales y recursos oficiales no se incluyen, porque son contenido versionado en Git y se recuperan desde el repositorio.
 
 ## Pendiente para cerrar M10
 
-1. Diseñar una exportación integral de datos personales de Mi ficha o documentar claramente por qué se mantienen respaldos separados.
-2. Diseñar y probar migraciones explícitas entre versiones de esquema antes de publicar una versión incompatible.
-3. Probar límites/cuota de almacenamiento, fallos de escritura, importaciones truncadas, JSON malformado, duplicados y referencias inexistentes.
-4. Verificar recuperación de cada clave de almacenamiento desde un respaldo íntegro.
-5. Añadir auditoría editorial con autor, fecha, motivo y diff para cambios en horario y catálogos (por ahora lo proporciona GitHub).
-6. Verificar Cloudflare Workers, URL de previsualización y smoke test antes de aceptar la publicación.
-7. Ejecutar una pasada de accesibilidad, responsive y regresión en los diez pasos.
-8. Si se implementa una base de datos, definir permisos y política de retención para datos personales antes de sincronizarlos.
+1. Diseñar y probar migraciones explícitas entre versiones de esquema antes de publicar una versión incompatible.
+2. Probar límites/cuota de almacenamiento, fallos de escritura persistentes, importaciones truncadas, JSON malformado, duplicados, referencias inexistentes y rollback fallido.
+3. Verificar recuperación de cada clave de almacenamiento desde un respaldo integral y granular.
+4. Añadir auditoría editorial con autor, fecha, motivo y diff para cambios en horario y catálogos (por ahora lo proporciona GitHub).
+5. Verificar Cloudflare Workers, URL de previsualización y smoke test antes de aceptar la publicación.
+6. Ejecutar una pasada de accesibilidad, responsive y regresión en los diez pasos.
+7. Si se implementa una base de datos, definir permisos y política de retención para datos personales antes de sincronizarlos.
 
 ## Criterio de cierre
 
-No declarar M10 terminado únicamente porque existen botones de descarga. Deben estar probados los recorridos de exportación, corrupción, restauración, compatibilidad de esquema y publicación. No se debe desplegar con un build externo fallido o sin un smoke test real.
+No declarar M10 terminado únicamente porque existen botones de descarga. Deben estar probados los recorridos granular e integral de exportación, corrupción, rollback, restauración, compatibilidad de esquema y publicación. No se debe desplegar con un build externo fallido o sin un smoke test real.
