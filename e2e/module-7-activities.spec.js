@@ -20,6 +20,11 @@ test("crear actividad, registrar intentos y devoluciones, y archivar", async ({ 
   await expect(page.locator("#ficha-activity-detail")).toContainText("Construir un algoritmo");
   await expect(page.locator("#ficha-activity-detail")).toContainText("Pendiente");
 
+  await page.locator("#ficha-activity-detail details summary").filter({ hasText: "Editar información" }).click();
+  await page.locator('#ficha-activity-edit-form [name="title"]').fill("Construir un algoritmo corregido");
+  await page.locator('#ficha-activity-edit-form button[type="submit"]').click();
+  await expect(page.locator("#ficha-activity-detail")).toContainText("Construir un algoritmo corregido");
+
   await page.locator('#ficha-activity-detail [data-activity-start]').click();
   await expect(page.locator("#ficha-activity-detail")).toContainText("En curso");
 
@@ -43,6 +48,7 @@ test("crear actividad, registrar intentos y devoluciones, y archivar", async ({ 
   await expect(page.locator("#ficha-activity-detail")).toContainText("Aprobada");
   await expect(page.locator("#ficha-activity-detail")).toContainText("no verificada");
 
+  await page.locator("#ficha-activity-detail details summary").filter({ hasText: "Notas personales" }).click();
   await page.locator("#ficha-activity-notes-form [name=notes]").fill("Revisar este método antes de la próxima clase.");
   await page.locator('#ficha-activity-notes-form button[type="submit"]').click();
   await expect(page.locator("#ficha-activities-status")).toContainText("Notas guardadas");
