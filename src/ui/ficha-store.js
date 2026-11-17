@@ -3,6 +3,7 @@ import { HORARIO_CLASES } from "../content/ficha.js";
 export const FICHA_STORAGE_KEY = "traza:v4:ficha";
 export const FICHA_BACKUP_FORMAT = "traza-ficha-backup";
 export const FICHA_SCHEMA_VERSION = 1;
+const RESTORE_CORRUPT_FICHA = Symbol("restore-corrupt-ficha-from-validated-backup");
 export const ACTIVITY_STATUSES = Object.freeze([
   "pending", "in_progress", "submitted", "needs_correction", "approved"
 ]);
@@ -303,7 +304,7 @@ function emitChange(detail) {
   globalThis.window.dispatchEvent(new CustomEvent("traza:ficha-change", { detail }));
 }
 
-export function writeFichaData(value, targetStorage, options = {}) {
+export function writeFichaData(value, targetStorage, restoreToken = null) {
   const storage = storageFrom(targetStorage);
   if (!storage) return { ok: false, reason: "unavailable", data: createEmptyFichaData() };
 
@@ -311,7 +312,7 @@ export function writeFichaData(value, targetStorage, options = {}) {
   if (!incoming.ok) return { ok: false, reason: incoming.reason, data: createEmptyFichaData() };
 
   const existing = readFichaDataStrict(storage);
-  if (!existing.ok && options.replaceInvalid !== true) {
+  if (!existing.ok && restoreToken !== RESTORE_CORRUPT_FICHA) {
     return { ok: false, reason: "existing_" + existing.reason, data: createEmptyFichaData() };
   }
 
@@ -607,6 +608,6 @@ export function validateFichaBackup(value) {
 export function importFichaBackup(value, targetStorage) {
   const validated = validateFichaBackup(value);
   if (!validated.ok) return validated;
-  const result = writeFichaData(validated.data, targetStorage, { replaceInvalid: true });
+  const result = writeFichaData(validated.data, targetStorage, RESTORE_CORRUPT_FICHA);
   return result.ok ? { ok: true, data: result.data } : result;
 }
