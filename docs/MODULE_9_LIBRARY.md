@@ -1,7 +1,7 @@
 # Módulo 9 · Biblioteca
 
 **Rama:** `v4/module-7-activities`  
-**Estado:** interfaz personal y almacenamiento local implementados; fuente editorial oficial preparada, todavía sin recursos publicados. Validación en SHA `856df59`: 300 pruebas Node y 116 pruebas Playwright aprobadas en la suite conjunta de la rama. El check externo de Cloudflare Workers falló para ese SHA.
+**Estado:** interfaz personal y almacenamiento local implementados; fuente editorial oficial preparada, todavía sin recursos publicados. Validación funcional: la suite de Node y Playwright de la rama cubre catálogo personal y oficial, validación de contenido, restauración y vistas. El check externo de Cloudflare Workers debe revisarse por separado.
 
 ## Separación de catálogos
 
@@ -26,14 +26,14 @@
 
 Los recursos publicados por Traza se muestran en un bloque separado y en solo lectura. El catálogo no se mezcla con los recursos privados del estudiante, no se copia a `localStorage` y no se sincroniza con la biblioteca personal.
 
-Para publicar un recurso oficial, añadir una entrada a `RECURSOS_OFICIALES` en `src/content/ficha-resources.js`. Campos: `id`, `title`, `kind`, `url`, `description`, `classId` y `tags`. `classId` debe existir en `src/content/ficha.js` o ser `null`. Usar solo enlaces verificados.
+Para publicar un recurso oficial, añadir una entrada a `RECURSOS_OFICIALES` en `src/content/ficha-resources.js`. Campos: `id` único, `title`, `kind`, `url`, `description`, `classId` y `tags`. `classId` debe existir en `src/content/ficha.js` o ser `null`; las URLs se limitan a HTTP/HTTPS y los registros deben contener enlace o descripción. `validateOfficialResources` y `tests/official-content.test.js` comprueban estas reglas.
 
 ## Límites
 
 - No hay inicio de sesión ni sincronización entre dispositivos.
 - No existe todavía un panel de moderador. El catálogo oficial se mantiene en GitHub mediante PR y despliegue.
 - No se crean relaciones con lecciones o ejercicios de Aprende sin comprobar una correspondencia real.
-- Los archivos de respaldo de la biblioteca y de Actividades son independientes; deben guardarse ambos si se necesita una copia completa de Mi ficha.
+- Los respaldos granulares siguen siendo independientes para restauración selectiva; el respaldo integral disponible desde Hoy reúne ambas áreas personales en un solo archivo.
 
 ## Pruebas
 
