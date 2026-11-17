@@ -96,8 +96,13 @@ export function validarDocumentoOficial(documento, contexto = {}) {
 /** Devuelve únicamente documentos publicados que correspondan al contexto solicitado. */
 export function documentosPublicados(seccion, contexto = {}, ficha = FICHA) {
   if (!SECCIONES_DOCUMENTO.includes(seccion)) return [];
+  const validacionContexto = {
+    ...contexto,
+    clases: contexto.clases ?? ficha.clases,
+    actividades: contexto.actividades ?? ficha.actividades
+  };
   return (ficha.documentos ?? []).filter(documento => {
-    if (!validarDocumentoOficial(documento).ok) return false;
+    if (!validarDocumentoOficial(documento, validacionContexto).ok) return false;
     if (documento.estadoPublicacion !== "publicado" || !documento.secciones?.includes(seccion)) return false;
     if (documento.claseId && documento.claseId !== contexto.claseId) return false;
     if (documento.actividadId && documento.actividadId !== contexto.actividadId) return false;
