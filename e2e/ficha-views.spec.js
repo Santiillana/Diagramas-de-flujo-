@@ -7,7 +7,9 @@ test("Hoy presenta actividades, filtros compartidos y horario del día", async (
   await expect(page.locator("#view-hoy .ficha-demo-notice")).toBeVisible();
   await expect(page.locator("#view-hoy .ficha-activity-card").first()).toBeVisible();
   await expect(page.locator("#hoy-competencia")).toHaveValue("todas");
-  await expect(page.locator("#view-hoy .ficha-class-item")).toHaveCount(1);
+  const weekday = await page.evaluate(() => new Date().getDay());
+  const classesExpected = weekday === 0 ? 0 : weekday === 6 ? 2 : 1;
+  await expect(page.locator("#view-hoy .ficha-class-item")).toHaveCount(classesExpected);
   await page.locator("#hoy-competencia").selectOption("matematicas");
   await goToSpace(page, "semana");
   await expect(page.locator("#semana-competencia")).toHaveValue("matematicas");
@@ -40,7 +42,12 @@ test("Calendario ofrece navegación mensual, horario recurrente y detalle selecc
   await page.locator("[data-month-action='next']").click();
   expect(await page.locator("#view-calendario .ficha-month-title").textContent()).not.toBe(antes);
   await page.locator("[data-month-action='today']").click();
-  await page.locator('[data-calendar-day="2026-11-16"]').click();
+  const monday = await page.evaluate(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  });
+  await page.locator('[data-calendar-day="' + monday + '"]').click();
   await expect(page.locator("#view-calendario .ficha-calendar-detail")).toContainText("Evaluar requisitos");
 });
 
