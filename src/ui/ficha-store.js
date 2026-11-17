@@ -367,7 +367,8 @@ export function updateActivity(id, changes, current = readFichaData()) {
       if (field === "title") activity[field] = cleanText(changes[field], 240);
       else if (field === "classId") activity[field] = changes[field] || null;
       else if (field === "assignedOn" || field === "dueOn") activity[field] = changes[field] || null;
-      else activity[field] = cleanText(changes[field], field === "competencyId" ? 160 : MAX_TEXT) || null;
+      else if (field === "description" || field === "notes") activity[field] = cleanText(changes[field]);
+      else activity[field] = cleanText(changes[field], 160) || null;
     }
   }
   const after = {
