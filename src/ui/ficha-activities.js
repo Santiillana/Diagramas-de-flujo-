@@ -306,6 +306,11 @@ export function initFichaActivities() {
     if (!form.matches("form")) return;
     event.preventDefault();
     const values = Object.fromEntries(new FormData(form).entries());
+    if (form.id === "ficha-activity-create-form" || form.id === "ficha-activity-edit-form") {
+      values.assignedOn = values.assignedOn || null;
+      values.dueOn = values.dueOn || null;
+      values.classId = values.classId || null;
+    }
     let result;
     let message = "Cambios guardados.";
 
