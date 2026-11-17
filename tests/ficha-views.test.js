@@ -8,6 +8,7 @@ import {
 } from "../src/ficha/filtros.js";
 import { initClases } from "../src/ficha/view-clases.js";
 import { filtrarDocumentosBiblioteca, renderBiblioteca } from "../src/ficha/view-biblioteca.js";
+import { competenceKey, competenceLogo } from "../src/ficha/competencias-ui.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -67,6 +68,17 @@ test("el horario coincide con los días, horas, temas e instructores de la image
   assert.equal(FICHA.horarioNotas.length, 0);
 });
 
+test("cada competencia tiene emblema propio y una identidad cromática", () => {
+  const ids = ["establecer-requisitos", "evaluar-requisitos", "tics", "comunicacion", "matematicas"];
+  const keys = ids.map(competenceKey);
+  assert.equal(new Set(keys).size, ids.length);
+  for (const id of ids) {
+    const icon = competenceLogo(id);
+    assert.match(icon, /<svg viewBox="0 0 24 24"/);
+    assert.match(icon, new RegExp("competence-emblem--" + competenceKey(id)));
+  }
+});
+
 test("las vistas de Mi ficha están conectadas a la aplicación y tienen estilos", async () => {
   const html = await read("../index.html");
   const app = await read("../src/app.js");
@@ -95,6 +107,8 @@ test("Centro de control usa paneles de horario, evidencias, comunicados e instru
   assert.match(view, /function renderInstructores/);
   assert.match(view, /KEY_HECHAS = "traza:v4:evidencias-hechas"/);
   assert.match(view, /data-evidence-undo/);
+  assert.match(view, /data-evidence-open/);
+  assert.match(view, /control-evidence-dialog/);
   assert.deepEqual(FICHA.comunicados, []);
 });
 

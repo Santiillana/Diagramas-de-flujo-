@@ -192,14 +192,86 @@
 .control-day header time{font-variant-numeric:tabular-nums}.control-today{color:var(--struct);font-size:12px;font-weight:600}
 .control-class{display:grid;gap:3px;padding:8px 0;border-top:1px solid var(--line)}.control-class time{font-size:14px;font-variant-numeric:tabular-nums}.control-class strong{font-size:15px;line-height:1.35}.control-class span,.control-confirm{margin:0;color:var(--text-2);font-size:14px}.control-confirm{padding:8px 0;border-top:1px dashed var(--line)}
 .control-link{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;color:var(--accent-text);font-size:14px;font-weight:600;text-decoration:none}.control-link:hover{text-decoration:underline}
-.control-evidence{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:64px;border-bottom:1px solid var(--line);cursor:pointer}
-.control-evidence input{width:20px;height:20px;accent-color:var(--struct)}.control-evidence-copy{display:grid;gap:4px;min-width:0}.control-evidence-copy strong{display:-webkit-box;overflow:hidden;font-size:16px;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.control-evidence:has(input:checked) .control-evidence-copy strong{text-decoration:line-through}.control-evidence-copy small{display:flex;align-items:center;gap:6px;color:var(--text-2);font-size:13px}.control-evidence-copy i{width:10px;height:10px;border-radius:50%;background:var(--comp-2)}.control-date{color:var(--text-2);font-size:13px;white-space:nowrap}.control-empty{display:grid;place-items:center;min-height:80px;margin:0;color:var(--text-2);font-size:15px;text-align:center}
+.control-empty{display:grid;place-items:center;min-height:80px;margin:0;color:var(--text-2);font-size:15px;text-align:center}
 .control-done{margin-top:10px;color:var(--text-2);font-size:14px}.control-done summary{min-height:36px;cursor:pointer}.control-done p{margin:4px 0}
 .control-instructor{display:flex;align-items:center;gap:12px;min-height:68px;border-bottom:1px solid var(--line)}.control-instructor>span:last-child{display:grid;gap:3px;min-width:0}.control-instructor strong{font-size:16px}.control-instructor small{color:var(--text-2);font-size:13px}.control-avatar{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;color:var(--struct);background:color-mix(in srgb,var(--struct) 14%,var(--surface));font-size:14px;font-weight:600}
 .control-announcement{display:grid;grid-template-columns:1fr auto;gap:7px 10px;padding:12px 0;border-bottom:1px solid var(--line)}.control-announce-type{justify-self:start;padding:3px 8px;border-radius:999px;font-size:12px}.control-announce-type[data-type="importante"]{color:var(--on-struct);background:var(--struct)}.control-announce-type[data-type="informativo"]{border:1px solid var(--line);color:var(--text-2)}.control-announcement time{color:var(--text-2);font-size:13px}.control-announcement strong{grid-column:1/-1;font-size:16px}.control-announcement p{grid-column:1/-1;display:-webkit-box;overflow:hidden;margin:0;color:var(--text-2);font-size:15px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}.control-announcement.is-expanded p{-webkit-line-clamp:unset}
 .control-read-more{justify-self:start;min-height:36px;padding:0;border:0;color:var(--accent-text);background:transparent;font:600 14px var(--font-ui);cursor:pointer}
+.control-panel h3{font-size:24px}
+.competence-emblem{--competence-color:var(--competence-pendiente);display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;color:var(--competence-color);background:color-mix(in srgb,var(--competence-color) 13%,var(--card))}
+.competence-emblem svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.competence-emblem--logica{--competence-color:var(--competence-logica)}
+.competence-emblem--establecer{--competence-color:var(--competence-establecer)}
+.competence-emblem--evaluar{--competence-color:var(--competence-evaluar)}
+.competence-emblem--tics{--competence-color:var(--competence-tics)}
+.competence-emblem--comunicacion{--competence-color:var(--competence-comunicacion)}
+.competence-emblem--matematicas{--competence-color:var(--competence-matematicas)}
+.competence-emblem--pendiente{--competence-color:var(--competence-pendiente)}
+.control-days{gap:12px}
+.control-day{display:grid;align-content:start;gap:8px;min-height:216px;padding:14px;border-radius:14px;animation:control-card-in 320ms cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--day-order,0)*45ms)}
+.control-day.is-today{border-width:2px}
+.control-day header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;margin:0}
+.control-day-name{align-self:end;color:var(--text-2);font-size:15px;font-weight:650;letter-spacing:.03em;text-transform:uppercase}
+.control-day header time{grid-column:2;grid-row:1/3;color:var(--text);font:600 32px/1 Georgia,"Times New Roman",serif}
+.control-today{grid-column:1;grid-row:2;justify-self:start;padding:2px 7px;border-radius:999px;color:var(--struct);background:color-mix(in srgb,var(--struct) 11%,var(--card));font-size:13px}
+.control-day-classes{display:grid;align-content:start;gap:8px}
+.control-class{gap:10px;padding:12px 0 2px;border-color:color-mix(in srgb,var(--competence-color,var(--line)) 35%,var(--line))}
+.control-class[data-competence="logica"]{--competence-color:var(--competence-logica)}
+.control-class[data-competence="establecer"]{--competence-color:var(--competence-establecer)}
+.control-class[data-competence="evaluar"]{--competence-color:var(--competence-evaluar)}
+.control-class[data-competence="tics"]{--competence-color:var(--competence-tics)}
+.control-class[data-competence="comunicacion"]{--competence-color:var(--competence-comunicacion)}
+.control-class[data-competence="matematicas"]{--competence-color:var(--competence-matematicas)}
+.control-class-heading{display:flex;align-items:center;gap:10px;min-width:0}
+.control-class-heading .competence-emblem{width:38px;height:38px;border-radius:12px}
+.control-class-heading>span:last-child{display:grid;gap:2px;min-width:0}
+.control-class-heading strong{font-size:18px;line-height:1.25}
+.control-class-heading small{color:var(--text-2);font-size:15px}
+.control-class>time{justify-self:start;margin-left:48px;padding:4px 9px;border-radius:8px;color:var(--competence-color,var(--text));background:color-mix(in srgb,var(--competence-color,var(--line)) 12%,var(--card));font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.control-confirm{font-size:16px}
+.control-evidences{display:grid;align-content:start;gap:11px}
+.control-evidences h3{margin-bottom:2px}
+.control-evidence-card{--competence-color:var(--competence-logica);overflow:hidden;border:1px solid color-mix(in srgb,var(--competence-color) 32%,var(--line));border-left:4px solid var(--competence-color);border-radius:14px;background:color-mix(in srgb,var(--competence-color) 4%,var(--card));box-shadow:var(--shadow-sm);animation:control-card-in 300ms cubic-bezier(.22,1,.36,1) both;transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease}
+.control-evidence-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.control-evidence-card[data-competence="establecer"]{--competence-color:var(--competence-establecer)}
+.control-evidence-card[data-competence="evaluar"]{--competence-color:var(--competence-evaluar)}
+.control-evidence-card[data-competence="tics"]{--competence-color:var(--competence-tics)}
+.control-evidence-card[data-competence="comunicacion"]{--competence-color:var(--competence-comunicacion)}
+.control-evidence-card[data-competence="matematicas"]{--competence-color:var(--competence-matematicas)}
+.control-evidence-open{display:grid;gap:12px;width:100%;padding:15px 16px 11px;border:0;color:var(--text);background:transparent;text-align:left;cursor:pointer}
+.control-evidence-open:focus-visible,.control-dialog-close:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.control-evidence-heading{display:flex;align-items:center;gap:12px;min-width:0}
+.control-evidence-heading>span:last-child{display:grid;gap:4px;min-width:0}
+.control-evidence-heading strong{font-size:18px;line-height:1.3}
+.control-evidence-heading small{color:var(--competence-color);font-size:15px;font-weight:650}
+.control-evidence-description{display:-webkit-box;overflow:hidden;color:var(--text-2);font-size:15px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.control-evidence-deadline{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:14px}
+.control-evidence-deadline>span{color:var(--text-2)}
+.control-evidence-deadline time{font-weight:650}
+.control-evidence-deadline small{margin-left:auto;padding:4px 8px;border-radius:999px;color:var(--competence-color);background:color-mix(in srgb,var(--competence-color) 12%,var(--card));font-size:13px;font-weight:650}
+.control-evidence-check{display:flex;align-items:center;gap:8px;min-height:46px;padding:0 16px;border-top:1px solid color-mix(in srgb,var(--competence-color) 20%,var(--line));color:var(--text-2);font-size:14px;cursor:pointer}
+.control-evidence-check input{width:20px;height:20px;accent-color:var(--competence-color)}
+.control-evidence-check:has(input:checked){color:var(--text-2);text-decoration:line-through}
+.control-evidence-dialog{max-height:min(84vh,760px)}
+.control-evidence-dialog .modal__header{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.control-evidence-dialog .modal__header h2{margin:0;font:600 25px/1.25 var(--font-ui)}
+.control-dialog-close{width:44px;height:44px;border:1px solid var(--line);border-radius:12px;color:var(--text);background:var(--card);font-size:25px;cursor:pointer}
+.control-evidence-dialog .modal__body{display:grid;gap:15px;font-size:16px;line-height:1.55}
+.control-evidence-dialog .modal__body p{margin:0}
+.control-evidence-dialog .modal__body section h3{margin:0 0 7px;font-size:17px}
+.control-evidence-dialog .modal__body ul{display:grid;gap:7px;margin:0;padding-left:22px}
+.control-evidence-detail-competence{display:flex;align-items:center;gap:10px;color:var(--text-2);font-size:15px;font-weight:650}
+.control-evidence-detail-description{font-size:18px!important;color:var(--text)}
+.control-evidence-detail-date{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.control-evidence-detail-date strong{color:var(--text-2)}
+.control-evidence-detail-date time{font-weight:650;text-transform:capitalize}
+.control-evidence-detail-date span{grid-column:2;color:var(--competence-logica);font-size:14px}
+@keyframes control-card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+:root[data-motion="reduced"] .control-day,:root[data-motion="reduced"] .control-evidence-card{animation:none;transition:none}
+@media(max-width:900px){.control-day{min-height:226px}.control-class-heading strong,.control-evidence-heading strong{font-size:18px}}
+@media(max-width:440px){.control-panel h3{font-size:23px}.control-day{flex-basis:min(86%,320px);min-height:220px}.control-evidence-open{padding:14px 13px 10px}.control-evidence-deadline small{margin-left:0}.control-evidence-detail-date{grid-template-columns:1fr}.control-evidence-detail-date span{grid-column:1}}
 @media(max-width:900px){.control-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"evidences" "schedule" "announcements" "instructors"}.control-days{display:flex;overflow:auto;scroll-snap-type:x mandatory}.control-day{flex:0 0 min(78%,260px);scroll-snap-align:center}}
-@media(max-width:440px){.control-panel{padding:16px}.control-evidence{grid-template-columns:24px minmax(0,1fr);gap:8px}.control-date{grid-column:2}.control-days{margin-inline:-4px}.control-day{flex-basis:78%}}
+@media(max-width:440px){.control-panel{padding:16px}.control-days{margin-inline:-4px}.control-day{flex-basis:78%}}
 
 /* Paso 4: tres vistas sincronizadas de Clases. */
 .class-view-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.class-view-controls .seg button{min-height:44px}.class-period{margin:7px 0 0;color:var(--text-2);font-size:15px;text-transform:capitalize}

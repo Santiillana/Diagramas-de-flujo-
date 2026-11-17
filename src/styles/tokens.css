@@ -414,3 +414,22 @@ body{background-size:24px 24px}
   background-size:120px 120px,120px 120px,24px 24px,24px 24px;
 }
 :root[data-section="ficha"] body{background-image:none}
+
+:root{
+  --competence-logica:#4B7A65;
+  --competence-establecer:#806BAE;
+  --competence-evaluar:#397F76;
+  --competence-tics:#4B78AE;
+  --competence-comunicacion:#A95F51;
+  --competence-matematicas:#6D842D;
+  --competence-pendiente:#65736A;
+}
+:root[data-theme="dark"]{
+  --competence-logica:#8CC3A2;
+  --competence-establecer:#B4A1E3;
+  --competence-evaluar:#83CBBE;
+  --competence-tics:#91B6EA;
+  --competence-comunicacion:#E6A092;
+  --competence-matematicas:#B2CC75;
+  --competence-pendiente:#ADB8B1;
+}
