@@ -20,7 +20,7 @@ La rama `v4/module-7-activities` contiene el horario oficial `America/Bogota` co
 Acceso a Mi ficha y Aprende, continuidad del último espacio visitado y, en la entrega del Módulo 6, progreso de las 17 lecciones con porcentaje y barra accesible. Añade accesos directos a Ejercicios, Simulador y Laboratorio.
 
 ### Mi ficha
-Cinco espacios para organizar el trabajo académico: **Hoy, Semana, Calendario, Actividades y Biblioteca**. La sección tiene identidad visual y preferencia de tema propias.
+Seis espacios para organizar el trabajo académico: **Hoy, Semana, Calendario, Clases, Actividades y Biblioteca**. La sección tiene identidad visual y preferencia de tema propias.
 
 ### Aprende
 Cuatro espacios: **Aprende, Ejercicios, Simulador y Laboratorio**.
