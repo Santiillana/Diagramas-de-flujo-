@@ -94,6 +94,28 @@ test("la devolución se identifica como transcripción y solo ella puede aprobar
   }, feedback.data).ok, true);
 });
 
+test("los enlaces de evidencia solo aceptan HTTP y HTTPS", () => {
+  const created = activity();
+  assert.equal(addSubmission(created.activity.id, {
+    evidenceUrl: "javascript:alert(1)"
+  }, created.data).reason, "invalid_evidence_url");
+  const safe = addSubmission(created.activity.id, {
+    evidenceUrl: "https://example.org/evidencia"
+  }, created.data);
+  assert.equal(safe.ok, true);
+  assert.equal(safe.attempt.evidenceUrl, "https://example.org/evidencia");
+});
+
+test("el sobre del respaldo también se valida sin descartar campos", () => {
+  const created = activity();
+  const backup = createFichaBackup(created.data);
+  assert.equal(validateFichaBackup(backup).ok, true);
+  const broken = { ...backup, metadata: { note: "extra" } };
+  assert.equal(validateFichaBackup(broken).reason, "invalid_backup");
+  const badTime = { ...backup, exportedAt: "not-a-date" };
+  assert.equal(validateFichaBackup(badTime).reason, "invalid_backup");
+});
+
 test("el atraso se calcula y no se guarda como estado", () => {
   const created = activity(createEmptyFichaData(), { dueOn: "2026-11-15" });
   assert.equal(isActivityOverdue(created.activity, "2026-11-16"), true);
