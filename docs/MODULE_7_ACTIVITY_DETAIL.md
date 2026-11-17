@@ -4,7 +4,7 @@
 **Repositorio:** `Santiillana/Traza`  
 **Rama:** `v4/module-7-activities`  
 **Base:** integración del Módulo 6, commit `cd9c7598969d9487c779234451a32d9e5f3d67c6`  
-**Estado:** catálogo y detalle funcionales implementados en esta rama: crear, editar, buscar, filtrar, registrar entregas, devoluciones transcritas, notas, bitácora y archivo lógico. E2E de navegador aprobados en el SHA `04b699f` (run 43996077312); la aceptación de publicación sigue condicionada al check externo de Workers.
+**Estado:** catálogo y detalle funcionales implementados en esta rama: crear, editar, buscar, filtrar, registrar entregas, devoluciones transcritas, notas, bitácora y archivo lógico. E2E de navegador aprobados en el SHA `f84374f` (run 43998449769): 309 pruebas Node y 117 Playwright pasaron; la aceptación de publicación sigue condicionada al check externo de Workers.
 
 ## 1. Objetivo
 
