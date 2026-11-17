@@ -42,9 +42,13 @@ function mutationMessage(reason) {
     invalid_class: "La clase seleccionada no existe en el horario oficial.",
     resource_content_required: "Añade un enlace o una descripción para guardar el recurso.",
     corrupt_storage: "La biblioteca local está dañada. Restaura un respaldo antes de editar.",
+    existing_corrupt_storage: "La biblioteca local está dañada. Restaura un respaldo antes de editar.",
     unsupported_schema: "La biblioteca pertenece a una versión no compatible. No se sobrescribió.",
+    existing_unsupported_schema: "La biblioteca pertenece a una versión no compatible. No se sobrescribió.",
     invalid_records: "La biblioteca contiene registros que necesitan recuperación.",
+    existing_invalid_records: "La biblioteca contiene registros que necesitan recuperación.",
     duplicate_ids: "Hay identificadores duplicados; restaura un respaldo válido.",
+    existing_duplicate_ids: "Hay identificadores duplicados; restaura un respaldo válido.",
     unavailable: "El almacenamiento local no está disponible en este navegador.",
     write_failed: "No se pudo guardar el cambio."
   })[reason] || "No se pudo completar la operación.";
