@@ -2,6 +2,7 @@ import { FICHA } from "../content/ficha.js";
 import { hoy, inicioSemana, fechaISO, diaSemana } from "./fechas.js";
 import { clasesDelDia } from "./selectores.js";
 import { escaparHTML, formatearFecha } from "./view-utils.js";
+import { documentosPublicados } from "./documentos.js";
 
 let fechaSeleccionada = hoy();
 let vista = "diaria";
@@ -41,9 +42,11 @@ function renderDetalle() {
   const titulo = formatearFecha(fechaSeleccionada, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   if (!registro) return `<section class="class-detail class-no-record" aria-live="polite"><h3>${escaparHTML(titulo)}</h3><p>Sin registro de este día</p>${clases.length ? `<p>${clases.map(c => `${escaparHTML(c.inicio)} – ${escaparHTML(c.fin)} · ${escaparHTML(c.competencia?.nombre ?? c.titulo ?? "Por confirmar")}`).join("<br>")}</p>` : ""}</section>`;
   const comp = FICHA.competencias.find(item => item.id === registro.competenciaId);
+  const docs = documentosPublicados("clases", { claseId: registro.id });
+  const documentos = docs.length ? `<section><h4>Documentos</h4><ul>${docs.map(doc => `<li><button type="button" class="class-document-link" data-library-highlight="${escaparHTML(doc.id)}" data-go="biblioteca">▤ ${escaparHTML(doc.titulo)} · Abrir en Biblioteca</button></li>`).join("")}</ul></section>` : "";
   return `<section class="class-detail" aria-live="polite"><header><div><h3>${escaparHTML(titulo)}</h3><span class="class-status">✓ ${estado(fechaSeleccionada).texto}</span></div><strong>${escaparHTML(registro.titulo || comp?.nombre || "Materia por confirmar")}</strong></header>
     <div class="class-detail-columns"><section><h4>Lo que se vio</h4>${registro.temas?.length ? `<ul>${registro.temas.map(tema => `<li>${escaparHTML(tema.texto)}</li>`).join("")}</ul>` : "<p>Temas por confirmar</p>"}</section>
-    <section><h4>Actividades</h4>${registro.temas?.some(tema => tema.ejercicioIds?.length) ? `<p>${registro.temas.reduce((n, tema) => n + (tema.ejercicioIds?.length || 0), 0)} ejercicios relacionados</p>` : "<p>Sin actividades registradas</p>"}</section></div>
+    <section><h4>Actividades</h4>${registro.temas?.some(tema => tema.ejercicioIds?.length) ? `<p>${registro.temas.reduce((n, tema) => n + (tema.ejercicioIds?.length || 0), 0)} ejercicios relacionados</p>` : "<p>Sin actividades registradas</p>"}</section>${documentos}</div>
   </section>`;
 }
 
@@ -85,12 +88,19 @@ export function initClases() {
   root.dataset.clasesReady = "true";
   let suprimirClic = false;
   root.addEventListener("click", event => {
+    const doc = event.target.closest("[data-library-highlight]");
+    if (doc) document.dispatchEvent(new CustomEvent("traza:documento-resaltar", { detail: { id: doc.dataset.libraryHighlight } }));
     if (suprimirClic) { suprimirClic = false; event.preventDefault(); return; }
     const view = event.target.closest("[data-class-view]"); if (view) { vista = view.dataset.classView; renderClases(); return; }
     if (event.target.closest("[data-class-today]")) { cambiarFecha(hoy()); return; }
     const week = event.target.closest("[data-class-week]"); if (week) { cambiarFecha(sumar(fechaSeleccionada, Number(week.dataset.classWeek) * 7)); return; }
     const month = event.target.closest("[data-class-month]"); if (month) { const d = new Date(fechaSeleccionada); d.setMonth(d.getMonth() + Number(month.dataset.classMonth)); cambiarFecha(d); return; }
     const day = event.target.closest("[data-class-date]"); if (day) cambiarFecha(new Date(day.dataset.classDate + "T12:00:00"), 1, vista === "diaria");
+  });
+  document.addEventListener("traza:clase-seleccionada", event => {
+    if (!event.detail?.fecha) return;
+    vista = "diaria";
+    cambiarFecha(new Date(event.detail.fecha + "T12:00:00"));
   });
   let drag = null;
   root.addEventListener("pointerdown", event => {

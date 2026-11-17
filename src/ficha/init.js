@@ -2,6 +2,7 @@ import { initFiltros } from "./filtros.js";
 import { initControl, renderControl } from "./view-control.js";
 import { initClases, renderClases } from "./view-clases.js";
 import { initActividades, renderActividades } from "./view-actividades.js";
+import { initBiblioteca, renderBiblioteca } from "./view-biblioteca.js";
 import { CLAVE_FICHA } from "./store.js";
 
 let inicializada = false;
@@ -13,11 +14,13 @@ export function initFicha() {
   initControl();
   initClases();
   initActividades();
+  initBiblioteca();
 
   document.addEventListener("traza:ficha-actualizada", () => {
     renderControl();
     renderClases();
     renderActividades();
+    renderBiblioteca();
   });
 
   window.addEventListener("storage", event => {
@@ -25,5 +28,6 @@ export function initFicha() {
     renderControl();
     renderClases();
     renderActividades();
+    renderBiblioteca();
   });
 }

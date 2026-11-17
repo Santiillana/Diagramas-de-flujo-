@@ -7,6 +7,7 @@ import {
   actividadPasaFiltros, competenciaPasaFiltro, renderFiltros
 } from "../src/ficha/filtros.js";
 import { initClases } from "../src/ficha/view-clases.js";
+import { filtrarDocumentosBiblioteca, renderBiblioteca } from "../src/ficha/view-biblioteca.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -105,7 +106,7 @@ test("Clases conserva la fecha al cambiar entre las tres vistas y omite el domin
     querySelector() { return null; }
   };
   const previousDocument = globalThis.document;
-  globalThis.document = { querySelector(selector) { return selector === "#view-clases" ? root : null; }, documentElement: { dataset: { motion: "reduced" } } };
+  globalThis.document = { querySelector(selector) { return selector === "#view-clases" ? root : null; }, documentElement: { dataset: { motion: "reduced" } }, addEventListener() {} };
   try {
     initClases();
     const initial = root.innerHTML;
@@ -122,4 +123,28 @@ test("Clases conserva la fecha al cambiar entre las tres vistas y omite el domin
   } finally {
     globalThis.document = previousDocument;
   }
+});
+
+test("los filtros de Biblioteca se combinan, buscan y ordenan por fecha", () => {
+  const documentos = [
+    { id: "a", titulo: "Guía de ciclos", nombreArchivo: "ciclos.pdf", mimeType: "application/pdf", publicadoEn: "2026-11-10", competenciaId: "matematicas", tema: "Ciclos", instructorId: "jair-castaneda" },
+    { id: "b", titulo: "Guía de diagramas", nombreArchivo: "diagramas.pdf", mimeType: "application/pdf", publicadoEn: "2026-11-12", competenciaId: "logica-programacion", tema: "Diagramas", instructorId: "jair-castaneda" },
+    { id: "c", titulo: "Video de ciclos", nombreArchivo: "ciclos.mp4", mimeType: "video/mp4", publicadoEn: "2026-11-15", competenciaId: "matematicas", tema: "Ciclos", instructorId: "sandra-lizcano" }
+  ];
+  const all = { competencia: "todas", tema: "todos", instructor: "todos", tipo: "todos", desde: "", hasta: "" };
+  assert.deepEqual(filtrarDocumentosBiblioteca(documentos, "ciclos", all).map(item => item.id), ["c", "a"]);
+  assert.deepEqual(filtrarDocumentosBiblioteca(documentos, "", { ...all, competencia: "matematicas", tipo: "pdf" }).map(item => item.id), ["a"]);
+  assert.deepEqual(filtrarDocumentosBiblioteca(documentos, "", { ...all, desde: "2026-11-12", hasta: "2026-11-15" }).map(item => item.id), ["c", "b"]);
+});
+
+test("Biblioteca usa el vacío de manifiesto sin inventar materiales", () => {
+  const root = { dataset: {}, innerHTML: "" };
+  const previousDocument = globalThis.document;
+  globalThis.document = { querySelector(selector) { return selector === "#view-biblioteca" ? root : null; } };
+  try {
+    renderBiblioteca();
+    assert.match(root.innerHTML, /Sin documentos por ahora/);
+    assert.match(root.innerHTML, /Filtros \(0\)/);
+    assert.doesNotMatch(root.innerHTML, /href="javascript:/);
+  } finally { globalThis.document = previousDocument; }
 });
