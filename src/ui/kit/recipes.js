@@ -36,6 +36,24 @@ const recipes = {
     cierre:"Imprimir muestra el valor y deja intacta la variable.",
     moments:["El valor está en la variable", "Una copia llega a Imprimir", "El valor aparece en pantalla"],
     figures:[["process","resultado = 4"],["document","Imprimir resultado"],["output","4 en pantalla"]]
+  },
+  variables: {
+    id:"R03-variables", idea:"Una variable es un casillero con nombre. Guarda un valor y puede recibir otro después.", term:"Variable y asignación",
+    cierre:"La asignación guarda el nuevo valor en A; B conserva el suyo.",
+    moments:["A y B aparecen vacías", "B entrega una copia de su valor", "El valor nuevo queda guardado en A"],
+    figures:[["process","A = ∅"],["process","B = 17"],["process","A = B"],["process","A = 17"]]
+  },
+  arithmetic: {
+    id:"R08-arithmetic", idea:"Una operación mezcla valores como ingredientes y produce un resultado.", term:"Operación aritmética",
+    cierre:"La operación calcula A × B y guarda el resultado en A.",
+    moments:["A y B llegan a la operación", "La expresión muestra 2 × 2", "El resultado 4 se guarda en A"],
+    figures:[["process","A = 2"],["process","A × B"],["process","2 × 2"],["process","A = 4"]]
+  },
+  comparisons: {
+    id:"R09-comparisons", idea:"Una comparación responde una pregunta para que el algoritmo pueda elegir qué hacer.", term:"Operador relacional",
+    cierre:"La comparación produce verdadero o falso para dirigir la decisión.",
+    moments:["Aparece la pregunta edad ≥ 18", "Se comparan 20 y 18", "El resultado verdadero permite continuar"],
+    figures:[["process","edad ≥ 18"],["process","20 ≥ 18"],["decision","¿Verdadero?"],["process","Sí · continuar"]]
   }
 };
 
