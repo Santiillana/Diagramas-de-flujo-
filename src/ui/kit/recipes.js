@@ -18,6 +18,24 @@ const recipes = {
     cierre:"La forma indica el papel de cada instrucción.",
     moments:["Inicio y Fin usan óvalos","Las instrucciones toman su forma","Las flechas conectan el recorrido"],
     figures:[["terminal","Inicio"],["input","Leer"],["process","Proceso"],["decision","Decisión"],["document","Imprimir"],["terminal","Fin"]]
+  },
+  input: {
+    id:"R05-input", idea:"Leer funciona como un mostrador: recibes un dato y lo guardas para usarlo.", term:"Entrada de datos",
+    cierre:"El dato entra por Leer y queda guardado en la variable indicada.",
+    moments:["Aparece Leer", "El dato 2 llega por la entrada", "El valor queda en B"],
+    figures:[["input","Leer B"],["process","2"],["process","B = 2"],["process","Continuar"]]
+  },
+  process: {
+    id:"R08-process", idea:"Un proceso transforma los datos y conserva el resultado para el siguiente paso.", term:"Proceso",
+    cierre:"El proceso calcula el resultado antes de enviarlo a la salida.",
+    moments:["Aparecen los valores", "La operación combina los datos", "El resultado queda guardado"],
+    figures:[["process","A = 2"],["process","A × B"],["process","A = 4"]]
+  },
+  output: {
+    id:"R06-output", idea:"Imprimir copia un valor en la pantalla. La variable conserva su contenido.", term:"Salida de datos",
+    cierre:"Imprimir muestra el valor y deja intacta la variable.",
+    moments:["El valor está en la variable", "Una copia llega a Imprimir", "El valor aparece en pantalla"],
+    figures:[["process","resultado = 4"],["document","Imprimir resultado"],["output","4 en pantalla"]]
   }
 };
 

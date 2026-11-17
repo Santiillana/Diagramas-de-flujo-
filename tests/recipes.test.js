@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { lessonRecipe, recipeFrame, recipeMoment, recipeSceneMarkup } from "../src/ui/kit/recipes.js";
 
-test("las lecciones 01 a 03 tienen recetas visuales propias y completas",()=>{
-  const ids=["algorithm","reading","terminals"];
+test("las lecciones 01 a 06 tienen recetas visuales propias y completas",()=>{
+  const ids=["algorithm","reading","terminals","input","process","output"];
   const recipes=ids.map(id=>lessonRecipe(id));
-  assert.equal(new Set(recipes.map(item=>item.id)).size,3);
+  assert.equal(new Set(recipes.map(item=>item.id)).size,ids.length);
   for(const recipe of recipes){
     assert.ok(recipe.idea&&recipe.term&&recipe.cierre);
     assert.ok(recipe.moments.length>=3&&recipe.moments.length<=5);
