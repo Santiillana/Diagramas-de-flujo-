@@ -12,7 +12,7 @@
 | Actividades personales | `traza:v4:ficha` | Almacenamiento local de cada navegador |
 | Biblioteca personal | `traza:v4:library` | Almacenamiento local separado |
 
-No existe backend, sincronización entre dispositivos ni almacenamiento central de entregas y notas. Perder los datos locales del navegador puede perder la copia personal si no se descargaron respaldos.
+Los catálogos oficiales tienen validadores automáticos de IDs, referencias, fechas y URLs; el horario también comprueba solapamientos de bloques. No existe backend, sincronización entre dispositivos ni almacenamiento central de entregas y notas. Perder los datos locales del navegador puede perder la copia personal si no se descargaron respaldos.
 
 ## Controles implementados
 
