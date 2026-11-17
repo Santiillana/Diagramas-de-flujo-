@@ -4,7 +4,9 @@ import {
   updateLibraryResource, validateLibraryBackup, writeLibraryData
 } from "./ficha-library-store.js";
 import { HORARIO_CLASES } from "../content/ficha.js";
-import { RECURSOS_OFICIALES } from "../content/ficha-resources.js";
+import {
+  RECURSOS_OFICIALES, validateOfficialResources
+} from "../content/ficha-resources.js";
 
 const KIND_LABELS = Object.freeze({
   link: "Enlace", video: "Video", document: "Documento o PDF",
@@ -144,9 +146,12 @@ export function initFichaLibrary() {
 
   function renderOfficialResources() {
     const target = root.querySelector("#ficha-official-library-list");
-    const entries = RECURSOS_OFICIALES.filter(item =>
-      item && typeof item.id === "string" && typeof item.title === "string" && item.title.trim()
-    );
+    const validation = validateOfficialResources();
+    if (!validation.ok) {
+      target.innerHTML = '<p class="ficha-official-empty">El catálogo oficial necesita revisión antes de mostrarse.</p>';
+      return;
+    }
+    const entries = validation.data;
     if (!entries.length) {
       target.innerHTML = '<p class="ficha-official-empty">Todavía no hay recursos oficiales publicados.</p>';
       return;
