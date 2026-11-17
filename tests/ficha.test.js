@@ -47,8 +47,8 @@ function personalConEstados() {
 test("la ficha de ejemplo tiene estructura, ids únicos y referencias existentes", () => {
   assert.ok(FICHA.meta.programa && FICHA.meta.codigo && FICHA.meta.actualizado && FICHA.meta.fuente);
   assert.equal(FICHA.meta.esDemostracion, true);
-  assert.equal(FICHA.competencias.length, 2);
-  assert.equal(FICHA.instructores.length, 1);
+  assert.equal(FICHA.competencias.length, 8);
+  assert.equal(FICHA.instructores.length, 6);
   assert.equal(FICHA.actividades.length, 4);
   assert.equal(FICHA.clases.length, 2);
   assert.equal(FICHA.recursos.length, 3);
@@ -181,7 +181,8 @@ test("el horario resuelve instructor y competencia y excluye domingos", () => {
   assert.equal(martes[0].competencia.codigo, "LP-01");
   assert.equal(martes[0].instructor.nombre, "Instructor por configurar");
   assert.equal(clasesDelDia("2026-11-22", horario).length, 0);
-  assert.equal(clasesDelDia("2026-11-17").length, 0);
+  assert.equal(clasesDelDia("2026-11-17").length, 1);
+  assert.equal(clasesDelDia("2026-11-17")[0].competencia.id, "comunicacion");
 });
 
 test("el resumen por competencia cuenta aprobación del instructor, no entrega", () => {

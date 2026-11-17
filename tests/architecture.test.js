@@ -99,3 +99,20 @@ test("Ejercicios conserva 45 retos y expone filtros, accesos rápidos y ficha pr
   assert.match(source,/data-exercise-level-shortcut/);
   assert.match(source,/exercise-level-shortcut/);
 });
+
+
+test("Mi ficha implementa Hoy, Semana y Calendario con filtros y horario común", async () => {
+  const html = await read("../index.html");
+  const app = await read("../src/app.js");
+  const filters = await read("../src/ficha/filtros.js");
+  const week = await read("../src/ficha/view-semana.js");
+  const calendar = await read("../src/ficha/view-calendario.js");
+  for (const view of ["hoy", "semana", "calendario"]) {
+    assert.match(html, new RegExp('id="view-' + view + '"'));
+    assert.doesNotMatch(html, new RegExp('id="view-' + view + '"[^>]*ficha-placeholder'));
+  }
+  assert.match(app, /initFicha/);
+  assert.match(filters, /competenciaId !== "todas"/);
+  assert.match(week, /data-week-action/);
+  assert.match(calendar, /data-month-action/);
+});
