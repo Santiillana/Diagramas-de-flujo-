@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./src/styles/learn-catalog.css">
   <link rel="stylesheet" href="./src/styles/kit.css">
   <link rel="stylesheet" href="./src/styles/lesson-reading.css">
+  <link rel="stylesheet" href="./src/styles/sources.css">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
@@ -102,7 +103,7 @@
 
       <section class="catalog-filter-panel exercise-filter-panel" aria-label="Buscar y filtrar ejercicios">
         <div class="exercise-filter-main">
-          <label class="catalog-search"><span>Banco</span><select id="exercise-bank"><option value="diagramas">Diagramas de flujo</option><option value="matematicas">Matemáticas</option></select></label>
+          <label class="catalog-search"><span>Banco</span><select id="exercise-bank"><option value="diagramas">Diagramas de flujo</option><option value="matematicas">Matemáticas</option><option value="fuentes">Fuentes de información</option></select></label>
           <label class="catalog-search">
             <span>Buscar</span>
             <input id="exercise-search" type="search" placeholder="Título, número o concepto…" autocomplete="off">
@@ -173,6 +174,7 @@
         <div><p class="eyebrow">SIMULADOR</p><h2 id="simulator-title">El algoritmo, paso a paso.</h2></div>
         <span class="phase-chip" id="simulator-status">LISTO PARA EJECUTAR</span>
       </header>
+      <section id="source-simulator" class="source-simulator" aria-label="Mesa de recolección de fuentes" hidden></section>
       <section id="math-player" class="math-player" aria-label="Reproductor de matemáticas" hidden></section>
       <div class="simulator-mobile-tabs" id="simulator-mobile-tabs" role="tablist" aria-label="Paneles del simulador">
         <button type="button" role="tab" data-mobile-panel="problem" aria-selected="false">Problema</button>

@@ -1,6 +1,8 @@
 import { lessons as flowLessons } from "../content/lessons.js";
 import { mathLessons, mathLessonById } from "../content/math-lessons.js";
 import { sourceLessons, sourceLessonById, sourceLessonGlossary } from "../content/sources-lessons.js";
+import { sourceExercises, sourceExerciseLevels } from "../content/source-exercises.js";
+import { sourceScenarios } from "../content/source-scenarios.js";
 import { renderSourceScene } from "./lessons/sources.js";
 import { rutas } from "../content/rutas.js";
 import { exercises } from "../content/exercises.js";
@@ -51,6 +53,8 @@ let exerciseListView = false;
 let exerciseBank = "diagramas";
 let mathTopicFilter = "todos";
 let selectedMathExercise = null;
+let selectedSourceExercise = null;
+const sourceExerciseAnswers = new Map();
 const generatedMathExercises = [];
 const revealedMathSolutions = new Set();
 const mathAnswerResults = new Map();
@@ -189,6 +193,11 @@ function setMathExerciseContext(topicId){
   const bank=$("#exercise-bank"),topic=$("#exercise-math-topic"),wrap=$("#exercise-math-topic-wrap"),concepts=$("#exercise-concept-details"),generator=$("#exercise-generate-math");
   if(bank)bank.value=exerciseBank;if(topic)topic.value=mathTopicFilter;if(wrap)wrap.hidden=false;if(concepts)concepts.hidden=true;if(generator)generator.hidden=false;
   renderExerciseCards();
+}
+function setSourceExerciseContext(){
+  exerciseBank="fuentes";selectedExercise=null;selectedMathExercise=null;selectedSourceExercise=null;exerciseLevels.clear();exerciseQuery="";
+  const bank=$("#exercise-bank"),search=$("#exercise-search");if(bank)bank.value="fuentes";if(search)search.value="";
+  renderExerciseCards();renderExerciseDetail();
 }
 
 function renderTopicSpace(){
@@ -475,8 +484,36 @@ function renderMathExerciseCards(host){
   if(active){active.innerHTML=chips.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");active.hidden=!chips.length;}
   const counter=$(".exercise-catalog-heading>span");if(counter)counter.textContent=filtered.length+" ejercicios";
 }
+function setSourceExerciseControls(){
+  const sourceMode=exerciseBank==="fuentes";
+  const classes=$(".catalog-class-filter"),concepts=$("#exercise-concept-details"),mathTopic=$("#exercise-math-topic-wrap"),generator=$("#exercise-generate-math");
+  if(classes)classes.hidden=sourceMode;
+  if(concepts)concepts.hidden=sourceMode||exerciseBank==="matematicas";
+  if(mathTopic)mathTopic.hidden=exerciseBank!=="matematicas";
+  if(generator)generator.hidden=exerciseBank!=="matematicas";
+}
+function renderSourceExerciseCards(host){
+  setSourceExerciseControls();
+  const query=exerciseQuery.trim().toLocaleLowerCase("es");
+  const filtered=sourceExercises.filter(item=>(!exerciseLevels.size||exerciseLevels.has(String(item.level)))&&(!query||[item.id,item.title,item.prompt,item.options.join(" "),item.why].join(" ").toLocaleLowerCase("es").includes(query)));
+  const difficulty=$("#exercise-difficulty-options");
+  if(difficulty)difficulty.innerHTML=[1,2,3,4].map(level=>'<button type="button" data-exercise-difficulty="'+level+'" aria-pressed="'+String(exerciseLevels.has(String(level)))+'" aria-label="Nivel '+level+' · '+sourceExerciseLevels[level]+'">'+Array.from({length:4},(_,index)=>'<i class="'+(index<level?"is-filled":"")+'"></i>').join("")+'</button>').join("");
+  host.classList.toggle("is-list",exerciseListView);
+  host.innerHTML=filtered.length?filtered.map((item,index)=>'<button type="button" class="exercise-card source-exercise-card '+(item.id===selectedSourceExercise?.id?"is-selected":"")+'" data-source-level="'+item.level+'" data-select-source-exercise="'+escapeHTML(item.id)+'" aria-current="'+String(item.id===selectedSourceExercise?.id)+'"><span class="exercise-card-top"><span class="exercise-number">'+String(index+1).padStart(2,"0")+'</span><span class="exercise-level level-'+(["basic","intermediate","advanced","expert"][item.level-1])+'">'+sourceExerciseLevels[item.level]+'</span></span><strong>'+escapeHTML(item.title)+'</strong><span class="source-exercise-card-prompt">'+escapeHTML(item.prompt)+'</span><span class="exercise-card-difficulty" aria-label="Nivel '+item.level+'">'+Array.from({length:4},(_,level)=>'<i class="'+(level<item.level?"is-filled":"")+'"></i>').join("")+'</span></button>').join(""):'<div class="catalog-empty"><strong>Ningún ejercicio coincide</strong><button type="button" class="button button-secondary" id="exercise-empty-clear">Limpiar</button></div>';
+  host.parentElement.querySelector(".exercise-pagination")?.remove();
+  const active=$("#exercise-active-filters");if(active){const labels=[];if(query)labels.push("Búsqueda: "+exerciseQuery.trim());if(exerciseLevels.size)labels.push("Nivel: "+[...exerciseLevels].join(", "));active.innerHTML=labels.map(label=>'<span class="exercise-active-filter">'+escapeHTML(label)+'</span>').join("");active.hidden=!labels.length;}
+  const summary=$("#exercise-filter-summary"),counter=$(".exercise-catalog-heading>span");if(summary)summary.textContent=filtered.length+" de 24 ejercicios";if(counter)counter.textContent=filtered.length+" ejercicios";
+}
+function renderSourceExerciseDetail(host){
+  const item=selectedSourceExercise;if(!item){host.innerHTML='<div class="detail-empty"><span class="detail-empty-mark">24</span><p class="eyebrow">EJERCICIOS · FUENTES</p><h3>Elige un reto para empezar.</h3><p>Clasifica evidencias, selecciona técnicas y decide cómo actuar cuando hay vacíos o discrepancias.</p></div>';return;}
+  const position=sourceExercises.indexOf(item),attempt=sourceExerciseAnswers.get(item.id),answered=Number.isInteger(attempt),correct=answered&&attempt===item.answer;
+  host.innerHTML='<div class="exercise-detail-scroll source-exercise-detail"><nav class="exercise-detail-nav"><button type="button" data-source-exercise-neighbor="-1" '+(position===0?"disabled":"")+'>‹ Anterior</button><span>'+escapeHTML(item.id)+'</span><button type="button" data-source-exercise-neighbor="1" '+(position===sourceExercises.length-1?"disabled":"")+'>Siguiente ›</button></nav><header class="exercise-detail-heading"><span class="exercise-level level-'+(["basic","intermediate","advanced","expert"][item.level-1])+'">'+sourceExerciseLevels[item.level]+'</span><h3>'+escapeHTML(item.title)+'</h3><div class="concept-tags"><span>'+escapeHTML(sourceScenarios.find(scenario=>scenario.id===item.scenario)?.title??"Recolección de información")+'</span><span>Respuesta única</span><span>Justificación incluida</span></div></header><section class="exercise-prompt"><p class="eyebrow">EL RETO</p><p>'+escapeHTML(item.prompt)+'</p></section><fieldset class="source-exercise-options"><legend>Elige la mejor respuesta</legend>'+item.options.map((option,index)=>'<button type="button" data-source-exercise-answer="'+index+'" aria-pressed="'+String(attempt===index)+'" class="'+(answered&&index===item.answer?"is-correct-option":answered&&attempt===index?"is-wrong-option":"")+'"><span>'+String.fromCharCode(65+index)+'</span>'+escapeHTML(option)+'</button>').join("")+'</fieldset>'+(answered?'<section class="source-exercise-feedback '+(correct?"is-correct":"is-wrong")+'" role="status"><strong>'+(correct?"Correcto":"Revisa la respuesta")+'</strong><p>Respuesta: '+escapeHTML(item.options[item.answer])+'</p><p><b>Por qué:</b> '+escapeHTML(item.why)+'</p></section>':'<p class="source-exercise-hint">Una sola opción responde al caso; la explicación queda ligada a la decisión.</p>')+'<button type="button" class="button button-primary" data-start-source-simulator="'+escapeHTML(item.scenario)+'">Abrir en la Mesa de recolección</button></div>';
+}
 function renderExerciseCards(){
   const host=$("#exercise-grid");if(!host)return;
+  setSourceExerciseControls();
+  if(exerciseBank==="fuentes"){renderSourceExerciseCards(host);return;}
+  if(exerciseBank==="fuentes"){renderSourceExerciseCards(host);return;}
   if(exerciseBank==="matematicas"){renderMathExerciseCards(host);return;}
   const query=exerciseQuery.trim().toLocaleLowerCase("es"),selectedConceptIds=new Set([...selectedConcepts].map(label=>conceptos.find(item=>item.titulo===label)?.id).filter(Boolean));
   const filtered=adaptedExercises().filter(item=>{
@@ -509,6 +546,7 @@ function renderMathExerciseDetail(host){
 }
 function renderExerciseDetail(){
   const host=$("#exercise-detail");if(!host)return;
+  if(exerciseBank==="fuentes"){renderSourceExerciseDetail(host);return;}
   if(selectedMathExercise){renderMathExerciseDetail(host);return;}
   const item=selectedExercise;
   if(!item){
@@ -536,6 +574,7 @@ function renderExerciseDetail(){
     '</div>';
 }
 function confirmExerciseInSimulator(){
+  if(selectedSourceExercise){openSourceSimulator(selectedSourceExercise.scenario);return;}
   if(selectedMathExercise){
     document.querySelector('#primary-nav [data-space="simulator"]')?.click();
     document.dispatchEvent(new CustomEvent("traza:open-math-player",{detail:{exerciseId:selectedMathExercise.id,exercise:selectedMathExercise}}));
@@ -546,8 +585,12 @@ function confirmExerciseInSimulator(){
   document.dispatchEvent(new CustomEvent("traza:request-simulation",{detail:{exerciseId:item.id,methodIndex:0}}));
   document.querySelector('#primary-nav [data-space="simulator"]')?.click();
 }
+function openSourceSimulator(scenarioId="tienda-marta"){
+  document.dispatchEvent(new CustomEvent("traza:open-source-simulator",{detail:{scenarioId}}));
+  document.querySelector('#primary-nav [data-space="simulator"]')?.click();
+}
 function selectExercise(id){
-  selectedMathExercise=null;
+  selectedMathExercise=null;selectedSourceExercise=null;
   selectedExercise=exercises.find(item=>item.id===Number(id))??null;
   selectedMethod=0;
   renderExerciseCards();
@@ -558,7 +601,11 @@ function selectExercise(id){
   }
 }
 function selectMathExercise(id){
-  selectedExercise=null;selectedMathExercise=mathCatalogItems().find(item=>item.id===id)??null;
+  selectedExercise=null;selectedSourceExercise=null;selectedMathExercise=mathCatalogItems().find(item=>item.id===id)??null;
+  renderExerciseCards();renderExerciseDetail();
+}
+function selectSourceExercise(id){
+  selectedExercise=null;selectedMathExercise=null;selectedSourceExercise=sourceExercises.find(item=>item.id===id)??null;
   renderExerciseCards();renderExerciseDetail();
 }
 
@@ -570,7 +617,7 @@ function selectLesson(id){
 }
 function bindContentEvents(){
   $("#exercise-bank")?.addEventListener("change",event=>{
-    exerciseBank=event.target.value;selectedExercise=null;selectedMathExercise=null;exerciseLevels.clear();selectedConcepts.clear();mathTopicFilter="todos";
+    exerciseBank=event.target.value;selectedExercise=null;selectedMathExercise=null;selectedSourceExercise=null;exerciseLevels.clear();selectedConcepts.clear();mathTopicFilter="todos";
     const mathMode=exerciseBank==="matematicas",topicWrap=$("#exercise-math-topic-wrap"),concepts=$("#exercise-concept-details"),generator=$("#exercise-generate-math");
     if(topicWrap)topicWrap.hidden=!mathMode;if(concepts)concepts.hidden=mathMode;if(generator)generator.hidden=!mathMode;
     renderExerciseCards();renderExerciseDetail();
@@ -589,7 +636,7 @@ function bindContentEvents(){
     const card=event.target.closest("[data-topic-open]");
     if(card){const topic=temaPorId(card.dataset.topicOpen);if(topic?.estado==="disponible")openTheme(topic.id);return;}
     const tab=event.target.closest("[data-topic-tab]");
-    if(tab){topicTab=tab.dataset.topicTab;if(topicTab==="ejercicios"&&temaPorId(selectedTheme)?.competenciaId==="matematicas"){setMathExerciseContext(selectedTheme);saveLearnProgress();event.stopPropagation();document.querySelector('#primary-nav [data-space="exercises"]')?.click();return;}saveLearnProgress();renderTopicSpace();}
+    if(tab){topicTab=tab.dataset.topicTab;if(topicTab==="ejercicios"&&temaPorId(selectedTheme)?.competenciaId==="matematicas"){setMathExerciseContext(selectedTheme);saveLearnProgress();event.stopPropagation();document.querySelector('#primary-nav [data-space="exercises"]')?.click();return;}if(topicTab==="ejercicios"&&selectedTheme==="fuentes-informacion"){setSourceExerciseContext();saveLearnProgress();event.stopPropagation();document.querySelector('#primary-nav [data-space="exercises"]')?.click();return;}if(topicTab==="simulador"&&selectedTheme==="fuentes-informacion"){saveLearnProgress();event.stopPropagation();openSourceSimulator();return;}saveLearnProgress();renderTopicSpace();}
   });
   $("#learn-catalog-bands")?.addEventListener("click",event=>{
     const card=event.target.closest("[data-topic-open]");
@@ -611,7 +658,7 @@ function bindContentEvents(){
       return;
     }
     const tab={exercises:"ejercicios",simulator:"simulador",lab:"laboratorio"}[space];
-    if(tab&&selectedTheme){topicTab=tab;if(space==="exercises"&&temaPorId(selectedTheme)?.competenciaId==="matematicas")setMathExerciseContext(selectedTheme);saveLearnProgress();renderTopicSpace();}
+    if(tab&&selectedTheme){topicTab=tab;if(space==="exercises"&&temaPorId(selectedTheme)?.competenciaId==="matematicas")setMathExerciseContext(selectedTheme);if(space==="exercises"&&selectedTheme==="fuentes-informacion")setSourceExerciseContext();saveLearnProgress();renderTopicSpace();}
   });
   document.addEventListener("traza:actividad-laboratorio",()=>{recordLearnActivity();saveLearnProgress();});
   $("#lesson-catalog")?.addEventListener("click",event=>{
@@ -693,9 +740,13 @@ function bindContentEvents(){
   });
   $("#exercise-grid")?.addEventListener("click",event=>{
     const math=event.target.closest("[data-select-math-exercise]");if(math){selectMathExercise(math.dataset.selectMathExercise);return;}
+    const source=event.target.closest("[data-select-source-exercise]");if(source){selectSourceExercise(source.dataset.selectSourceExercise);return;}
     const card=event.target.closest("[data-select-exercise]");if(card)selectExercise(card.dataset.selectExercise);
   });
   $("#exercise-detail")?.addEventListener("click",event=>{
+    const sourceAnswer=event.target.closest("[data-source-exercise-answer]");if(sourceAnswer&&selectedSourceExercise){sourceExerciseAnswers.set(selectedSourceExercise.id,Number(sourceAnswer.dataset.sourceExerciseAnswer));renderExerciseDetail();return;}
+    const sourceNeighbor=event.target.closest("[data-source-exercise-neighbor]");if(sourceNeighbor&&selectedSourceExercise){selectSourceExercise(sourceExercises[sourceExercises.indexOf(selectedSourceExercise)+Number(sourceNeighbor.dataset.sourceExerciseNeighbor)]?.id);return;}
+    const sourceSimulator=event.target.closest("[data-start-source-simulator]");if(sourceSimulator){openSourceSimulator(sourceSimulator.dataset.startSourceSimulator);return;}
     if(event.target.closest("[data-reveal-math-solution]")&&selectedMathExercise){revealedMathSolutions.add(selectedMathExercise.id);renderExerciseDetail();return;}
     const reveal=event.target.closest("[data-reveal-solution]");if(reveal&&selectedExercise){revealedExerciseSolutions.add(selectedExercise.id);renderExerciseDetail();return;}
     const neighbor=event.target.closest("[data-exercise-neighbor]");if(neighbor?.dataset.exerciseNeighbor){selectExercise(neighbor.dataset.exerciseNeighbor);return;}

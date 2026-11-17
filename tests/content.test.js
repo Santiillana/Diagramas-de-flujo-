@@ -111,6 +111,8 @@ test("el catálogo de temas comparte competencias y conserva el mapa de 17 lecci
   const sources=temas.find(item=>item.id==="fuentes-informacion");
   assert.equal(sources.estado,"disponible");
   assert.equal(sources.lecciones.length,8);
+  assert.equal(sources.ejercicios.length,24);
+  assert.equal(sources.simulador.escenarios,3);
   assert.match(sources.nota,/fronteras.*pueden cambiar/i);
   assert.deepEqual(temas.filter(item=>item.estado==="proximamente").map(item=>item.id),[]);
   for(const id of ["enteros","racionales","regla-de-tres"]){
