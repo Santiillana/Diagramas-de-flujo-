@@ -1,6 +1,6 @@
 # Módulo 8 · Clases y conexión con Aprende
 
-**Estado:** horario y bloques de clase disponibles como fuente oficial; vista unificada de Clases y relaciones verificadas con Aprende pendientes. No se crean asociaciones por coincidencia de nombres.
+**Estado:** vista Clases construida a partir del horario oficial, con histórico, actividades y recursos oficiales por bloque. La conexión pedagógica verificable con las 17 lecciones y 45 ejercicios de Aprende sigue pendiente; no se crean asociaciones por coincidencia de nombres.
 
 ## Fuentes confirmadas
 
@@ -20,6 +20,16 @@ La sección Clases debe permitir consultar, sin duplicar el calendario:
 - Materiales y actividades oficiales publicados para la clase.
 - Vínculos de Aprende únicamente cuando se haya confirmado la relación pedagógica.
 
+## Vista de Clases implementada
+
+- `src/ui/ficha-classes.js` renderiza solo bloques vigentes en la fecha de Colombia y conserva bloques terminados en un historial.
+- `src/styles/ficha-classes.css` aporta tarjetas responsive.
+- La sección se incorpora a la navegación Mi ficha mediante `src/ui/navigation.js`, `index.html` y `src/app.js`.
+- Cada tarjeta presenta materia, instructor, día y horario en 12 horas; los sábados conservan sus dos bloques como “Clase del sábado”.
+- Los catálogos oficiales de actividades y recursos se muestran en solo lectura cuando la entrada incluye un `classId` real.
+- Las URLs externas se limitan a HTTP/HTTPS sin credenciales.
+- Se muestra explícitamente “Sin asociación pedagógica confirmada para esta clase todavía” en vez de inventar relaciones con Aprende.
+- E2E: `e2e/module-8-classes.spec.js` valida el cambio de lunes, siete bloques vigentes en la fecha actual, historial, horarios del sábado y ausencia de asociaciones inventadas.
 ## Registro explícito de relaciones
 
 Cuando exista evidencia del programa de formación, se añadirá un archivo de asociaciones (propuesta: `src/content/class-learning-map.js`) con estructura explícita:
