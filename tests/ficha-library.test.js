@@ -63,6 +63,8 @@ test("la biblioteca rechaza modificaciones sobre almacenamiento dañado", () => 
   const created = resource();
   assert.equal(readLibraryDataStrict(corrupt).reason, "corrupt_storage");
   assert.equal(writeLibraryData(created.data, corrupt).reason, "existing_corrupt_storage");
+  const publicOverride = writeLibraryData(created.data, corrupt, { replaceInvalid: true });
+  assert.equal(publicOverride.reason, "existing_corrupt_storage");
   assert.equal(corrupt.value, "{");
   const future = memoryStorage(JSON.stringify({ version: 8, resources: [] }));
   assert.equal(readLibraryDataStrict(future).reason, "unsupported_schema");
