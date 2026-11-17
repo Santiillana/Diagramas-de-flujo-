@@ -1,6 +1,6 @@
 # Módulo 10 · Respaldo, auditoría y publicación
 
-**Estado:** respaldos granulares e integral implementados y probados en la rama `v4/module-7-activities`. Migraciones, pruebas de fallos extremos, auditoría integral y validación de publicación siguen pendientes. La suite conjunta aprobó 300 pruebas Node y 116 Playwright en SHA `856df59`; el build externo de Cloudflare falló.
+**Estado:** respaldos granulares e integral implementados y probados en la rama `v4/module-7-activities`. Migraciones, pruebas de fallos extremos, auditoría integral y validación de publicación siguen pendientes. La suite conjunta aprobó 300 pruebas Node y 116 Playwright en SHA `04b699f` (run 43996077312); el check externo de Cloudflare falló también en el SHA base de `main`.
 
 ## Datos y límites actuales
 
