@@ -43,7 +43,7 @@ export const FICHA = {
     { id: "sabado-tarde-por-confirmar", dia: 6, inicio: "16:00", fin: "22:00", competenciaId: "clase-sabado-por-confirmar", titulo: "Clase por confirmar", instructorId: "jair-castaneda", fuente: "Horario compartido por el usuario" }
   ],
   horarioNotas: [
-    { id: "matematicas-lunes-nota", dia: 1, titulo: "Matemáticas", instructorId: "yilliam-romero", nota: "A partir del 2 de noviembre. La imagen no precisa hora ni año." }
+    { id: "matematicas-lunes-nota", dia: 1, competenciaId: "matematicas", titulo: "Matemáticas", instructorId: "yilliam-romero", nota: "A partir del 2 de noviembre. La imagen no precisa hora ni año." }
   ],
   actividades: [
     {

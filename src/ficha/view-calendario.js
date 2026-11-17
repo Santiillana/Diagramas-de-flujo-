@@ -28,7 +28,7 @@ function eventosDelDia(iso, personal, filtros) {
       const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
       return { tipo: "horario", item: { ...item, titulo: item.titulo || competencia?.nombre || "Clase", nombreCompetencia: competencia?.nombre, nombreInstructor: instructor?.nombre } };
     });
-  const notasHorario = FICHA.horarioNotas.filter(item => item.dia === dia).map(item => {
+  const notasHorario = FICHA.horarioNotas.filter(item => item.dia === dia && competenciaPasaFiltro(item.competenciaId, filtros)).map(item => {
     const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
     return { tipo: "nota", item: { ...item, nombreInstructor: instructor?.nombre } };
   });

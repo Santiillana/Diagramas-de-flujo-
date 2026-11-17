@@ -24,8 +24,8 @@ function minutos(hora) {
 function horarioVisible(filtros) {
   return FICHA.horario.filter(item => competenciaPasaFiltro(item.competenciaId, filtros));
 }
-function notasDelDia(dia) {
-  return FICHA.horarioNotas.filter(item => item.dia === dia).map(item => {
+function notasDelDia(dia, filtros) {
+  return FICHA.horarioNotas.filter(item => item.dia === dia && competenciaPasaFiltro(item.competenciaId, filtros)).map(item => {
     const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
     return `<div class="ficha-week-note"><strong>${escaparHTML(item.titulo)}</strong>
       <span>${escaparHTML(instructor?.nombre ?? "Instructor por confirmar")} · ${escaparHTML(item.nota)}</span></div>`;
@@ -39,21 +39,21 @@ function tarjetaClase(item) {
     <span>${escaparHTML(comp?.nombre ?? "Competencia por configurar")}</span>
     <small>${escaparHTML(instructor?.nombre ?? "Instructor por confirmar")} · ${escaparHTML(item.ambiente || "Ambiente por confirmar")}</small></article>`;
 }
-function renderEmptyGrid(start, due) {
+function renderEmptyGrid(start, due, filtros) {
   return `<div class="ficha-week-empty-grid">${DIAS.map((day, index) => {
     const date = sumarDias(start, index);
     return `<section class="ficha-week-empty-day ${fechaISO(date) === fechaISO(hoy()) ? "is-today" : ""}">
       <h3>${day.largo} <time>${escaparHTML(formatearFecha(date, { day: "numeric", month: "short" }))}</time></h3>
       ${due[fechaISO(date)] || ""}
-      ${notasDelDia(day.dia)}
+      ${notasDelDia(day.dia, filtros)}
       <p>${FICHA.meta.esDemostracion || !FICHA.horario.length ? "Sin horario publicado" : "Sin clases este día"}</p>
     </section>`;
   }).join("")}</div>`;
 }
-function renderDesktopGrid(start, horario, due) {
+function renderDesktopGrid(start, horario, due, filtros) {
   const clases = horario.map(item => ({ ...item, start: minutos(item.inicio), end: minutos(item.fin) }))
     .filter(item => item.start !== null && item.end !== null && item.end > item.start);
-  if (!clases.length) return renderEmptyGrid(start, due);
+  if (!clases.length) return renderEmptyGrid(start, due, filtros);
 
   const primera = Math.floor(Math.min(...clases.map(item => item.start)) / 60);
   const ultima = Math.ceil(Math.max(...clases.map(item => item.end)) / 60);
@@ -86,12 +86,12 @@ function renderDesktopGrid(start, horario, due) {
         </article>`;
       }).join("");
       return `<div class="ficha-week-day-column ${fechaISO(date) === fechaISO(hoy()) ? "is-today" : ""}" style="--week-height:${alto}px">
-        <div class="ficha-week-hour-lines"></div>${due[fechaISO(date)] || ""}${notasDelDia(day.dia)}${blocks}
+        <div class="ficha-week-hour-lines"></div>${due[fechaISO(date)] || ""}${notasDelDia(day.dia, filtros)}${blocks}
         ${blocks ? "" : `<span class="ficha-week-no-class">Sin clases</span>`}</div>`;
     }).join("")}
   </div>`;
 }
-function renderMobile(start, horario, due) {
+function renderMobile(start, horario, due, filtros) {
   const day = DIAS.find(item => item.dia === diaSeleccionado) ?? DIAS[0];
   const date = sumarDias(start, day.dia - 1);
   const clases = horario.filter(item => item.dia === day.dia).sort((a, b) => a.inicio.localeCompare(b.inicio));
@@ -102,7 +102,7 @@ function renderMobile(start, horario, due) {
     </div>
     <section class="ficha-mobile-agenda"><h3>${day.largo} · ${escaparHTML(formatearFecha(date, { day: "numeric", month: "long" }))}</h3>
       ${due[fechaISO(date)] || ""}
-      ${notasDelDia(day.dia)}
+      ${notasDelDia(day.dia, filtros)}
       ${!FICHA.horario.length
         ? `<div class="ficha-empty-inline"><strong>Horario pendiente de publicación</strong><span>El moderador aún no ha registrado los bloques oficiales.</span></div>`
         : clases.length ? clases.map(tarjetaClase).join("")
@@ -144,8 +144,8 @@ export function renderSemana() {
     </header>
     ${renderFiltros("semana", FICHA)}
     ${!FICHA.horario.length ? `<div class="ficha-demo-schedule-note" role="status">El horario semanal está preparado para edición del moderador; todavía no tiene bloques oficiales publicados.</div>` : ""}
-    <div class="ficha-week-desktop">${renderDesktopGrid(start, horario, due)}</div>
-    ${renderMobile(start, horario, due)}
+    <div class="ficha-week-desktop">${renderDesktopGrid(start, horario, due, filtros)}</div>
+    ${renderMobile(start, horario, due, filtros)}
     <footer class="ficha-personal-note">Semana académica de lunes a sábado. El domingo queda fuera del horario lectivo.</footer>
   </div>`;
 }

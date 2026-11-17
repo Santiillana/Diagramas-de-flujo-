@@ -64,6 +64,7 @@ test("el horario coincide con los días, horas, temas e instructores de la image
   assert.equal(FICHA.horarioNotas.length, 1);
   assert.equal(FICHA.horarioNotas[0].titulo, "Matemáticas");
   assert.equal(FICHA.horarioNotas[0].instructorId, "yilliam-romero");
+  assert.equal(FICHA.horarioNotas[0].competenciaId, "matematicas");
   assert.match(FICHA.horarioNotas[0].nota, /hora ni año/);
 });
 

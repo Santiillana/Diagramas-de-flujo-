@@ -26,7 +26,7 @@ function renderGrupo(titulo, actividades, personal, fecha) {
 function renderClases(fecha, filtros) {
   const clases = clasesDelDia(fecha).filter(item => competenciaPasaFiltro(item.competenciaId, filtros));
   const dia = fecha.getDay() === 0 ? 7 : fecha.getDay();
-  const notas = FICHA.horarioNotas.filter(item => item.dia === dia);
+  const notas = FICHA.horarioNotas.filter(item => item.dia === dia && competenciaPasaFiltro(item.competenciaId, filtros));
   const notaHTML = notas.map(item => {
     const instructor = FICHA.instructores.find(value => value.id === item.instructorId);
     return \`<div class="ficha-schedule-note"><strong>\${escaparHTML(item.titulo)}</strong>
