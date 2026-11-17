@@ -168,3 +168,10 @@ El horario de clases es contenido editable del repositorio (`src/content/ficha.j
 
 ## D-050 · La devolución académica se registra como transcripción
 Traza no autentica instructores ni se conecta a plataformas institucionales. Las devoluciones introducidas manualmente por el estudiante llevan `source: student_transcription`; el sistema no las presenta como verificadas. El estudiante no puede aprobar directamente una actividad.
+
+
+## D-051 · No convertir datos corruptos en un respaldo vacío
+La lectura visual puede ofrecer un fallback vacío para no romper el render, pero las escrituras y exportaciones deben usar lectura y validación estrictas. Un estado corrupto o de esquema futuro bloquea escrituras normales. Solo se puede sustituir mediante importación de un respaldo completo y validado, con confirmación explícita.
+
+## D-052 · Contenido oficial separado de la actividad personal
+El horario, las actividades oficiales de grupo y los recursos son contenido compartido/versionado. Las actividades creadas por el estudiante, sus entregas y sus notas son datos personales del navegador. No se presenta una pantalla local como panel de moderación global. El panel real requiere autenticación, roles y persistencia de servidor.
