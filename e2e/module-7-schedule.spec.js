@@ -206,4 +206,9 @@ test("el respaldo completo reúne y restaura Actividades y Biblioteca", async ({
   }));
   expect(stored.activities.activities[0].title).toBe("Actividad del respaldo integral");
   expect(stored.library.resources[0].title).toBe("Recurso del respaldo integral");
+
+  await page.getByRole("button", { name: "Actividades", exact: true }).click();
+  await expect(page.locator("#ficha-activities-list")).toContainText("Actividad del respaldo integral");
+  await page.getByRole("button", { name: "Biblioteca", exact: true }).click();
+  await expect(page.locator("#ficha-library-list")).toContainText("Recurso del respaldo integral");
 });
