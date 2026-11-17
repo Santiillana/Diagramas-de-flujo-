@@ -54,6 +54,26 @@ const recipes = {
     cierre:"La comparación produce verdadero o falso para dirigir la decisión.",
     moments:["Aparece la pregunta edad ≥ 18", "Se comparan 20 y 18", "El resultado verdadero permite continuar"],
     figures:[["process","edad ≥ 18"],["process","20 ≥ 18"],["decision","¿Verdadero?"],["process","Sí · continuar"]]
+  },
+  decisions: {
+    id:"R09-decisions", idea:"Una decisión es un cruce con una pregunta. La respuesta indica qué camino seguir.", term:"Decisión y condición",
+    cierre:"La condición es verdadera; el flujo continúa por Sí ✓.",
+    moments:["El rombo pregunta si edad ≥ 18", "20 ≥ 18 resulta verdadero", "La bolita sigue la rama Sí"],
+    figures:[["process","edad ≥ 18"],["process","20 ≥ 18"],["decision","¿Se cumple?"],["process","Continuar"]],
+    choices:["Sí ✓","No ✗"]
+  },
+  "nested-decisions": {
+    id:"R09-nested-decisions", idea:"Una condición puede abrir otra pregunta. Cada respuesta lleva a una ruta concreta.", term:"Decisión anidada",
+    cierre:"La segunda pregunta solo se evalúa dentro de la primera ruta elegida.",
+    moments:["Se evalúa la primera condición", "La ruta Sí abre otra pregunta", "La segunda respuesta elige el resultado"],
+    figures:[["decision","¿Mayor de edad?"],["decision","¿Tiene permiso?"],["process","Permitir ingreso"]],
+    choices:["Sí ✓","No ✗"]
+  },
+  "counters-accumulators": {
+    id:"R11-counters", idea:"Un contador suma unidades. Un acumulador reúne cantidades que cambian en cada vuelta.", term:"Contador y acumulador",
+    cierre:"El contador aumenta de uno en uno; el acumulador recibe cada monto.",
+    moments:["El contador empieza en 0", "Entra una persona y suma 1", "El acumulador agrega el monto"],
+    figures:[["process","cont = 0"],["process","entra persona"],["process","cont = cont + 1"],["process","suma += monto"]]
   }
 };
 
@@ -79,7 +99,9 @@ export function recipeSceneMarkup(recipe,frame=0){
   const current=Math.max(0,Math.min(nodes.length-1,frame));
   const arrows=nodes.slice(1).map((_,index)=>'<path class="recipe-arrow" d="M'+(xs[index]+52)+' '+y+'H'+(xs[index+1]-52)+'" marker-end="url(#recipe-arrowhead)"/>').join("");
   const shapes=nodes.map(([kind,label],index)=>shape(kind,xs[index],y,label,index===current,index)).join("");
-  return '<svg class="lesson-recipe-svg" viewBox="0 0 '+width+' 220" role="img" aria-label="'+escapeHTML(recipe.cierre)+'"><defs><marker id="recipe-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>'+arrows+shapes+'<circle class="recipe-guide" cx="'+xs[0]+'" cy="55" r="8" transform="translate('+(xs[current]-xs[0])+' 0)" aria-hidden="true"/></svg>';
+  const choiceIndex=nodes.findIndex(([kind])=>kind==="decision"),choiceX=xs[choiceIndex];
+  const choices=recipe.choices&&choiceIndex>=0?'<path class="recipe-choice-arrow" d="M'+(choiceX-20)+' 143L'+(choiceX-62)+' 183M'+(choiceX+20)+' 143L'+(choiceX+62)+' 183"/><g class="recipe-choice recipe-choice-yes"><rect x="'+(choiceX-122)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX-92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[0])+'</text></g><g class="recipe-choice recipe-choice-no"><rect x="'+(choiceX+62)+'" y="185" width="60" height="30" rx="15"/><text x="'+(choiceX+92)+'" y="205" text-anchor="middle">'+escapeHTML(recipe.choices[1])+'</text></g>':'';
+  return '<svg class="lesson-recipe-svg" viewBox="0 0 '+width+' '+(recipe.choices?240:220)+'" role="img" aria-label="'+escapeHTML(recipe.cierre)+'"><defs><marker id="recipe-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>'+arrows+choices+shapes+'<circle class="recipe-guide" cx="'+xs[0]+'" cy="55" r="8" transform="translate('+(xs[current]-xs[0])+' 0)" aria-hidden="true"/></svg>';
 }
 
 export function recipeFrame(recipe,step,eventCount=1){

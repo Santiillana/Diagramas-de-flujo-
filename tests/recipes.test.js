@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { lessonRecipe, recipeFrame, recipeMoment, recipeSceneMarkup } from "../src/ui/kit/recipes.js";
 
-test("las lecciones 01 a 09 tienen recetas visuales propias y completas",()=>{
-  const ids=["algorithm","reading","terminals","input","process","output","variables","arithmetic","comparisons"];
+test("las lecciones 01 a 12 tienen recetas visuales propias y completas",()=>{
+  const ids=["algorithm","reading","terminals","input","process","output","variables","arithmetic","comparisons","decisions","nested-decisions","counters-accumulators"];
   const recipes=ids.map(id=>lessonRecipe(id));
   assert.equal(new Set(recipes.map(item=>item.id)).size,ids.length);
   for(const recipe of recipes){
@@ -15,6 +15,7 @@ test("las lecciones 01 a 09 tienen recetas visuales propias y completas",()=>{
     assert.match(svg,/recipe-guide/);
     assert.match(svg,/recipe-order/);
     assert.doesNotMatch(svg,/<script|foreignObject/i);
+    if(recipe.choices){assert.match(svg,/Sí ✓/);assert.match(svg,/No ✗/);}
   }
 });
 

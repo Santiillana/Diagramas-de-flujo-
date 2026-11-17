@@ -14,6 +14,11 @@
 .recipe-order{fill:var(--text-2);font:500 12px ui-monospace,monospace}
 .recipe-arrow{fill:none;stroke:var(--line);stroke-width:2}
 .recipe-guide{fill:var(--accent);stroke:var(--card);stroke-width:2;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
+.recipe-choice-arrow{fill:none;stroke:var(--line);stroke-width:2}
+.recipe-choice rect{stroke-width:2}
+.recipe-choice text{font:600 14px ui-sans-serif,system-ui;fill:var(--text)}
+.recipe-choice-yes rect{fill:color-mix(in srgb,var(--status-approved) 18%,var(--card));stroke:var(--status-approved)}
+.recipe-choice-no rect{fill:color-mix(in srgb,var(--status-overdue) 14%,var(--card));stroke:var(--status-overdue)}
 .recipe-static-sequence{margin-bottom:12px}
 @media(max-width:520px){.visual-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.visual-speed-label{grid-column:1/-1}}
 :root[data-motion="reduced"] .lesson-static-sequence{display:block}
