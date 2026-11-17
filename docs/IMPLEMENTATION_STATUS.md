@@ -73,7 +73,7 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 | 5. Núcleo de Mi ficha | No implementado | Repositorio común, persistencia local protegida, modelo de actividades y respaldo versionado; falta política de migraciones y E2E definitivo |
 | 6. Hoy, Semana y Calendario | No implementado | Horario oficial en Colombia, recurrencias, vigencias, navegación, estados temporales y fechas de actividades |
 | 7. Actividades y detalle | No implementado | Catálogo de actividades oficiales de solo lectura y primera interfaz personal de catálogo/detalle, edición, entregas, devoluciones, notas, filtros, bitácora y archivo; pendiente aceptación E2E |
-| 8. Clases y conexión con Aprende | No implementado | Vista inicial de Clases, con horario vigente e historial y publicaciones oficiales; vínculos de Aprende pendientes por falta de asociaciones confirmadas |
+| 8. Clases y conexión con Aprende | Parcial implementado | Vista Clases, horario vigente e historial, publicaciones oficiales y mapa curricular con validación de IDs; enlaces exactos de Aprende se activarán solo cuando existan asociaciones verificadas |
 | 9. Biblioteca | No implementado | Interfaz personal, almacenamiento separado y respaldos implementados; fuente oficial preparada y vacía. Pendiente aceptación E2E y publicación de materiales verificados |
 | 10. Respaldo, auditoría y documentación | Parcial avanzado | Respaldos granulares e integral de Actividades/Biblioteca, validación estricta y rollback compensatorio; faltan migraciones, pruebas de fallo extremo, auditoría completa y verificación externa de publicación |
 
@@ -117,7 +117,7 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 
 - `src/ui/ficha-classes.js` y `src/styles/ficha-classes.css` implementan una vista de Clases alimentada desde `src/content/ficha.js`.
 - Muestra las materias y docentes vigentes, los dos bloques del sábado como `Clase del sábado`, materiales y actividades oficiales asociadas por `classId`, y el historial de vigencias anteriores.
-- No asocia automáticamente lecciones ni ejercicios de Aprende. La vista declara explícitamente que la relación aún no está confirmada.
+- No asocia automáticamente lecciones ni ejercicios de Aprende. `src/content/class-learning-map.js` define el mapa explícito y valida los IDs frente a horarios, 17 lecciones y 45 ejercicios; permanece vacío hasta contar con asociaciones oficiales.
 - `e2e/module-8-classes.spec.js` cubre los siete bloques vigentes al 17 de noviembre de 2026 y el bloque histórico del lunes anterior al 2 de noviembre.
 - Para cerrar la conexión pedagógica hacen falta las asociaciones oficiales por competencia/materia y una validación de IDs reales en los catálogos.
 
@@ -126,13 +126,14 @@ La secuencia de diez pasos de Mi ficha es independiente de los cinco módulos de
 - `src/ui/ficha-library.js` y `src/styles/ficha-library.css` implementan el catálogo personal, búsqueda, filtros, edición, archivo y apertura segura de enlaces.
 - `src/ui/ficha-library-store.js` mantiene el almacenamiento separado `traza:v4:library`, validación estricta, bloqueo de sobrescritura y respaldo/importación versionados.
 - `src/content/ficha-resources.js` contiene el catálogo oficial de solo lectura. Está vacío hasta que se incorporen recursos revisados.
-- La información personal de Biblioteca y la de Actividades se respalda en archivos separados; debe guardarse ambos para una copia completa.
+- Hay respaldos granulares para restauración selectiva y un respaldo integral para guardar Actividades y Biblioteca personales en un solo archivo.
 
 #### Paso 10 · Respaldo y auditoría
 
 - Se mantienen respaldos independientes para Actividades y Biblioteca, y se añadió el respaldo integral `traza-full-ficha-backup` que combina ambas áreas personales.
 - La importación integral valida los dos formatos antes de escribir, conserva snapshots de ambas claves y hace rollback compensatorio si falla la segunda escritura. No puede ofrecer atomicidad real multi-clave ante cierre abrupto del navegador.
 - `tests/ficha-full-backup.test.js` cubre exportación, validación, restauración integral, rechazo de contenido malformado y rollback ante fallo transitorio.
+- La vista Hoy permite crear y restaurar un respaldo integral de las dos claves personales; la restauración actualiza las vistas de Actividades y Biblioteca.
 - La interfaz ofrece exportar/restaurar el archivo integral desde Hoy; los archivos oficiales del horario y catálogos se recuperan del historial Git.
 - Pendiente: migraciones entre versiones, pruebas de cuota y fallos persistentes, recuperación ante rollback fallido, auditoría editorial completa y smoke test del build externo.
 
