@@ -1,4 +1,4 @@
-import { HORARIO_CLASES } from "../content/ficha.js";
+import { HORARIO_CLASES, validateHorarioClases } from "../content/ficha.js";
 import { validateOfficialActivities } from "../content/ficha-activities.js";
 import { validateOfficialResources } from "../content/ficha-resources.js";
 import { lessons } from "../content/lessons.js";
@@ -72,6 +72,12 @@ function renderOfficialItems(items, type, isValid = true) {
 export function initFichaClasses() {
   const root = document.querySelector("#ficha-clases");
   if (!root) return;
+
+  const scheduleValidation = validateHorarioClases();
+  if (!scheduleValidation.ok) {
+    root.innerHTML = '<p class="ficha-class-empty" role="alert">El horario oficial necesita revisión. La vista Clases no se mostrará hasta corregirlo.</p>';
+    return;
+  }
 
   function render() {
   const today = todayInBogota();
