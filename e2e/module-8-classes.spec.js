@@ -44,3 +44,27 @@ test("Clases nunca inventa materias para los bloques del sábado ni vínculos co
   await expect(saturday.nth(0)).toContainText("Sin asociación pedagógica confirmada");
   await expect(saturday.nth(1)).toContainText("Sin asociación pedagógica confirmada");
 });
+
+test("los vínculos curriculares verificados abren la lección y el ejercicio exactos", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Mi ficha" }).click();
+  await page.getByRole("button", { name: "Clases", exact: true }).click();
+
+  await page.locator("#ficha-clases").evaluate(root => {
+    const fixtures = document.createElement("div");
+    fixtures.innerHTML =
+      '<button type="button" data-class-open-lesson="algorithm">Lección de prueba</button>' +
+      '<button type="button" data-class-open-exercise="1">Ejercicio de prueba</button>';
+    root.append(fixtures);
+  });
+
+  await page.locator("#ficha-clases [data-class-open-lesson]").click();
+  await expect(page.locator('[data-view="learn"]')).toBeVisible();
+  await expect(page.locator("#lesson-detail")).toContainText("Algoritmos y diagramas de flujo");
+
+  await page.locator('[data-section-switch="ficha"]').click();
+  await page.getByRole("button", { name: "Clases", exact: true }).click();
+  await page.locator("#ficha-clases [data-class-open-exercise]").click();
+  await expect(page.locator('[data-view="exercises"]')).toBeVisible();
+  await expect(page.locator("#exercise-detail")).toContainText("Suma de dos números");
+});
