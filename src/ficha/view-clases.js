@@ -55,7 +55,8 @@ function renderSemana() {
   return `<div class="class-week-grid">${DIAS.map((dia, index) => {
     const fecha = sumar(lunes, index); const registro = claseRegistrada(fecha);
     const horarios = clasesDelDia(fecha);
-    return `<button type="button" class="class-week-card${esHoy(fecha) ? " is-today" : ""}" data-class-date="${fechaISO(fecha)}"><strong>${dia} ${fecha.getDate()}</strong><span>${horarios[0] ? `${escaparHTML(horarios[0].inicio)} – ${escaparHTML(horarios[0].fin)}` : "Horario por confirmar"}</span><span>${escaparHTML(registro?.titulo || horarios[0]?.competencia?.nombre || "Sin registro")}</span><small>${escaparHTML(registro ? estado(fecha).texto : "○ Por venir")}</small></button>`;
+    const selected = fechaISO(fecha) === fechaISO(fechaSeleccionada);
+    return `<button type="button" class="class-week-card${esHoy(fecha) ? " is-today" : ""}${selected ? " is-selected" : ""}" aria-pressed="${selected}" data-class-date="${fechaISO(fecha)}"><strong>${dia} ${fecha.getDate()}</strong><span>${horarios[0] ? `${escaparHTML(horarios[0].inicio)} – ${escaparHTML(horarios[0].fin)}` : "Horario por confirmar"}</span><span>${escaparHTML(registro?.titulo || horarios[0]?.competencia?.nombre || "Sin registro")}</span><small>${escaparHTML(registro ? estado(fecha).texto : "○ Por venir")}</small></button>`;
   }).join("")}</div>`;
 }
 
