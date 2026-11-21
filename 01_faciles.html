@@ -642,7 +642,7 @@ $('#ch').innerHTML=EX.map((x,i)=>'<button style="--c:'+LC[0]+'" title="'+x.t+'" 
 WH.doc='Imprimir: muestra el resultado en pantalla.';NMK.doc='Base ondulada · Imprimir';
 $('#recipeBtn').onclick=()=>showRecipe(ei);
 $('#completeBtn').onclick=()=>{document.body.classList.toggle('complete');$('#completeBtn').textContent=document.body.classList.contains('complete')?'Dibujo progresivo':'Dibujo completo'};
-$('#qz').remove();$('#dock').prepend($('#qz'));
+$('#dock').prepend($('#qz'));
 let introIndex=0,recipeStep=0,recipeMode='before',recipeRevealed=false,recipeFor=0,decisionShown=false,hasStarted=false,turnOpen=false,turnSolved=false;
 const QUESTIONS=['Dilo con tus palabras','Tres preguntas: ¿qué datos me dan? · ¿qué me piden mostrar? · ¿qué hago en el medio?','Ponle nombre a cada dato','Escríbelo en pasos cortos, una acción por renglón','Cada renglón es una figura','Pruébalo a mano con datos pequeños','Pásalo a código, línea por línea'];
 function renderIntro(){
